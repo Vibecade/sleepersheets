@@ -1,14 +1,9 @@
+
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Download, Users, Trophy, ArrowRight, Sparkles, Star, HelpCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import LeagueData from '@/components/LeagueData';
+import { LeagueHeader } from '@/components/home/LeagueHeader';
+import { LeagueConnectCard } from '@/components/home/LeagueConnectCard';
 
 const Index = () => {
   const [leagueId, setLeagueId] = useState('');
@@ -152,127 +147,20 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Enhanced Header */}
-      <div className="glass-header border-b border-white/10 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 animate-pulse"></div>
-        <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="bg-gradient-to-br from-emerald-400 via-blue-500 to-purple-600 rounded-2xl p-4 shadow-2xl pulse-glow">
-                <Trophy className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold gradient-text mb-2">SleeperSheets</h1>
-                <p className="text-gray-300 text-lg">Transform your fantasy football data into actionable insights</p>
-              </div>
-            </div>
-            <Link to="/how-to">
-              <Button variant="outline" className="flex items-center space-x-2">
-                <HelpCircle className="w-4 h-4" />
-                <span>How To Use</span>
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
+      <LeagueHeader />
 
       <div className="max-w-6xl mx-auto px-4 py-12">
         {!leagueData ? (
           <div className="max-w-2xl mx-auto space-y-8">
-            {/* Enhanced League ID Input */}
-            <Card className="fade-in hover-lift gradient-border">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="flex items-center justify-center space-x-3 text-white text-2xl">
-                  <div className="bg-gradient-to-r from-blue-500 to-emerald-500 rounded-xl p-2">
-                    <Users className="w-6 h-6 text-white" />
-                  </div>
-                  <span>Connect Your League</span>
-                </CardTitle>
-                <CardDescription className="text-gray-300 text-lg">
-                  Enter your Sleeper League ID or username to unlock powerful analytics
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-8">
-                <div className="space-y-6">
-                  <div className="group">
-                    <Label htmlFor="leagueId" className="text-white text-sm font-semibold mb-3 block">
-                      League ID (Direct Access)
-                    </Label>
-                    <div className="flex space-x-3">
-                      <Input
-                        id="leagueId"
-                        placeholder="e.g., 123456789"
-                        value={leagueId}
-                        onChange={(e) => setLeagueId(e.target.value)}
-                        className="flex-1 h-12 text-lg group-hover:border-emerald-400/50 transition-all duration-300"
-                      />
-                      <Button 
-                        onClick={handleLeagueSubmit} 
-                        disabled={loading}
-                        size="lg"
-                        className="px-6"
-                      >
-                        {loading ? (
-                          <div className="shimmer w-4 h-4 rounded"></div>
-                        ) : (
-                          <ArrowRight className="w-5 h-5" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-4">
-                    <Separator className="flex-1 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-                    <span className="text-sm text-gray-400 font-medium px-4 py-2 glass rounded-full">or</span>
-                    <Separator className="flex-1 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-                  </div>
-
-                  <div className="group">
-                    <Label htmlFor="username" className="text-white text-sm font-semibold mb-3 block">
-                      Sleeper Username (Auto-Discovery)
-                    </Label>
-                    <div className="flex space-x-3">
-                      <Input
-                        id="username"
-                        placeholder="e.g., your_username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        className="flex-1 h-12 text-lg group-hover:border-blue-400/50 transition-all duration-300"
-                      />
-                      <Button 
-                        onClick={handleUsernameSubmit} 
-                        disabled={loading}
-                        variant="outline"
-                        size="lg"
-                        className="px-6"
-                      >
-                        {loading ? (
-                          <div className="shimmer w-4 h-4 rounded"></div>
-                        ) : (
-                          <ArrowRight className="w-5 h-5" />
-                        )}
-                      </Button>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-2 italic">
-                      We'll automatically find and load your most recent league
-                    </p>
-                  </div>
-                </div>
-
-                <div className="glass border border-blue-400/30 rounded-xl p-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 hover-lift">
-                  <h4 className="font-semibold text-blue-300 mb-3 flex items-center">
-                    <Star className="w-4 h-4 mr-2" />
-                    How to find your League ID:
-                  </h4>
-                  <ol className="text-sm text-blue-200 space-y-2 list-decimal list-inside leading-relaxed">
-                    <li>Open the Sleeper app or website</li>
-                    <li>Navigate to your league</li>
-                    <li>Look at the URL - the League ID is the long number</li>
-                    <li>Example: sleeper.app/leagues/<span className="font-mono bg-blue-600/30 px-2 py-1 rounded">123456789</span>/team</li>
-                  </ol>
-                </div>
-              </CardContent>
-            </Card>
+            <LeagueConnectCard
+              leagueId={leagueId}
+              setLeagueId={setLeagueId}
+              username={username}
+              setUsername={setUsername}
+              onLeagueSubmit={handleLeagueSubmit}
+              onUsernameSubmit={handleUsernameSubmit}
+              loading={loading}
+            />
           </div>
         ) : (
           <LeagueData data={leagueData} />
