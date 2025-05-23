@@ -9,7 +9,153 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      draft_picks: {
+        Row: {
+          created_at: string
+          draft_id: string
+          id: string
+          is_keeper: boolean | null
+          league_id: string
+          metadata: Json | null
+          pick_no: number
+          picked_by: string | null
+          player_id: string | null
+          roster_id: number
+          round: number
+        }
+        Insert: {
+          created_at?: string
+          draft_id: string
+          id?: string
+          is_keeper?: boolean | null
+          league_id: string
+          metadata?: Json | null
+          pick_no: number
+          picked_by?: string | null
+          player_id?: string | null
+          roster_id: number
+          round: number
+        }
+        Update: {
+          created_at?: string
+          draft_id?: string
+          id?: string
+          is_keeper?: boolean | null
+          league_id?: string
+          metadata?: Json | null
+          pick_no?: number
+          picked_by?: string | null
+          player_id?: string | null
+          roster_id?: number
+          round?: number
+        }
+        Relationships: []
+      }
+      league_drafts: {
+        Row: {
+          created_at: string
+          draft_id: string
+          id: string
+          league_id: string
+          metadata: Json | null
+          season: string | null
+          season_type: string | null
+          settings: Json | null
+          sport: string | null
+          start_time: number | null
+          status: string | null
+          type: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          draft_id: string
+          id?: string
+          league_id: string
+          metadata?: Json | null
+          season?: string | null
+          season_type?: string | null
+          settings?: Json | null
+          sport?: string | null
+          start_time?: number | null
+          status?: string | null
+          type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          draft_id?: string
+          id?: string
+          league_id?: string
+          metadata?: Json | null
+          season?: string | null
+          season_type?: string | null
+          settings?: Json | null
+          sport?: string | null
+          start_time?: number | null
+          status?: string | null
+          type?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      league_transactions: {
+        Row: {
+          adds: Json | null
+          consenter_ids: Json | null
+          created_at: string
+          creator: string | null
+          draft_picks: Json | null
+          drops: Json | null
+          id: string
+          league_id: string
+          metadata: Json | null
+          settings: Json | null
+          status: string | null
+          transaction_id: string
+          type: string | null
+          updated_at: string
+          waiver_budget: Json | null
+          week: number | null
+        }
+        Insert: {
+          adds?: Json | null
+          consenter_ids?: Json | null
+          created_at?: string
+          creator?: string | null
+          draft_picks?: Json | null
+          drops?: Json | null
+          id?: string
+          league_id: string
+          metadata?: Json | null
+          settings?: Json | null
+          status?: string | null
+          transaction_id: string
+          type?: string | null
+          updated_at?: string
+          waiver_budget?: Json | null
+          week?: number | null
+        }
+        Update: {
+          adds?: Json | null
+          consenter_ids?: Json | null
+          created_at?: string
+          creator?: string | null
+          draft_picks?: Json | null
+          drops?: Json | null
+          id?: string
+          league_id?: string
+          metadata?: Json | null
+          settings?: Json | null
+          status?: string | null
+          transaction_id?: string
+          type?: string | null
+          updated_at?: string
+          waiver_budget?: Json | null
+          week?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

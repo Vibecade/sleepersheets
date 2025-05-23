@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,17 +49,42 @@ const Index = () => {
       const playersResponse = await fetch('https://api.sleeper.app/v1/players/nfl');
       const players = await playersResponse.json();
 
+      // Fetch transactions for current week
+      const currentWeek = league.settings?.week || 1;
+      const transactionsResponse = await fetch(`https://api.sleeper.app/v1/league/${leagueId}/transactions/${currentWeek}`);
+      const transactions = transactionsResponse.ok ? await transactionsResponse.json() : [];
+
+      // Fetch draft data
+      const draftsResponse = await fetch(`https://api.sleeper.app/v1/league/${leagueId}/drafts`);
+      const drafts = draftsResponse.ok ? await draftsResponse.json() : [];
+      
+      // Fetch draft picks for each draft
+      const draftPicks = [];
+      for (const draft of drafts) {
+        const picksResponse = await fetch(`https://api.sleeper.app/v1/draft/${draft.draft_id}/picks`);
+        if (picksResponse.ok) {
+          const picks = await picksResponse.json();
+          draftPicks.push({
+            draft,
+            picks
+          });
+        }
+      }
+
       const combinedData = {
         league,
         rosters,
         users,
-        players
+        players,
+        transactions,
+        drafts,
+        draftPicks
       };
 
       setLeagueData(combinedData);
       toast({
         title: "Success!",
-        description: `Loaded data for ${league.name}`
+        description: `Loaded data for ${league.name} including transactions and draft data`
       });
 
     } catch (error) {
@@ -234,8 +258,8 @@ const Index = () => {
                   </div>
                   <div className="text-center p-4">
                     <Trophy className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                    <h4 className="font-medium">League Info</h4>
-                    <p className="text-sm text-gray-600">League settings and team information</p>
+                    <h4 className="font-medium">Draft & Transactions</h4>
+                    <p className="text-sm text-gray-600">Draft picks and all league transactions</p>
                   </div>
                   <div className="text-center p-4">
                     <Download className="w-8 h-8 text-purple-600 mx-auto mb-2" />
