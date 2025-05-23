@@ -273,41 +273,6 @@ const Index = () => {
                 </div>
               </CardContent>
             </Card>
-
-            {/* Enhanced Features Preview */}
-            <Card className="fade-in hover-lift" style={{ animationDelay: '0.2s' }}>
-              <CardHeader className="text-center">
-                <CardTitle className="text-white text-2xl mb-2">Unlock Premium Features</CardTitle>
-                <CardDescription className="text-gray-300">
-                  Everything you need for comprehensive league analysis
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="glass p-6 rounded-2xl text-center group hover-lift cursor-pointer gradient-border">
-                    <div className="bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl p-4 w-16 h-16 mx-auto mb-4 pulse-glow">
-                      <Users className="w-8 h-8 text-white" />
-                    </div>
-                    <h4 className="font-semibold text-white text-lg mb-2">Complete Rosters</h4>
-                    <p className="text-sm text-gray-400 leading-relaxed">Detailed team compositions with player statistics and performance metrics</p>
-                  </div>
-                  <div className="glass p-6 rounded-2xl text-center group hover-lift cursor-pointer gradient-border">
-                    <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl p-4 w-16 h-16 mx-auto mb-4 pulse-glow">
-                      <Trophy className="w-8 h-8 text-white" />
-                    </div>
-                    <h4 className="font-semibold text-white text-lg mb-2">Draft Analytics</h4>
-                    <p className="text-sm text-gray-400 leading-relaxed">Complete draft history and transaction logs for strategic insights</p>
-                  </div>
-                  <div className="glass p-6 rounded-2xl text-center group hover-lift cursor-pointer gradient-border">
-                    <div className="bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl p-4 w-16 h-16 mx-auto mb-4 pulse-glow">
-                      <Download className="w-8 h-8 text-white" />
-                    </div>
-                    <h4 className="font-semibold text-white text-lg mb-2">Export & Analysis</h4>
-                    <p className="text-sm text-gray-400 leading-relaxed">Professional CSV exports ready for spreadsheet analysis and reporting</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         ) : (
           <LeagueData data={leagueData} />
