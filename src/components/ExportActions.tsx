@@ -5,6 +5,7 @@ import RosterExport from './exports/RosterExport';
 import TransactionsExport from './exports/TransactionsExport';
 import DraftExport from './exports/DraftExport';
 import ExportInfo from './exports/ExportInfo';
+import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 
 interface ExportActionsProps {
   league: any;
@@ -25,6 +26,13 @@ const ExportActions: React.FC<ExportActionsProps> = ({
   transactions,
   draftPicks
 }) => {
+  const { salaries, loading: salariesLoading } = usePlayerSalaries(league.league_id);
+
+  const refreshSalaries = async () => {
+    // Force a page reload to refresh all salary data
+    window.location.reload();
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -64,7 +72,10 @@ const ExportActions: React.FC<ExportActionsProps> = ({
             </div>
           </div>
 
-          <ExportInfo />
+          <ExportInfo 
+            onRefreshSalaries={refreshSalaries}
+            refreshing={salariesLoading}
+          />
         </div>
       </CardContent>
     </Card>

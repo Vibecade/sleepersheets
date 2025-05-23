@@ -1,17 +1,74 @@
 
 import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Info, RefreshCw } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-const ExportInfo: React.FC = () => {
+interface ExportInfoProps {
+  onRefreshSalaries?: () => Promise<void>;
+  refreshing?: boolean;
+}
+
+const ExportInfo: React.FC<ExportInfoProps> = ({ onRefreshSalaries, refreshing = false }) => {
+  const { toast } = useToast();
+
+  const handleRefresh = async () => {
+    if (onRefreshSalaries) {
+      try {
+        await onRefreshSalaries();
+        toast({
+          title: "Salaries Refreshed",
+          description: "All salary data has been reloaded from the database"
+        });
+      } catch (error) {
+        toast({
+          title: "Refresh Failed",
+          description: "Failed to refresh salary data",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
   return (
-    <div className="glass border border-emerald-400/30 rounded-lg p-4 bg-gradient-to-r from-emerald-500/10 to-green-500/10">
-      <h4 className="font-medium text-emerald-300 mb-2">Clean CSV Format includes:</h4>
-      <ul className="text-sm text-emerald-200 space-y-1 list-disc list-inside">
-        <li><strong>Rosters:</strong> Player Name, NFL Team, Position, Fantasy Team, Roster Status</li>
-        <li><strong>Transactions:</strong> Week, Fantasy Team, Player Name, NFL Team, Position, Action</li>
-        <li><strong>Draft:</strong> Round, Pick, Fantasy Team, Player Name, NFL Team, Position, Is Keeper</li>
-        <li><strong>No IDs or raw data:</strong> All columns use human-readable names and values</li>
-      </ul>
-    </div>
+    <Card className="glass border-blue-400/30">
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          <Alert className="border-blue-400/30 bg-blue-500/10">
+            <Info className="h-4 w-4 text-blue-400" />
+            <AlertDescription className="text-blue-200">
+              <strong>About Clean Exports:</strong> These CSV files are optimized for Google Sheets and Excel with normalized headers, 
+              proper formatting, and include fantasy salary data when available.
+            </AlertDescription>
+          </Alert>
+
+          <Alert className="border-amber-400/30 bg-amber-500/10">
+            <RefreshCw className="h-4 w-4 text-amber-400" />
+            <AlertDescription className="text-amber-200">
+              <strong>Salary Data:</strong> Fantasy salary information is loaded when you first access the league. 
+              If you've recently updated salaries in the dashboard, click refresh below to ensure the latest data is included in exports.
+            </AlertDescription>
+          </Alert>
+
+          {onRefreshSalaries && (
+            <div className="flex justify-center pt-2">
+              <Button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                <span>{refreshing ? 'Refreshing...' : 'Refresh Salary Data'}</span>
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
