@@ -156,6 +156,33 @@ export type Database = {
         }
         Relationships: []
       }
+      player_salaries: {
+        Row: {
+          created_at: string
+          id: string
+          league_id: string
+          player_id: string
+          salary: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          league_id: string
+          player_id: string
+          salary?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          league_id?: string
+          player_id?: string
+          salary?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

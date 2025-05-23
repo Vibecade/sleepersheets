@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Users, ArrowUpDown, FileText, Eye } from 'lucide-react';
 import { formatPlayerName } from '@/utils/csvExport';
 import { getTeamName } from '@/utils/leagueDataUtils';
+import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
+import EditableSalary from '@/components/EditableSalary';
 
 interface DataDashboardProps {
   league: any;
@@ -27,6 +28,8 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
   transactions,
   draftPicks
 }) => {
+  const { salaries, updateSalary, loading: salariesLoading } = usePlayerSalaries(league.league_id);
+
   // Prepare roster data
   const rosterData = [];
   rosters.forEach((roster) => {
@@ -39,6 +42,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
         const player = players[playerId];
         if (player) {
           rosterData.push({
+            playerId,
             playerName: formatPlayerName(player),
             nflTeam: player.team || 'FA',
             position: player.position || 'Unknown',
@@ -55,6 +59,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
         const player = players[playerId];
         if (player) {
           rosterData.push({
+            playerId,
             playerName: formatPlayerName(player),
             nflTeam: player.team || 'FA',
             position: player.position || 'Unknown',
@@ -71,6 +76,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
         const player = players[playerId];
         if (player) {
           rosterData.push({
+            playerId,
             playerName: formatPlayerName(player),
             nflTeam: player.team || 'FA',
             position: player.position || 'Unknown',
@@ -96,6 +102,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
         
         if (player) {
           transactionData.push({
+            playerId,
             week,
             fantasyTeam,
             playerName: formatPlayerName(player),
@@ -116,6 +123,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
         
         if (player) {
           transactionData.push({
+            playerId,
             week,
             fantasyTeam,
             playerName: formatPlayerName(player),
@@ -137,6 +145,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
       const fantasyTeam = getTeamName(user);
       
       draftData.push({
+        playerId: pick.player_id,
         round: pick.round || 'N/A',
         pick: pick.pick_no || 'N/A',
         fantasyTeam,
@@ -156,7 +165,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
           <span>Data Dashboard</span>
         </CardTitle>
         <CardDescription>
-          Preview all your league data in clean, organized tables before exporting
+          Preview all your league data in clean, organized tables before exporting. Click on salary values to edit them.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -186,6 +195,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                     <TableHead className="text-white font-semibold">Position</TableHead>
                     <TableHead className="text-white font-semibold">Fantasy Team</TableHead>
                     <TableHead className="text-white font-semibold">Status</TableHead>
+                    <TableHead className="text-white font-semibold">Fantasy Salary</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -207,6 +217,17 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                           {row.rosterStatus}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                        {salariesLoading ? (
+                          <div className="text-gray-400 text-xs">...</div>
+                        ) : (
+                          <EditableSalary
+                            playerId={row.playerId}
+                            currentSalary={salaries[row.playerId] || null}
+                            onSalaryUpdate={updateSalary}
+                          />
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -225,6 +246,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                     <TableHead className="text-white font-semibold">NFL Team</TableHead>
                     <TableHead className="text-white font-semibold">Position</TableHead>
                     <TableHead className="text-white font-semibold">Action</TableHead>
+                    <TableHead className="text-white font-semibold">Fantasy Salary</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -247,6 +269,17 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                           {row.action}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                        {salariesLoading ? (
+                          <div className="text-gray-400 text-xs">...</div>
+                        ) : (
+                          <EditableSalary
+                            playerId={row.playerId}
+                            currentSalary={salaries[row.playerId] || null}
+                            onSalaryUpdate={updateSalary}
+                          />
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -266,6 +299,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                     <TableHead className="text-white font-semibold">NFL Team</TableHead>
                     <TableHead className="text-white font-semibold">Position</TableHead>
                     <TableHead className="text-white font-semibold">Keeper</TableHead>
+                    <TableHead className="text-white font-semibold">Fantasy Salary</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -288,6 +322,17 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                         >
                           {row.isKeeper}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {salariesLoading ? (
+                          <div className="text-gray-400 text-xs">...</div>
+                        ) : (
+                          <EditableSalary
+                            playerId={row.playerId}
+                            currentSalary={salaries[row.playerId] || null}
+                            onSalaryUpdate={updateSalary}
+                          />
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
