@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -150,17 +151,17 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="glass border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center space-x-3">
-            <div className="bg-green-600 rounded-lg p-2">
+            <div className="bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl p-3 shadow-lg">
               <Trophy className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Sleeper Export Utility</h1>
-              <p className="text-gray-600">Export your fantasy football league data to CSV</p>
+              <h1 className="text-2xl font-bold text-white">Sleeper Export Utility</h1>
+              <p className="text-gray-400">Export your fantasy football league data to CSV</p>
             </div>
           </div>
         </div>
@@ -170,10 +171,10 @@ const Index = () => {
         {!leagueData ? (
           <div className="max-w-2xl mx-auto space-y-6">
             {/* League ID Input */}
-            <Card>
+            <Card className="fade-in">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Users className="w-5 h-5 text-green-600" />
+                <CardTitle className="flex items-center space-x-2 text-white">
+                  <Users className="w-5 h-5 text-emerald-400" />
                   <span>Enter League Information</span>
                 </CardTitle>
                 <CardDescription>
@@ -183,19 +184,18 @@ const Index = () => {
               <CardContent className="space-y-6">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="leagueId">League ID (Direct)</Label>
+                    <Label htmlFor="leagueId" className="text-white">League ID (Direct)</Label>
                     <div className="flex space-x-2 mt-1">
                       <Input
                         id="leagueId"
                         placeholder="e.g., 123456789"
                         value={leagueId}
                         onChange={(e) => setLeagueId(e.target.value)}
-                        className="flex-1"
+                        className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                       />
                       <Button 
                         onClick={handleLeagueSubmit} 
                         disabled={loading}
-                        className="bg-green-600 hover:bg-green-700"
                       >
                         {loading ? 'Loading...' : <ArrowRight className="w-4 h-4" />}
                       </Button>
@@ -203,20 +203,20 @@ const Index = () => {
                   </div>
 
                   <div className="flex items-center space-x-4">
-                    <Separator className="flex-1" />
-                    <span className="text-sm text-gray-500">or</span>
-                    <Separator className="flex-1" />
+                    <Separator className="flex-1 bg-white/20" />
+                    <span className="text-sm text-gray-400">or</span>
+                    <Separator className="flex-1 bg-white/20" />
                   </div>
 
                   <div>
-                    <Label htmlFor="username">Sleeper Username</Label>
+                    <Label htmlFor="username" className="text-white">Sleeper Username</Label>
                     <div className="flex space-x-2 mt-1">
                       <Input
                         id="username"
                         placeholder="e.g., your_username"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        className="flex-1"
+                        className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                       />
                       <Button 
                         onClick={handleUsernameSubmit} 
@@ -226,15 +226,15 @@ const Index = () => {
                         {loading ? 'Loading...' : <ArrowRight className="w-4 h-4" />}
                       </Button>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-400 mt-1">
                       We'll find your leagues and use the first one found
                     </p>
                   </div>
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-medium text-blue-900 mb-2">How to find your League ID:</h4>
-                  <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+                <div className="glass border border-blue-400/30 rounded-lg p-4 bg-blue-500/10">
+                  <h4 className="font-medium text-blue-300 mb-2">How to find your League ID:</h4>
+                  <ol className="text-sm text-blue-200 space-y-1 list-decimal list-inside">
                     <li>Open the Sleeper app or website</li>
                     <li>Go to your league</li>
                     <li>Check the URL - the League ID is the long number in the URL</li>
@@ -245,26 +245,26 @@ const Index = () => {
             </Card>
 
             {/* Features Preview */}
-            <Card>
+            <Card className="fade-in" style={{ animationDelay: '0.2s' }}>
               <CardHeader>
-                <CardTitle>What you'll get:</CardTitle>
+                <CardTitle className="text-white">What you'll get:</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="text-center p-4">
-                    <Users className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                    <h4 className="font-medium">Full Rosters</h4>
-                    <p className="text-sm text-gray-600">Complete team rosters with player details</p>
+                  <div className="glass p-4 rounded-xl text-center group hover:scale-105 transition-all duration-300">
+                    <Users className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+                    <h4 className="font-medium text-white">Full Rosters</h4>
+                    <p className="text-sm text-gray-400">Complete team rosters with player details</p>
                   </div>
-                  <div className="text-center p-4">
-                    <Trophy className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                    <h4 className="font-medium">Draft & Transactions</h4>
-                    <p className="text-sm text-gray-600">Draft picks and all league transactions</p>
+                  <div className="glass p-4 rounded-xl text-center group hover:scale-105 transition-all duration-300">
+                    <Trophy className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+                    <h4 className="font-medium text-white">Draft & Transactions</h4>
+                    <p className="text-sm text-gray-400">Draft picks and all league transactions</p>
                   </div>
-                  <div className="text-center p-4">
-                    <Download className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                    <h4 className="font-medium">CSV Export</h4>
-                    <p className="text-sm text-gray-600">Download data for spreadsheet analysis</p>
+                  <div className="glass p-4 rounded-xl text-center group hover:scale-105 transition-all duration-300">
+                    <Download className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+                    <h4 className="font-medium text-white">CSV Export</h4>
+                    <p className="text-sm text-gray-400">Download data for spreadsheet analysis</p>
                   </div>
                 </div>
               </CardContent>
