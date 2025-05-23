@@ -34,28 +34,34 @@ const ExportActions: React.FC<ExportActionsProps> = ({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <RosterExport 
-              league={league}
-              rosters={rosters}
-              userMap={userMap}
-              players={players}
-            />
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex justify-center">
+              <RosterExport 
+                league={league}
+                rosters={rosters}
+                userMap={userMap}
+                players={players}
+              />
+            </div>
             
-            <TransactionsExport 
-              league={league}
-              transactions={transactions}
-              rosterUserMap={rosterUserMap}
-              players={players}
-            />
+            <div className="flex justify-center">
+              <TransactionsExport 
+                league={league}
+                transactions={transactions}
+                rosterUserMap={rosterUserMap}
+                players={players}
+              />
+            </div>
             
-            <DraftExport 
-              league={league}
-              draftPicks={draftPicks}
-              rosterUserMap={rosterUserMap}
-              players={players}
-            />
+            <div className="flex justify-center">
+              <DraftExport 
+                league={league}
+                draftPicks={draftPicks}
+                rosterUserMap={rosterUserMap}
+                players={players}
+              />
+            </div>
           </div>
 
           <ExportInfo />
