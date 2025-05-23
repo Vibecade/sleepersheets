@@ -37,17 +37,16 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
   }, {});
 
   const exportRostersToCSV = () => {
-    console.log('Preparing Rosters CSV export...');
+    console.log('Preparing clean Rosters CSV export...');
     
     const csvData = [];
-    const headers = ['Team Name', 'Manager', 'Player Name', 'Position', 'NFL Team', 'Status'];
+    const headers = ['Player Name', 'NFL Team', 'Position', 'Fantasy Team', 'Roster Status'];
     
     csvData.push(headers);
 
     rosters.forEach((roster) => {
       const user = userMap[roster.owner_id];
-      const teamName = user?.metadata?.team_name || user?.display_name || 'Unknown Team';
-      const managerName = user?.display_name || 'Unknown Manager';
+      const fantasyTeam = user?.metadata?.team_name || user?.display_name || 'Unknown Team';
 
       // Add active players
       if (roster.players) {
@@ -55,11 +54,10 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
           const player = players[playerId];
           if (player) {
             csvData.push([
-              teamName,
-              managerName,
-              `${player.first_name || ''} ${player.last_name || ''}`.trim(),
-              player.position || 'Unknown',
+              `${player.first_name || ''} ${player.last_name || ''}`.trim() || 'Unknown Player',
               player.team || 'FA',
+              player.position || 'Unknown',
+              fantasyTeam,
               'Active'
             ]);
           }
@@ -72,11 +70,10 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
           const player = players[playerId];
           if (player) {
             csvData.push([
-              teamName,
-              managerName,
-              `${player.first_name || ''} ${player.last_name || ''}`.trim(),
-              player.position || 'Unknown',
+              `${player.first_name || ''} ${player.last_name || ''}`.trim() || 'Unknown Player',
               player.team || 'FA',
+              player.position || 'Unknown',
+              fantasyTeam,
               'Taxi Squad'
             ]);
           }
@@ -89,11 +86,10 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
           const player = players[playerId];
           if (player) {
             csvData.push([
-              teamName,
-              managerName,
-              `${player.first_name || ''} ${player.last_name || ''}`.trim(),
-              player.position || 'Unknown',
+              `${player.first_name || ''} ${player.last_name || ''}`.trim() || 'Unknown Player',
               player.team || 'FA',
+              player.position || 'Unknown',
+              fantasyTeam,
               'Reserve'
             ]);
           }
@@ -104,66 +100,57 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
     downloadCSV(csvData, `${league.name}_rosters_export.csv`);
     
     toast({
-      title: "Rosters Export Complete!",
-      description: "Your league roster data has been downloaded as CSV"
+      title: "Clean Rosters Export Complete!",
+      description: "Your league roster data has been downloaded as CSV with clean formatting"
     });
   };
 
   const exportTransactionsToCSV = () => {
-    console.log('Preparing Transactions CSV export...');
+    console.log('Preparing clean Transactions CSV export...');
     
     const csvData = [];
-    const headers = ['Week', 'Transaction Type', 'Status', 'Team', 'Manager', 'Player Name', 'Position', 'NFL Team', 'Action', 'Creator'];
+    const headers = ['Week', 'Fantasy Team', 'Player Name', 'NFL Team', 'Position', 'Action (Add/Drop/Trade)'];
     
     csvData.push(headers);
 
     transactions.forEach((transaction) => {
-      const creator = userMap[transaction.creator];
-      const creatorName = creator?.display_name || 'Unknown';
+      const week = transaction.leg || transaction.week || 'N/A';
 
-      // Process drops - fix type assertion
+      // Process drops
       if (transaction.drops) {
         Object.entries(transaction.drops as Record<string, string>).forEach(([playerId, rosterId]) => {
           const player = players[playerId];
           const user = rosterUserMap[rosterId];
-          const teamName = user?.metadata?.team_name || user?.display_name || 'Unknown Team';
+          const fantasyTeam = user?.metadata?.team_name || user?.display_name || 'Unknown Team';
           
           if (player) {
             csvData.push([
-              transaction.leg || transaction.week || 'N/A',
-              transaction.type || 'Unknown',
-              transaction.status || 'Unknown',
-              teamName,
-              user?.display_name || 'Unknown Manager',
-              `${player.first_name || ''} ${player.last_name || ''}`.trim(),
-              player.position || 'Unknown',
+              week,
+              fantasyTeam,
+              `${player.first_name || ''} ${player.last_name || ''}`.trim() || 'Unknown Player',
               player.team || 'FA',
-              'Dropped',
-              creatorName
+              player.position || 'Unknown',
+              'Drop'
             ]);
           }
         });
       }
 
-      // Process adds - fix type assertion
+      // Process adds
       if (transaction.adds) {
         Object.entries(transaction.adds as Record<string, string>).forEach(([playerId, rosterId]) => {
           const player = players[playerId];
           const user = rosterUserMap[rosterId];
-          const teamName = user?.metadata?.team_name || user?.display_name || 'Unknown Team';
+          const fantasyTeam = user?.metadata?.team_name || user?.display_name || 'Unknown Team';
           
           if (player) {
             csvData.push([
-              transaction.leg || transaction.week || 'N/A',
-              transaction.type || 'Unknown',
-              transaction.status || 'Unknown',
-              teamName,
-              user?.display_name || 'Unknown Manager',
-              `${player.first_name || ''} ${player.last_name || ''}`.trim(),
-              player.position || 'Unknown',
+              week,
+              fantasyTeam,
+              `${player.first_name || ''} ${player.last_name || ''}`.trim() || 'Unknown Player',
               player.team || 'FA',
-              'Added',
-              creatorName
+              player.position || 'Unknown',
+              'Add'
             ]);
           }
         });
@@ -173,16 +160,16 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
     downloadCSV(csvData, `${league.name}_transactions_export.csv`);
     
     toast({
-      title: "Transactions Export Complete!",
-      description: "Your league transaction data has been downloaded as CSV"
+      title: "Clean Transactions Export Complete!",
+      description: "Your league transaction data has been downloaded as CSV with clean formatting"
     });
   };
 
   const exportDraftToCSV = () => {
-    console.log('Preparing Draft CSV export...');
+    console.log('Preparing clean Draft CSV export...');
     
     const csvData = [];
-    const headers = ['Draft Type', 'Round', 'Pick', 'Team', 'Manager', 'Player Name', 'Position', 'NFL Team', 'Is Keeper'];
+    const headers = ['Round', 'Pick', 'Fantasy Team', 'Player Name', 'NFL Team', 'Position', 'Is Keeper'];
     
     csvData.push(headers);
 
@@ -190,17 +177,15 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
       picks.forEach((pick) => {
         const player = players[pick.player_id];
         const user = rosterUserMap[pick.roster_id];
-        const teamName = user?.metadata?.team_name || user?.display_name || 'Unknown Team';
+        const fantasyTeam = user?.metadata?.team_name || user?.display_name || 'Unknown Team';
         
         csvData.push([
-          draft.type || 'Unknown',
           pick.round || 'N/A',
           pick.pick_no || 'N/A',
-          teamName,
-          user?.display_name || 'Unknown Manager',
+          fantasyTeam,
           player ? `${player.first_name || ''} ${player.last_name || ''}`.trim() : 'Unknown Player',
-          player?.position || 'Unknown',
           player?.team || 'FA',
+          player?.position || 'Unknown',
           pick.is_keeper ? 'Yes' : 'No'
         ]);
       });
@@ -209,15 +194,22 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
     downloadCSV(csvData, `${league.name}_draft_export.csv`);
     
     toast({
-      title: "Draft Export Complete!",
-      description: "Your league draft data has been downloaded as CSV"
+      title: "Clean Draft Export Complete!",
+      description: "Your league draft data has been downloaded as CSV with clean formatting"
     });
   };
 
   const downloadCSV = (csvData, filename) => {
-    // Convert to CSV string
+    // Convert to CSV string with proper escaping
     const csvContent = csvData.map(row => 
-      row.map(field => `"${field}"`).join(',')
+      row.map(field => {
+        // Handle fields that contain commas, quotes, or newlines
+        const fieldStr = String(field || '');
+        if (fieldStr.includes(',') || fieldStr.includes('"') || fieldStr.includes('\n')) {
+          return `"${fieldStr.replace(/"/g, '""')}"`;
+        }
+        return fieldStr;
+      }).join(',')
     ).join('\n');
 
     // Create and download file
@@ -360,9 +352,9 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
       {/* Export Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Export Options</CardTitle>
+          <CardTitle>Clean Export Options</CardTitle>
           <CardDescription>
-            Download your league data in CSV format for analysis in Excel or Google Sheets
+            Download your league data in clean CSV format optimized for Google Sheets and Excel
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -371,8 +363,8 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
               <div className="space-y-3">
                 <div className="text-center">
                   <Users className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                  <h4 className="font-medium">Rosters Export</h4>
-                  <p className="text-sm text-gray-600 mb-3">All team rosters with player details</p>
+                  <h4 className="font-medium">Clean Rosters</h4>
+                  <p className="text-sm text-gray-600 mb-3">Normalized player data with clean headers</p>
                   <Button onClick={exportRostersToCSV} className="w-full bg-green-600 hover:bg-green-700">
                     <Download className="w-4 h-4 mr-2" />
                     Export Rosters
@@ -383,8 +375,8 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
               <div className="space-y-3">
                 <div className="text-center">
                   <ArrowUpDown className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                  <h4 className="font-medium">Transactions Export</h4>
-                  <p className="text-sm text-gray-600 mb-3">All adds, drops, and trades</p>
+                  <h4 className="font-medium">Clean Transactions</h4>
+                  <p className="text-sm text-gray-600 mb-3">Simplified add/drop data</p>
                   <Button 
                     onClick={exportTransactionsToCSV} 
                     disabled={transactions.length === 0}
@@ -399,8 +391,8 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
               <div className="space-y-3">
                 <div className="text-center">
                   <FileText className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                  <h4 className="font-medium">Draft Export</h4>
-                  <p className="text-sm text-gray-600 mb-3">Complete draft results</p>
+                  <h4 className="font-medium">Clean Draft</h4>
+                  <p className="text-sm text-gray-600 mb-3">Organized draft results</p>
                   <Button 
                     onClick={exportDraftToCSV} 
                     disabled={draftPicks.length === 0}
@@ -413,12 +405,13 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-medium text-blue-900 mb-2">CSV Export includes:</h4>
-              <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-                <li><strong>Rosters:</strong> Team names, manager info, all players with positions and NFL teams</li>
-                <li><strong>Transactions:</strong> Weekly adds/drops, trades, waiver claims with details</li>
-                <li><strong>Draft:</strong> Complete draft results with pick order and keeper status</li>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h4 className="font-medium text-green-900 mb-2">Clean CSV Format includes:</h4>
+              <ul className="text-sm text-green-800 space-y-1 list-disc list-inside">
+                <li><strong>Rosters:</strong> Player Name, NFL Team, Position, Fantasy Team, Roster Status</li>
+                <li><strong>Transactions:</strong> Week, Fantasy Team, Player Name, NFL Team, Position, Action</li>
+                <li><strong>Draft:</strong> Round, Pick, Fantasy Team, Player Name, NFL Team, Position, Is Keeper</li>
+                <li><strong>No IDs or raw data:</strong> All columns use human-readable names and values</li>
               </ul>
             </div>
           </div>
