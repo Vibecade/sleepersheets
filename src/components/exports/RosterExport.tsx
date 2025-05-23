@@ -4,6 +4,7 @@ import { Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { downloadCSV, formatPlayerName } from '@/utils/csvExport';
 import { getTeamName } from '@/utils/leagueDataUtils';
+import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import ExportButton from './ExportButton';
 
 interface RosterExportProps {
@@ -20,12 +21,13 @@ const RosterExport: React.FC<RosterExportProps> = ({
   players
 }) => {
   const { toast } = useToast();
+  const { salaries } = usePlayerSalaries(league.league_id);
 
   const exportRostersToCSV = () => {
     console.log('Preparing clean Rosters CSV export...');
     
     const csvData = [];
-    const headers = ['Player Name', 'NFL Team', 'Position', 'Fantasy Team', 'Roster Status'];
+    const headers = ['Player Name', 'NFL Team', 'Position', 'Fantasy Team', 'Roster Status', 'Fantasy Salary'];
     
     csvData.push(headers);
 
@@ -38,12 +40,14 @@ const RosterExport: React.FC<RosterExportProps> = ({
         roster.players.forEach((playerId: string) => {
           const player = players[playerId];
           if (player) {
+            const salary = salaries[playerId];
             csvData.push([
               formatPlayerName(player),
               player.team || 'FA',
               player.position || 'Unknown',
               fantasyTeam,
-              'Active'
+              'Active',
+              salary ? `$${salary.toLocaleString()}` : ''
             ]);
           }
         });
@@ -54,12 +58,14 @@ const RosterExport: React.FC<RosterExportProps> = ({
         roster.taxi.forEach((playerId: string) => {
           const player = players[playerId];
           if (player) {
+            const salary = salaries[playerId];
             csvData.push([
               formatPlayerName(player),
               player.team || 'FA',
               player.position || 'Unknown',
               fantasyTeam,
-              'Taxi Squad'
+              'Taxi Squad',
+              salary ? `$${salary.toLocaleString()}` : ''
             ]);
           }
         });
@@ -70,12 +76,14 @@ const RosterExport: React.FC<RosterExportProps> = ({
         roster.reserve.forEach((playerId: string) => {
           const player = players[playerId];
           if (player) {
+            const salary = salaries[playerId];
             csvData.push([
               formatPlayerName(player),
               player.team || 'FA',
               player.position || 'Unknown',
               fantasyTeam,
-              'Reserve'
+              'Reserve',
+              salary ? `$${salary.toLocaleString()}` : ''
             ]);
           }
         });
@@ -86,7 +94,7 @@ const RosterExport: React.FC<RosterExportProps> = ({
     
     toast({
       title: "Clean Rosters Export Complete!",
-      description: "Your league roster data has been downloaded as CSV with clean formatting"
+      description: "Your league roster data has been downloaded as CSV with clean formatting and fantasy salaries"
     });
   };
 
@@ -95,7 +103,7 @@ const RosterExport: React.FC<RosterExportProps> = ({
       onClick={exportRostersToCSV}
       icon={Users}
       title="Export Rosters"
-      description="Normalized player data with clean headers"
+      description="Normalized player data with clean headers and fantasy salaries"
       colorClass="text-green-600"
       hoverColorClass="hover:bg-green-700"
     />

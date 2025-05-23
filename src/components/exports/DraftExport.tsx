@@ -4,6 +4,7 @@ import { FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { downloadCSV, formatPlayerName } from '@/utils/csvExport';
 import { getTeamName } from '@/utils/leagueDataUtils';
+import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import ExportButton from './ExportButton';
 
 interface DraftExportProps {
@@ -20,12 +21,13 @@ const DraftExport: React.FC<DraftExportProps> = ({
   players
 }) => {
   const { toast } = useToast();
+  const { salaries } = usePlayerSalaries(league.league_id);
 
   const exportDraftToCSV = () => {
     console.log('Preparing clean Draft CSV export...');
     
     const csvData = [];
-    const headers = ['Round', 'Pick', 'Fantasy Team', 'Player Name', 'NFL Team', 'Position', 'Is Keeper'];
+    const headers = ['Round', 'Pick', 'Fantasy Team', 'Player Name', 'NFL Team', 'Position', 'Is Keeper', 'Fantasy Salary'];
     
     csvData.push(headers);
 
@@ -34,6 +36,7 @@ const DraftExport: React.FC<DraftExportProps> = ({
         const player = players[pick.player_id];
         const user = rosterUserMap[pick.roster_id];
         const fantasyTeam = getTeamName(user);
+        const salary = salaries[pick.player_id];
         
         csvData.push([
           pick.round || 'N/A',
@@ -42,7 +45,8 @@ const DraftExport: React.FC<DraftExportProps> = ({
           player ? formatPlayerName(player) : 'Unknown Player',
           player?.team || 'FA',
           player?.position || 'Unknown',
-          pick.is_keeper ? 'Yes' : 'No'
+          pick.is_keeper ? 'Yes' : 'No',
+          salary ? `$${salary.toLocaleString()}` : ''
         ]);
       });
     });
@@ -51,7 +55,7 @@ const DraftExport: React.FC<DraftExportProps> = ({
     
     toast({
       title: "Clean Draft Export Complete!",
-      description: "Your league draft data has been downloaded as CSV with clean formatting"
+      description: "Your league draft data has been downloaded as CSV with clean formatting and fantasy salaries"
     });
   };
 
@@ -61,7 +65,7 @@ const DraftExport: React.FC<DraftExportProps> = ({
       disabled={draftPicks.length === 0}
       icon={FileText}
       title="Export Draft"
-      description="Organized draft results"
+      description="Organized draft results with fantasy salaries"
       colorClass="text-purple-600"
       hoverColorClass="hover:bg-purple-700"
     />
