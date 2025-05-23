@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -165,16 +164,6 @@ const Index = () => {
               <div>
                 <h1 className="text-4xl font-bold gradient-text mb-2">SleeperSheets</h1>
                 <p className="text-gray-300 text-lg">Transform your fantasy football data into actionable insights</p>
-                <div className="flex items-center space-x-2 mt-2">
-                  <Badge variant="outline" className="gradient-border">
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    Advanced Analytics
-                  </Badge>
-                  <Badge variant="outline" className="gradient-border">
-                    <Star className="w-3 h-3 mr-1" />
-                    Pro Features
-                  </Badge>
-                </div>
               </div>
             </div>
             <Link to="/how-to">
