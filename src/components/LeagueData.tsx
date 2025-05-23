@@ -121,9 +121,9 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
       const creator = userMap[transaction.creator];
       const creatorName = creator?.display_name || 'Unknown';
 
-      // Process drops
+      // Process drops - fix type assertion
       if (transaction.drops) {
-        Object.entries(transaction.drops).forEach(([playerId, rosterId]) => {
+        Object.entries(transaction.drops as Record<string, string>).forEach(([playerId, rosterId]) => {
           const player = players[playerId];
           const user = rosterUserMap[rosterId];
           const teamName = user?.metadata?.team_name || user?.display_name || 'Unknown Team';
@@ -145,9 +145,9 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
         });
       }
 
-      // Process adds
+      // Process adds - fix type assertion
       if (transaction.adds) {
-        Object.entries(transaction.adds).forEach(([playerId, rosterId]) => {
+        Object.entries(transaction.adds as Record<string, string>).forEach(([playerId, rosterId]) => {
           const player = players[playerId];
           const user = rosterUserMap[rosterId];
           const teamName = user?.metadata?.team_name || user?.display_name || 'Unknown Team';
