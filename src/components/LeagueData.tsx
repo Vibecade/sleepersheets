@@ -2,6 +2,7 @@
 import React from 'react';
 import LeagueHeader from './LeagueHeader';
 import TeamRosters from './TeamRosters';
+import DataDashboard from './DataDashboard';
 import ExportActions from './ExportActions';
 import { createUserMap, createRosterUserMap } from '@/utils/leagueDataUtils';
 
@@ -45,6 +46,18 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
           <TeamRosters 
             rosters={rosters}
             userMap={userMap}
+          />
+        </div>
+
+        <div className="slide-up" style={{ animationDelay: '0.3s' }}>
+          <DataDashboard
+            league={league}
+            rosters={rosters}
+            userMap={userMap}
+            rosterUserMap={rosterUserMap}
+            players={players}
+            transactions={transactions}
+            draftPicks={draftPicks}
           />
         </div>
 
