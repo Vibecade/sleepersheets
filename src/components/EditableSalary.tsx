@@ -49,7 +49,7 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
   };
 
   const formatDisplayValue = (salary: number | null) => {
-    if (salary === null || salary === undefined) return '-';
+    if (salary === null || salary === undefined) return 'Click to edit';
     return `$${salary.toLocaleString()}`;
   };
 
@@ -63,7 +63,7 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
         onKeyDown={handleKeyPress}
         placeholder="Enter salary"
         disabled={isSaving}
-        className="w-24 h-8 text-xs"
+        className="w-28 h-8 text-xs bg-white text-black border-2 border-blue-400"
         autoFocus
       />
     );
@@ -72,10 +72,10 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
   return (
     <button
       onClick={() => setIsEditing(true)}
-      className="text-white hover:text-emerald-300 transition-colors cursor-pointer text-xs"
+      className="text-emerald-300 hover:text-emerald-100 transition-colors cursor-pointer text-xs p-1 border border-transparent hover:border-emerald-400/50 rounded min-w-[100px] text-left"
       disabled={isSaving}
     >
-      {isSaving ? '...' : formatDisplayValue(currentSalary)}
+      {isSaving ? 'Saving...' : formatDisplayValue(currentSalary)}
     </button>
   );
 };

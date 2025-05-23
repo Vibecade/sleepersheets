@@ -17,6 +17,7 @@ export const usePlayerSalaries = (leagueId: string) => {
   useEffect(() => {
     const loadSalaries = async () => {
       try {
+        console.log('Loading salaries for league:', leagueId);
         const { data, error } = await supabase
           .from('player_salaries')
           .select('player_id, salary')
@@ -27,6 +28,7 @@ export const usePlayerSalaries = (leagueId: string) => {
           return;
         }
 
+        console.log('Loaded salary data:', data);
         const salaryMap: Record<string, number | null> = {};
         data?.forEach((item) => {
           salaryMap[item.player_id] = item.salary;
@@ -47,6 +49,7 @@ export const usePlayerSalaries = (leagueId: string) => {
   // Update salary in database
   const updateSalary = async (playerId: string, salary: number | null) => {
     try {
+      console.log('Updating salary for player:', playerId, 'salary:', salary);
       const { error } = await supabase
         .from('player_salaries')
         .upsert({
@@ -69,6 +72,10 @@ export const usePlayerSalaries = (leagueId: string) => {
       }
 
       setSalaries(prev => ({ ...prev, [playerId]: salary }));
+      toast({
+        title: "Success",
+        description: "Salary saved successfully",
+      });
       return true;
     } catch (error) {
       console.error('Error updating salary:', error);
