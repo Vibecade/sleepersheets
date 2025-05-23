@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Download, Users, Trophy, ArrowRight } from 'lucide-react';
+import { Download, Users, Trophy, ArrowRight, Sparkles, Star } from 'lucide-react';
 import LeagueData from '@/components/LeagueData';
 
 const Index = () => {
@@ -152,119 +151,160 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <div className="glass border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl p-3 shadow-lg">
-              <Trophy className="w-6 h-6 text-white" />
+      {/* Enhanced Header */}
+      <div className="glass-header border-b border-white/10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 animate-pulse"></div>
+        <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
+          <div className="flex items-center space-x-4">
+            <div className="bg-gradient-to-br from-emerald-400 via-blue-500 to-purple-600 rounded-2xl p-4 shadow-2xl pulse-glow">
+              <Trophy className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Sleeper Export Utility</h1>
-              <p className="text-gray-400">Export your fantasy football league data to CSV</p>
+              <h1 className="text-4xl font-bold gradient-text mb-2">Sleeper Export Utility</h1>
+              <p className="text-gray-300 text-lg">Transform your fantasy football data into actionable insights</p>
+              <div className="flex items-center space-x-2 mt-2">
+                <Badge variant="outline" className="gradient-border">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Advanced Analytics
+                </Badge>
+                <Badge variant="outline" className="gradient-border">
+                  <Star className="w-3 h-3 mr-1" />
+                  Pro Features
+                </Badge>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-12">
         {!leagueData ? (
-          <div className="max-w-2xl mx-auto space-y-6">
-            {/* League ID Input */}
-            <Card className="fade-in">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-white">
-                  <Users className="w-5 h-5 text-emerald-400" />
-                  <span>Enter League Information</span>
+          <div className="max-w-2xl mx-auto space-y-8">
+            {/* Enhanced League ID Input */}
+            <Card className="fade-in hover-lift gradient-border">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="flex items-center justify-center space-x-3 text-white text-2xl">
+                  <div className="bg-gradient-to-r from-blue-500 to-emerald-500 rounded-xl p-2">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                  <span>Connect Your League</span>
                 </CardTitle>
-                <CardDescription>
-                  Enter your Sleeper League ID or username to get started
+                <CardDescription className="text-gray-300 text-lg">
+                  Enter your Sleeper League ID or username to unlock powerful analytics
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="leagueId" className="text-white">League ID (Direct)</Label>
-                    <div className="flex space-x-2 mt-1">
+              <CardContent className="space-y-8">
+                <div className="space-y-6">
+                  <div className="group">
+                    <Label htmlFor="leagueId" className="text-white text-sm font-semibold mb-3 block">
+                      League ID (Direct Access)
+                    </Label>
+                    <div className="flex space-x-3">
                       <Input
                         id="leagueId"
                         placeholder="e.g., 123456789"
                         value={leagueId}
                         onChange={(e) => setLeagueId(e.target.value)}
-                        className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                        className="flex-1 h-12 text-lg group-hover:border-emerald-400/50 transition-all duration-300"
                       />
                       <Button 
                         onClick={handleLeagueSubmit} 
                         disabled={loading}
+                        size="lg"
+                        className="px-6"
                       >
-                        {loading ? 'Loading...' : <ArrowRight className="w-4 h-4" />}
+                        {loading ? (
+                          <div className="shimmer w-4 h-4 rounded"></div>
+                        ) : (
+                          <ArrowRight className="w-5 h-5" />
+                        )}
                       </Button>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-4">
-                    <Separator className="flex-1 bg-white/20" />
-                    <span className="text-sm text-gray-400">or</span>
-                    <Separator className="flex-1 bg-white/20" />
+                    <Separator className="flex-1 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+                    <span className="text-sm text-gray-400 font-medium px-4 py-2 glass rounded-full">or</span>
+                    <Separator className="flex-1 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
                   </div>
 
-                  <div>
-                    <Label htmlFor="username" className="text-white">Sleeper Username</Label>
-                    <div className="flex space-x-2 mt-1">
+                  <div className="group">
+                    <Label htmlFor="username" className="text-white text-sm font-semibold mb-3 block">
+                      Sleeper Username (Auto-Discovery)
+                    </Label>
+                    <div className="flex space-x-3">
                       <Input
                         id="username"
                         placeholder="e.g., your_username"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                        className="flex-1 h-12 text-lg group-hover:border-blue-400/50 transition-all duration-300"
                       />
                       <Button 
                         onClick={handleUsernameSubmit} 
                         disabled={loading}
                         variant="outline"
+                        size="lg"
+                        className="px-6"
                       >
-                        {loading ? 'Loading...' : <ArrowRight className="w-4 h-4" />}
+                        {loading ? (
+                          <div className="shimmer w-4 h-4 rounded"></div>
+                        ) : (
+                          <ArrowRight className="w-5 h-5" />
+                        )}
                       </Button>
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">
-                      We'll find your leagues and use the first one found
+                    <p className="text-xs text-gray-400 mt-2 italic">
+                      We'll automatically find and load your most recent league
                     </p>
                   </div>
                 </div>
 
-                <div className="glass border border-blue-400/30 rounded-lg p-4 bg-blue-500/10">
-                  <h4 className="font-medium text-blue-300 mb-2">How to find your League ID:</h4>
-                  <ol className="text-sm text-blue-200 space-y-1 list-decimal list-inside">
+                <div className="glass border border-blue-400/30 rounded-xl p-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 hover-lift">
+                  <h4 className="font-semibold text-blue-300 mb-3 flex items-center">
+                    <Star className="w-4 h-4 mr-2" />
+                    How to find your League ID:
+                  </h4>
+                  <ol className="text-sm text-blue-200 space-y-2 list-decimal list-inside leading-relaxed">
                     <li>Open the Sleeper app or website</li>
-                    <li>Go to your league</li>
-                    <li>Check the URL - the League ID is the long number in the URL</li>
-                    <li>Example: sleeper.app/leagues/<strong>123456789</strong>/team</li>
+                    <li>Navigate to your league</li>
+                    <li>Look at the URL - the League ID is the long number</li>
+                    <li>Example: sleeper.app/leagues/<span className="font-mono bg-blue-600/30 px-2 py-1 rounded">123456789</span>/team</li>
                   </ol>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Features Preview */}
-            <Card className="fade-in" style={{ animationDelay: '0.2s' }}>
-              <CardHeader>
-                <CardTitle className="text-white">What you'll get:</CardTitle>
+            {/* Enhanced Features Preview */}
+            <Card className="fade-in hover-lift" style={{ animationDelay: '0.2s' }}>
+              <CardHeader className="text-center">
+                <CardTitle className="text-white text-2xl mb-2">Unlock Premium Features</CardTitle>
+                <CardDescription className="text-gray-300">
+                  Everything you need for comprehensive league analysis
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="glass p-4 rounded-xl text-center group hover:scale-105 transition-all duration-300">
-                    <Users className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-                    <h4 className="font-medium text-white">Full Rosters</h4>
-                    <p className="text-sm text-gray-400">Complete team rosters with player details</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="glass p-6 rounded-2xl text-center group hover-lift cursor-pointer gradient-border">
+                    <div className="bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl p-4 w-16 h-16 mx-auto mb-4 pulse-glow">
+                      <Users className="w-8 h-8 text-white" />
+                    </div>
+                    <h4 className="font-semibold text-white text-lg mb-2">Complete Rosters</h4>
+                    <p className="text-sm text-gray-400 leading-relaxed">Detailed team compositions with player statistics and performance metrics</p>
                   </div>
-                  <div className="glass p-4 rounded-xl text-center group hover:scale-105 transition-all duration-300">
-                    <Trophy className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-                    <h4 className="font-medium text-white">Draft & Transactions</h4>
-                    <p className="text-sm text-gray-400">Draft picks and all league transactions</p>
+                  <div className="glass p-6 rounded-2xl text-center group hover-lift cursor-pointer gradient-border">
+                    <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl p-4 w-16 h-16 mx-auto mb-4 pulse-glow">
+                      <Trophy className="w-8 h-8 text-white" />
+                    </div>
+                    <h4 className="font-semibold text-white text-lg mb-2">Draft Analytics</h4>
+                    <p className="text-sm text-gray-400 leading-relaxed">Complete draft history and transaction logs for strategic insights</p>
                   </div>
-                  <div className="glass p-4 rounded-xl text-center group hover:scale-105 transition-all duration-300">
-                    <Download className="w-8 h-8 text-purple-400 mx-auto mb-2" />
-                    <h4 className="font-medium text-white">CSV Export</h4>
-                    <p className="text-sm text-gray-400">Download data for spreadsheet analysis</p>
+                  <div className="glass p-6 rounded-2xl text-center group hover-lift cursor-pointer gradient-border">
+                    <div className="bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl p-4 w-16 h-16 mx-auto mb-4 pulse-glow">
+                      <Download className="w-8 h-8 text-white" />
+                    </div>
+                    <h4 className="font-semibold text-white text-lg mb-2">Export & Analysis</h4>
+                    <p className="text-sm text-gray-400 leading-relaxed">Professional CSV exports ready for spreadsheet analysis and reporting</p>
                   </div>
                 </div>
               </CardContent>
