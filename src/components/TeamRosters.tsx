@@ -32,54 +32,54 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap }) => {
             const teamName = getTeamName(user);
             
             return (
-              <div key={roster.roster_id} className="border rounded-lg p-4 space-y-3">
+              <div key={roster.roster_id} className="glass-card rounded-lg p-4 space-y-3 hover-lift">
                 <div className="flex items-center space-x-3">
                   <Avatar className="w-10 h-10">
                     <AvatarImage 
                       src={user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user.avatar}` : undefined} 
                     />
-                    <AvatarFallback>
+                    <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-green-600 text-white font-semibold">
                       {teamName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium truncate">{teamName}</h4>
-                    <p className="text-sm text-gray-600 truncate">{user?.display_name || 'Unknown Manager'}</p>
+                    <h4 className="font-semibold text-white truncate">{teamName}</h4>
+                    <p className="text-sm text-gray-300 truncate">{user?.display_name || 'Unknown Manager'}</p>
                   </div>
                 </div>
                 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Record:</span>
-                    <Badge variant="outline">
+                    <span className="text-sm text-gray-300">Record:</span>
+                    <Badge variant="outline" className="text-white border-white/20">
                       {roster.settings?.wins || 0}-{roster.settings?.losses || 0}-{roster.settings?.ties || 0}
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Points:</span>
-                    <span className="font-medium">{roster.settings?.fpts?.toFixed(1) || '0.0'}</span>
+                    <span className="text-sm text-gray-300">Points:</span>
+                    <span className="font-medium text-emerald-400">{roster.settings?.fpts?.toFixed(1) || '0.0'}</span>
                   </div>
-                  <Separator />
+                  <Separator className="bg-white/10" />
                   <div className="space-y-1">
                     <div className="flex justify-between text-sm">
-                      <span>Active:</span>
-                      <span className="font-medium">{playerCounts.active}</span>
+                      <span className="text-gray-300">Active:</span>
+                      <span className="font-medium text-white">{playerCounts.active}</span>
                     </div>
                     {playerCounts.taxi > 0 && (
                       <div className="flex justify-between text-sm">
-                        <span>Taxi:</span>
-                        <span className="font-medium">{playerCounts.taxi}</span>
+                        <span className="text-gray-300">Taxi:</span>
+                        <span className="font-medium text-white">{playerCounts.taxi}</span>
                       </div>
                     )}
                     {playerCounts.reserve > 0 && (
                       <div className="flex justify-between text-sm">
-                        <span>Reserve:</span>
-                        <span className="font-medium">{playerCounts.reserve}</span>
+                        <span className="text-gray-300">Reserve:</span>
+                        <span className="font-medium text-white">{playerCounts.reserve}</span>
                       </div>
                     )}
-                    <div className="flex justify-between text-sm font-medium border-t pt-1">
-                      <span>Total:</span>
-                      <span>{playerCounts.total}</span>
+                    <div className="flex justify-between text-sm font-medium border-t border-white/10 pt-1">
+                      <span className="text-gray-200">Total:</span>
+                      <span className="text-emerald-400">{playerCounts.total}</span>
                     </div>
                   </div>
                 </div>
