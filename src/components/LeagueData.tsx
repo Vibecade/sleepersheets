@@ -30,28 +30,36 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
   const draftCount = drafts.length;
 
   return (
-    <div className="space-y-6">
-      <LeagueHeader 
-        league={league}
-        transactionCount={transactionCount}
-        draftPickCount={draftPickCount}
-        draftCount={draftCount}
-      />
+    <div className="main-container">
+      <div className="space-y-8">
+        <div className="slide-up">
+          <LeagueHeader 
+            league={league}
+            transactionCount={transactionCount}
+            draftPickCount={draftPickCount}
+            draftCount={draftCount}
+          />
+        </div>
 
-      <TeamRosters 
-        rosters={rosters}
-        userMap={userMap}
-      />
+        <div className="slide-up" style={{ animationDelay: '0.2s' }}>
+          <TeamRosters 
+            rosters={rosters}
+            userMap={userMap}
+          />
+        </div>
 
-      <ExportActions
-        league={league}
-        rosters={rosters}
-        userMap={userMap}
-        rosterUserMap={rosterUserMap}
-        players={players}
-        transactions={transactions}
-        draftPicks={draftPicks}
-      />
+        <div className="slide-up" style={{ animationDelay: '0.4s' }}>
+          <ExportActions
+            league={league}
+            rosters={rosters}
+            userMap={userMap}
+            rosterUserMap={rosterUserMap}
+            players={players}
+            transactions={transactions}
+            draftPicks={draftPicks}
+          />
+        </div>
+      </div>
     </div>
   );
 };
