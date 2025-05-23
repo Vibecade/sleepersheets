@@ -205,8 +205,8 @@ const ExportActions: React.FC<ExportActionsProps> = ({
             <div className="space-y-3">
               <div className="text-center">
                 <Users className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                <h4 className="font-medium">Clean Rosters</h4>
-                <p className="text-sm text-gray-600 mb-3">Normalized player data with clean headers</p>
+                <h4 className="font-medium text-white">Clean Rosters</h4>
+                <p className="text-sm text-gray-300 mb-3">Normalized player data with clean headers</p>
                 <Button onClick={exportRostersToCSV} className="w-full bg-green-600 hover:bg-green-700">
                   <Download className="w-4 h-4 mr-2" />
                   Export Rosters
@@ -217,8 +217,8 @@ const ExportActions: React.FC<ExportActionsProps> = ({
             <div className="space-y-3">
               <div className="text-center">
                 <ArrowUpDown className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                <h4 className="font-medium">Clean Transactions</h4>
-                <p className="text-sm text-gray-600 mb-3">Simplified add/drop data</p>
+                <h4 className="font-medium text-white">Clean Transactions</h4>
+                <p className="text-sm text-gray-300 mb-3">Simplified add/drop data</p>
                 <Button 
                   onClick={exportTransactionsToCSV} 
                   disabled={transactions.length === 0}
@@ -233,8 +233,8 @@ const ExportActions: React.FC<ExportActionsProps> = ({
             <div className="space-y-3">
               <div className="text-center">
                 <FileText className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                <h4 className="font-medium">Clean Draft</h4>
-                <p className="text-sm text-gray-600 mb-3">Organized draft results</p>
+                <h4 className="font-medium text-white">Clean Draft</h4>
+                <p className="text-sm text-gray-300 mb-3">Organized draft results</p>
                 <Button 
                   onClick={exportDraftToCSV} 
                   disabled={draftPicks.length === 0}
@@ -247,9 +247,9 @@ const ExportActions: React.FC<ExportActionsProps> = ({
             </div>
           </div>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h4 className="font-medium text-green-900 mb-2">Clean CSV Format includes:</h4>
-            <ul className="text-sm text-green-800 space-y-1 list-disc list-inside">
+          <div className="glass border border-emerald-400/30 rounded-lg p-4 bg-gradient-to-r from-emerald-500/10 to-green-500/10">
+            <h4 className="font-medium text-emerald-300 mb-2">Clean CSV Format includes:</h4>
+            <ul className="text-sm text-emerald-200 space-y-1 list-disc list-inside">
               <li><strong>Rosters:</strong> Player Name, NFL Team, Position, Fantasy Team, Roster Status</li>
               <li><strong>Transactions:</strong> Week, Fantasy Team, Player Name, NFL Team, Position, Action</li>
               <li><strong>Draft:</strong> Round, Pick, Fantasy Team, Player Name, NFL Team, Position, Is Keeper</li>
