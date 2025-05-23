@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,62 +31,41 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
 }) => {
   const { salaries, updateSalary, loading: salariesLoading } = usePlayerSalaries(league.league_id);
 
-  // Prepare roster data
+  // Prepare roster data with duplicate removal
   const rosterData = [];
+  const playerRosterMap = new Map(); // Track players to avoid duplicates
+  
   rosters.forEach((roster) => {
     const user = userMap[roster.owner_id];
     const fantasyTeam = getTeamName(user);
 
-    // Add active players
-    if (roster.players) {
-      roster.players.forEach((playerId: string) => {
-        const player = players[playerId];
-        if (player) {
-          rosterData.push({
-            playerId,
-            playerName: formatPlayerName(player),
-            nflTeam: player.team || 'FA',
-            position: player.position || 'Unknown',
-            fantasyTeam,
-            rosterStatus: 'Active'
-          });
-        }
-      });
-    }
+    // Priority order: Active > Reserve > Taxi Squad
+    const playerCategories = [
+      { players: roster.players || [], status: 'Active' },
+      { players: roster.reserve || [], status: 'Reserve' },
+      { players: roster.taxi || [], status: 'Taxi Squad' }
+    ];
 
-    // Add taxi squad players
-    if (roster.taxi) {
-      roster.taxi.forEach((playerId: string) => {
-        const player = players[playerId];
-        if (player) {
-          rosterData.push({
-            playerId,
-            playerName: formatPlayerName(player),
-            nflTeam: player.team || 'FA',
-            position: player.position || 'Unknown',
-            fantasyTeam,
-            rosterStatus: 'Taxi Squad'
-          });
+    playerCategories.forEach(({ players: playerList, status }) => {
+      playerList.forEach((playerId: string) => {
+        // Only add player if not already added (first occurrence wins by priority)
+        if (!playerRosterMap.has(playerId)) {
+          const player = players[playerId];
+          if (player) {
+            const playerData = {
+              playerId,
+              playerName: formatPlayerName(player),
+              nflTeam: player.team || 'FA',
+              position: player.position || 'Unknown',
+              fantasyTeam,
+              rosterStatus: status
+            };
+            rosterData.push(playerData);
+            playerRosterMap.set(playerId, playerData);
+          }
         }
       });
-    }
-
-    // Add reserve players
-    if (roster.reserve) {
-      roster.reserve.forEach((playerId: string) => {
-        const player = players[playerId];
-        if (player) {
-          rosterData.push({
-            playerId,
-            playerName: formatPlayerName(player),
-            nflTeam: player.team || 'FA',
-            position: player.position || 'Unknown',
-            fantasyTeam,
-            rosterStatus: 'Reserve'
-          });
-        }
-      });
-    }
+    });
   });
 
   // Prepare transaction data
@@ -157,6 +137,9 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
     });
   });
 
+  console.log('Current salaries in DataDashboard:', salaries);
+  console.log('Salaries loading status:', salariesLoading);
+
   return (
     <Card>
       <CardHeader>
@@ -219,7 +202,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                       </TableCell>
                       <TableCell>
                         {salariesLoading ? (
-                          <div className="text-gray-400 text-xs">...</div>
+                          <div className="text-gray-400 text-xs">Loading...</div>
                         ) : (
                           <EditableSalary
                             playerId={row.playerId}
@@ -271,7 +254,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                       </TableCell>
                       <TableCell>
                         {salariesLoading ? (
-                          <div className="text-gray-400 text-xs">...</div>
+                          <div className="text-gray-400 text-xs">Loading...</div>
                         ) : (
                           <EditableSalary
                             playerId={row.playerId}
@@ -325,7 +308,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                       </TableCell>
                       <TableCell>
                         {salariesLoading ? (
-                          <div className="text-gray-400 text-xs">...</div>
+                          <div className="text-gray-400 text-xs">Loading...</div>
                         ) : (
                           <EditableSalary
                             playerId={row.playerId}

@@ -25,6 +25,7 @@ const DraftExport: React.FC<DraftExportProps> = ({
 
   const exportDraftToCSV = () => {
     console.log('Preparing clean Draft CSV export...');
+    console.log('Current salaries for draft export:', salaries);
     
     const csvData = [];
     const headers = ['Round', 'Pick', 'Fantasy Team', 'Player Name', 'NFL Team', 'Position', 'Is Keeper', 'Fantasy Salary'];
@@ -37,6 +38,8 @@ const DraftExport: React.FC<DraftExportProps> = ({
         const user = rosterUserMap[pick.roster_id];
         const fantasyTeam = getTeamName(user);
         const salary = salaries[pick.player_id];
+        
+        console.log(`Draft Pick - Player ${player ? formatPlayerName(player) : 'Unknown'} (${pick.player_id}) salary:`, salary);
         
         csvData.push([
           pick.round || 'N/A',
@@ -51,6 +54,7 @@ const DraftExport: React.FC<DraftExportProps> = ({
       });
     });
 
+    console.log('Final Draft CSV data:', csvData);
     downloadCSV(csvData, `${league.name}_draft_export.csv`);
     
     toast({

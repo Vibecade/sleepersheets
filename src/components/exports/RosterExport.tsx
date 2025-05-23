@@ -25,71 +25,52 @@ const RosterExport: React.FC<RosterExportProps> = ({
 
   const exportRostersToCSV = () => {
     console.log('Preparing clean Rosters CSV export...');
+    console.log('Current salaries for export:', salaries);
     
     const csvData = [];
     const headers = ['Player Name', 'NFL Team', 'Position', 'Fantasy Team', 'Roster Status', 'Fantasy Salary'];
     
     csvData.push(headers);
 
+    const playerRosterMap = new Map(); // Track players to avoid duplicates
+
     rosters.forEach((roster) => {
       const user = userMap[roster.owner_id];
       const fantasyTeam = getTeamName(user);
 
-      // Add active players
-      if (roster.players) {
-        roster.players.forEach((playerId: string) => {
-          const player = players[playerId];
-          if (player) {
-            const salary = salaries[playerId];
-            csvData.push([
-              formatPlayerName(player),
-              player.team || 'FA',
-              player.position || 'Unknown',
-              fantasyTeam,
-              'Active',
-              salary ? `$${salary.toLocaleString()}` : ''
-            ]);
-          }
-        });
-      }
+      // Priority order: Active > Reserve > Taxi Squad
+      const playerCategories = [
+        { players: roster.players || [], status: 'Active' },
+        { players: roster.reserve || [], status: 'Reserve' },
+        { players: roster.taxi || [], status: 'Taxi Squad' }
+      ];
 
-      // Add taxi squad players
-      if (roster.taxi) {
-        roster.taxi.forEach((playerId: string) => {
-          const player = players[playerId];
-          if (player) {
-            const salary = salaries[playerId];
-            csvData.push([
-              formatPlayerName(player),
-              player.team || 'FA',
-              player.position || 'Unknown',
-              fantasyTeam,
-              'Taxi Squad',
-              salary ? `$${salary.toLocaleString()}` : ''
-            ]);
+      playerCategories.forEach(({ players: playerList, status }) => {
+        playerList.forEach((playerId: string) => {
+          // Only add player if not already added (first occurrence wins by priority)
+          if (!playerRosterMap.has(playerId)) {
+            const player = players[playerId];
+            if (player) {
+              const salary = salaries[playerId];
+              console.log(`Player ${formatPlayerName(player)} (${playerId}) salary:`, salary);
+              
+              csvData.push([
+                formatPlayerName(player),
+                player.team || 'FA',
+                player.position || 'Unknown',
+                fantasyTeam,
+                status,
+                salary ? `$${salary.toLocaleString()}` : ''
+              ]);
+              
+              playerRosterMap.set(playerId, true);
+            }
           }
         });
-      }
-
-      // Add reserve players
-      if (roster.reserve) {
-        roster.reserve.forEach((playerId: string) => {
-          const player = players[playerId];
-          if (player) {
-            const salary = salaries[playerId];
-            csvData.push([
-              formatPlayerName(player),
-              player.team || 'FA',
-              player.position || 'Unknown',
-              fantasyTeam,
-              'Reserve',
-              salary ? `$${salary.toLocaleString()}` : ''
-            ]);
-          }
-        });
-      }
+      });
     });
 
+    console.log('Final CSV data:', csvData);
     downloadCSV(csvData, `${league.name}_rosters_export.csv`);
     
     toast({

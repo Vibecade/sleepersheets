@@ -25,6 +25,7 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
 
   const exportTransactionsToCSV = () => {
     console.log('Preparing clean Transactions CSV export...');
+    console.log('Current salaries for transactions export:', salaries);
     
     const csvData = [];
     const headers = ['Week', 'Fantasy Team', 'Player Name', 'NFL Team', 'Position', 'Action (Add/Drop/Trade)', 'Fantasy Salary'];
@@ -43,6 +44,8 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
           
           if (player) {
             const salary = salaries[playerId];
+            console.log(`Transaction Drop - Player ${formatPlayerName(player)} (${playerId}) salary:`, salary);
+            
             csvData.push([
               week,
               fantasyTeam,
@@ -65,6 +68,8 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
           
           if (player) {
             const salary = salaries[playerId];
+            console.log(`Transaction Add - Player ${formatPlayerName(player)} (${playerId}) salary:`, salary);
+            
             csvData.push([
               week,
               fantasyTeam,
@@ -79,6 +84,7 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
       }
     });
 
+    console.log('Final Transactions CSV data:', csvData);
     downloadCSV(csvData, `${league.name}_transactions_export.csv`);
     
     toast({
