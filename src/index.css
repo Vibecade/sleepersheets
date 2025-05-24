@@ -42,11 +42,20 @@
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+    /* Force dark color scheme on all devices */
+    color-scheme: dark;
+  }
+
   body {
     @apply text-foreground min-h-screen;
     background: linear-gradient(135deg, #0f0f23 0%, #1a0a2e 25%, #16213e 50%, #0f3460 75%, #0a2463 100%);
     background-attachment: fixed;
     position: relative;
+    /* Ensure dark theme is enforced */
+    color-scheme: dark;
+    -webkit-color-scheme: dark;
   }
 
   /* Animated background particles */
@@ -66,12 +75,14 @@
     animation: float 20s ease-in-out infinite;
   }
 
-  /* Enhanced glassmorphism utilities */
+  /* Enhanced glassmorphism utilities with better mobile support */
   .glass {
     @apply bg-white/5 backdrop-blur-2xl border border-white/10;
     box-shadow: 
       0 8px 32px 0 rgba(31, 38, 135, 0.37),
       inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    /* Ensure dark theme on mobile */
+    background-color: rgba(255, 255, 255, 0.05) !important;
   }
 
   .glass-card {
@@ -80,6 +91,8 @@
       0 25px 50px -12px rgba(0, 0, 0, 0.5),
       0 0 0 1px rgba(255, 255, 255, 0.05),
       inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    /* Force dark background on all devices */
+    background-color: rgba(255, 255, 255, 0.05) !important;
   }
 
   .glass-button {
@@ -115,6 +128,14 @@
       0 35px 60px -12px rgba(0, 0, 0, 0.6),
       0 0 0 1px rgba(255, 255, 255, 0.1),
       inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  }
+
+  /* Disable hover effects on mobile for better performance */
+  @media (hover: none) and (pointer: coarse) {
+    .hover-lift:hover {
+      transform: none;
+      box-shadow: none;
+    }
   }
 
   .pulse-glow {
@@ -194,11 +215,6 @@
     }
   }
 
-  /* Smooth scrolling */
-  html {
-    scroll-behavior: smooth;
-  }
-
   /* Enhanced custom scrollbar */
   ::-webkit-scrollbar {
     width: 10px;
@@ -233,6 +249,40 @@
     }
     100% {
       background-position: 200% 0;
+    }
+  }
+
+  /* Mobile-specific optimizations */
+  @media (max-width: 768px) {
+    /* Reduce backdrop blur on mobile for better performance */
+    .glass, .glass-card {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Optimize text rendering on mobile */
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+
+    /* Disable complex animations on mobile for better performance */
+    .pulse-glow {
+      animation: none;
+    }
+
+    /* Ensure proper touch targets */
+    button, [role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* High DPI display optimizations */
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .glass, .glass-card {
+      border-width: 0.5px;
     }
   }
 }
