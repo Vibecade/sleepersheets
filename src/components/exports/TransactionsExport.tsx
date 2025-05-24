@@ -2,7 +2,7 @@
 import React from 'react';
 import { ArrowUpDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { downloadCSV, formatPlayerName } from '@/utils/csvExport';
+import { downloadCSV, formatPlayerName, addExportOptionsToCSV, ExportOptionsData } from '@/utils/csvExport';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import ExportButton from './ExportButton';
@@ -12,13 +12,15 @@ interface TransactionsExportProps {
   transactions: any[];
   rosterUserMap: Record<string, any>;
   players: Record<string, any>;
+  exportOptions?: ExportOptionsData;
 }
 
 const TransactionsExport: React.FC<TransactionsExportProps> = ({
   league,
   transactions,
   rosterUserMap,
-  players
+  players,
+  exportOptions
 }) => {
   const { toast } = useToast();
   const { salaries } = usePlayerSalaries(league.league_id);
@@ -26,6 +28,7 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
   const exportTransactionsToCSV = () => {
     console.log('Preparing clean Transactions CSV export...');
     console.log('Current salaries for transactions export:', salaries);
+    console.log('Export options:', exportOptions);
     
     const csvData = [];
     const headers = ['Week', 'Fantasy Team', 'Player Name', 'NFL Team', 'Position', 'Action (Add/Drop/Trade)', 'Fantasy Salary'];
@@ -84,8 +87,13 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
       }
     });
 
-    console.log('Final Transactions CSV data:', csvData);
-    downloadCSV(csvData, `${league.name}_transactions_export.csv`);
+    // Add export options if provided
+    const finalCsvData = exportOptions 
+      ? addExportOptionsToCSV(csvData, exportOptions, league.name)
+      : csvData;
+
+    console.log('Final Transactions CSV data with options:', finalCsvData);
+    downloadCSV(finalCsvData, `${league.name}_transactions_export.csv`);
     
     toast({
       title: "Clean Transactions Export Complete!",

@@ -2,7 +2,7 @@
 import React from 'react';
 import { FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { downloadCSV, formatPlayerName } from '@/utils/csvExport';
+import { downloadCSV, formatPlayerName, addExportOptionsToCSV, ExportOptionsData } from '@/utils/csvExport';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import ExportButton from './ExportButton';
@@ -12,13 +12,15 @@ interface DraftExportProps {
   draftPicks: any[];
   rosterUserMap: Record<string, any>;
   players: Record<string, any>;
+  exportOptions?: ExportOptionsData;
 }
 
 const DraftExport: React.FC<DraftExportProps> = ({
   league,
   draftPicks,
   rosterUserMap,
-  players
+  players,
+  exportOptions
 }) => {
   const { toast } = useToast();
   const { salaries } = usePlayerSalaries(league.league_id);
@@ -26,6 +28,7 @@ const DraftExport: React.FC<DraftExportProps> = ({
   const exportDraftToCSV = () => {
     console.log('Preparing clean Draft CSV export...');
     console.log('Current salaries for draft export:', salaries);
+    console.log('Export options:', exportOptions);
     
     const csvData = [];
     const headers = ['Round', 'Pick', 'Fantasy Team', 'Player Name', 'NFL Team', 'Position', 'Is Keeper', 'Fantasy Salary'];
@@ -54,8 +57,13 @@ const DraftExport: React.FC<DraftExportProps> = ({
       });
     });
 
-    console.log('Final Draft CSV data:', csvData);
-    downloadCSV(csvData, `${league.name}_draft_export.csv`);
+    // Add export options if provided
+    const finalCsvData = exportOptions 
+      ? addExportOptionsToCSV(csvData, exportOptions, league.name)
+      : csvData;
+
+    console.log('Final Draft CSV data with options:', finalCsvData);
+    downloadCSV(finalCsvData, `${league.name}_draft_export.csv`);
     
     toast({
       title: "Clean Draft Export Complete!",

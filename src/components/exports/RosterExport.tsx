@@ -2,7 +2,7 @@
 import React from 'react';
 import { Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { downloadCSV, formatPlayerName } from '@/utils/csvExport';
+import { downloadCSV, formatPlayerName, addExportOptionsToCSV, ExportOptionsData } from '@/utils/csvExport';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
@@ -13,13 +13,15 @@ interface RosterExportProps {
   rosters: any[];
   userMap: Record<string, any>;
   players: Record<string, any>;
+  exportOptions?: ExportOptionsData;
 }
 
 const RosterExport: React.FC<RosterExportProps> = ({
   league,
   rosters,
   userMap,
-  players
+  players,
+  exportOptions
 }) => {
   const { toast } = useToast();
   const { salaries } = usePlayerSalaries(league.league_id);
@@ -29,6 +31,7 @@ const RosterExport: React.FC<RosterExportProps> = ({
     console.log('Preparing clean Rosters CSV export with dead cap data...');
     console.log('Current salaries for export:', salaries);
     console.log('Current dead cap players for export:', deadCapPlayers);
+    console.log('Export options:', exportOptions);
     
     const csvData = [];
     const headers = ['Player Name', 'NFL Team', 'Position', 'Fantasy Team', 'Roster Status', 'Fantasy Salary'];
@@ -93,8 +96,13 @@ const RosterExport: React.FC<RosterExportProps> = ({
       }
     });
 
-    console.log('Final CSV data with dead cap:', csvData);
-    downloadCSV(csvData, `${league.name}_rosters_export.csv`);
+    // Add export options if provided
+    const finalCsvData = exportOptions 
+      ? addExportOptionsToCSV(csvData, exportOptions, league.name)
+      : csvData;
+
+    console.log('Final CSV data with dead cap and options:', finalCsvData);
+    downloadCSV(finalCsvData, `${league.name}_rosters_export.csv`);
     
     toast({
       title: "Clean Rosters Export Complete!",

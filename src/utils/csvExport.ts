@@ -1,4 +1,3 @@
-
 export const downloadCSV = (csvData: string[][], filename: string) => {
   // Convert to CSV string with proper escaping
   const csvContent = csvData.map(row => 
@@ -26,4 +25,57 @@ export const downloadCSV = (csvData: string[][], filename: string) => {
 
 export const formatPlayerName = (player: any): string => {
   return `${player.first_name || ''} ${player.last_name || ''}`.trim() || 'Unknown Player';
+};
+
+export interface ExportOptionsData {
+  includeLeagueRules: boolean;
+  leagueRules: string;
+  includeFAAB: boolean;
+  faabBudget: string;
+  faabNotes: string;
+  includeDraftOrder: boolean;
+  draftOrder: string;
+}
+
+export const addExportOptionsToCSV = (
+  csvData: string[][],
+  options: ExportOptionsData,
+  leagueName: string
+): string[][] => {
+  const enhancedData = [...csvData];
+
+  // Add spacing and additional info sections
+  if (options.includeLeagueRules || options.includeFAAB || options.includeDraftOrder) {
+    enhancedData.push([]); // Empty row for spacing
+    enhancedData.push(['=== ADDITIONAL LEAGUE INFORMATION ===']);
+    enhancedData.push([]);
+  }
+
+  // Add League Rules
+  if (options.includeLeagueRules && options.leagueRules.trim()) {
+    enhancedData.push(['LEAGUE RULES & SCORING']);
+    enhancedData.push([options.leagueRules]);
+    enhancedData.push([]);
+  }
+
+  // Add FAAB Information
+  if (options.includeFAAB && (options.faabBudget.trim() || options.faabNotes.trim())) {
+    enhancedData.push(['FAAB INFORMATION']);
+    if (options.faabBudget.trim()) {
+      enhancedData.push(['Budget per Team:', options.faabBudget]);
+    }
+    if (options.faabNotes.trim()) {
+      enhancedData.push(['FAAB Notes:', options.faabNotes]);
+    }
+    enhancedData.push([]);
+  }
+
+  // Add Draft Order
+  if (options.includeDraftOrder && options.draftOrder.trim()) {
+    enhancedData.push(['DRAFT ORDER & DETAILS']);
+    enhancedData.push([options.draftOrder]);
+    enhancedData.push([]);
+  }
+
+  return enhancedData;
 };
