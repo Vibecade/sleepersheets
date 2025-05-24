@@ -8,13 +8,15 @@ interface LeagueHeaderProps {
   transactionCount: number;
   draftPickCount: number;
   draftCount: number;
+  onRefreshData?: () => Promise<void>;
 }
 
 const LeagueHeader: React.FC<LeagueHeaderProps> = ({ 
   league, 
   transactionCount, 
   draftPickCount, 
-  draftCount 
+  draftCount,
+  onRefreshData
 }) => {
   return (
     <Card className="glass-card fade-in">
