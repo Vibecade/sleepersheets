@@ -10,27 +10,43 @@ import { useToast } from '@/hooks/use-toast';
 const HowTo = () => {
   const { toast } = useToast();
 
-  const chatGptPrompt = `I am uploading my Sleeper fantasy football exports. Please generate a Google Sheets document for me with the following requirements:
+  const chatGptPrompt = `I am uploading my Sleeper fantasy football league export files. Please create a formatted, multi-sheet Google Sheets document for me with the following requirements:
 
 1. **Team Sheets:**  
    - Create a separate sheet for each team, using the roster export.  
-   - Columns: Player Name, Position, NFL Team, Fantasy Salary (if present), and any other useful info.
-   - At the top of each team sheet, sum the salaries for all players and display the team's total salary.
+   - Columns: Player Name, Position, NFL Team, Fantasy Salary (if present), and any other relevant info.
+   - At the top of each team sheet, display the sum of all player salaries as "Team Total Salary".
 
 2. **Main Sheet:**  
-   - Add a "Main" summary sheet that lists each fantasy team, the sum of its players' salaries, and the number of players per team.
+   - Add a "Main" summary sheet with:
+     - Each team’s name
+     - Total team salary (from their tab)
+     - Number of players per team
+     - *Any included league-wide information (see below) should also appear on this sheet or be clearly referenced.*
 
-3. **Transactions Sheet:**  
-   - If I upload a transactions export, add a "Transactions" sheet showing all transactions (drafts, trades, waivers, drops) with date, player, type, and teams involved.
+3. **Additional League Information:**  
+   - If the exports include **League Rules**, **FAAB Information**, or **Draft Order**, display these as follows:
+     - Create a separate sheet for each (named "League Rules", "FAAB", and "Draft Order" as appropriate).
+     - On the "Main" summary sheet, also include a brief section at the top with key highlights or a link/reference to these sheets.
 
-4. **Formatting:**  
-   - Use bold headers, alternate row shading, and auto-sizing columns for readability.
-   - Ensure salaries are formatted as numbers (no "$" or extra symbols).
+4. **Transactions Sheet:**  
+   - If a transactions export is provided, add a "Transactions" sheet listing:
+     - Date
+     - Player
+     - Type (draft, waiver, trade, drop)
+     - Teams involved
 
-5. **Output:**  
-   - Give me the result as a downloadable multi-sheet Excel/Google Sheets file, ready for import.
+5. **Formatting:**  
+   - Use bold headers, alternate row shading, and auto-size columns.
+   - Ensure all salaries are formatted as numbers (remove any "$" or extra symbols).
+   - Clearly label each section/sheet for ease of navigation.
 
-Here are my files:`;
+6. **Output:**  
+   - Provide me with a downloadable multi-sheet Excel or Google Sheets file, ready for import.
+
+[Attach my Sleeper CSV export files below]
+
+`;
 
   const copyToClipboard = async () => {
     try {
