@@ -39,7 +39,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
     }
   }, [settings?.salary_cap]);
 
-  // Debounce salary cap updates with better logic
+  // Debounce salary cap updates - fixed version
   useEffect(() => {
     if (!localSalaryCap || !settings?.salary_cap) return;
     
@@ -51,12 +51,17 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
     if (newSalaryCap > 0 && newSalaryCap !== currentSalaryCap) {
       const timeoutId = setTimeout(async () => {
         console.log('Updating salary cap to:', newSalaryCap);
-        await updateSettings({ salary_cap: newSalaryCap });
+        try {
+          await updateSettings({ salary_cap: newSalaryCap });
+          console.log('Salary cap update completed');
+        } catch (error) {
+          console.error('Failed to update salary cap:', error);
+        }
       }, 1000); // Wait 1 second after user stops typing
 
       return () => clearTimeout(timeoutId);
     }
-  }, [localSalaryCap, settings?.salary_cap, updateSettings]);
+  }, [localSalaryCap, settings?.salary_cap]); // Removed updateSettings from dependencies
 
   const calculateTeamSalary = (roster: any) => {
     const allPlayerIds = [

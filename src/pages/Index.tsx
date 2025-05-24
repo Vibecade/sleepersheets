@@ -13,7 +13,7 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const fetchLeagueData = async (targetLeagueId: string) => {
+  const fetchLeagueData = async (targetLeagueId: string, preserveCurrentLeagueId: boolean = false) => {
     console.log('Fetching league data for ID:', targetLeagueId);
 
     try {
@@ -74,6 +74,12 @@ const Index = () => {
       };
 
       setLeagueData(combinedData);
+      
+      // Only update leagueId if we're not preserving the current one (like during refresh)
+      if (!preserveCurrentLeagueId) {
+        setLeagueId(targetLeagueId);
+      }
+      
       return league;
 
     } catch (error) {
@@ -176,6 +182,28 @@ const Index = () => {
     }
   };
 
+  // Handle refresh data without losing league ID
+  const handleRefreshData = async () => {
+    if (!leagueData?.league?.league_id) return;
+    
+    setLoading(true);
+    try {
+      const league = await fetchLeagueData(leagueData.league.league_id, true); // preserve current league ID
+      toast({
+        title: "Success!",
+        description: `Refreshed data for ${league.name}`
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to refresh league data.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <LeagueHeader />
@@ -194,7 +222,10 @@ const Index = () => {
             />
           </div>
         ) : (
-          <LeagueData data={leagueData} />
+          <LeagueData 
+            data={leagueData} 
+            onRefreshData={handleRefreshData}
+          />
         )}
       </div>
 
