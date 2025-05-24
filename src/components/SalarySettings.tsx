@@ -13,7 +13,7 @@ interface SalarySettingsProps {
   deadCapEnabled: boolean;
   onDeadCapEnabledChange: (enabled: boolean) => Promise<void>;
   settingsLoading: boolean;
-  onSalarCapSave: () => Promise<void>;
+  onSalaryCapSave: () => Promise<void>;
 }
 
 const SalarySettings: React.FC<SalarySettingsProps> = ({
@@ -23,7 +23,7 @@ const SalarySettings: React.FC<SalarySettingsProps> = ({
   deadCapEnabled,
   onDeadCapEnabledChange,
   settingsLoading,
-  onSalarCapSave
+  onSalaryCapSave
 }) => {
   const formatSalary = (amount: number) => {
     if (amount >= 1000000) {
@@ -56,7 +56,7 @@ const SalarySettings: React.FC<SalarySettingsProps> = ({
             placeholder="200000"
           />
           <Button
-            onClick={onSalarCapSave}
+            onClick={onSalaryCapSave}
             size="sm"
             variant="outline"
             className="h-8 px-3"

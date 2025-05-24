@@ -213,6 +213,33 @@ export type Database = {
         }
         Relationships: []
       }
+      player_contracts: {
+        Row: {
+          contract_length: number | null
+          created_at: string
+          id: string
+          league_id: string
+          player_id: string
+          updated_at: string
+        }
+        Insert: {
+          contract_length?: number | null
+          created_at?: string
+          id?: string
+          league_id: string
+          player_id: string
+          updated_at?: string
+        }
+        Update: {
+          contract_length?: number | null
+          created_at?: string
+          id?: string
+          league_id?: string
+          player_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       player_salaries: {
         Row: {
           created_at: string
