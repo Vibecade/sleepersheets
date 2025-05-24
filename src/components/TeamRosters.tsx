@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -24,6 +23,7 @@ interface TeamRostersProps {
 const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {} }) => {
   const [showSalaryFeatures, setShowSalaryFeatures] = useState(false);
   const [showDeadCapManager, setShowDeadCapManager] = useState(false);
+  const [localSalaryCap, setLocalSalaryCap] = useState<string>('');
   const { toast } = useToast();
 
   // Get league ID from first roster (assuming all rosters are from same league)
@@ -31,6 +31,27 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   const { salaries } = usePlayerSalaries(leagueId);
   const { deadCapPlayers } = useDeadCapPlayers(leagueId);
   const { settings, updateSettings, loading: settingsLoading } = useLeagueSettings(leagueId);
+
+  // Update local salary cap when settings change
+  useEffect(() => {
+    if (settings?.salary_cap) {
+      setLocalSalaryCap(settings.salary_cap.toString());
+    }
+  }, [settings?.salary_cap]);
+
+  // Debounce salary cap updates
+  useEffect(() => {
+    if (localSalaryCap && settings?.salary_cap && localSalaryCap !== settings.salary_cap.toString()) {
+      const timeoutId = setTimeout(() => {
+        const newSalaryCap = Number(localSalaryCap);
+        if (newSalaryCap > 0 && newSalaryCap !== settings.salary_cap) {
+          handleSalaryCapChange(newSalaryCap);
+        }
+      }, 1000); // Wait 1 second after user stops typing
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [localSalaryCap, settings?.salary_cap]);
 
   const calculateTeamSalary = (roster: any) => {
     const allPlayerIds = [
@@ -137,8 +158,8 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
                   <span className="text-sm text-gray-300">$</span>
                   <Input
                     type="number"
-                    value={salaryCap}
-                    onChange={(e) => handleSalaryCapChange(Number(e.target.value))}
+                    value={localSalaryCap}
+                    onChange={(e) => setLocalSalaryCap(e.target.value)}
                     className="w-32 h-8 bg-white/10 border-white/20 text-white"
                     placeholder="200000"
                   />
