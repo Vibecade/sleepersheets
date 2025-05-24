@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Users, DollarSign, Skull } from 'lucide-react';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 import { useLeagueSettings } from '@/hooks/useLeagueSettings';
+import { useToast } from '@/hooks/use-toast';
 import DeadCapManager from '@/components/DeadCapManager';
 import TeamRosterCard from '@/components/TeamRosterCard';
 import SalarySettings from '@/components/SalarySettings';
@@ -20,6 +20,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   const [showSalaryFeatures, setShowSalaryFeatures] = useState(false);
   const [showDeadCapManager, setShowDeadCapManager] = useState(false);
   const [localSalaryCap, setLocalSalaryCap] = useState<string>('');
+  const { toast } = useToast();
 
   // Get league ID from first roster (assuming all rosters are from same league)
   const leagueId = rosters[0]?.league_id || '';
@@ -33,6 +34,36 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
       setLocalSalaryCap(settings.salary_cap.toString());
     }
   }, [settings?.salary_cap]);
+
+  const handleSalarCapSave = async () => {
+    if (!localSalaryCap || !settings?.salary_cap) return;
+    
+    const newSalaryCap = Number(localSalaryCap);
+    const currentSalaryCap = Number(settings.salary_cap);
+    
+    if (newSalaryCap > 0 && newSalaryCap !== currentSalaryCap) {
+      console.log('Manually saving salary cap to:', newSalaryCap);
+      try {
+        await updateSettings({ salary_cap: newSalaryCap });
+        toast({
+          title: "Success!",
+          description: "Salary cap updated successfully",
+        });
+      } catch (error) {
+        console.error('Failed to update salary cap:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update salary cap",
+          variant: "destructive"
+        });
+      }
+    } else {
+      toast({
+        title: "No Changes",
+        description: "Salary cap is already up to date",
+      });
+    }
+  };
 
   // Debounce salary cap updates - fixed to remove updateSettings dependency
   useEffect(() => {
@@ -138,6 +169,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
               deadCapEnabled={deadCapEnabled}
               onDeadCapEnabledChange={handleDeadCapEnabledChange}
               settingsLoading={settingsLoading}
+              onSalarCapSave={handleSalarCapSave}
             />
           )}
         </CardHeader>

@@ -3,7 +3,8 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Settings, Skull } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Settings, Skull, Save } from 'lucide-react';
 
 interface SalarySettingsProps {
   localSalaryCap: string;
@@ -12,6 +13,7 @@ interface SalarySettingsProps {
   deadCapEnabled: boolean;
   onDeadCapEnabledChange: (enabled: boolean) => Promise<void>;
   settingsLoading: boolean;
+  onSalarCapSave: () => Promise<void>;
 }
 
 const SalarySettings: React.FC<SalarySettingsProps> = ({
@@ -20,7 +22,8 @@ const SalarySettings: React.FC<SalarySettingsProps> = ({
   salaryCap,
   deadCapEnabled,
   onDeadCapEnabledChange,
-  settingsLoading
+  settingsLoading,
+  onSalarCapSave
 }) => {
   const formatSalary = (amount: number) => {
     if (amount >= 1000000) {
@@ -52,6 +55,15 @@ const SalarySettings: React.FC<SalarySettingsProps> = ({
             className="w-32 h-8 bg-white/10 border-white/20 text-white"
             placeholder="200000"
           />
+          <Button
+            onClick={onSalarCapSave}
+            size="sm"
+            variant="outline"
+            className="h-8 px-3"
+          >
+            <Save className="w-3 h-3 mr-1" />
+            Save
+          </Button>
         </div>
         <Badge variant="outline" className="text-white border-white/20">
           Cap: {formatSalary(salaryCap)}

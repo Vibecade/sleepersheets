@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,7 +7,9 @@ import { Users, ArrowUpDown, FileText, Eye } from 'lucide-react';
 import { formatPlayerName } from '@/utils/csvExport';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
+import { usePlayerContracts } from '@/hooks/usePlayerContracts';
 import EditableSalary from '@/components/EditableSalary';
+import EditableContractLength from '@/components/EditableContractLength';
 
 interface DataDashboardProps {
   league: any;
@@ -30,6 +31,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
   draftPicks
 }) => {
   const { salaries, updateSalary, loading: salariesLoading } = usePlayerSalaries(league.league_id);
+  const { contracts, updateContract, loading: contractsLoading } = usePlayerContracts(league.league_id);
 
   // Prepare roster data with duplicate removal
   const rosterData = [];
@@ -138,7 +140,9 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
   });
 
   console.log('Current salaries in DataDashboard:', salaries);
+  console.log('Current contracts in DataDashboard:', contracts);
   console.log('Salaries loading status:', salariesLoading);
+  console.log('Contracts loading status:', contractsLoading);
 
   return (
     <Card>
@@ -148,7 +152,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
           <span>Data Dashboard</span>
         </CardTitle>
         <CardDescription>
-          Preview all your league data in clean, organized tables before exporting. Click on salary values to edit them.
+          Preview all your league data in clean, organized tables before exporting. Click on salary values and contract lengths to edit them.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -179,6 +183,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                     <TableHead className="text-white font-semibold">Fantasy Team</TableHead>
                     <TableHead className="text-white font-semibold">Status</TableHead>
                     <TableHead className="text-white font-semibold">Fantasy Salary</TableHead>
+                    <TableHead className="text-white font-semibold">Contract Length</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -211,6 +216,17 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                           />
                         )}
                       </TableCell>
+                      <TableCell>
+                        {contractsLoading ? (
+                          <div className="text-gray-400 text-xs">Loading...</div>
+                        ) : (
+                          <EditableContractLength
+                            playerId={row.playerId}
+                            currentLength={contracts[row.playerId] || null}
+                            onContractUpdate={updateContract}
+                          />
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -230,6 +246,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                     <TableHead className="text-white font-semibold">Position</TableHead>
                     <TableHead className="text-white font-semibold">Action</TableHead>
                     <TableHead className="text-white font-semibold">Fantasy Salary</TableHead>
+                    <TableHead className="text-white font-semibold">Contract Length</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -263,6 +280,17 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                           />
                         )}
                       </TableCell>
+                      <TableCell>
+                        {contractsLoading ? (
+                          <div className="text-gray-400 text-xs">Loading...</div>
+                        ) : (
+                          <EditableContractLength
+                            playerId={row.playerId}
+                            currentLength={contracts[row.playerId] || null}
+                            onContractUpdate={updateContract}
+                          />
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -283,6 +311,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                     <TableHead className="text-white font-semibold">Position</TableHead>
                     <TableHead className="text-white font-semibold">Keeper</TableHead>
                     <TableHead className="text-white font-semibold">Fantasy Salary</TableHead>
+                    <TableHead className="text-white font-semibold">Contract Length</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -314,6 +343,17 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                             playerId={row.playerId}
                             currentSalary={salaries[row.playerId] || null}
                             onSalaryUpdate={updateSalary}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {contractsLoading ? (
+                          <div className="text-gray-400 text-xs">Loading...</div>
+                        ) : (
+                          <EditableContractLength
+                            playerId={row.playerId}
+                            currentLength={contracts[row.playerId] || null}
+                            onContractUpdate={updateContract}
                           />
                         )}
                       </TableCell>
