@@ -34,13 +34,15 @@ const DeadCapManager: React.FC<DeadCapManagerProps> = ({
   const [playerSearch, setPlayerSearch] = useState('');
   const [showPlayerSearch, setShowPlayerSearch] = useState(false);
 
-  // Filter players based on search
-  const filteredPlayers = Object.entries(players).filter(([playerId, player]) => {
-    if (!player || !playerSearch) return false;
-    const fullName = `${player.first_name || ''} ${player.last_name || ''}`.toLowerCase();
-    return fullName.includes(playerSearch.toLowerCase()) || 
-           (player.last_name && player.last_name.toLowerCase().includes(playerSearch.toLowerCase()));
-  }).slice(0, 50); // Limit to 50 results for performance
+  // Filter players based on search - add safety check for players object
+  const filteredPlayers = players && typeof players === 'object' 
+    ? Object.entries(players).filter(([playerId, player]) => {
+        if (!player || !playerSearch) return false;
+        const fullName = `${player.first_name || ''} ${player.last_name || ''}`.toLowerCase();
+        return fullName.includes(playerSearch.toLowerCase()) || 
+               (player.last_name && player.last_name.toLowerCase().includes(playerSearch.toLowerCase()));
+      }).slice(0, 50) // Limit to 50 results for performance
+    : [];
 
   const handlePlayerSelect = (playerId: string) => {
     const player = players[playerId];
