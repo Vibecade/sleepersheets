@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import LeagueData from '@/components/LeagueData';
@@ -106,12 +105,21 @@ const Index = () => {
     }
 
     setLoading(true);
-    console.log('Fetching leagues for username:', username);
+    console.log('Fetching user data for username:', username);
 
     try {
-      const response = await fetch(`https://api.sleeper.app/v1/user/${username}/leagues/nfl/2024`);
-      if (!response.ok) {
+      // First, get the user object to retrieve the user_id
+      const userResponse = await fetch(`https://api.sleeper.app/v1/user/${username}`);
+      if (!userResponse.ok) {
         throw new Error('User not found');
+      }
+      const userData = await userResponse.json();
+      console.log('User data retrieved:', userData);
+      
+      // Now use the user_id to fetch leagues
+      const response = await fetch(`https://api.sleeper.app/v1/user/${userData.user_id}/leagues/nfl/2024`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch leagues for user');
       }
       const leagues = await response.json();
       
@@ -137,7 +145,7 @@ const Index = () => {
       console.error('Error fetching user leagues:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch leagues for this username",
+        description: "Failed to fetch leagues for this username. Please check the username is correct.",
         variant: "destructive"
       });
     } finally {
