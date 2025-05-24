@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useMemo } from 'react';
 import LeagueHeader from './LeagueHeader';
 import TeamRosters from './TeamRosters';
 import DataDashboard from './DataDashboard';
@@ -22,71 +23,83 @@ interface LeagueDataProps {
 const LeagueData: React.FC<LeagueDataProps> = ({ data, onRefreshData }) => {
   const { league, rosters, users, players, transactions = [], drafts = [], draftPicks = [] } = data;
 
-  // Create mappings
-  const userMap = createUserMap(users);
-  const rosterUserMap = createRosterUserMap(rosters, userMap);
+  // Memoize expensive calculations
+  const userMap = useMemo(() => createUserMap(users), [users]);
+  const rosterUserMap = useMemo(() => createRosterUserMap(rosters, userMap), [rosters, userMap]);
+  
+  const stats = useMemo(() => ({
+    transactionCount: transactions.length,
+    draftPickCount: draftPicks.reduce((acc, dp) => acc + dp.picks.length, 0),
+    draftCount: drafts.length
+  }), [transactions.length, draftPicks, drafts.length]);
 
-  // Calculate stats for header
-  const transactionCount = transactions.length;
-  const draftPickCount = draftPicks.reduce((acc, dp) => acc + dp.picks.length, 0);
-  const draftCount = drafts.length;
+  // Memoize component props to prevent unnecessary re-renders
+  const headerProps = useMemo(() => ({
+    league,
+    transactionCount: stats.transactionCount,
+    draftPickCount: stats.draftPickCount,
+    draftCount: stats.draftCount,
+    onRefreshData
+  }), [league, stats.transactionCount, stats.draftPickCount, stats.draftCount, onRefreshData]);
+
+  const rosterProps = useMemo(() => ({
+    rosters,
+    userMap,
+    players
+  }), [rosters, userMap, players]);
+
+  const tradeSimulatorProps = useMemo(() => ({
+    league,
+    rosters,
+    userMap,
+    players
+  }), [league, rosters, userMap, players]);
+
+  const dashboardProps = useMemo(() => ({
+    league,
+    rosters,
+    userMap,
+    rosterUserMap,
+    players,
+    transactions,
+    draftPicks
+  }), [league, rosters, userMap, rosterUserMap, players, transactions, draftPicks]);
+
+  const exportProps = useMemo(() => ({
+    league,
+    rosters,
+    userMap,
+    rosterUserMap,
+    players,
+    transactions,
+    draftPicks
+  }), [league, rosters, userMap, rosterUserMap, players, transactions, draftPicks]);
 
   return (
     <div className="main-container">
       <div className="space-y-8">
         <div className="slide-up">
-          <LeagueHeader 
-            league={league}
-            transactionCount={transactionCount}
-            draftPickCount={draftPickCount}
-            draftCount={draftCount}
-            onRefreshData={onRefreshData}
-          />
+          <LeagueHeader {...headerProps} />
         </div>
 
         <div className="slide-up" style={{ animationDelay: '0.2s' }}>
-          <TeamRosters 
-            rosters={rosters}
-            userMap={userMap}
-            players={players}
-          />
+          <TeamRosters {...rosterProps} />
         </div>
 
         <div className="slide-up" style={{ animationDelay: '0.3s' }}>
-          <TradeSimulator
-            league={league}
-            rosters={rosters}
-            userMap={userMap}
-            players={players}
-          />
+          <TradeSimulator {...tradeSimulatorProps} />
         </div>
 
         <div className="slide-up" style={{ animationDelay: '0.4s' }}>
-          <DataDashboard
-            league={league}
-            rosters={rosters}
-            userMap={userMap}
-            rosterUserMap={rosterUserMap}
-            players={players}
-            transactions={transactions}
-            draftPicks={draftPicks}
-          />
+          <DataDashboard {...dashboardProps} />
         </div>
 
         <div className="slide-up" style={{ animationDelay: '0.5s' }}>
-          <ExportActions
-            league={league}
-            rosters={rosters}
-            userMap={userMap}
-            rosterUserMap={rosterUserMap}
-            players={players}
-            transactions={transactions}
-            draftPicks={draftPicks}
-          />
+          <ExportActions {...exportProps} />
         </div>
       </div>
     </div>
   );
 };
 
-export default LeagueData;
+export default React.memo(LeagueData);

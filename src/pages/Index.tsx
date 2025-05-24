@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import LeagueData from '@/components/LeagueData';
 import Footer from '@/components/Footer';
@@ -13,54 +13,61 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const fetchLeagueData = async (targetLeagueId: string, preserveCurrentLeagueId: boolean = false) => {
+  const fetchLeagueData = useCallback(async (targetLeagueId: string, preserveCurrentLeagueId: boolean = false) => {
     console.log('Fetching league data for ID:', targetLeagueId);
 
     try {
-      // Fetch league basic info
-      const leagueResponse = await fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}`);
+      // Use Promise.all for parallel requests where possible
+      const [leagueResponse, rostersResponse, usersResponse, playersResponse] = await Promise.all([
+        fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}`),
+        fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/rosters`),
+        fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/users`),
+        fetch('https://api.sleeper.app/v1/players/nfl')
+      ]);
+
       if (!leagueResponse.ok) {
         throw new Error('League not found');
       }
-      const league = await leagueResponse.json();
+
+      const [league, rosters, users, players] = await Promise.all([
+        leagueResponse.json(),
+        rostersResponse.json(),
+        usersResponse.json(),
+        playersResponse.json()
+      ]);
+
       console.log('League data retrieved:', { 
         name: league.name, 
         season: league.season, 
         league_id: league.league_id 
       });
-      
-      // Fetch rosters
-      const rostersResponse = await fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/rosters`);
-      const rosters = await rostersResponse.json();
-      
-      // Fetch users
-      const usersResponse = await fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/users`);
-      const users = await usersResponse.json();
-      
-      // Fetch NFL players data
-      const playersResponse = await fetch('https://api.sleeper.app/v1/players/nfl');
-      const players = await playersResponse.json();
 
-      // Fetch transactions for current week
+      // Fetch additional data in parallel
       const currentWeek = league.settings?.week || 1;
-      const transactionsResponse = await fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/transactions/${currentWeek}`);
-      const transactions = transactionsResponse.ok ? await transactionsResponse.json() : [];
+      const [transactionsResponse, draftsResponse] = await Promise.all([
+        fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/transactions/${currentWeek}`),
+        fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/drafts`)
+      ]);
 
-      // Fetch draft data
-      const draftsResponse = await fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/drafts`);
-      const drafts = draftsResponse.ok ? await draftsResponse.json() : [];
+      const [transactions, drafts] = await Promise.all([
+        transactionsResponse.ok ? transactionsResponse.json() : [],
+        draftsResponse.ok ? draftsResponse.json() : []
+      ]);
       
       // Fetch draft picks for each draft
       const draftPicks = [];
-      for (const draft of drafts) {
-        const picksResponse = await fetch(`https://api.sleeper.app/v1/draft/${draft.draft_id}/picks`);
-        if (picksResponse.ok) {
-          const picks = await picksResponse.json();
-          draftPicks.push({
-            draft,
-            picks
-          });
-        }
+      if (drafts.length > 0) {
+        const draftPickPromises = drafts.map(async (draft) => {
+          const picksResponse = await fetch(`https://api.sleeper.app/v1/draft/${draft.draft_id}/picks`);
+          if (picksResponse.ok) {
+            const picks = await picksResponse.json();
+            return { draft, picks };
+          }
+          return null;
+        });
+        
+        const results = await Promise.all(draftPickPromises);
+        draftPicks.push(...results.filter(Boolean));
       }
 
       const combinedData = {
@@ -75,7 +82,6 @@ const Index = () => {
 
       setLeagueData(combinedData);
       
-      // Only update leagueId if we're not preserving the current one (like during refresh)
       if (!preserveCurrentLeagueId) {
         setLeagueId(targetLeagueId);
       }
@@ -86,9 +92,9 @@ const Index = () => {
       console.error('Error fetching league data:', error);
       throw error;
     }
-  };
+  }, []);
 
-  const handleLeagueSubmit = async () => {
+  const handleLeagueSubmit = useCallback(async () => {
     if (!leagueId.trim()) {
       toast({
         title: "League ID Required",
@@ -115,9 +121,9 @@ const Index = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [leagueId, fetchLeagueData, toast]);
 
-  const handleUsernameSubmit = async () => {
+  const handleUsernameSubmit = useCallback(async () => {
     if (!username.trim()) {
       toast({
         title: "Username Required",
@@ -131,7 +137,6 @@ const Index = () => {
     console.log('Fetching user data for username:', username);
 
     try {
-      // First, get the user object to retrieve the user_id
       const userResponse = await fetch(`https://api.sleeper.app/v1/user/${username}`);
       if (!userResponse.ok) {
         throw new Error('User not found');
@@ -139,7 +144,6 @@ const Index = () => {
       const userData = await userResponse.json();
       console.log('User data retrieved:', userData);
       
-      // Now use the user_id to fetch leagues for current season (2025)
       const currentYear = new Date().getFullYear();
       console.log('Fetching leagues for year:', currentYear);
       const response = await fetch(`https://api.sleeper.app/v1/user/${userData.user_id}/leagues/nfl/${currentYear}`);
@@ -158,11 +162,9 @@ const Index = () => {
         return;
       }
 
-      // Use the first league found and automatically load its data
       const firstLeague = leagues[0];
       setLeagueId(firstLeague.league_id);
       
-      // Automatically fetch the league data
       const league = await fetchLeagueData(firstLeague.league_id);
       
       toast({
@@ -180,15 +182,14 @@ const Index = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [username, fetchLeagueData, toast]);
 
-  // Handle refresh data without losing league ID
-  const handleRefreshData = async () => {
+  const handleRefreshData = useCallback(async () => {
     if (!leagueData?.league?.league_id) return;
     
     setLoading(true);
     try {
-      const league = await fetchLeagueData(leagueData.league.league_id, true); // preserve current league ID
+      const league = await fetchLeagueData(leagueData.league.league_id, true);
       toast({
         title: "Success!",
         description: `Refreshed data for ${league.name}`
@@ -202,7 +203,18 @@ const Index = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [leagueData?.league?.league_id, fetchLeagueData, toast]);
+
+  // Memoize the league connect card props to prevent unnecessary re-renders
+  const connectCardProps = useMemo(() => ({
+    leagueId,
+    setLeagueId,
+    username,
+    setUsername,
+    onLeagueSubmit: handleLeagueSubmit,
+    onUsernameSubmit: handleUsernameSubmit,
+    loading
+  }), [leagueId, username, handleLeagueSubmit, handleUsernameSubmit, loading]);
 
   return (
     <div className="min-h-screen">
@@ -211,15 +223,7 @@ const Index = () => {
       <div className="max-w-6xl mx-auto px-4 py-12">
         {!leagueData ? (
           <div className="max-w-2xl mx-auto space-y-8">
-            <LeagueConnectCard
-              leagueId={leagueId}
-              setLeagueId={setLeagueId}
-              username={username}
-              setUsername={setUsername}
-              onLeagueSubmit={handleLeagueSubmit}
-              onUsernameSubmit={handleUsernameSubmit}
-              loading={loading}
-            />
+            <LeagueConnectCard {...connectCardProps} />
           </div>
         ) : (
           <LeagueData 
@@ -234,4 +238,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default React.memo(Index);

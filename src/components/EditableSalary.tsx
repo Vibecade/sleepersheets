@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 
 interface EditableSalaryProps {
@@ -21,7 +21,7 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
     setValue(currentSalary ? currentSalary.toString() : '');
   }, [currentSalary]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     setIsSaving(true);
     const numericValue = value.trim() === '' ? null : parseFloat(value);
     
@@ -32,26 +32,36 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
       return;
     }
 
-    const success = await onSalaryUpdate(playerId, numericValue);
-    if (success) {
-      setIsEditing(false);
+    try {
+      const success = await onSalaryUpdate(playerId, numericValue);
+      if (success) {
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error('Error saving salary:', error);
+      setValue(currentSalary ? currentSalary.toString() : '');
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
-  };
+  }, [playerId, value, currentSalary, onSalaryUpdate]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSave();
     } else if (e.key === 'Escape') {
       setValue(currentSalary ? currentSalary.toString() : '');
       setIsEditing(false);
     }
-  };
+  }, [handleSave, currentSalary]);
 
-  const formatDisplayValue = (salary: number | null) => {
-    if (salary === null || salary === undefined) return 'Click to edit';
-    return `$${salary.toLocaleString()}`;
-  };
+  const handleEditToggle = useCallback(() => {
+    setIsEditing(true);
+  }, []);
+
+  const formatDisplayValue = useMemo(() => {
+    if (currentSalary === null || currentSalary === undefined) return 'Click to edit';
+    return `$${currentSalary.toLocaleString()}`;
+  }, [currentSalary]);
 
   if (isEditing) {
     return (
@@ -71,13 +81,13 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
 
   return (
     <button
-      onClick={() => setIsEditing(true)}
+      onClick={handleEditToggle}
       className="text-emerald-300 hover:text-emerald-100 transition-colors cursor-pointer text-xs p-1 border border-transparent hover:border-emerald-400/50 rounded min-w-[100px] text-left"
       disabled={isSaving}
     >
-      {isSaving ? 'Saving...' : formatDisplayValue(currentSalary)}
+      {isSaving ? 'Saving...' : formatDisplayValue}
     </button>
   );
 };
 
-export default EditableSalary;
+export default React.memo(EditableSalary);
