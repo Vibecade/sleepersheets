@@ -4,6 +4,7 @@ import LeagueHeader from './LeagueHeader';
 import TeamRosters from './TeamRosters';
 import DataDashboard from './DataDashboard';
 import ExportActions from './ExportActions';
+import TradeSimulator from './TradeSimulator';
 import { createUserMap, createRosterUserMap } from '@/utils/leagueDataUtils';
 
 interface LeagueDataProps {
@@ -50,6 +51,15 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
         </div>
 
         <div className="slide-up" style={{ animationDelay: '0.3s' }}>
+          <TradeSimulator
+            league={league}
+            rosters={rosters}
+            userMap={userMap}
+            players={players}
+          />
+        </div>
+
+        <div className="slide-up" style={{ animationDelay: '0.4s' }}>
           <DataDashboard
             league={league}
             rosters={rosters}
@@ -61,7 +71,7 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
           />
         </div>
 
-        <div className="slide-up" style={{ animationDelay: '0.4s' }}>
+        <div className="slide-up" style={{ animationDelay: '0.5s' }}>
           <ExportActions
             league={league}
             rosters={rosters}
