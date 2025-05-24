@@ -1,3 +1,4 @@
+
 export const downloadCSV = (csvData: string[][], filename: string) => {
   // Convert to CSV string with proper escaping
   const csvContent = csvData.map(row => 
@@ -27,6 +28,27 @@ export const formatPlayerName = (player: any): string => {
   return `${player.first_name || ''} ${player.last_name || ''}`.trim() || 'Unknown Player';
 };
 
+export const getPlayerFranchiseValue = (player: any): string => {
+  // Convert player value from cents to dollars if it exists
+  if (player?.fantasy_data_nfl?.fantasy_positions_value) {
+    const value = player.fantasy_data_nfl.fantasy_positions_value;
+    return `$${(value / 100).toFixed(2)}`;
+  }
+  return '';
+};
+
+export const getDataTimestamp = (): string => {
+  return new Date().toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    timeZoneName: 'short'
+  });
+};
+
 export interface ExportOptionsData {
   includeLeagueRules: boolean;
   leagueRules: string;
@@ -43,6 +65,12 @@ export const addExportOptionsToCSV = (
   leagueName: string
 ): string[][] => {
   const enhancedData = [...csvData];
+
+  // Add export timestamp at the top
+  enhancedData.unshift([]);
+  enhancedData.unshift([`Data exported on: ${getDataTimestamp()}`]);
+  enhancedData.unshift([`League: ${leagueName}`]);
+  enhancedData.unshift([]);
 
   // Add spacing and additional info sections
   if (options.includeLeagueRules || options.includeFAAB || options.includeDraftOrder) {

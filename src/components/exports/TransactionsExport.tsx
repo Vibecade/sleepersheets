@@ -2,7 +2,7 @@
 import React from 'react';
 import { ArrowUpDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { downloadCSV, formatPlayerName, addExportOptionsToCSV, ExportOptionsData } from '@/utils/csvExport';
+import { downloadCSV, formatPlayerName, addExportOptionsToCSV, ExportOptionsData, getPlayerFranchiseValue } from '@/utils/csvExport';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import ExportButton from './ExportButton';
@@ -31,7 +31,7 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
     console.log('Export options:', exportOptions);
     
     const csvData = [];
-    const headers = ['Week', 'Fantasy Team', 'Player Name', 'NFL Team', 'Position', 'Action (Add/Drop/Trade)', 'Fantasy Salary'];
+    const headers = ['Week', 'Fantasy Team', 'Player Name', 'NFL Team', 'Position', 'Action (Add/Drop/Trade)', 'Fantasy Salary', 'Franchise Value'];
     
     csvData.push(headers);
 
@@ -47,6 +47,7 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
           
           if (player) {
             const salary = salaries[playerId];
+            const franchiseValue = getPlayerFranchiseValue(player);
             console.log(`Transaction Drop - Player ${formatPlayerName(player)} (${playerId}) salary:`, salary);
             
             csvData.push([
@@ -56,7 +57,8 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
               player.team || 'FA',
               player.position || 'Unknown',
               'Drop',
-              salary ? `$${salary.toLocaleString()}` : ''
+              salary ? `$${salary.toLocaleString()}` : '',
+              franchiseValue
             ]);
           }
         });
@@ -71,6 +73,7 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
           
           if (player) {
             const salary = salaries[playerId];
+            const franchiseValue = getPlayerFranchiseValue(player);
             console.log(`Transaction Add - Player ${formatPlayerName(player)} (${playerId}) salary:`, salary);
             
             csvData.push([
@@ -80,7 +83,8 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
               player.team || 'FA',
               player.position || 'Unknown',
               'Add',
-              salary ? `$${salary.toLocaleString()}` : ''
+              salary ? `$${salary.toLocaleString()}` : '',
+              franchiseValue
             ]);
           }
         });
@@ -97,7 +101,7 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
     
     toast({
       title: "Clean Transactions Export Complete!",
-      description: "Your league transaction data has been downloaded as CSV with clean formatting and fantasy salaries"
+      description: "Your league transaction data has been downloaded as CSV with clean formatting, fantasy salaries, and franchise values"
     });
   };
 
@@ -107,7 +111,7 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
       disabled={transactions.length === 0}
       icon={ArrowUpDown}
       title="Export Transactions"
-      description="Simplified add/drop data with fantasy salaries"
+      description="Simplified add/drop data with fantasy salaries and franchise values"
       colorClass="text-blue-600"
       hoverColorClass="hover:bg-blue-700"
     />

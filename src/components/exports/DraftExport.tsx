@@ -2,7 +2,7 @@
 import React from 'react';
 import { FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { downloadCSV, formatPlayerName, addExportOptionsToCSV, ExportOptionsData } from '@/utils/csvExport';
+import { downloadCSV, formatPlayerName, addExportOptionsToCSV, ExportOptionsData, getPlayerFranchiseValue } from '@/utils/csvExport';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import ExportButton from './ExportButton';
@@ -31,7 +31,7 @@ const DraftExport: React.FC<DraftExportProps> = ({
     console.log('Export options:', exportOptions);
     
     const csvData = [];
-    const headers = ['Round', 'Pick', 'Fantasy Team', 'Player Name', 'NFL Team', 'Position', 'Is Keeper', 'Fantasy Salary'];
+    const headers = ['Round', 'Pick', 'Fantasy Team', 'Player Name', 'NFL Team', 'Position', 'Is Keeper', 'Fantasy Salary', 'Franchise Value'];
     
     csvData.push(headers);
 
@@ -41,6 +41,7 @@ const DraftExport: React.FC<DraftExportProps> = ({
         const user = rosterUserMap[pick.roster_id];
         const fantasyTeam = getTeamName(user);
         const salary = salaries[pick.player_id];
+        const franchiseValue = player ? getPlayerFranchiseValue(player) : '';
         
         console.log(`Draft Pick - Player ${player ? formatPlayerName(player) : 'Unknown'} (${pick.player_id}) salary:`, salary);
         
@@ -52,7 +53,8 @@ const DraftExport: React.FC<DraftExportProps> = ({
           player?.team || 'FA',
           player?.position || 'Unknown',
           pick.is_keeper ? 'Yes' : 'No',
-          salary ? `$${salary.toLocaleString()}` : ''
+          salary ? `$${salary.toLocaleString()}` : '',
+          franchiseValue
         ]);
       });
     });
@@ -67,7 +69,7 @@ const DraftExport: React.FC<DraftExportProps> = ({
     
     toast({
       title: "Clean Draft Export Complete!",
-      description: "Your league draft data has been downloaded as CSV with clean formatting and fantasy salaries"
+      description: "Your league draft data has been downloaded as CSV with clean formatting, fantasy salaries, and franchise values"
     });
   };
 
@@ -77,7 +79,7 @@ const DraftExport: React.FC<DraftExportProps> = ({
       disabled={draftPicks.length === 0}
       icon={FileText}
       title="Export Draft"
-      description="Organized draft results with fantasy salaries"
+      description="Organized draft results with fantasy salaries and franchise values"
       colorClass="text-purple-600"
       hoverColorClass="hover:bg-purple-700"
     />
