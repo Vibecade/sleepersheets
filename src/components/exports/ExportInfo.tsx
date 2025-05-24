@@ -19,13 +19,13 @@ const ExportInfo: React.FC<ExportInfoProps> = ({ onRefreshSalaries, refreshing =
       try {
         await onRefreshSalaries();
         toast({
-          title: "Salaries Refreshed",
-          description: "All salary data has been reloaded from the database"
+          title: "Data Refreshed",
+          description: "All salary and dead cap data has been reloaded from the database"
         });
       } catch (error) {
         toast({
           title: "Refresh Failed",
-          description: "Failed to refresh salary data",
+          description: "Failed to refresh salary and dead cap data",
           variant: "destructive"
         });
       }
@@ -40,15 +40,15 @@ const ExportInfo: React.FC<ExportInfoProps> = ({ onRefreshSalaries, refreshing =
             <Info className="h-4 w-4 text-blue-400 flex-shrink-0" />
             <AlertDescription className="text-blue-200 text-sm">
               <strong>About Clean Exports:</strong> These CSV files are optimized for Google Sheets and Excel with normalized headers, 
-              proper formatting, and include fantasy salary data when available.
+              proper formatting, and include fantasy salary data and dead cap information when available.
             </AlertDescription>
           </Alert>
 
           <Alert className="border-amber-400/30 bg-amber-500/10">
             <RefreshCw className="h-4 w-4 text-amber-400 flex-shrink-0" />
             <AlertDescription className="text-amber-200 text-sm">
-              <strong>Salary Data:</strong> Fantasy salary information is loaded when you first access the league. 
-              If you've recently updated salaries in the dashboard, click refresh below to ensure the latest data is included in exports.
+              <strong>Salary & Dead Cap Data:</strong> Fantasy salary and dead cap information is loaded when you first access the league. 
+              If you've recently updated salaries or dead cap entries in the dashboard, click refresh below to ensure the latest data is included in exports.
             </AlertDescription>
           </Alert>
 
@@ -62,7 +62,7 @@ const ExportInfo: React.FC<ExportInfoProps> = ({ onRefreshSalaries, refreshing =
                 className="flex items-center space-x-2 text-sm"
               >
                 <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">{refreshing ? 'Refreshing...' : 'Refresh Salary Data'}</span>
+                <span className="hidden sm:inline">{refreshing ? 'Refreshing...' : 'Refresh All Data'}</span>
                 <span className="sm:hidden">{refreshing ? 'Refreshing...' : 'Refresh'}</span>
               </Button>
             </div>

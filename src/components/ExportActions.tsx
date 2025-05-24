@@ -6,6 +6,7 @@ import TransactionsExport from './exports/TransactionsExport';
 import DraftExport from './exports/DraftExport';
 import ExportInfo from './exports/ExportInfo';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
+import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 
 interface ExportActionsProps {
   league: any;
@@ -27,11 +28,14 @@ const ExportActions: React.FC<ExportActionsProps> = ({
   draftPicks
 }) => {
   const { salaries, loading: salariesLoading } = usePlayerSalaries(league.league_id);
+  const { deadCapPlayers, loading: deadCapLoading } = useDeadCapPlayers(league.league_id);
 
   const refreshSalaries = async () => {
-    // Force a page reload to refresh all salary data
+    // Force a page reload to refresh all salary data including dead cap
     window.location.reload();
   };
+
+  const isLoading = salariesLoading || deadCapLoading;
 
   return (
     <Card>
@@ -74,7 +78,7 @@ const ExportActions: React.FC<ExportActionsProps> = ({
 
           <ExportInfo 
             onRefreshSalaries={refreshSalaries}
-            refreshing={salariesLoading}
+            refreshing={isLoading}
           />
         </div>
       </CardContent>
