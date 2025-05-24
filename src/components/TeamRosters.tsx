@@ -39,19 +39,24 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
     }
   }, [settings?.salary_cap]);
 
-  // Debounce salary cap updates
+  // Debounce salary cap updates with better logic
   useEffect(() => {
-    if (localSalaryCap && settings?.salary_cap && localSalaryCap !== settings.salary_cap.toString()) {
-      const timeoutId = setTimeout(() => {
-        const newSalaryCap = Number(localSalaryCap);
-        if (newSalaryCap > 0 && newSalaryCap !== settings.salary_cap) {
-          handleSalaryCapChange(newSalaryCap);
-        }
+    if (!localSalaryCap || !settings?.salary_cap) return;
+    
+    const newSalaryCap = Number(localSalaryCap);
+    const currentSalaryCap = Number(settings.salary_cap);
+    
+    console.log('Salary cap comparison:', { newSalaryCap, currentSalaryCap, localSalaryCap });
+    
+    if (newSalaryCap > 0 && newSalaryCap !== currentSalaryCap) {
+      const timeoutId = setTimeout(async () => {
+        console.log('Updating salary cap to:', newSalaryCap);
+        await updateSettings({ salary_cap: newSalaryCap });
       }, 1000); // Wait 1 second after user stops typing
 
       return () => clearTimeout(timeoutId);
     }
-  }, [localSalaryCap, settings?.salary_cap]);
+  }, [localSalaryCap, settings?.salary_cap, updateSettings]);
 
   const calculateTeamSalary = (roster: any) => {
     const allPlayerIds = [
@@ -159,7 +164,10 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
                   <Input
                     type="number"
                     value={localSalaryCap}
-                    onChange={(e) => setLocalSalaryCap(e.target.value)}
+                    onChange={(e) => {
+                      console.log('Salary cap input changed to:', e.target.value);
+                      setLocalSalaryCap(e.target.value);
+                    }}
                     className="w-32 h-8 bg-white/10 border-white/20 text-white"
                     placeholder="200000"
                   />
