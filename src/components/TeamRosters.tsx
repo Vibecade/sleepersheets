@@ -6,10 +6,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Users, DollarSign, Settings, Skull } from 'lucide-react';
 import { getPlayerCount, getTeamName } from '@/utils/leagueDataUtils';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
+import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { useToast } from '@/hooks/use-toast';
 import DeadCapManager from '@/components/DeadCapManager';
 
@@ -20,7 +22,6 @@ interface TeamRostersProps {
 }
 
 const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {} }) => {
-  const [salaryCap, setSalaryCap] = useState<number>(200000); // Default salary cap
   const [showSalaryFeatures, setShowSalaryFeatures] = useState(false);
   const [showDeadCapManager, setShowDeadCapManager] = useState(false);
   const { toast } = useToast();
@@ -29,6 +30,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   const leagueId = rosters[0]?.league_id || '';
   const { salaries } = usePlayerSalaries(leagueId);
   const { deadCapPlayers } = useDeadCapPlayers(leagueId);
+  const { settings, updateSettings, loading: settingsLoading } = useLeagueSettings(leagueId);
 
   const calculateTeamSalary = (roster: any) => {
     const allPlayerIds = [
@@ -59,12 +61,24 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   };
 
   const getSalaryCapStatus = (teamSalary: number, deadCap: number = 0) => {
+    const salaryCap = settings?.salary_cap || 200000;
     const totalSalary = teamSalary + deadCap;
     const percentage = (totalSalary / salaryCap) * 100;
     if (percentage > 100) return { color: 'text-red-400', bg: 'bg-red-500/10', status: 'Over Cap' };
     if (percentage > 90) return { color: 'text-amber-400', bg: 'bg-amber-500/10', status: 'Near Cap' };
     return { color: 'text-green-400', bg: 'bg-green-500/10', status: 'Under Cap' };
   };
+
+  const handleSalaryCapChange = async (newSalaryCap: number) => {
+    await updateSettings({ salary_cap: newSalaryCap });
+  };
+
+  const handleDeadCapEnabledChange = async (enabled: boolean) => {
+    await updateSettings({ dead_cap_enabled: enabled });
+  };
+
+  const salaryCap = settings?.salary_cap || 200000;
+  const deadCapEnabled = settings?.dead_cap_enabled ?? true;
 
   return (
     <div className="space-y-6">
@@ -91,16 +105,18 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
                 <span className="hidden sm:inline">Salary Features</span>
                 <span className="sm:hidden">Salaries</span>
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowDeadCapManager(!showDeadCapManager)}
-                className="flex items-center space-x-2"
-              >
-                <Skull className="w-4 h-4" />
-                <span className="hidden sm:inline">Dynasty Dead Cap</span>
-                <span className="sm:hidden">Dead Cap</span>
-              </Button>
+              {deadCapEnabled && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowDeadCapManager(!showDeadCapManager)}
+                  className="flex items-center space-x-2"
+                >
+                  <Skull className="w-4 h-4" />
+                  <span className="hidden sm:inline">Dynasty Dead Cap</span>
+                  <span className="sm:hidden">Dead Cap</span>
+                </Button>
+              )}
             </div>
           </div>
           
@@ -110,25 +126,38 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
             {showDeadCapManager && ' and dead cap management'}
           </CardDescription>
 
-          {showSalaryFeatures && (
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 bg-white/5 rounded-lg border border-white/10">
-              <div className="flex items-center space-x-2">
-                <Settings className="w-4 h-4 text-blue-400" />
-                <label className="text-sm font-medium text-blue-200">Salary Cap:</label>
+          {showSalaryFeatures && !settingsLoading && (
+            <div className="space-y-4 p-4 bg-white/5 rounded-lg border border-white/10">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex items-center space-x-2">
+                  <Settings className="w-4 h-4 text-blue-400" />
+                  <label className="text-sm font-medium text-blue-200">Salary Cap:</label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-300">$</span>
+                  <Input
+                    type="number"
+                    value={salaryCap}
+                    onChange={(e) => handleSalaryCapChange(Number(e.target.value))}
+                    className="w-32 h-8 bg-white/10 border-white/20 text-white"
+                    placeholder="200000"
+                  />
+                </div>
+                <Badge variant="outline" className="text-white border-white/20">
+                  Cap: {formatSalary(salaryCap)}
+                </Badge>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-300">$</span>
-                <Input
-                  type="number"
-                  value={salaryCap}
-                  onChange={(e) => setSalaryCap(Number(e.target.value))}
-                  className="w-32 h-8 bg-white/10 border-white/20 text-white"
-                  placeholder="200000"
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Skull className="w-4 h-4 text-red-400" />
+                  <label className="text-sm font-medium text-red-200">Enable Dead Cap:</label>
+                </div>
+                <Switch
+                  checked={deadCapEnabled}
+                  onCheckedChange={handleDeadCapEnabledChange}
                 />
               </div>
-              <Badge variant="outline" className="text-white border-white/20">
-                Cap: {formatSalary(salaryCap)}
-              </Badge>
             </div>
           )}
         </CardHeader>
@@ -139,7 +168,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
               const playerCounts = getPlayerCount(roster);
               const teamName = getTeamName(user);
               const teamSalary = calculateTeamSalary(roster);
-              const teamDeadCap = calculateTeamDeadCap(roster.roster_id);
+              const teamDeadCap = deadCapEnabled ? calculateTeamDeadCap(roster.roster_id) : 0;
               const salaryStatus = getSalaryCapStatus(teamSalary, teamDeadCap);
               
               return (
@@ -175,7 +204,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
                       </div>
                     </div>
 
-                    {(showSalaryFeatures && (teamSalary > 0 || teamDeadCap > 0)) && (
+                    {(showSalaryFeatures && (teamSalary > 0 || (deadCapEnabled && teamDeadCap > 0))) && (
                       <>
                         <Separator className="bg-white/10" />
                         <div className="space-y-2">
@@ -185,7 +214,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
                               {formatSalary(teamSalary)}
                             </span>
                           </div>
-                          {teamDeadCap > 0 && (
+                          {deadCapEnabled && teamDeadCap > 0 && (
                             <div className="flex justify-between items-center">
                               <span className="text-gray-300 text-xs sm:text-sm">Dead Cap:</span>
                               <span className="font-medium text-xs sm:text-sm text-red-400">
@@ -240,7 +269,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
         </CardContent>
       </Card>
 
-      {showDeadCapManager && (
+      {showDeadCapManager && deadCapEnabled && (
         <DeadCapManager
           leagueId={leagueId}
           rosters={rosters}

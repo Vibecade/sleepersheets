@@ -129,6 +129,33 @@ export type Database = {
         }
         Relationships: []
       }
+      league_settings: {
+        Row: {
+          created_at: string
+          dead_cap_enabled: boolean | null
+          id: string
+          league_id: string
+          salary_cap: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dead_cap_enabled?: boolean | null
+          id?: string
+          league_id: string
+          salary_cap?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dead_cap_enabled?: boolean | null
+          id?: string
+          league_id?: string
+          salary_cap?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       league_transactions: {
         Row: {
           adds: Json | null
