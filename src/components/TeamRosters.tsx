@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
     }
   }, [settings?.salary_cap]);
 
-  const handleSalarCapSave = async () => {
+  const handleSalaryCapSave = async () => {
     if (!localSalaryCap || !settings?.salary_cap) return;
     
     const newSalaryCap = Number(localSalaryCap);
@@ -169,7 +170,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
               deadCapEnabled={deadCapEnabled}
               onDeadCapEnabledChange={handleDeadCapEnabledChange}
               settingsLoading={settingsLoading}
-              onSalarCapSave={handleSalarCapSave}
+              onSalaryCapSave={handleSalaryCapSave}
             />
           )}
         </CardHeader>
