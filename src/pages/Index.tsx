@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import LeagueData from '@/components/LeagueData';
@@ -21,6 +22,11 @@ const Index = () => {
         throw new Error('League not found');
       }
       const league = await leagueResponse.json();
+      console.log('League data retrieved:', { 
+        name: league.name, 
+        season: league.season, 
+        league_id: league.league_id 
+      });
       
       // Fetch rosters
       const rostersResponse = await fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/rosters`);
@@ -126,17 +132,20 @@ const Index = () => {
       const userData = await userResponse.json();
       console.log('User data retrieved:', userData);
       
-      // Now use the user_id to fetch leagues
-      const response = await fetch(`https://api.sleeper.app/v1/user/${userData.user_id}/leagues/nfl/2024`);
+      // Now use the user_id to fetch leagues for current season (2025)
+      const currentYear = new Date().getFullYear();
+      console.log('Fetching leagues for year:', currentYear);
+      const response = await fetch(`https://api.sleeper.app/v1/user/${userData.user_id}/leagues/nfl/${currentYear}`);
       if (!response.ok) {
         throw new Error('Failed to fetch leagues for user');
       }
       const leagues = await response.json();
+      console.log('Leagues found:', leagues.length, leagues.map(l => ({ name: l.name, season: l.season, league_id: l.league_id })));
       
       if (leagues.length === 0) {
         toast({
           title: "No Leagues Found",
-          description: "No NFL leagues found for this username in 2024",
+          description: `No NFL leagues found for this username in ${currentYear}`,
           variant: "destructive"
         });
         return;
@@ -151,7 +160,7 @@ const Index = () => {
       
       toast({
         title: "Success!",
-        description: `Found ${leagues.length} league(s). Loaded: ${league.name}`
+        description: `Found ${leagues.length} league(s). Loaded: ${league.name} (${league.season})`
       });
 
     } catch (error) {
