@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -68,8 +68,8 @@ export const useLeagueSettings = (leagueId: string) => {
     }
   }, [leagueId]);
 
-  // Update settings in database
-  const updateSettings = async (updates: Partial<Pick<LeagueSettings, 'salary_cap' | 'dead_cap_enabled'>>) => {
+  // Update settings in database - using useCallback to stabilize the function reference
+  const updateSettings = useCallback(async (updates: Partial<Pick<LeagueSettings, 'salary_cap' | 'dead_cap_enabled'>>) => {
     try {
       console.log('Updating league settings:', updates);
       const { data, error } = await supabase
@@ -107,7 +107,7 @@ export const useLeagueSettings = (leagueId: string) => {
       });
       return false;
     }
-  };
+  }, [leagueId, toast]);
 
   return {
     settings,

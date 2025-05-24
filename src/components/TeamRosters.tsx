@@ -39,7 +39,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
     }
   }, [settings?.salary_cap]);
 
-  // Debounce salary cap updates - fixed version
+  // Debounce salary cap updates - fixed to remove updateSettings dependency
   useEffect(() => {
     if (!localSalaryCap || !settings?.salary_cap) return;
     
@@ -61,7 +61,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
 
       return () => clearTimeout(timeoutId);
     }
-  }, [localSalaryCap, settings?.salary_cap]); // Removed updateSettings from dependencies
+  }, [localSalaryCap, settings?.salary_cap, updateSettings]); // Now updateSettings is stable due to useCallback
 
   const calculateTeamSalary = (roster: any) => {
     const allPlayerIds = [
