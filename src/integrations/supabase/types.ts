@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      dead_cap_players: {
+        Row: {
+          created_at: string
+          id: string
+          league_id: string
+          player_id: string
+          roster_id: number
+          salary: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          league_id: string
+          player_id: string
+          roster_id: number
+          salary?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          league_id?: string
+          player_id?: string
+          roster_id?: number
+          salary?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       draft_picks: {
         Row: {
           created_at: string

@@ -47,6 +47,7 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
           <TeamRosters 
             rosters={rosters}
             userMap={userMap}
+            players={players}
           />
         </div>
 
