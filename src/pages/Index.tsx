@@ -11,33 +11,23 @@ const Index = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleLeagueSubmit = async () => {
-    if (!leagueId.trim()) {
-      toast({
-        title: "League ID Required",
-        description: "Please enter a valid Sleeper League ID",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setLoading(true);
-    console.log('Fetching league data for ID:', leagueId);
+  const fetchLeagueData = async (targetLeagueId: string) => {
+    console.log('Fetching league data for ID:', targetLeagueId);
 
     try {
       // Fetch league basic info
-      const leagueResponse = await fetch(`https://api.sleeper.app/v1/league/${leagueId}`);
+      const leagueResponse = await fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}`);
       if (!leagueResponse.ok) {
         throw new Error('League not found');
       }
       const league = await leagueResponse.json();
       
       // Fetch rosters
-      const rostersResponse = await fetch(`https://api.sleeper.app/v1/league/${leagueId}/rosters`);
+      const rostersResponse = await fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/rosters`);
       const rosters = await rostersResponse.json();
       
       // Fetch users
-      const usersResponse = await fetch(`https://api.sleeper.app/v1/league/${leagueId}/users`);
+      const usersResponse = await fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/users`);
       const users = await usersResponse.json();
       
       // Fetch NFL players data
@@ -46,11 +36,11 @@ const Index = () => {
 
       // Fetch transactions for current week
       const currentWeek = league.settings?.week || 1;
-      const transactionsResponse = await fetch(`https://api.sleeper.app/v1/league/${leagueId}/transactions/${currentWeek}`);
+      const transactionsResponse = await fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/transactions/${currentWeek}`);
       const transactions = transactionsResponse.ok ? await transactionsResponse.json() : [];
 
       // Fetch draft data
-      const draftsResponse = await fetch(`https://api.sleeper.app/v1/league/${leagueId}/drafts`);
+      const draftsResponse = await fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/drafts`);
       const drafts = draftsResponse.ok ? await draftsResponse.json() : [];
       
       // Fetch draft picks for each draft
@@ -77,13 +67,33 @@ const Index = () => {
       };
 
       setLeagueData(combinedData);
+      return league;
+
+    } catch (error) {
+      console.error('Error fetching league data:', error);
+      throw error;
+    }
+  };
+
+  const handleLeagueSubmit = async () => {
+    if (!leagueId.trim()) {
+      toast({
+        title: "League ID Required",
+        description: "Please enter a valid Sleeper League ID",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const league = await fetchLeagueData(leagueId);
       toast({
         title: "Success!",
         description: `Loaded data for ${league.name} including transactions and draft data`
       });
-
     } catch (error) {
-      console.error('Error fetching league data:', error);
       toast({
         title: "Error",
         description: "Failed to fetch league data. Please check your League ID.",
@@ -132,13 +142,16 @@ const Index = () => {
         return;
       }
 
-      // For now, use the first league found
+      // Use the first league found and automatically load its data
       const firstLeague = leagues[0];
       setLeagueId(firstLeague.league_id);
       
+      // Automatically fetch the league data
+      const league = await fetchLeagueData(firstLeague.league_id);
+      
       toast({
-        title: "Leagues Found",
-        description: `Found ${leagues.length} league(s). Using: ${firstLeague.name}`
+        title: "Success!",
+        description: `Found ${leagues.length} league(s). Loaded: ${league.name}`
       });
 
     } catch (error) {
