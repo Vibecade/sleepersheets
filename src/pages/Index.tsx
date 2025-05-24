@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import LeagueData from '@/components/LeagueData';
+import Footer from '@/components/Footer';
 import { LeagueHeader } from '@/components/home/LeagueHeader';
 import { LeagueConnectCard } from '@/components/home/LeagueConnectCard';
 
@@ -196,6 +197,8 @@ const Index = () => {
           <LeagueData data={leagueData} />
         )}
       </div>
+
+      <Footer />
     </div>
   );
 };
