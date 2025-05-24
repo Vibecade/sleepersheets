@@ -32,7 +32,6 @@ const DeadCapManager: React.FC<DeadCapManagerProps> = ({
   const [selectedRosterId, setSelectedRosterId] = useState('');
   const [deadCapSalary, setDeadCapSalary] = useState('');
   const [playerSearch, setPlayerSearch] = useState('');
-  const [showPlayerSearch, setShowPlayerSearch] = useState(false);
 
   // Filter players based on search - add safety check for players object
   const filteredPlayers = players && typeof players === 'object' 
@@ -46,10 +45,11 @@ const DeadCapManager: React.FC<DeadCapManagerProps> = ({
 
   const handlePlayerSelect = (playerId: string) => {
     const player = players[playerId];
+    if (!player) return;
+    
     setSelectedPlayerId(playerId);
     setSelectedPlayerName(`${player.first_name} ${player.last_name}`);
     setPlayerSearch(`${player.first_name} ${player.last_name}`);
-    setShowPlayerSearch(false);
   };
 
   const handleAddDeadCap = async () => {
@@ -133,35 +133,29 @@ const DeadCapManager: React.FC<DeadCapManagerProps> = ({
                   <CommandInput
                     placeholder="Search by player name..."
                     value={playerSearch}
-                    onValueChange={(value) => {
-                      setPlayerSearch(value);
-                      setShowPlayerSearch(value.length > 0);
-                    }}
-                    onFocus={() => setShowPlayerSearch(playerSearch.length > 0)}
+                    onValueChange={setPlayerSearch}
                     className="bg-transparent text-white placeholder:text-gray-400"
                   />
-                  {showPlayerSearch && filteredPlayers.length > 0 && (
-                    <CommandList className="max-h-[200px]">
-                      <CommandEmpty>No players found.</CommandEmpty>
-                      <CommandGroup>
-                        {filteredPlayers.map(([playerId, player]) => (
-                          <CommandItem
-                            key={playerId}
-                            value={`${player.first_name} ${player.last_name}`}
-                            onSelect={() => handlePlayerSelect(playerId)}
-                            className="text-white hover:bg-gray-700 cursor-pointer"
-                          >
-                            <Check
-                              className={`mr-2 h-4 w-4 ${
-                                selectedPlayerId === playerId ? "opacity-100" : "opacity-0"
-                              }`}
-                            />
-                            {player.first_name} {player.last_name} ({player.position}) - {player.team || 'FA'}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  )}
+                  <CommandList className="max-h-[200px]">
+                    <CommandEmpty>No players found.</CommandEmpty>
+                    <CommandGroup>
+                      {filteredPlayers.map(([playerId, player]) => (
+                        <CommandItem
+                          key={playerId}
+                          value={`${player.first_name} ${player.last_name}`}
+                          onSelect={() => handlePlayerSelect(playerId)}
+                          className="text-white hover:bg-gray-700 cursor-pointer"
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${
+                              selectedPlayerId === playerId ? "opacity-100" : "opacity-0"
+                            }`}
+                          />
+                          {player.first_name} {player.last_name} ({player.position}) - {player.team || 'FA'}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
                 </Command>
               </div>
             </div>
