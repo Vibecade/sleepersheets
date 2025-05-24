@@ -36,14 +36,14 @@ const ExportActions: React.FC<ExportActionsProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Clean Export Options</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-lg sm:text-xl">Clean Export Options</CardTitle>
+        <CardDescription className="text-sm sm:text-base">
           Download your league data in clean CSV format optimized for Google Sheets and Excel
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <div className="flex justify-center">
               <RosterExport 
                 league={league}
@@ -62,7 +62,7 @@ const ExportActions: React.FC<ExportActionsProps> = ({
               />
             </div>
             
-            <div className="flex justify-center">
+            <div className="flex justify-center sm:col-span-2 lg:col-span-1">
               <DraftExport 
                 league={league}
                 draftPicks={draftPicks}
