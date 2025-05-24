@@ -1,4 +1,3 @@
-
 import React from 'react';
 import LeagueHeader from './LeagueHeader';
 import TeamRosters from './TeamRosters';
@@ -17,9 +16,10 @@ interface LeagueDataProps {
     drafts?: any[];
     draftPicks?: any[];
   };
+  onRefreshData?: () => Promise<void>;
 }
 
-const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
+const LeagueData: React.FC<LeagueDataProps> = ({ data, onRefreshData }) => {
   const { league, rosters, users, players, transactions = [], drafts = [], draftPicks = [] } = data;
 
   // Create mappings
@@ -40,6 +40,7 @@ const LeagueData: React.FC<LeagueDataProps> = ({ data }) => {
             transactionCount={transactionCount}
             draftPickCount={draftPickCount}
             draftCount={draftCount}
+            onRefreshData={onRefreshData}
           />
         </div>
 
