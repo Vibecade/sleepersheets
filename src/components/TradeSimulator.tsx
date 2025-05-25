@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Search, ArrowLeftRight, DollarSign, AlertTriangle, CheckCircle } from 'lucide-react';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
+import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { formatPlayerName } from '@/utils/csvExport';
 
@@ -32,7 +33,6 @@ const TradeSimulator: React.FC<TradeSimulatorProps> = ({
   userMap,
   players
 }) => {
-  const [salaryCap, setSalaryCap] = useState<number>(200000);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTeam1, setSelectedTeam1] = useState<string>('');
   const [selectedTeam2, setSelectedTeam2] = useState<string>('');
@@ -40,6 +40,10 @@ const TradeSimulator: React.FC<TradeSimulatorProps> = ({
   const [team2Players, setTeam2Players] = useState<SelectedPlayer[]>([]);
   
   const { salaries } = usePlayerSalaries(league.league_id);
+  const { settings } = useLeagueSettings(league.league_id);
+
+  // Use the league's saved salary cap, fallback to 200000 if not set
+  const salaryCap = settings?.salary_cap || 200000;
 
   const formatSalary = (amount: number) => {
     if (amount >= 1000000) {
@@ -170,19 +174,9 @@ const TradeSimulator: React.FC<TradeSimulatorProps> = ({
             <div>
               <CardTitle>Trade Simulator</CardTitle>
               <CardDescription>
-                Simulate trades and check salary cap impact
+                Simulate trades and check salary cap impact (Cap: {formatSalary(salaryCap)})
               </CardDescription>
             </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-300">Salary Cap:</span>
-            <Input
-              type="number"
-              value={salaryCap}
-              onChange={(e) => setSalaryCap(Number(e.target.value))}
-              className="w-32 h-8 bg-white/10 border-white/20 text-white"
-              placeholder="200000"
-            />
           </div>
         </div>
       </CardHeader>

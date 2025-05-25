@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { LeagueHeader } from '@/components/home/LeagueHeader';
 import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
+import { cachedFetch } from '@/utils/apiCache';
 
 const Index = () => {
   const [leagueId, setLeagueId] = useState('');
@@ -18,23 +19,12 @@ const Index = () => {
     console.log('Fetching league data for ID:', targetLeagueId);
 
     try {
-      // Use Promise.all for parallel requests where possible
-      const [leagueResponse, rostersResponse, usersResponse, playersResponse] = await Promise.all([
-        fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}`),
-        fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/rosters`),
-        fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/users`),
-        fetch('https://api.sleeper.app/v1/players/nfl')
-      ]);
-
-      if (!leagueResponse.ok) {
-        throw new Error('League not found');
-      }
-
+      // Use cached fetch with different TTLs for different data types
       const [league, rosters, users, players] = await Promise.all([
-        leagueResponse.json(),
-        rostersResponse.json(),
-        usersResponse.json(),
-        playersResponse.json()
+        cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}`, {}, 10 * 60 * 1000), // 10 min - league data changes rarely
+        cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/rosters`, {}, 5 * 60 * 1000), // 5 min - rosters change occasionally
+        cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/users`, {}, 10 * 60 * 1000), // 10 min - users change rarely
+        cachedFetch('https://api.sleeper.app/v1/players/nfl', {}, 60 * 60 * 1000) // 1 hour - player data changes daily
       ]);
 
       console.log('League data retrieved:', { 
@@ -43,28 +33,19 @@ const Index = () => {
         league_id: league.league_id 
       });
 
-      // Fetch additional data in parallel
+      // Fetch additional data with shorter cache for more dynamic content
       const currentWeek = league.settings?.week || 1;
-      const [transactionsResponse, draftsResponse] = await Promise.all([
-        fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/transactions/${currentWeek}`),
-        fetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/drafts`)
-      ]);
-
       const [transactions, drafts] = await Promise.all([
-        transactionsResponse.ok ? transactionsResponse.json() : [],
-        draftsResponse.ok ? draftsResponse.json() : []
+        cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/transactions/${currentWeek}`, {}, 2 * 60 * 1000), // 2 min - transactions are dynamic
+        cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/drafts`, {}, 10 * 60 * 1000) // 10 min - drafts change rarely
       ]);
       
       // Fetch draft picks for each draft
       const draftPicks = [];
       if (drafts.length > 0) {
         const draftPickPromises = drafts.map(async (draft) => {
-          const picksResponse = await fetch(`https://api.sleeper.app/v1/draft/${draft.draft_id}/picks`);
-          if (picksResponse.ok) {
-            const picks = await picksResponse.json();
-            return { draft, picks };
-          }
-          return null;
+          const picks = await cachedFetch(`https://api.sleeper.app/v1/draft/${draft.draft_id}/picks`, {}, 10 * 60 * 1000); // 10 min
+          return { draft, picks };
         });
         
         const results = await Promise.all(draftPickPromises);
@@ -138,20 +119,12 @@ const Index = () => {
     console.log('Fetching user data for username:', username);
 
     try {
-      const userResponse = await fetch(`https://api.sleeper.app/v1/user/${username}`);
-      if (!userResponse.ok) {
-        throw new Error('User not found');
-      }
-      const userData = await userResponse.json();
+      const userData = await cachedFetch(`https://api.sleeper.app/v1/user/${username}`, {}, 10 * 60 * 1000);
       console.log('User data retrieved:', userData);
       
       const currentYear = new Date().getFullYear();
       console.log('Fetching leagues for year:', currentYear);
-      const response = await fetch(`https://api.sleeper.app/v1/user/${userData.user_id}/leagues/nfl/${currentYear}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch leagues for user');
-      }
-      const leagues = await response.json();
+      const leagues = await cachedFetch(`https://api.sleeper.app/v1/user/${userData.user_id}/leagues/nfl/${currentYear}`, {}, 5 * 60 * 1000);
       console.log('Leagues found:', leagues.length, leagues.map(l => ({ name: l.name, season: l.season, league_id: l.league_id })));
       
       if (leagues.length === 0) {
