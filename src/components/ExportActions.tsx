@@ -54,21 +54,25 @@ const ExportActions: React.FC<ExportActionsProps> = ({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-3 sm:pb-4">
         <CardTitle className="text-lg sm:text-xl">Export Center</CardTitle>
-        <CardDescription className="text-sm sm:text-base">
+        <CardDescription className="text-sm">
           Download your league data and configure export options
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-3 sm:p-6">
         <Tabs defaultValue="exports" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="exports">Data Exports</TabsTrigger>
-            <TabsTrigger value="options">Export Options</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 h-auto p-1">
+            <TabsTrigger value="exports" className="text-sm py-2 px-3 min-h-[44px]">
+              Data Exports
+            </TabsTrigger>
+            <TabsTrigger value="options" className="text-sm py-2 px-3 min-h-[44px]">
+              Export Options
+            </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="exports" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          <TabsContent value="exports" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
               <div className="flex justify-center">
                 <RosterExport 
                   league={league}
@@ -89,7 +93,7 @@ const ExportActions: React.FC<ExportActionsProps> = ({
                 />
               </div>
               
-              <div className="flex justify-center">
+              <div className="flex justify-center sm:col-span-2 lg:col-span-1">
                 <DraftExport 
                   league={league}
                   draftPicks={draftPicks}
@@ -106,7 +110,7 @@ const ExportActions: React.FC<ExportActionsProps> = ({
             />
           </TabsContent>
           
-          <TabsContent value="options">
+          <TabsContent value="options" className="mt-4 sm:mt-6">
             <ExportOptions onOptionsChange={handleOptionsChange} />
           </TabsContent>
         </Tabs>

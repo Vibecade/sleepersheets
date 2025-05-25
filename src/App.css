@@ -11,9 +11,8 @@
 .main-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1.5rem;
   min-height: 100vh;
-  /* Better mobile scaling */
   width: 100%;
   box-sizing: border-box;
 }
@@ -22,7 +21,6 @@
 @media (max-width: 768px) {
   .main-container {
     padding: 1rem;
-    /* Ensure full width on mobile */
     max-width: 100%;
   }
 }
@@ -36,6 +34,13 @@
 /* Landscape mobile optimization */
 @media (max-width: 768px) and (orientation: landscape) {
   .main-container {
-    padding: 1rem 2rem;
+    padding: 0.75rem 1.5rem;
+  }
+}
+
+/* Very small devices */
+@media (max-width: 360px) {
+  .main-container {
+    padding: 0.5rem;
   }
 }
