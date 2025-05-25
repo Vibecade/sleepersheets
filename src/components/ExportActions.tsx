@@ -68,7 +68,7 @@ const ExportActions: React.FC<ExportActionsProps> = ({
           </TabsList>
           
           <TabsContent value="exports" className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
               <div className="flex justify-center">
                 <RosterExport 
                   league={league}
@@ -89,7 +89,7 @@ const ExportActions: React.FC<ExportActionsProps> = ({
                 />
               </div>
               
-              <div className="flex justify-center sm:col-span-2 lg:col-span-1">
+              <div className="flex justify-center">
                 <DraftExport 
                   league={league}
                   draftPicks={draftPicks}
