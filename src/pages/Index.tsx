@@ -7,6 +7,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import { LeagueHeader } from '@/components/home/LeagueHeader';
 import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
 import { cachedFetch } from '@/utils/apiCache';
+import type { SleeperLeague, SleeperUser, SleeperRoster, SleeperDraft, SleeperTransaction, SleeperPlayer } from '@/types/sleeper';
 
 const Index = () => {
   const [leagueId, setLeagueId] = useState('');
@@ -21,10 +22,10 @@ const Index = () => {
     try {
       // Use cached fetch with different TTLs for different data types
       const [league, rosters, users, players] = await Promise.all([
-        cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}`, {}, 10 * 60 * 1000), // 10 min - league data changes rarely
-        cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/rosters`, {}, 5 * 60 * 1000), // 5 min - rosters change occasionally
-        cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/users`, {}, 10 * 60 * 1000), // 10 min - users change rarely
-        cachedFetch('https://api.sleeper.app/v1/players/nfl', {}, 60 * 60 * 1000) // 1 hour - player data changes daily
+        cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}`, {}, 10 * 60 * 1000) as Promise<SleeperLeague>, // 10 min - league data changes rarely
+        cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/rosters`, {}, 5 * 60 * 1000) as Promise<SleeperRoster[]>, // 5 min - rosters change occasionally
+        cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/users`, {}, 10 * 60 * 1000) as Promise<SleeperUser[]>, // 10 min - users change rarely
+        cachedFetch('https://api.sleeper.app/v1/players/nfl', {}, 60 * 60 * 1000) as Promise<Record<string, SleeperPlayer>> // 1 hour - player data changes daily
       ]);
 
       console.log('League data retrieved:', { 
@@ -36,8 +37,8 @@ const Index = () => {
       // Fetch additional data with shorter cache for more dynamic content
       const currentWeek = league.settings?.week || 1;
       const [transactions, drafts] = await Promise.all([
-        cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/transactions/${currentWeek}`, {}, 2 * 60 * 1000), // 2 min - transactions are dynamic
-        cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/drafts`, {}, 10 * 60 * 1000) // 10 min - drafts change rarely
+        cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/transactions/${currentWeek}`, {}, 2 * 60 * 1000) as Promise<SleeperTransaction[]>, // 2 min - transactions are dynamic
+        cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/drafts`, {}, 10 * 60 * 1000) as Promise<SleeperDraft[]> // 10 min - drafts change rarely
       ]);
       
       // Fetch draft picks for each draft
@@ -119,12 +120,12 @@ const Index = () => {
     console.log('Fetching user data for username:', username);
 
     try {
-      const userData = await cachedFetch(`https://api.sleeper.app/v1/user/${username}`, {}, 10 * 60 * 1000);
+      const userData = await cachedFetch(`https://api.sleeper.app/v1/user/${username}`, {}, 10 * 60 * 1000) as SleeperUser;
       console.log('User data retrieved:', userData);
       
       const currentYear = new Date().getFullYear();
       console.log('Fetching leagues for year:', currentYear);
-      const leagues = await cachedFetch(`https://api.sleeper.app/v1/user/${userData.user_id}/leagues/nfl/${currentYear}`, {}, 5 * 60 * 1000);
+      const leagues = await cachedFetch(`https://api.sleeper.app/v1/user/${userData.user_id}/leagues/nfl/${currentYear}`, {}, 5 * 60 * 1000) as SleeperLeague[];
       console.log('Leagues found:', leagues.length, leagues.map(l => ({ name: l.name, season: l.season, league_id: l.league_id })));
       
       if (leagues.length === 0) {
