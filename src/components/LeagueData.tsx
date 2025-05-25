@@ -1,11 +1,12 @@
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import LeagueHeader from './LeagueHeader';
 import TeamRosters from './TeamRosters';
 import DataDashboard from './DataDashboard';
 import ExportActions from './ExportActions';
 import TradeSimulator from './TradeSimulator';
-import { createUserMap, createRosterUserMap } from '@/utils/leagueDataUtils';
+import ErrorBoundary from './ErrorBoundary';
+import { LeagueDataProvider, useLeagueData } from './LeagueDataProvider';
 
 interface LeagueDataProps {
   data: {
@@ -20,85 +21,82 @@ interface LeagueDataProps {
   onRefreshData?: () => Promise<void>;
 }
 
-const LeagueData: React.FC<LeagueDataProps> = ({ data, onRefreshData }) => {
-  const { league, rosters, users, players, transactions = [], drafts = [], draftPicks = [] } = data;
-
-  // Memoize expensive calculations
-  const userMap = useMemo(() => createUserMap(users), [users]);
-  const rosterUserMap = useMemo(() => createRosterUserMap(rosters, userMap), [rosters, userMap]);
-  
-  const stats = useMemo(() => ({
-    transactionCount: transactions.length,
-    draftPickCount: draftPicks.reduce((acc, dp) => acc + dp.picks.length, 0),
-    draftCount: drafts.length
-  }), [transactions.length, draftPicks, drafts.length]);
-
-  // Memoize component props to prevent unnecessary re-renders
-  const headerProps = useMemo(() => ({
-    league,
-    transactionCount: stats.transactionCount,
-    draftPickCount: stats.draftPickCount,
-    draftCount: stats.draftCount,
-    onRefreshData
-  }), [league, stats.transactionCount, stats.draftPickCount, stats.draftCount, onRefreshData]);
-
-  const rosterProps = useMemo(() => ({
-    rosters,
-    userMap,
-    players
-  }), [rosters, userMap, players]);
-
-  const tradeSimulatorProps = useMemo(() => ({
-    league,
-    rosters,
-    userMap,
-    players
-  }), [league, rosters, userMap, players]);
-
-  const dashboardProps = useMemo(() => ({
-    league,
-    rosters,
-    userMap,
-    rosterUserMap,
-    players,
-    transactions,
-    draftPicks
-  }), [league, rosters, userMap, rosterUserMap, players, transactions, draftPicks]);
-
-  const exportProps = useMemo(() => ({
-    league,
-    rosters,
-    userMap,
-    rosterUserMap,
-    players,
-    transactions,
-    draftPicks
-  }), [league, rosters, userMap, rosterUserMap, players, transactions, draftPicks]);
+const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void> }> = ({ onRefreshData }) => {
+  const { league, rosters, userMap, rosterUserMap, players, transactions, draftPicks, stats } = useLeagueData();
 
   return (
     <div className="main-container">
       <div className="space-y-8">
         <div className="slide-up">
-          <LeagueHeader {...headerProps} />
+          <ErrorBoundary>
+            <LeagueHeader
+              league={league}
+              transactionCount={stats.transactionCount}
+              draftPickCount={stats.draftPickCount}
+              draftCount={stats.draftCount}
+              onRefreshData={onRefreshData}
+            />
+          </ErrorBoundary>
         </div>
 
         <div className="slide-up" style={{ animationDelay: '0.2s' }}>
-          <TeamRosters {...rosterProps} />
+          <ErrorBoundary>
+            <TeamRosters
+              rosters={rosters}
+              userMap={userMap}
+              players={players}
+            />
+          </ErrorBoundary>
         </div>
 
         <div className="slide-up" style={{ animationDelay: '0.3s' }}>
-          <TradeSimulator {...tradeSimulatorProps} />
+          <ErrorBoundary>
+            <TradeSimulator
+              league={league}
+              rosters={rosters}
+              userMap={userMap}
+              players={players}
+            />
+          </ErrorBoundary>
         </div>
 
         <div className="slide-up" style={{ animationDelay: '0.4s' }}>
-          <DataDashboard {...dashboardProps} />
+          <ErrorBoundary>
+            <DataDashboard
+              league={league}
+              rosters={rosters}
+              userMap={userMap}
+              rosterUserMap={rosterUserMap}
+              players={players}
+              transactions={transactions}
+              draftPicks={draftPicks}
+            />
+          </ErrorBoundary>
         </div>
 
         <div className="slide-up" style={{ animationDelay: '0.5s' }}>
-          <ExportActions {...exportProps} />
+          <ErrorBoundary>
+            <ExportActions
+              league={league}
+              rosters={rosters}
+              userMap={userMap}
+              rosterUserMap={rosterUserMap}
+              players={players}
+              transactions={transactions}
+              draftPicks={draftPicks}
+            />
+          </ErrorBoundary>
         </div>
       </div>
     </div>
+  );
+};
+
+const LeagueData: React.FC<LeagueDataProps> = ({ data, onRefreshData }) => {
+  return (
+    <LeagueDataProvider data={data}>
+      <LeagueDataContent onRefreshData={onRefreshData} />
+    </LeagueDataProvider>
   );
 };
 

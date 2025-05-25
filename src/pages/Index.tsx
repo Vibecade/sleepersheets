@@ -1,10 +1,11 @@
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import LeagueData from '@/components/LeagueData';
 import Footer from '@/components/Footer';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { LeagueHeader } from '@/components/home/LeagueHeader';
-import { LeagueConnectCard } from '@/components/home/LeagueConnectCard';
+import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
 
 const Index = () => {
   const [leagueId, setLeagueId] = useState('');
@@ -205,32 +206,31 @@ const Index = () => {
     }
   }, [leagueData?.league?.league_id, fetchLeagueData, toast]);
 
-  // Memoize the league connect card props to prevent unnecessary re-renders
-  const connectCardProps = useMemo(() => ({
-    leagueId,
-    setLeagueId,
-    username,
-    setUsername,
-    onLeagueSubmit: handleLeagueSubmit,
-    onUsernameSubmit: handleUsernameSubmit,
-    loading
-  }), [leagueId, username, handleLeagueSubmit, handleUsernameSubmit, loading]);
-
   return (
     <div className="min-h-screen">
       <LeagueHeader />
 
       <div className="max-w-6xl mx-auto px-4 py-12">
-        {!leagueData ? (
-          <div className="max-w-2xl mx-auto space-y-8">
-            <LeagueConnectCard {...connectCardProps} />
-          </div>
-        ) : (
-          <LeagueData 
-            data={leagueData} 
-            onRefreshData={handleRefreshData}
-          />
-        )}
+        <ErrorBoundary>
+          {!leagueData ? (
+            <div className="max-w-2xl mx-auto space-y-8">
+              <LeagueConnectionForm
+                leagueId={leagueId}
+                setLeagueId={setLeagueId}
+                username={username}
+                setUsername={setUsername}
+                onLeagueSubmit={handleLeagueSubmit}
+                onUsernameSubmit={handleUsernameSubmit}
+                loading={loading}
+              />
+            </div>
+          ) : (
+            <LeagueData 
+              data={leagueData} 
+              onRefreshData={handleRefreshData}
+            />
+          )}
+        </ErrorBoundary>
       </div>
 
       <Footer />

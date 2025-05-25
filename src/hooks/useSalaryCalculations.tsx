@@ -9,6 +9,7 @@ interface SalaryCalculationsProps {
 
 export const useSalaryCalculations = ({ rosters, salaries, deadCapPlayers }: SalaryCalculationsProps) => {
   const teamSalaries = useMemo(() => {
+    console.log('Calculating team salaries for', rosters.length, 'teams');
     const calculations: Record<number, number> = {};
     
     rosters.forEach((roster) => {
@@ -28,6 +29,7 @@ export const useSalaryCalculations = ({ rosters, salaries, deadCapPlayers }: Sal
   }, [rosters, salaries]);
 
   const teamDeadCaps = useMemo(() => {
+    console.log('Calculating team dead caps for', rosters.length, 'teams');
     const calculations: Record<number, number> = {};
     
     rosters.forEach((roster) => {

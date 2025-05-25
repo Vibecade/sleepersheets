@@ -9,6 +9,7 @@ import { useSalaryCalculations } from '@/hooks/useSalaryCalculations';
 import DeadCapManager from '@/components/DeadCapManager';
 import TeamRostersHeader from '@/components/TeamRostersHeader';
 import TeamRostersGrid from '@/components/TeamRostersGrid';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface TeamRostersProps {
   rosters: any[];
@@ -22,13 +23,15 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   const [localSalaryCap, setLocalSalaryCap] = useState<string>('');
   const { toast } = useToast();
 
-  // Get league ID from first roster (assuming all rosters are from same league)
+  // Get league ID from first roster
   const leagueId = rosters[0]?.league_id || '';
+  
+  // Load data with error boundaries
   const { salaries } = usePlayerSalaries(leagueId);
   const { deadCapPlayers } = useDeadCapPlayers(leagueId);
   const { settings, updateSettings, loading: settingsLoading } = useLeagueSettings(leagueId);
 
-  // Calculate team salaries and dead caps using the new hook
+  // Calculate team salaries and dead caps using optimized hook
   const { teamSalaries, teamDeadCaps } = useSalaryCalculations({
     rosters,
     salaries,
@@ -43,8 +46,6 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   }, [settings?.salary_cap]);
 
   const handleSalaryCapSave = async () => {
-    console.log('Manual save triggered with value:', localSalaryCap);
-    
     if (!localSalaryCap) {
       toast({
         title: "Error",
@@ -65,7 +66,6 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
       return;
     }
     
-    console.log('Saving salary cap:', newSalaryCap);
     try {
       await updateSettings({ salary_cap: newSalaryCap });
       toast({
@@ -83,49 +83,62 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   };
 
   const handleDeadCapEnabledChange = async (enabled: boolean) => {
-    await updateSettings({ dead_cap_enabled: enabled });
+    try {
+      await updateSettings({ dead_cap_enabled: enabled });
+    } catch (error) {
+      console.error('Failed to update dead cap setting:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update dead cap setting",
+        variant: "destructive"
+      });
+    }
   };
 
   const salaryCap = settings?.salary_cap || 200000;
   const deadCapEnabled = settings?.dead_cap_enabled ?? true;
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <Card>
-        <TeamRostersHeader
-          showSalaryFeatures={showSalaryFeatures}
-          showDeadCapManager={showDeadCapManager}
-          deadCapEnabled={deadCapEnabled}
-          onToggleSalaryFeatures={() => setShowSalaryFeatures(!showSalaryFeatures)}
-          onToggleDeadCapManager={() => setShowDeadCapManager(!showDeadCapManager)}
-          localSalaryCap={localSalaryCap}
-          setLocalSalaryCap={setLocalSalaryCap}
-          salaryCap={salaryCap}
-          onDeadCapEnabledChange={handleDeadCapEnabledChange}
-          settingsLoading={settingsLoading}
-          onSalaryCapSave={handleSalaryCapSave}
-        />
-        
-        <TeamRostersGrid
-          rosters={rosters}
-          userMap={userMap}
-          showSalaryFeatures={showSalaryFeatures}
-          deadCapEnabled={deadCapEnabled}
-          teamSalaries={teamSalaries}
-          teamDeadCaps={teamDeadCaps}
-          salaryCap={salaryCap}
-        />
-      </Card>
+    <ErrorBoundary>
+      <div className="space-y-4 sm:space-y-6">
+        <Card>
+          <TeamRostersHeader
+            showSalaryFeatures={showSalaryFeatures}
+            showDeadCapManager={showDeadCapManager}
+            deadCapEnabled={deadCapEnabled}
+            onToggleSalaryFeatures={() => setShowSalaryFeatures(!showSalaryFeatures)}
+            onToggleDeadCapManager={() => setShowDeadCapManager(!showDeadCapManager)}
+            localSalaryCap={localSalaryCap}
+            setLocalSalaryCap={setLocalSalaryCap}
+            salaryCap={salaryCap}
+            onDeadCapEnabledChange={handleDeadCapEnabledChange}
+            settingsLoading={settingsLoading}
+            onSalaryCapSave={handleSalaryCapSave}
+          />
+          
+          <TeamRostersGrid
+            rosters={rosters}
+            userMap={userMap}
+            showSalaryFeatures={showSalaryFeatures}
+            deadCapEnabled={deadCapEnabled}
+            teamSalaries={teamSalaries}
+            teamDeadCaps={teamDeadCaps}
+            salaryCap={salaryCap}
+          />
+        </Card>
 
-      {showDeadCapManager && deadCapEnabled && (
-        <DeadCapManager
-          leagueId={leagueId}
-          rosters={rosters}
-          userMap={userMap}
-          players={players}
-        />
-      )}
-    </div>
+        {showDeadCapManager && deadCapEnabled && (
+          <ErrorBoundary>
+            <DeadCapManager
+              leagueId={leagueId}
+              rosters={rosters}
+              userMap={userMap}
+              players={players}
+            />
+          </ErrorBoundary>
+        )}
+      </div>
+    </ErrorBoundary>
   );
 };
 
