@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -37,58 +36,47 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   }, [settings?.salary_cap]);
 
   const handleSalaryCapSave = async () => {
-    if (!localSalaryCap || !settings?.salary_cap) return;
+    console.log('Manual save triggered with value:', localSalaryCap);
+    
+    if (!localSalaryCap) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid salary cap amount",
+        variant: "destructive"
+      });
+      return;
+    }
     
     const newSalaryCap = Number(localSalaryCap);
-    const currentSalaryCap = Number(settings.salary_cap);
     
-    if (newSalaryCap > 0 && newSalaryCap !== currentSalaryCap) {
-      console.log('Manually saving salary cap to:', newSalaryCap);
-      try {
-        await updateSettings({ salary_cap: newSalaryCap });
-        toast({
-          title: "Success!",
-          description: "Salary cap updated successfully",
-        });
-      } catch (error) {
-        console.error('Failed to update salary cap:', error);
-        toast({
-          title: "Error",
-          description: "Failed to update salary cap",
-          variant: "destructive"
-        });
-      }
-    } else {
+    if (newSalaryCap <= 0) {
       toast({
-        title: "No Changes",
-        description: "Salary cap is already up to date",
+        title: "Error",
+        description: "Salary cap must be greater than 0",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    console.log('Saving salary cap:', newSalaryCap);
+    try {
+      await updateSettings({ salary_cap: newSalaryCap });
+      toast({
+        title: "Success!",
+        description: `Salary cap updated to $${newSalaryCap.toLocaleString()}`,
+      });
+    } catch (error) {
+      console.error('Failed to update salary cap:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update salary cap",
+        variant: "destructive"
       });
     }
   };
 
-  // Debounce salary cap updates - fixed to remove updateSettings dependency
-  useEffect(() => {
-    if (!localSalaryCap || !settings?.salary_cap) return;
-    
-    const newSalaryCap = Number(localSalaryCap);
-    const currentSalaryCap = Number(settings.salary_cap);
-    
-    console.log('Salary cap comparison:', { newSalaryCap, currentSalaryCap, localSalaryCap });
-    
-    if (newSalaryCap > 0 && newSalaryCap !== currentSalaryCap) {
-      const timeoutId = setTimeout(async () => {
-        console.log('Updating salary cap to:', newSalaryCap);
-        try {
-          await updateSettings({ salary_cap: newSalaryCap });
-          console.log('Salary cap update completed');
-        } catch (error) {
-          console.error('Failed to update salary cap:', error);
-        }
-      }, 1000); // Wait 1 second after user stops typing
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [localSalaryCap, settings?.salary_cap, updateSettings]); // Now updateSettings is stable due to useCallback
+  // Remove the debounced auto-save useEffect to avoid conflicts
+  // The manual save button will handle all saves
 
   const calculateTeamSalary = (roster: any) => {
     const allPlayerIds = [
