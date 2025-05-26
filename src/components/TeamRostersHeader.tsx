@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Users, DollarSign, Skull, Calculator } from 'lucide-react';
 import SalarySettings from '@/components/SalarySettings';
+import FAABSettings from '@/components/FAABSettings';
 
 interface TeamRostersHeaderProps {
   showSalaryFeatures: boolean;
@@ -21,6 +22,14 @@ interface TeamRostersHeaderProps {
   onToggleFAAB: () => void;
   showContractCalculator: boolean;
   onToggleContractCalculator: () => void;
+  // FAAB settings props
+  faabCap: number;
+  reserveLimit: number;
+  localFaabCap: string;
+  localReserveLimit: string;
+  setLocalFaabCap: (value: string) => void;
+  setLocalReserveLimit: (value: string) => void;
+  onFaabSettingsSave: () => Promise<void>;
 }
 
 const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
@@ -38,7 +47,14 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
   showFAAB,
   onToggleFAAB,
   showContractCalculator,
-  onToggleContractCalculator
+  onToggleContractCalculator,
+  faabCap,
+  reserveLimit,
+  localFaabCap,
+  localReserveLimit,
+  setLocalFaabCap,
+  setLocalReserveLimit,
+  onFaabSettingsSave
 }) => {
   return (
     <CardHeader className="pb-3 sm:pb-4">
@@ -113,6 +129,21 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
             onDeadCapEnabledChange={onDeadCapEnabledChange}
             settingsLoading={settingsLoading}
             onSalaryCapSave={onSalaryCapSave}
+          />
+        </div>
+      )}
+
+      {showFAAB && (
+        <div className="pt-3 sm:pt-4 border-t border-white/10">
+          <FAABSettings
+            faabCap={faabCap}
+            reserveLimit={reserveLimit}
+            localFaabCap={localFaabCap}
+            localReserveLimit={localReserveLimit}
+            setLocalFaabCap={setLocalFaabCap}
+            setLocalReserveLimit={setLocalReserveLimit}
+            onFaabSettingsSave={onFaabSettingsSave}
+            settingsLoading={settingsLoading}
           />
         </div>
       )}

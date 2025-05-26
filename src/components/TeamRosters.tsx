@@ -25,6 +25,8 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   const [showFAAB, setShowFAAB] = useState(false);
   const [showContractCalculator, setShowContractCalculator] = useState(false);
   const [localSalaryCap, setLocalSalaryCap] = useState<string>('');
+  const [localFaabCap, setLocalFaabCap] = useState<string>('');
+  const [localReserveLimit, setLocalReserveLimit] = useState<string>('');
   const { toast } = useToast();
 
   // Get league ID from first roster
@@ -45,12 +47,22 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   // Calculate FAAB for teams
   const { teamFAAB } = useFAABCalculations({ rosters, leagueId });
 
-  // Update local salary cap when settings change
+  // Update local values when settings change
   useEffect(() => {
     if (settings?.salary_cap) {
       setLocalSalaryCap(settings.salary_cap.toString());
     }
-  }, [settings?.salary_cap]);
+    if (settings?.faab_cap) {
+      setLocalFaabCap(settings.faab_cap.toString());
+    } else {
+      setLocalFaabCap('100'); // Default FAAB cap
+    }
+    if (settings?.reserve_limit) {
+      setLocalReserveLimit(settings.reserve_limit.toString());
+    } else {
+      setLocalReserveLimit('100'); // Default reserve limit
+    }
+  }, [settings]);
 
   const handleSalaryCapSave = async () => {
     if (!localSalaryCap) {
@@ -89,6 +101,47 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
     }
   };
 
+  const handleFaabSettingsSave = async () => {
+    if (!localFaabCap || !localReserveLimit) {
+      toast({
+        title: "Error",
+        description: "Please enter valid FAAB settings",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const newFaabCap = Number(localFaabCap);
+    const newReserveLimit = Number(localReserveLimit);
+    
+    if (newFaabCap <= 0 || newReserveLimit < 0) {
+      toast({
+        title: "Error",
+        description: "FAAB cap must be greater than 0 and reserve limit cannot be negative",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      await updateSettings({ 
+        faab_cap: newFaabCap,
+        reserve_limit: newReserveLimit
+      });
+      toast({
+        title: "Success!",
+        description: `FAAB settings updated: Cap $${newFaabCap}, Reserve $${newReserveLimit}`,
+      });
+    } catch (error) {
+      console.error('Failed to update FAAB settings:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update FAAB settings",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleDeadCapEnabledChange = async (enabled: boolean) => {
     try {
       await updateSettings({ dead_cap_enabled: enabled });
@@ -104,6 +157,8 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
 
   const salaryCap = settings?.salary_cap || 200000;
   const deadCapEnabled = settings?.dead_cap_enabled ?? true;
+  const faabCap = settings?.faab_cap || 100;
+  const reserveLimit = settings?.reserve_limit || 100;
 
   return (
     <ErrorBoundary>
@@ -125,6 +180,13 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
             onToggleFAAB={() => setShowFAAB(!showFAAB)}
             showContractCalculator={showContractCalculator}
             onToggleContractCalculator={() => setShowContractCalculator(!showContractCalculator)}
+            faabCap={faabCap}
+            reserveLimit={reserveLimit}
+            localFaabCap={localFaabCap}
+            localReserveLimit={localReserveLimit}
+            setLocalFaabCap={setLocalFaabCap}
+            setLocalReserveLimit={setLocalReserveLimit}
+            onFaabSettingsSave={handleFaabSettingsSave}
           />
           
           <TeamRostersGrid

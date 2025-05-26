@@ -1,3 +1,4 @@
+
 import { useMemo } from 'react';
 import { usePlayerContracts } from './usePlayerContracts';
 import { usePlayerSalaries } from './usePlayerSalaries';
@@ -17,7 +18,8 @@ export const useFAABCalculations = ({ rosters, leagueId }: FAABCalculationsProps
     console.log('Calculating FAAB for teams');
     const calculations: Record<number, number> = {};
     const salaryCap = settings?.salary_cap || 200000;
-    const reserveLimit = 100; // Fixed reserve limit as specified
+    const reserveLimit = settings?.reserve_limit || 100;
+    const faabCap = settings?.faab_cap || 100;
     
     rosters.forEach((roster) => {
       const allPlayerIds = [
@@ -31,13 +33,14 @@ export const useFAABCalculations = ({ rosters, leagueId }: FAABCalculationsProps
         return total + (salary || 0);
       }, 0);
       
-      // FAAB = Salary Cap - Total Salary - Reserve Limit
-      const faab = Math.max(0, salaryCap - totalSalary - reserveLimit);
-      calculations[roster.roster_id] = Math.min(faab, 100); // Never exceed 100
+      // FAAB = min(Salary Cap - Total Salary - Reserve Limit, FAAB Cap)
+      const availableFaab = Math.max(0, salaryCap - totalSalary - reserveLimit);
+      const faab = Math.min(availableFaab, faabCap);
+      calculations[roster.roster_id] = faab;
     });
     
     return calculations;
-  }, [rosters, salaries, settings?.salary_cap]);
+  }, [rosters, salaries, settings?.salary_cap, settings?.reserve_limit, settings?.faab_cap]);
 
   const calculateDeadCap = useMemo(() => {
     return (playerId: string, currentYear: number = new Date().getFullYear()) => {
