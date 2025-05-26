@@ -11,6 +11,8 @@ interface TeamRostersGridProps {
   teamSalaries: Record<number, number>;
   teamDeadCaps: Record<number, number>;
   salaryCap: number;
+  teamFAAB?: Record<number, number>;
+  showFAAB?: boolean;
 }
 
 const TeamRostersGrid: React.FC<TeamRostersGridProps> = ({
@@ -20,7 +22,9 @@ const TeamRostersGrid: React.FC<TeamRostersGridProps> = ({
   deadCapEnabled,
   teamSalaries,
   teamDeadCaps,
-  salaryCap
+  salaryCap,
+  teamFAAB = {},
+  showFAAB = false
 }) => {
   return (
     <CardContent className="pt-0">
@@ -29,6 +33,7 @@ const TeamRostersGrid: React.FC<TeamRostersGridProps> = ({
           const user = userMap[roster.owner_id];
           const teamSalary = teamSalaries[roster.roster_id] || 0;
           const teamDeadCap = deadCapEnabled ? (teamDeadCaps[roster.roster_id] || 0) : 0;
+          const faabBudget = teamFAAB[roster.roster_id] || 0;
           
           return (
             <TeamRosterCard
@@ -40,6 +45,8 @@ const TeamRostersGrid: React.FC<TeamRostersGridProps> = ({
               teamSalary={teamSalary}
               teamDeadCap={teamDeadCap}
               salaryCap={salaryCap}
+              teamFAAB={faabBudget}
+              showFAAB={showFAAB}
             />
           );
         })}

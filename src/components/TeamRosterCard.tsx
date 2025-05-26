@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { getPlayerCount, getTeamName } from '@/utils/leagueDataUtils';
 import TeamSalaryDisplay from './TeamSalaryDisplay';
+import TeamFAABDisplay from './TeamFAABDisplay';
 
 interface TeamRosterCardProps {
   roster: any;
@@ -14,6 +15,8 @@ interface TeamRosterCardProps {
   teamSalary: number;
   teamDeadCap: number;
   salaryCap: number;
+  teamFAAB?: number;
+  showFAAB?: boolean;
 }
 
 const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
@@ -23,7 +26,9 @@ const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
   deadCapEnabled,
   teamSalary,
   teamDeadCap,
-  salaryCap
+  salaryCap,
+  teamFAAB = 0,
+  showFAAB = false
 }) => {
   const playerCounts = getPlayerCount(roster);
   const teamName = getTeamName(user);
@@ -63,15 +68,19 @@ const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
         </div>
 
         {showSalaryFeatures && (teamSalary > 0 || (deadCapEnabled && teamDeadCap > 0)) && (
-          <>
-            <Separator className="bg-white/10" />
-            <TeamSalaryDisplay
-              teamSalary={teamSalary}
-              teamDeadCap={teamDeadCap}
-              deadCapEnabled={deadCapEnabled}
-              salaryCap={salaryCap}
-            />
-          </>
+          <TeamSalaryDisplay
+            teamSalary={teamSalary}
+            teamDeadCap={teamDeadCap}
+            deadCapEnabled={deadCapEnabled}
+            salaryCap={salaryCap}
+          />
+        )}
+
+        {showSalaryFeatures && showFAAB && (
+          <TeamFAABDisplay
+            teamFAAB={teamFAAB}
+            showFAAB={showFAAB}
+          />
         )}
         
         <Separator className="bg-white/10" />

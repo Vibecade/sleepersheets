@@ -4,9 +4,11 @@ import { Card } from '@/components/ui/card';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 import { useLeagueSettings } from '@/hooks/useLeagueSettings';
+import { useFAABCalculations } from '@/hooks/useFAABCalculations';
 import { useToast } from '@/hooks/use-toast';
 import { useSalaryCalculations } from '@/hooks/useSalaryCalculations';
 import DeadCapManager from '@/components/DeadCapManager';
+import ContractDeadCapCalculator from '@/components/ContractDeadCapCalculator';
 import TeamRostersHeader from '@/components/TeamRostersHeader';
 import TeamRostersGrid from '@/components/TeamRostersGrid';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -20,6 +22,8 @@ interface TeamRostersProps {
 const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {} }) => {
   const [showSalaryFeatures, setShowSalaryFeatures] = useState(false);
   const [showDeadCapManager, setShowDeadCapManager] = useState(false);
+  const [showFAAB, setShowFAAB] = useState(false);
+  const [showContractCalculator, setShowContractCalculator] = useState(false);
   const [localSalaryCap, setLocalSalaryCap] = useState<string>('');
   const { toast } = useToast();
 
@@ -37,6 +41,9 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
     salaries,
     deadCapPlayers
   });
+
+  // Calculate FAAB for teams
+  const { teamFAAB } = useFAABCalculations({ rosters, leagueId });
 
   // Update local salary cap when settings change
   useEffect(() => {
@@ -114,6 +121,10 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
             onDeadCapEnabledChange={handleDeadCapEnabledChange}
             settingsLoading={settingsLoading}
             onSalaryCapSave={handleSalaryCapSave}
+            showFAAB={showFAAB}
+            onToggleFAAB={() => setShowFAAB(!showFAAB)}
+            showContractCalculator={showContractCalculator}
+            onToggleContractCalculator={() => setShowContractCalculator(!showContractCalculator)}
           />
           
           <TeamRostersGrid
@@ -124,6 +135,8 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
             teamSalaries={teamSalaries}
             teamDeadCaps={teamDeadCaps}
             salaryCap={salaryCap}
+            teamFAAB={teamFAAB}
+            showFAAB={showFAAB}
           />
         </Card>
 
@@ -133,6 +146,15 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
               leagueId={leagueId}
               rosters={rosters}
               userMap={userMap}
+              players={players}
+            />
+          </ErrorBoundary>
+        )}
+
+        {showContractCalculator && (
+          <ErrorBoundary>
+            <ContractDeadCapCalculator
+              leagueId={leagueId}
               players={players}
             />
           </ErrorBoundary>
