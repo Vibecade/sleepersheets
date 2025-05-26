@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, DollarSign, Skull } from 'lucide-react';
+import { Users, DollarSign, Skull, Calculator } from 'lucide-react';
 import SalarySettings from '@/components/SalarySettings';
 
 interface TeamRostersHeaderProps {
@@ -17,6 +17,10 @@ interface TeamRostersHeaderProps {
   onDeadCapEnabledChange: (enabled: boolean) => Promise<void>;
   settingsLoading: boolean;
   onSalaryCapSave: () => Promise<void>;
+  showFAAB: boolean;
+  onToggleFAAB: () => void;
+  showContractCalculator: boolean;
+  onToggleContractCalculator: () => void;
 }
 
 const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
@@ -30,7 +34,11 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
   salaryCap,
   onDeadCapEnabledChange,
   settingsLoading,
-  onSalaryCapSave
+  onSalaryCapSave,
+  showFAAB,
+  onToggleFAAB,
+  showContractCalculator,
+  onToggleContractCalculator
 }) => {
   return (
     <CardHeader className="pb-3 sm:pb-4">
@@ -44,6 +52,7 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
                 Team overview and roster sizes
                 {showSalaryFeatures && ' with salary tracking'}
                 {showDeadCapManager && ' and dead cap management'}
+                {showFAAB && ' and FAAB budgets'}
               </CardDescription>
             </div>
           </div>
@@ -59,6 +68,17 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
             <DollarSign className="w-4 h-4" />
             <span>Salary Features</span>
           </Button>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onToggleFAAB}
+            className="flex items-center justify-center space-x-2 min-h-[44px] text-sm"
+          >
+            <DollarSign className="w-4 h-4" />
+            <span>FAAB Budgets</span>
+          </Button>
+          
           {deadCapEnabled && (
             <Button
               variant="outline"
@@ -70,6 +90,16 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
               <span>Dynasty Dead Cap</span>
             </Button>
           )}
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onToggleContractCalculator}
+            className="flex items-center justify-center space-x-2 min-h-[44px] text-sm"
+          >
+            <Calculator className="w-4 h-4" />
+            <span>Contract Calculator</span>
+          </Button>
         </div>
       </div>
 
