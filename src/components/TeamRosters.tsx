@@ -52,12 +52,12 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
     if (settings?.salary_cap) {
       setLocalSalaryCap(settings.salary_cap.toString());
     }
-    if (settings?.faab_cap) {
+    if (settings?.faab_cap !== null && settings?.faab_cap !== undefined) {
       setLocalFaabCap(settings.faab_cap.toString());
     } else {
       setLocalFaabCap('100'); // Default FAAB cap
     }
-    if (settings?.reserve_limit) {
+    if (settings?.reserve_limit !== null && settings?.reserve_limit !== undefined) {
       setLocalReserveLimit(settings.reserve_limit.toString());
     } else {
       setLocalReserveLimit('100'); // Default reserve limit

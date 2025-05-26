@@ -133,24 +133,30 @@ export type Database = {
         Row: {
           created_at: string
           dead_cap_enabled: boolean | null
+          faab_cap: number | null
           id: string
           league_id: string
+          reserve_limit: number | null
           salary_cap: number | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           dead_cap_enabled?: boolean | null
+          faab_cap?: number | null
           id?: string
           league_id: string
+          reserve_limit?: number | null
           salary_cap?: number | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           dead_cap_enabled?: boolean | null
+          faab_cap?: number | null
           id?: string
           league_id?: string
+          reserve_limit?: number | null
           salary_cap?: number | null
           updated_at?: string
         }

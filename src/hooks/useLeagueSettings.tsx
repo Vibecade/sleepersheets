@@ -8,6 +8,8 @@ interface LeagueSettings {
   league_id: string;
   salary_cap: number | null;
   dead_cap_enabled: boolean | null;
+  faab_cap: number | null;
+  reserve_limit: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -42,6 +44,8 @@ export const useLeagueSettings = (leagueId: string) => {
             league_id: leagueId,
             salary_cap: 200000,
             dead_cap_enabled: true,
+            faab_cap: 100,
+            reserve_limit: 100,
           };
           
           const { data: newSettings, error: createError } = await supabase
@@ -69,7 +73,7 @@ export const useLeagueSettings = (leagueId: string) => {
   }, [leagueId]);
 
   // Update settings in database - using useCallback to stabilize the function reference
-  const updateSettings = useCallback(async (updates: Partial<Pick<LeagueSettings, 'salary_cap' | 'dead_cap_enabled'>>) => {
+  const updateSettings = useCallback(async (updates: Partial<Pick<LeagueSettings, 'salary_cap' | 'dead_cap_enabled' | 'faab_cap' | 'reserve_limit'>>) => {
     try {
       console.log('Updating league settings:', updates);
       const { data, error } = await supabase
