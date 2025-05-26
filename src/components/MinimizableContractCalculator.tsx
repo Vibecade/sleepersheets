@@ -16,6 +16,8 @@ const MinimizableContractCalculator: React.FC<MinimizableContractCalculatorProps
   leagueId,
   players
 }) => {
+  console.log('MinimizableContractCalculator render - open:', open);
+  
   return (
     <ScrollableModal
       open={open}

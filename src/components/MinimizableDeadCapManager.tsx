@@ -20,6 +20,8 @@ const MinimizableDeadCapManager: React.FC<MinimizableDeadCapManagerProps> = ({
   userMap,
   players
 }) => {
+  console.log('MinimizableDeadCapManager render - open:', open);
+  
   return (
     <ScrollableModal
       open={open}
