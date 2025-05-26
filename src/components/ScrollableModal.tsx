@@ -29,10 +29,11 @@ const ScrollableModal: React.FC<ScrollableModalProps> = ({
       <DialogContent 
         className={cn(
           "max-w-4xl w-full glass-card border border-white/20",
-          isMinimized ? "h-16" : `max-h-[${maxHeight}]`,
-          "flex flex-col overflow-hidden",
+          "flex flex-col overflow-hidden transition-all duration-300",
+          isMinimized ? "h-16" : "max-h-[85vh]",
           className
         )}
+        style={isMinimized ? { height: '4rem' } : { maxHeight: maxHeight }}
       >
         <DialogHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
           <DialogTitle className="text-lg font-semibold text-white">
@@ -43,7 +44,7 @@ const ScrollableModal: React.FC<ScrollableModalProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => setIsMinimized(!isMinimized)}
-              className="h-8 w-8 p-0 text-white hover:text-gray-300"
+              className="h-8 w-8 p-0 text-white hover:text-gray-300 hover:bg-white/10"
             >
               {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
             </Button>
@@ -51,7 +52,7 @@ const ScrollableModal: React.FC<ScrollableModalProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => onOpenChange(false)}
-              className="h-8 w-8 p-0 text-white hover:text-gray-300"
+              className="h-8 w-8 p-0 text-white hover:text-gray-300 hover:bg-white/10"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -59,7 +60,10 @@ const ScrollableModal: React.FC<ScrollableModalProps> = ({
         </DialogHeader>
         
         {!isMinimized && (
-          <div className="flex-1 overflow-y-auto overscroll-contain">
+          <div 
+            className="flex-1 overflow-y-auto overscroll-contain"
+            style={{ maxHeight: `calc(${maxHeight} - 4rem)` }}
+          >
             <div className="pr-2">
               {children}
             </div>
