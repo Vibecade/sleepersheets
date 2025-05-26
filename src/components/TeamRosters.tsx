@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
@@ -7,8 +6,8 @@ import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { useFAABCalculations } from '@/hooks/useFAABCalculations';
 import { useToast } from '@/hooks/use-toast';
 import { useSalaryCalculations } from '@/hooks/useSalaryCalculations';
-import DeadCapManager from '@/components/DeadCapManager';
-import ContractDeadCapCalculator from '@/components/ContractDeadCapCalculator';
+import MinimizableDeadCapManager from '@/components/MinimizableDeadCapManager';
+import MinimizableContractCalculator from '@/components/MinimizableContractCalculator';
 import TeamRostersHeader from '@/components/TeamRostersHeader';
 import TeamRostersGrid from '@/components/TeamRostersGrid';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -202,25 +201,21 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
           />
         </Card>
 
-        {showDeadCapManager && deadCapEnabled && (
-          <ErrorBoundary>
-            <DeadCapManager
-              leagueId={leagueId}
-              rosters={rosters}
-              userMap={userMap}
-              players={players}
-            />
-          </ErrorBoundary>
-        )}
+        <MinimizableDeadCapManager
+          open={showDeadCapManager && deadCapEnabled}
+          onOpenChange={setShowDeadCapManager}
+          leagueId={leagueId}
+          rosters={rosters}
+          userMap={userMap}
+          players={players}
+        />
 
-        {showContractCalculator && (
-          <ErrorBoundary>
-            <ContractDeadCapCalculator
-              leagueId={leagueId}
-              players={players}
-            />
-          </ErrorBoundary>
-        )}
+        <MinimizableContractCalculator
+          open={showContractCalculator}
+          onOpenChange={setShowContractCalculator}
+          leagueId={leagueId}
+          players={players}
+        />
       </div>
     </ErrorBoundary>
   );
