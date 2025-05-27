@@ -4,9 +4,6 @@ import LeagueHeader from './LeagueHeader';
 import TeamOverview from './TeamOverview';
 import FantasyManager from './FantasyManager';
 import PageNavigation from './PageNavigation';
-import DataDashboard from './DataDashboard';
-import ExportActions from './ExportActions';
-import TradeSimulator from './TradeSimulator';
 import ErrorBoundary from './ErrorBoundary';
 import { LeagueDataProvider, useLeagueData } from './LeagueDataProvider';
 
@@ -68,52 +65,17 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void> }> = ({ 
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
             <ErrorBoundary>
               <FantasyManager
+                league={league}
                 rosters={rosters}
                 userMap={userMap}
+                rosterUserMap={rosterUserMap}
                 players={players}
+                transactions={transactions}
+                draftPicks={draftPicks}
               />
             </ErrorBoundary>
           </div>
         )}
-
-        <div className="slide-up" style={{ animationDelay: '0.3s' }}>
-          <ErrorBoundary>
-            <TradeSimulator
-              league={league}
-              rosters={rosters}
-              userMap={userMap}
-              players={players}
-            />
-          </ErrorBoundary>
-        </div>
-
-        <div className="slide-up" style={{ animationDelay: '0.4s' }}>
-          <ErrorBoundary>
-            <DataDashboard
-              league={league}
-              rosters={rosters}
-              userMap={userMap}
-              rosterUserMap={rosterUserMap}
-              players={players}
-              transactions={transactions}
-              draftPicks={draftPicks}
-            />
-          </ErrorBoundary>
-        </div>
-
-        <div className="slide-up" style={{ animationDelay: '0.5s' }}>
-          <ErrorBoundary>
-            <ExportActions
-              league={league}
-              rosters={rosters}
-              userMap={userMap}
-              rosterUserMap={rosterUserMap}
-              players={players}
-              transactions={transactions}
-              draftPicks={draftPicks}
-            />
-          </ErrorBoundary>
-        </div>
       </div>
     </div>
   );

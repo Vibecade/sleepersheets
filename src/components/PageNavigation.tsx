@@ -21,7 +21,7 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
           className="flex items-center space-x-2 flex-1"
         >
           <Trophy className="w-4 h-4" />
-          <span>Team Overview</span>
+          <span>League Overview</span>
         </Button>
         <Button
           variant={currentPage === 'manager' ? 'default' : 'ghost'}

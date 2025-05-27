@@ -3,17 +3,28 @@ import React from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings } from 'lucide-react';
 import TeamRosters from './TeamRosters';
+import TradeSimulator from './TradeSimulator';
+import DataDashboard from './DataDashboard';
+import ExportActions from './ExportActions';
 
 interface FantasyManagerProps {
   rosters: any[];
   userMap: Record<string, any>;
+  rosterUserMap: Record<string, any>;
   players: Record<string, any>;
+  league: any;
+  transactions: any[];
+  draftPicks: any[];
 }
 
 const FantasyManager: React.FC<FantasyManagerProps> = ({
   rosters,
   userMap,
-  players
+  rosterUserMap,
+  players,
+  league,
+  transactions,
+  draftPicks
 }) => {
   return (
     <div className="space-y-6">
@@ -25,7 +36,7 @@ const FantasyManager: React.FC<FantasyManagerProps> = ({
             <div>
               <CardTitle className="text-2xl">Fantasy Manager</CardTitle>
               <p className="text-gray-400">
-                Advanced tools for salary cap, FAAB, dead cap management, and detailed roster analysis
+                Advanced tools for salary cap, FAAB, dead cap management, detailed roster analysis, trade simulation, and data export
               </p>
             </div>
           </div>
@@ -37,6 +48,36 @@ const FantasyManager: React.FC<FantasyManagerProps> = ({
         rosters={rosters}
         userMap={userMap}
         players={players}
+      />
+
+      {/* Trade Simulator */}
+      <TradeSimulator
+        league={league}
+        rosters={rosters}
+        userMap={userMap}
+        players={players}
+      />
+
+      {/* Data Dashboard */}
+      <DataDashboard
+        league={league}
+        rosters={rosters}
+        userMap={userMap}
+        rosterUserMap={rosterUserMap}
+        players={players}
+        transactions={transactions}
+        draftPicks={draftPicks}
+      />
+
+      {/* Export Actions */}
+      <ExportActions
+        league={league}
+        rosters={rosters}
+        userMap={userMap}
+        rosterUserMap={rosterUserMap}
+        players={players}
+        transactions={transactions}
+        draftPicks={draftPicks}
       />
     </div>
   );
