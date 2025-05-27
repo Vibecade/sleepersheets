@@ -1,7 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import LeagueHeader from './LeagueHeader';
-import TeamRosters from './TeamRosters';
+import TeamOverview from './TeamOverview';
+import FantasyManager from './FantasyManager';
+import PageNavigation from './PageNavigation';
 import DataDashboard from './DataDashboard';
 import ExportActions from './ExportActions';
 import TradeSimulator from './TradeSimulator';
@@ -23,6 +25,7 @@ interface LeagueDataProps {
 
 const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void> }> = ({ onRefreshData }) => {
   const { league, rosters, userMap, rosterUserMap, players, transactions, draftPicks, stats } = useLeagueData();
+  const [currentPage, setCurrentPage] = useState<'overview' | 'manager'>('overview');
 
   return (
     <div className="main-container">
@@ -39,15 +42,39 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void> }> = ({ 
           </ErrorBoundary>
         </div>
 
-        <div className="slide-up" style={{ animationDelay: '0.2s' }}>
+        <div className="slide-up" style={{ animationDelay: '0.1s' }}>
           <ErrorBoundary>
-            <TeamRosters
-              rosters={rosters}
-              userMap={userMap}
-              players={players}
+            <PageNavigation
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
             />
           </ErrorBoundary>
         </div>
+
+        {currentPage === 'overview' && (
+          <div className="slide-up" style={{ animationDelay: '0.2s' }}>
+            <ErrorBoundary>
+              <TeamOverview
+                league={league}
+                rosters={rosters}
+                userMap={userMap}
+                players={players}
+              />
+            </ErrorBoundary>
+          </div>
+        )}
+
+        {currentPage === 'manager' && (
+          <div className="slide-up" style={{ animationDelay: '0.2s' }}>
+            <ErrorBoundary>
+              <FantasyManager
+                rosters={rosters}
+                userMap={userMap}
+                players={players}
+              />
+            </ErrorBoundary>
+          </div>
+        )}
 
         <div className="slide-up" style={{ animationDelay: '0.3s' }}>
           <ErrorBoundary>
