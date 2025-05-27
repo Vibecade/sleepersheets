@@ -30,24 +30,25 @@ export const LeagueHeader = () => {
                 </h1>
                 <div className="flex items-center space-x-2 text-slate-400 text-sm font-medium">
                   <BarChart3 className="w-4 h-4" />
-                  <span>Fantasy Football Analytics Platform</span>
+                  <span>Fantasy Football Management Hub</span>
                 </div>
               </div>
               
               <p className="text-slate-300 text-xl max-w-2xl leading-relaxed">
-                Transform your fantasy football data into actionable insights with 
-                professional-grade analytics and beautiful exports.
+                Your complete fantasy sports command center. Manage contracts, drafts, and trades seamlessly 
+                with live Sleeper API integration. Save hours of commissioner work while keeping everything 
+                data-driven and transparent.
               </p>
               
               <div className="flex items-center space-x-4 pt-2">
                 <div className="flex items-center space-x-1">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-sm text-slate-400">Live Data</span>
+                  <span className="text-sm text-slate-400">Live Sync</span>
                 </div>
                 <div className="w-1 h-4 bg-slate-600"></div>
                 <div className="flex items-center space-x-1">
                   <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                  <span className="text-sm text-slate-400">Instant Export</span>
+                  <span className="text-sm text-slate-400">Auto Updates</span>
                 </div>
               </div>
             </div>
