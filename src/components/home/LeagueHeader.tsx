@@ -12,31 +12,31 @@ export const LeagueHeader = () => {
         <div className="absolute bottom-10 right-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-xl"></div>
       </div>
       
-      <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div className="flex items-center space-x-4">
+      <div className="max-w-7xl mx-auto px-6 py-12 relative z-10 text-center">
+        <div className="flex flex-col items-center gap-6">
+          <div className="flex flex-col items-center space-y-4">
             <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-3 shadow-lg">
               <Football className="w-8 h-8 text-white" />
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-4 max-w-2xl">
               <div>
                 <h1 className="text-4xl lg:text-5xl font-bold text-yellow-500 mb-2">
                   SleeperSheets
                 </h1>
-                <div className="flex items-center space-x-2 text-yellow-300/80 text-sm">
+                <div className="flex items-center justify-center space-x-2 text-yellow-300/80 text-sm">
                   <ChartBar className="w-4 h-4" />
                   <span>Fantasy Football Management Hub</span>
                 </div>
               </div>
               
-              <p className="text-yellow-100/90 text-lg max-w-xl leading-relaxed">
+              <p className="text-yellow-100/90 text-lg leading-relaxed">
                 Your complete fantasy sports command center. Manage contracts, drafts, and trades seamlessly 
                 with live Sleeper API integration. Save hours of commissioner work while keeping everything 
                 data-driven and transparent.
               </p>
               
-              <div className="flex items-center space-x-4 pt-2">
+              <div className="flex items-center justify-center space-x-4 pt-2">
                 <div className="flex items-center space-x-1">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                   <span className="text-sm text-yellow-300/80">Live Sync</span>
@@ -50,7 +50,7 @@ export const LeagueHeader = () => {
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center gap-3">
             <Link to="/how-to">
               <Button 
                 variant="outline" 
