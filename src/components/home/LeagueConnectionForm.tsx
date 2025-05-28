@@ -41,11 +41,8 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
       <Card className="border-blue-500/20 shadow-[0_0_50px_-12px] shadow-blue-500/30">
         <CardHeader className="text-center">
           <CardTitle className="flex items-center justify-center space-x-3">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-blue-500/20 rounded-lg blur-lg group-hover:blur-xl transition-all"></div>
-              <div className="relative bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-2 transform group-hover:scale-105 transition-all">
-                <Users className="w-6 h-6 text-white" />
-              </div>
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-2.5">
+              <UserGroup className="w-6 h-6 text-white" />
             </div>
             <span>Connect Your League</span>
           </CardTitle>
@@ -53,8 +50,7 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
             Enter your Sleeper League ID or username to get started
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6 relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent pointer-events-none"></div>
+        <CardContent className="space-y-4">
           <form onSubmit={handleLeagueSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="league-id">League ID</Label>
@@ -65,7 +61,7 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
                   value={leagueId}
                   onChange={(e) => setLeagueId(e.target.value)}
                   disabled={loading}
-                  className="bg-white/5 border-blue-500/20 focus-visible:border-blue-500/50"
+                  className="bg-white/5 border-blue-500/20"
                 />
                 <Button 
                   type="submit" 
@@ -73,7 +69,11 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
                   className="min-w-[100px]"
                   variant="default"
                 >
-                  {loading ? 'Loading...' : 'Load League'}
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <span>Load League</span>
+                  )}
                 </Button>
               </div>
             </div>
@@ -98,6 +98,7 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={loading}
+                  className="bg-white/5 border-blue-500/20"
                 />
                 <Button 
                   type="submit" 
@@ -105,8 +106,14 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
                   disabled={loading || !username.trim()}
                   className="min-w-[100px]"
                 >
-                  <Search className="w-4 h-4 mr-2" />
-                  {loading ? 'Loading...' : 'Find Leagues'}
+                  {loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <MagnifyingGlass className="w-4 h-4 mr-2" />
+                      <span>Find Leagues</span>
+                    </>
+                  )}
                 </Button>
               </div>
             </div>

@@ -11,7 +11,7 @@ export const HowToFindLeagueId = () => {
       <div className="relative z-10">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-blue-500/20 rounded-lg">
-            <Lightbulb className="w-5 h-5 text-blue-400" />
+            <LightBulb className="w-5 h-5 text-blue-400" />
           </div>
           <h4 className="font-semibold text-blue-300 text-lg">
             How to find your League ID
@@ -24,7 +24,7 @@ export const HowToFindLeagueId = () => {
               1
             </div>
             <p className="text-blue-200 leading-relaxed">
-              Open the Sleeper app or visit <span className="font-medium text-blue-300">sleeper.com</span>
+              Open the Sleeper app or visit <span className="font-medium text-blue-300">sleeper.app</span>
             </p>
           </div>
           
