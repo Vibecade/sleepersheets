@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -34,7 +33,7 @@ const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
   const teamName = getTeamName(user);
 
   return (
-    <div className="glass-card rounded-lg p-3 sm:p-4 space-y-3 hover-lift">
+    <div className="glass-card rounded-lg p-3 sm:p-4 space-y-3 card-hover">
       <div className="flex items-center space-x-3">
         <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
           <AvatarImage 
