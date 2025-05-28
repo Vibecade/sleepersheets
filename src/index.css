@@ -151,15 +151,56 @@
 
   .hover-lift:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 
+      0 12px 40px rgba(0, 0, 0, 0.3),
+      0 0 20px rgba(234, 179, 8, 0.2),
+      0 0 5px rgba(234, 179, 8, 0.1);
   }
 
   .gradient-text {
-    background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
+    background: linear-gradient(135deg, #eab308, #ca8a04, #a16207);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     font-weight: 600;
+  }
+
+  /* Interactive element hover effects */
+  .interactive-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .interactive-hover:hover {
+    box-shadow: 
+      0 0 15px rgba(234, 179, 8, 0.15),
+      0 0 5px rgba(234, 179, 8, 0.1);
+    border-color: rgba(234, 179, 8, 0.5);
+  }
+
+  /* Table row hover effect */
+  tr.hoverable-row {
+    transition: all 0.2s ease-in-out;
+  }
+
+  tr.hoverable-row:hover {
+    background: rgba(234, 179, 8, 0.05);
+    box-shadow: 
+      inset 0 0 0 1px rgba(234, 179, 8, 0.1),
+      0 0 10px rgba(234, 179, 8, 0.1);
+  }
+
+  /* Card hover effect */
+  .card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 20px 40px rgba(0, 0, 0, 0.4),
+      0 0 20px rgba(234, 179, 8, 0.15),
+      0 0 5px rgba(234, 179, 8, 0.1);
+    border-color: rgba(234, 179, 8, 0.3);
   }
 
   /* Professional button styles */
@@ -214,12 +255,12 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, rgba(96, 165, 250, 0.6), rgba(52, 211, 153, 0.6));
+    background: linear-gradient(135deg, rgba(234, 179, 8, 0.6), rgba(161, 98, 7, 0.6));
     border-radius: 6px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, rgba(96, 165, 250, 0.8), rgba(52, 211, 153, 0.8));
+    background: linear-gradient(135deg, rgba(234, 179, 8, 0.8), rgba(161, 98, 7, 0.8));
   }
 
   /* Form improvements */
