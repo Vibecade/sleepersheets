@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Users, Search } from 'lucide-react';
+import { Users as UserGroup, Search as MagnifyingGlass, Loader2 } from 'lucide-react';
 import { HowToFindLeagueId } from './HowToFindLeagueId';
 
 interface LeagueConnectionFormProps {
