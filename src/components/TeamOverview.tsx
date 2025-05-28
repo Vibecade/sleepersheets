@@ -115,16 +115,16 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                 const user2 = userMap[roster2?.owner_id];
 
                 return (
-                  <div key={matchupId} className="bg-white/5 rounded-lg p-4 border border-white/10">
+                  <div key={matchupId} className="bg-white/5 rounded-lg p-4 border border-white/10 card-hover">
                     <div className="flex items-center justify-between">
                       <div className="flex-1 text-center">
-                        <div className="font-medium text-white">
+                        <div className="font-medium text-yellow-500">
                           {getTeamName(user1)}
                         </div>
                         <div className="text-sm text-gray-400">
                           {getTeamRecord(roster1)}
                         </div>
-                        <div className="text-lg font-bold text-green-400">
+                        <div className="text-lg font-bold text-yellow-400">
                           {formatPoints(team1.points)}
                         </div>
                       </div>
@@ -134,13 +134,13 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                       </div>
                       
                       <div className="flex-1 text-center">
-                        <div className="font-medium text-white">
+                        <div className="font-medium text-yellow-500">
                           {getTeamName(user2)}
                         </div>
                         <div className="text-sm text-gray-400">
                           {getTeamRecord(roster2)}
                         </div>
-                        <div className="text-lg font-bold text-green-400">
+                        <div className="text-lg font-bold text-yellow-400">
                           {formatPoints(team2.points)}
                         </div>
                       </div>
@@ -182,7 +182,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                 const record = getTeamRecord(roster);
                 
                 return (
-                  <div key={roster.roster_id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+                  <div key={roster.roster_id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10 card-hover">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">
                         {index + 1}
