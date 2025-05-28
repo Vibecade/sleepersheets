@@ -38,10 +38,10 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
 
   return (
     <div className="space-y-8">
-      <Card className="border-blue-500/20 shadow-[0_0_50px_-12px] shadow-blue-500/30">
+      <Card className="border-yellow-500/20 shadow-[0_0_50px_-12px] shadow-yellow-500/30">
         <CardHeader className="text-center">
           <CardTitle className="flex items-center justify-center space-x-3">
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-2.5">
+            <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg p-2.5">
               <UserGroup className="w-6 h-6 text-white" />
             </div>
             <span>Connect Your League</span>
@@ -61,7 +61,7 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
                   value={leagueId}
                   onChange={(e) => setLeagueId(e.target.value)}
                   disabled={loading}
-                  className="bg-white/5 border-blue-500/20"
+                  className="bg-white/5 border-yellow-500/20"
                 />
                 <Button 
                   type="submit" 
@@ -98,7 +98,7 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={loading}
-                  className="bg-white/5 border-blue-500/20"
+                  className="bg-white/5 border-yellow-500/20"
                 />
                 <Button 
                   type="submit" 

@@ -15,22 +15,22 @@ export const LeagueHeader = () => {
       <div className="max-w-7xl mx-auto px-6 py-12 relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="flex items-center space-x-4">
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-3 shadow-lg">
+            <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-3 shadow-lg">
               <Football className="w-8 h-8 text-white" />
             </div>
             
             <div className="space-y-4">
               <div>
-                <h1 className="text-4xl lg:text-5xl font-bold gradient-text mb-2">
+                <h1 className="text-4xl lg:text-5xl font-bold text-yellow-500 mb-2">
                   SleeperSheets
                 </h1>
-                <div className="flex items-center space-x-2 text-blue-300 text-sm">
+                <div className="flex items-center space-x-2 text-yellow-300/80 text-sm">
                   <ChartBar className="w-4 h-4" />
                   <span>Fantasy Football Management Hub</span>
                 </div>
               </div>
               
-              <p className="text-blue-100 text-lg max-w-xl leading-relaxed">
+              <p className="text-yellow-100/90 text-lg max-w-xl leading-relaxed">
                 Your complete fantasy sports command center. Manage contracts, drafts, and trades seamlessly 
                 with live Sleeper API integration. Save hours of commissioner work while keeping everything 
                 data-driven and transparent.
@@ -39,12 +39,12 @@ export const LeagueHeader = () => {
               <div className="flex items-center space-x-4 pt-2">
                 <div className="flex items-center space-x-1">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-sm text-blue-300">Live Sync</span>
+                  <span className="text-sm text-yellow-300/80">Live Sync</span>
                 </div>
-                <div className="w-px h-4 bg-blue-800/50"></div>
+                <div className="w-px h-4 bg-yellow-900/50"></div>
                 <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                  <span className="text-sm text-blue-300">Auto Updates</span>
+                  <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                  <span className="text-sm text-yellow-300/80">Auto Updates</span>
                 </div>
               </div>
             </div>
@@ -54,7 +54,7 @@ export const LeagueHeader = () => {
             <Link to="/how-to">
               <Button 
                 variant="outline" 
-                className="glass-button"
+                className="glass-button border-yellow-500/30 hover:border-yellow-500/50"
                 size="lg"
               >
                 <QuestionMarkCircle className="w-5 h-5" />
