@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Trophy, HelpCircle, BarChart3 } from 'lucide-react';
+import { Trophy, HelpCircle, BarChart3, Football, ChartBar, QuestionMarkCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const LeagueHeader = () => {
