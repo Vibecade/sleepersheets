@@ -3,11 +3,14 @@ import React, { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import LeagueData from '@/components/LeagueData';
 import Footer from '@/components/Footer';
-import ErrorBoundary from '@/components/ErrorBoundary';
+import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import LeagueHeader from '@/components/home/LeagueHeader';
 import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
 import PageHead from '@/components/PageHead';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
+import OfflineIndicator from '@/components/OfflineIndicator';
 import { cachedFetch } from '@/utils/apiCache';
+import { validateLeagueId, validateUsername, sanitizeInput, rateLimiter } from '@/utils/inputValidation';
 import type { SleeperLeague, SleeperUser, SleeperRoster, SleeperDraft, SleeperTransaction, SleeperPlayer } from '@/types/sleeper';
 
 const Index = React.memo(() => {
@@ -19,6 +22,12 @@ const Index = React.memo(() => {
 
   const fetchLeagueData = useCallback(async (targetLeagueId: string, preserveCurrentLeagueId: boolean = false) => {
     console.log('Fetching league data for ID:', targetLeagueId);
+
+    // Rate limiting check
+    const clientId = 'league_fetch';
+    if (!rateLimiter.isAllowed(clientId, 20, 60000)) { // 20 requests per minute
+      throw new Error('Too many requests. Please wait a moment before trying again.');
+    }
 
     try {
       // Use cached fetch with different TTLs for different data types
@@ -79,10 +88,13 @@ const Index = React.memo(() => {
   }, []);
 
   const handleLeagueSubmit = useCallback(async () => {
-    if (!leagueId.trim()) {
+    const sanitizedLeagueId = sanitizeInput(leagueId);
+    const validation = validateLeagueId(sanitizedLeagueId);
+    
+    if (!validation.isValid) {
       toast({
-        title: "League ID Required",
-        description: "Please enter a valid Sleeper League ID",
+        title: "Invalid League ID",
+        description: validation.error,
         variant: "destructive"
       });
       return;
@@ -91,15 +103,16 @@ const Index = React.memo(() => {
     setLoading(true);
 
     try {
-      const league = await fetchLeagueData(leagueId);
+      const league = await fetchLeagueData(sanitizedLeagueId);
       toast({
         title: "Success!",
         description: `Loaded data for ${league.name} including transactions and draft data`
       });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to fetch league data. Please check your League ID.";
       toast({
         title: "Error",
-        description: "Failed to fetch league data. Please check your League ID.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -108,20 +121,23 @@ const Index = React.memo(() => {
   }, [leagueId, fetchLeagueData, toast]);
 
   const handleUsernameSubmit = useCallback(async () => {
-    if (!username.trim()) {
+    const sanitizedUsername = sanitizeInput(username);
+    const validation = validateUsername(sanitizedUsername);
+    
+    if (!validation.isValid) {
       toast({
-        title: "Username Required",
-        description: "Please enter a valid Sleeper username",
+        title: "Invalid Username",
+        description: validation.error,
         variant: "destructive"
       });
       return;
     }
 
     setLoading(true);
-    console.log('Fetching user data for username:', username);
+    console.log('Fetching user data for username:', sanitizedUsername);
 
     try {
-      const userData = await cachedFetch(`https://api.sleeper.app/v1/user/${username}`, {}, 10 * 60 * 1000) as SleeperUser;
+      const userData = await cachedFetch(`https://api.sleeper.app/v1/user/${sanitizedUsername}`, {}, 10 * 60 * 1000) as SleeperUser;
       console.log('User data retrieved:', userData);
       
       const currentYear = new Date().getFullYear();
@@ -150,9 +166,10 @@ const Index = React.memo(() => {
 
     } catch (error) {
       console.error('Error fetching user leagues:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to fetch leagues for this username. Please check the username is correct.";
       toast({
         title: "Error",
-        description: "Failed to fetch leagues for this username. Please check the username is correct.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -171,9 +188,10 @@ const Index = React.memo(() => {
         description: `Refreshed data for ${league.name}`
       });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to refresh league data.";
       toast({
         title: "Error",
-        description: "Failed to refresh league data.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -191,7 +209,10 @@ const Index = React.memo(() => {
       <LeagueHeader />
 
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <ErrorBoundary>
+        <OfflineIndicator />
+        <PWAInstallPrompt />
+        
+        <EnhancedErrorBoundary level="page">
           {!leagueData ? (
             <div className="max-w-2xl mx-auto space-y-8">
               <LeagueConnectionForm
@@ -210,7 +231,7 @@ const Index = React.memo(() => {
               onRefreshData={handleRefreshData}
             />
           )}
-        </ErrorBoundary>
+        </EnhancedErrorBoundary>
       </div>
 
       <Footer />

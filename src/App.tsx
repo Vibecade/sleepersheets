@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { LazyExport, LazyAuth, LazyHowTo } from "./components/LazyComponents";
 import { Skeleton } from "@/components/ui/skeleton";
+import EnhancedErrorBoundary from "./components/EnhancedErrorBoundary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,35 +37,39 @@ const PageSkeleton = () => (
 );
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={
-              <Suspense fallback={<PageSkeleton />}>
-                <LazyAuth />
-              </Suspense>
-            } />
-            <Route path="/how-to" element={
-              <Suspense fallback={<PageSkeleton />}>
-                <LazyHowTo />
-              </Suspense>
-            } />
-            <Route path="/export" element={
-              <Suspense fallback={<PageSkeleton />}>
-                <LazyExport />
-              </Suspense>
-            } />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+  <EnhancedErrorBoundary level="critical">
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <BrowserRouter>
+            <EnhancedErrorBoundary level="page">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={
+                  <Suspense fallback={<PageSkeleton />}>
+                    <LazyAuth />
+                  </Suspense>
+                } />
+                <Route path="/how-to" element={
+                  <Suspense fallback={<PageSkeleton />}>
+                    <LazyHowTo />
+                  </Suspense>
+                } />
+                <Route path="/export" element={
+                  <Suspense fallback={<PageSkeleton />}>
+                    <LazyExport />
+                  </Suspense>
+                } />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </EnhancedErrorBoundary>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </EnhancedErrorBoundary>
 );
 
 export default App;
