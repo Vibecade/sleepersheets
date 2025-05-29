@@ -20,6 +20,7 @@ export const useSalaryCalculations = ({ rosters, salaries, deadCapPlayers, getEf
         ...(roster.reserve || [])
       ];
       
+      // Use effective salary which accounts for taxi squad discounts
       calculations[roster.roster_id] = allPlayerIds.reduce((total, playerId) => {
         const effectiveSalary = getEffectiveSalary(playerId);
         return total + effectiveSalary;
