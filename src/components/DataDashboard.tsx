@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,6 +11,7 @@ import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { usePlayerContracts } from '@/hooks/usePlayerContracts';
 import EditableSalary from '@/components/EditableSalary';
 import EditableContractLength from '@/components/EditableContractLength';
+import TaxiSquadToggle from '@/components/TaxiSquadToggle';
 
 interface DataDashboardProps {
   league: any;
@@ -30,7 +32,14 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
   transactions,
   draftPicks
 }) => {
-  const { salaries, updateSalary, loading: salariesLoading } = usePlayerSalaries(league.league_id);
+  const { 
+    salaries, 
+    taxiSquadStatus, 
+    updateSalary, 
+    updateTaxiSquadStatus, 
+    getEffectiveSalary, 
+    loading: salariesLoading 
+  } = usePlayerSalaries(league.league_id);
   const { contracts, updateContract, loading: contractsLoading } = usePlayerContracts(league.league_id);
 
   // Prepare roster data with duplicate removal
@@ -152,7 +161,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
           <span>Data Dashboard</span>
         </CardTitle>
         <CardDescription>
-          Preview all your league data in clean, organized tables before exporting. Click on salary values and contract lengths to edit them.
+          Preview all your league data in clean, organized tables before exporting. Click on salary values and contract lengths to edit them. Toggle taxi squad status to apply 25% rookie salary discount.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -183,7 +192,9 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                     <TableHead className="text-white font-semibold">Fantasy Team</TableHead>
                     <TableHead className="text-white font-semibold">Status</TableHead>
                     <TableHead className="text-white font-semibold">Fantasy Salary</TableHead>
+                    <TableHead className="text-white font-semibold">Effective Salary</TableHead>
                     <TableHead className="text-white font-semibold">Contract Length</TableHead>
+                    <TableHead className="text-white font-semibold">Taxi Squad</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -217,6 +228,15 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                         )}
                       </TableCell>
                       <TableCell>
+                        {salariesLoading ? (
+                          <div className="text-gray-400 text-xs">Loading...</div>
+                        ) : (
+                          <div className="text-emerald-400 font-medium">
+                            ${getEffectiveSalary(row.playerId).toLocaleString()}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         {contractsLoading ? (
                           <div className="text-gray-400 text-xs">Loading...</div>
                         ) : (
@@ -224,6 +244,17 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                             playerId={row.playerId}
                             currentLength={contracts[row.playerId] || null}
                             onContractUpdate={updateContract}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {salariesLoading ? (
+                          <div className="text-gray-400 text-xs">Loading...</div>
+                        ) : (
+                          <TaxiSquadToggle
+                            playerId={row.playerId}
+                            currentStatus={taxiSquadStatus[row.playerId] || false}
+                            onToggle={updateTaxiSquadStatus}
                           />
                         )}
                       </TableCell>
@@ -246,7 +277,9 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                     <TableHead className="text-white font-semibold">Position</TableHead>
                     <TableHead className="text-white font-semibold">Action</TableHead>
                     <TableHead className="text-white font-semibold">Fantasy Salary</TableHead>
+                    <TableHead className="text-white font-semibold">Effective Salary</TableHead>
                     <TableHead className="text-white font-semibold">Contract Length</TableHead>
+                    <TableHead className="text-white font-semibold">Taxi Squad</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -281,6 +314,15 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                         )}
                       </TableCell>
                       <TableCell>
+                        {salariesLoading ? (
+                          <div className="text-gray-400 text-xs">Loading...</div>
+                        ) : (
+                          <div className="text-emerald-400 font-medium">
+                            ${getEffectiveSalary(row.playerId).toLocaleString()}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         {contractsLoading ? (
                           <div className="text-gray-400 text-xs">Loading...</div>
                         ) : (
@@ -288,6 +330,17 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                             playerId={row.playerId}
                             currentLength={contracts[row.playerId] || null}
                             onContractUpdate={updateContract}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {salariesLoading ? (
+                          <div className="text-gray-400 text-xs">Loading...</div>
+                        ) : (
+                          <TaxiSquadToggle
+                            playerId={row.playerId}
+                            currentStatus={taxiSquadStatus[row.playerId] || false}
+                            onToggle={updateTaxiSquadStatus}
                           />
                         )}
                       </TableCell>
@@ -311,7 +364,9 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                     <TableHead className="text-white font-semibold">Position</TableHead>
                     <TableHead className="text-white font-semibold">Keeper</TableHead>
                     <TableHead className="text-white font-semibold">Fantasy Salary</TableHead>
+                    <TableHead className="text-white font-semibold">Effective Salary</TableHead>
                     <TableHead className="text-white font-semibold">Contract Length</TableHead>
+                    <TableHead className="text-white font-semibold">Taxi Squad</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -347,6 +402,15 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                         )}
                       </TableCell>
                       <TableCell>
+                        {salariesLoading ? (
+                          <div className="text-gray-400 text-xs">Loading...</div>
+                        ) : (
+                          <div className="text-emerald-400 font-medium">
+                            ${getEffectiveSalary(row.playerId).toLocaleString()}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         {contractsLoading ? (
                           <div className="text-gray-400 text-xs">Loading...</div>
                         ) : (
@@ -354,6 +418,17 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                             playerId={row.playerId}
                             currentLength={contracts[row.playerId] || null}
                             onContractUpdate={updateContract}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {salariesLoading ? (
+                          <div className="text-gray-400 text-xs">Loading...</div>
+                        ) : (
+                          <TaxiSquadToggle
+                            playerId={row.playerId}
+                            currentStatus={taxiSquadStatus[row.playerId] || false}
+                            onToggle={updateTaxiSquadStatus}
                           />
                         )}
                       </TableCell>

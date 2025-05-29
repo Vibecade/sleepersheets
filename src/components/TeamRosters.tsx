@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
@@ -32,7 +33,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   const leagueId = rosters[0]?.league_id || '';
   
   // Load data with error boundaries
-  const { salaries } = usePlayerSalaries(leagueId);
+  const { salaries, getEffectiveSalary } = usePlayerSalaries(leagueId);
   const { deadCapPlayers } = useDeadCapPlayers(leagueId);
   const { settings, updateSettings, loading: settingsLoading } = useLeagueSettings(leagueId);
 
@@ -40,7 +41,8 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   const { teamSalaries, teamDeadCaps } = useSalaryCalculations({
     rosters,
     salaries,
-    deadCapPlayers
+    deadCapPlayers,
+    getEffectiveSalary
   });
 
   // Calculate FAAB for teams

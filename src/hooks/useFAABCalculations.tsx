@@ -11,7 +11,7 @@ interface FAABCalculationsProps {
 }
 
 export const useFAABCalculations = ({ rosters, leagueId }: FAABCalculationsProps) => {
-  const { salaries } = usePlayerSalaries(leagueId);
+  const { salaries, getEffectiveSalary } = usePlayerSalaries(leagueId);
   const { settings } = useLeagueSettings(leagueId);
   const { deadCapPlayers } = useDeadCapPlayers(leagueId);
   const { contracts } = usePlayerContracts(leagueId);
@@ -30,14 +30,14 @@ export const useFAABCalculations = ({ rosters, leagueId }: FAABCalculationsProps
       ];
       
       const totalSalary = allPlayerIds.reduce((total, playerId) => {
-        const salary = salaries[playerId];
-        return total + (salary || 0);
+        const effectiveSalary = getEffectiveSalary(playerId);
+        return total + effectiveSalary;
       }, 0);
       
       // Add dead cap to total salary
       const deadCap = deadCapPlayers
         .filter(player => player.roster_id === roster.roster_id)
-        .reduce((total, player) => total + (player.salary || 0), 0);
+        .reduce((total, player) => total + Math.max(1, Math.round((player.salary || 0) * 0.25)), 0);
       
       const totalWithDeadCap = totalSalary + deadCap;
       
@@ -48,35 +48,35 @@ export const useFAABCalculations = ({ rosters, leagueId }: FAABCalculationsProps
     });
     
     return calculations;
-  }, [rosters, salaries, deadCapPlayers, settings?.salary_cap, settings?.faab_cap]);
+  }, [rosters, salaries, deadCapPlayers, settings?.salary_cap, settings?.faab_cap, getEffectiveSalary]);
 
   const calculateDeadCap = useMemo(() => {
     return (playerId: string, currentYear: number = new Date().getFullYear()) => {
       const contractLength = contracts[playerId];
       if (!contractLength || contractLength <= 0) return 0;
       
-      const salary = salaries[playerId] || 0;
-      if (salary === 0) return 0;
+      const effectiveSalary = getEffectiveSalary(playerId);
+      if (effectiveSalary === 0) return 0;
       
-      // Dead cap = 25% of salary for remaining years
+      // Dead cap = 25% of effective salary for remaining years
       // If dropped in last year, 25% applies this year only
       const deadCapPercentage = 0.25;
-      const yearsRemaining = Math.max(1, contractLength); // At least 1 year if they have a contract
+      const deadCapAmount = effectiveSalary * deadCapPercentage;
       
-      return salary * deadCapPercentage;
+      return Math.max(1, Math.round(deadCapAmount));
     };
-  }, [contracts, salaries]);
+  }, [contracts, getEffectiveSalary]);
 
   const calculateTotalDeadCapForPlayer = useMemo(() => {
     return (playerId: string, currentYear: number = new Date().getFullYear()) => {
       const contractLength = contracts[playerId];
       if (!contractLength || contractLength <= 0) return { currentYear: 0, nextYear: 0 };
       
-      const salary = salaries[playerId] || 0;
-      if (salary === 0) return { currentYear: 0, nextYear: 0 };
+      const effectiveSalary = getEffectiveSalary(playerId);
+      if (effectiveSalary === 0) return { currentYear: 0, nextYear: 0 };
       
       const deadCapPercentage = 0.25;
-      const deadCapAmount = salary * deadCapPercentage;
+      const deadCapAmount = Math.max(1, Math.round(effectiveSalary * deadCapPercentage));
       
       // If in last year of contract, only current year penalty
       if (contractLength === 1) {
@@ -86,7 +86,7 @@ export const useFAABCalculations = ({ rosters, leagueId }: FAABCalculationsProps
       // Otherwise, penalty applies to current and next year
       return { currentYear: deadCapAmount, nextYear: deadCapAmount };
     };
-  }, [contracts, salaries]);
+  }, [contracts, getEffectiveSalary]);
 
   return {
     teamFAAB,

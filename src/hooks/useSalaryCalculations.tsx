@@ -5,9 +5,10 @@ interface SalaryCalculationsProps {
   rosters: any[];
   salaries: Record<string, number | null>;
   deadCapPlayers: any[];
+  getEffectiveSalary: (playerId: string) => number;
 }
 
-export const useSalaryCalculations = ({ rosters, salaries, deadCapPlayers }: SalaryCalculationsProps) => {
+export const useSalaryCalculations = ({ rosters, salaries, deadCapPlayers, getEffectiveSalary }: SalaryCalculationsProps) => {
   const teamSalaries = useMemo(() => {
     console.log('Calculating team salaries for', rosters.length, 'teams');
     const calculations: Record<number, number> = {};
@@ -20,13 +21,13 @@ export const useSalaryCalculations = ({ rosters, salaries, deadCapPlayers }: Sal
       ];
       
       calculations[roster.roster_id] = allPlayerIds.reduce((total, playerId) => {
-        const salary = salaries[playerId];
-        return total + (salary || 0);
+        const effectiveSalary = getEffectiveSalary(playerId);
+        return total + effectiveSalary;
       }, 0);
     });
     
     return calculations;
-  }, [rosters, salaries]);
+  }, [rosters, salaries, getEffectiveSalary]);
 
   const teamDeadCaps = useMemo(() => {
     console.log('Calculating team dead caps for', rosters.length, 'teams');
@@ -35,7 +36,7 @@ export const useSalaryCalculations = ({ rosters, salaries, deadCapPlayers }: Sal
     rosters.forEach((roster) => {
       calculations[roster.roster_id] = deadCapPlayers
         .filter(player => player.roster_id === roster.roster_id)
-        .reduce((total, player) => total + (player.salary || 0), 0);
+        .reduce((total, player) => total + Math.max(1, Math.round((player.salary || 0) * 0.25)), 0);
     });
     
     return calculations;

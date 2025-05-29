@@ -6,10 +6,12 @@ import { useToast } from '@/hooks/use-toast';
 interface PlayerSalary {
   player_id: string;
   salary: number | null;
+  taxi_squad: boolean;
 }
 
 export const usePlayerSalaries = (leagueId: string) => {
   const [salaries, setSalaries] = useState<Record<string, number | null>>({});
+  const [taxiSquadStatus, setTaxiSquadStatus] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -20,7 +22,7 @@ export const usePlayerSalaries = (leagueId: string) => {
         console.log('Loading salaries for league:', leagueId);
         const { data, error } = await supabase
           .from('player_salaries')
-          .select('player_id, salary')
+          .select('player_id, salary, taxi_squad')
           .eq('league_id', leagueId);
 
         if (error) {
@@ -30,10 +32,13 @@ export const usePlayerSalaries = (leagueId: string) => {
 
         console.log('Loaded salary data:', data);
         const salaryMap: Record<string, number | null> = {};
+        const taxiMap: Record<string, boolean> = {};
         data?.forEach((item) => {
           salaryMap[item.player_id] = item.salary;
+          taxiMap[item.player_id] = item.taxi_squad || false;
         });
         setSalaries(salaryMap);
+        setTaxiSquadStatus(taxiMap);
       } catch (error) {
         console.error('Error loading salaries:', error);
       } finally {
@@ -56,6 +61,7 @@ export const usePlayerSalaries = (leagueId: string) => {
           league_id: leagueId,
           player_id: playerId,
           salary: salary,
+          taxi_squad: taxiSquadStatus[playerId] || false,
           updated_at: new Date().toISOString()
         }, {
           onConflict: 'league_id,player_id'
@@ -88,9 +94,67 @@ export const usePlayerSalaries = (leagueId: string) => {
     }
   };
 
+  // Update taxi squad status
+  const updateTaxiSquadStatus = async (playerId: string, taxiSquad: boolean) => {
+    try {
+      console.log('Updating taxi squad status for player:', playerId, 'taxi_squad:', taxiSquad);
+      const { error } = await supabase
+        .from('player_salaries')
+        .upsert({
+          league_id: leagueId,
+          player_id: playerId,
+          salary: salaries[playerId],
+          taxi_squad: taxiSquad,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'league_id,player_id'
+        });
+
+      if (error) {
+        console.error('Error updating taxi squad status:', error);
+        toast({
+          title: "Error",
+          description: "Failed to save taxi squad status",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      setTaxiSquadStatus(prev => ({ ...prev, [playerId]: taxiSquad }));
+      toast({
+        title: "Success",
+        description: "Taxi squad status updated successfully",
+      });
+      return true;
+    } catch (error) {
+      console.error('Error updating taxi squad status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save taxi squad status",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
+  // Get effective salary (considering taxi squad discount)
+  const getEffectiveSalary = (playerId: string): number => {
+    const baseSalary = salaries[playerId] || 0;
+    const isTaxiSquad = taxiSquadStatus[playerId] || false;
+    
+    if (isTaxiSquad && baseSalary > 0) {
+      return Math.round(baseSalary * 0.25);
+    }
+    
+    return baseSalary;
+  };
+
   return {
     salaries,
+    taxiSquadStatus,
     updateSalary,
+    updateTaxiSquadStatus,
+    getEffectiveSalary,
     loading
   };
 };
