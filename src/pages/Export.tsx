@@ -5,11 +5,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Copy, CheckCircle, Sparkles, FileSpreadsheet, Bot, Download } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { LeagueDataProvider } from '@/components/LeagueDataProvider';
+import ExportActions from '@/components/ExportActions';
 
 const Export = () => {
   const { toast } = useToast();
+  const location = useLocation();
+  const leagueData = location.state?.leagueData;
 
   const chatGptPrompt = `I am uploading my Sleeper fantasy football league export files. Please create a formatted, multi-sheet Google Sheets document for me with the following requirements:
 
@@ -65,7 +69,7 @@ const Export = () => {
     }
   };
 
-  return (
+  const ExportContent = () => (
     <div className="min-h-screen">
       {/* Header */}
       <div className="glass-header border-b border-white/10 relative overflow-hidden">
@@ -89,7 +93,7 @@ const Export = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <Tabs defaultValue="tutorial" className="w-full">
+        <Tabs defaultValue={leagueData ? "export" : "tutorial"} className="w-full">
           <TabsList className="grid w-full grid-cols-2 h-auto p-1 mb-8">
             <TabsTrigger value="tutorial" className="text-sm py-3 px-4 min-h-[50px]">
               <Bot className="w-4 h-4 mr-2" />
@@ -102,27 +106,48 @@ const Export = () => {
           </TabsList>
 
           <TabsContent value="export">
-            <Card>
-              <CardHeader>
-                <CardTitle>Export Your League Data</CardTitle>
-                <CardDescription>
-                  To export your league data, please go back to the main page and load your league first.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-gray-400 mb-4">
-                    Export functionality is available after loading league data on the main page.
-                  </p>
-                  <Link to="/">
-                    <Button>
-                      <ArrowLeft className="w-4 h-4 mr-2" />
-                      Load League Data
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+            {leagueData ? (
+              <LeagueDataProvider data={leagueData}>
+                <ExportActions
+                  league={leagueData.league}
+                  rosters={leagueData.rosters}
+                  userMap={leagueData.users.reduce((acc: any, user: any) => {
+                    acc[user.user_id] = user;
+                    return acc;
+                  }, {})}
+                  rosterUserMap={leagueData.rosters.reduce((acc: any, roster: any) => {
+                    const user = leagueData.users.find((u: any) => u.user_id === roster.owner_id);
+                    acc[roster.roster_id] = user;
+                    return acc;
+                  }, {})}
+                  players={leagueData.players}
+                  transactions={leagueData.transactions || []}
+                  draftPicks={leagueData.draftPicks || []}
+                />
+              </LeagueDataProvider>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Export Your League Data</CardTitle>
+                  <CardDescription>
+                    To export your league data, please go back to the main page and load your league first.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <p className="text-gray-400 mb-4">
+                      Export functionality is available after loading league data on the main page.
+                    </p>
+                    <Link to="/">
+                      <Button>
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Load League Data
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="tutorial" className="space-y-8">
@@ -252,6 +277,8 @@ const Export = () => {
       </div>
     </div>
   );
+
+  return <ExportContent />;
 };
 
 export default Export;

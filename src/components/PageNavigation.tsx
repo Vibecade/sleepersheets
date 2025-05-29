@@ -7,13 +7,23 @@ import { useNavigate } from 'react-router-dom';
 interface PageNavigationProps {
   currentPage: 'overview' | 'manager';
   onPageChange: (page: 'overview' | 'manager') => void;
+  leagueData?: any;
 }
 
 const PageNavigation: React.FC<PageNavigationProps> = ({
   currentPage,
-  onPageChange
+  onPageChange,
+  leagueData
 }) => {
   const navigate = useNavigate();
+
+  const handleExportClick = () => {
+    if (leagueData) {
+      navigate('/export', { state: { leagueData } });
+    } else {
+      navigate('/export');
+    }
+  };
 
   return (
     <div className="glass-card rounded-xl p-2 mb-6">
@@ -36,7 +46,7 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
         </Button>
         <Button
           variant="ghost"
-          onClick={() => navigate('/export')}
+          onClick={handleExportClick}
           className="flex items-center space-x-2 flex-1"
         >
           <Download className="w-4 h-4" />

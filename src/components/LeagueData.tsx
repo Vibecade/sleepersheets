@@ -25,6 +25,17 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void> }> = ({ 
   const { league, rosters, userMap, rosterUserMap, players, transactions, draftPicks, stats } = useLeagueData();
   const [currentPage, setCurrentPage] = useState<'overview' | 'manager'>('overview');
 
+  // Prepare league data for export navigation
+  const leagueDataForExport = {
+    league,
+    rosters,
+    users: Object.values(userMap),
+    players,
+    transactions,
+    drafts: [],
+    draftPicks
+  };
+
   return (
     <div className="main-container">
       <div className="space-y-8">
@@ -54,6 +65,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void> }> = ({ 
             <PageNavigation
               currentPage={currentPage}
               onPageChange={setCurrentPage}
+              leagueData={leagueDataForExport}
             />
           </ErrorBoundary>
         </div>
