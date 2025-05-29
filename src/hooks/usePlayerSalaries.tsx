@@ -33,10 +33,14 @@ export const usePlayerSalaries = (leagueId: string) => {
         console.log('Loaded salary data:', data);
         const salaryMap: Record<string, number | null> = {};
         const taxiMap: Record<string, boolean> = {};
-        data?.forEach((item) => {
-          salaryMap[item.player_id] = item.salary;
-          taxiMap[item.player_id] = item.taxi_squad || false;
-        });
+        
+        if (data) {
+          data.forEach((item) => {
+            salaryMap[item.player_id] = item.salary;
+            taxiMap[item.player_id] = item.taxi_squad || false;
+          });
+        }
+        
         setSalaries(salaryMap);
         setTaxiSquadStatus(taxiMap);
       } catch (error) {
@@ -143,7 +147,7 @@ export const usePlayerSalaries = (leagueId: string) => {
     const isTaxiSquad = taxiSquadStatus[playerId] || false;
     
     if (isTaxiSquad && baseSalary > 0) {
-      return Math.round(baseSalary * 0.25);
+      return Math.max(1, Math.round(baseSalary * 0.25));
     }
     
     return baseSalary;

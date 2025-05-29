@@ -253,6 +253,7 @@ export type Database = {
           league_id: string
           player_id: string
           salary: number | null
+          taxi_squad: boolean | null
           updated_at: string
         }
         Insert: {
@@ -261,6 +262,7 @@ export type Database = {
           league_id: string
           player_id: string
           salary?: number | null
+          taxi_squad?: boolean | null
           updated_at?: string
         }
         Update: {
@@ -269,6 +271,7 @@ export type Database = {
           league_id?: string
           player_id?: string
           salary?: number | null
+          taxi_squad?: boolean | null
           updated_at?: string
         }
         Relationships: []
