@@ -5,7 +5,6 @@ import { Settings } from 'lucide-react';
 import TeamRosters from './TeamRosters';
 import TradeSimulator from './TradeSimulator';
 import DataDashboard from './DataDashboard';
-import ExportActions from './ExportActions';
 
 interface FantasyManagerProps {
   rosters: any[];
@@ -36,7 +35,7 @@ const FantasyManager: React.FC<FantasyManagerProps> = ({
             <div>
               <CardTitle className="text-2xl">Fantasy Manager</CardTitle>
               <p className="text-gray-400">
-                Advanced tools for salary cap, FAAB, dead cap management, detailed roster analysis, trade simulation, and data export
+                Advanced tools for salary cap, FAAB, dead cap management, detailed roster analysis, and trade simulation
               </p>
             </div>
           </div>
@@ -60,17 +59,6 @@ const FantasyManager: React.FC<FantasyManagerProps> = ({
 
       {/* Data Dashboard */}
       <DataDashboard
-        league={league}
-        rosters={rosters}
-        userMap={userMap}
-        rosterUserMap={rosterUserMap}
-        players={players}
-        transactions={transactions}
-        draftPicks={draftPicks}
-      />
-
-      {/* Export Actions */}
-      <ExportActions
         league={league}
         rosters={rosters}
         userMap={userMap}

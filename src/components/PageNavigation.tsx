@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Users, Settings, Trophy } from 'lucide-react';
+import { Users, Settings, Trophy, Download } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface PageNavigationProps {
   currentPage: 'overview' | 'manager';
@@ -12,6 +13,8 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
   currentPage,
   onPageChange
 }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="glass-card rounded-xl p-2 mb-6">
       <div className="flex space-x-2">
@@ -30,6 +33,14 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
         >
           <Settings className="w-4 h-4" />
           <span>Fantasy Manager</span>
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/export')}
+          className="flex items-center space-x-2 flex-1"
+        >
+          <Download className="w-4 h-4" />
+          <span>Export & AI</span>
         </Button>
       </div>
     </div>
