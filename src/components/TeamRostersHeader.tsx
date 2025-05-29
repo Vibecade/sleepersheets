@@ -2,7 +2,8 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, DollarSign, Skull, Calculator } from 'lucide-react';
+import { Users, DollarSign, Skull, Calculator, Lock } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import SalarySettings from '@/components/SalarySettings';
 import FAABSettings from '@/components/FAABSettings';
 
@@ -56,6 +57,8 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
   setLocalReserveLimit,
   onFaabSettingsSave
 }) => {
+  const { user } = useAuth();
+
   return (
     <CardHeader className="pb-3 sm:pb-4">
       <div className="flex flex-col space-y-3 sm:space-y-2">
@@ -69,10 +72,18 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
                 {showSalaryFeatures && ' with salary tracking'}
                 {showDeadCapManager && ' and dead cap management'}
                 {showFAAB && ' and FAAB budgets'}
+                {!user && ' (read-only)'}
               </CardDescription>
             </div>
           </div>
         </div>
+
+        {!user && (
+          <div className="flex items-center space-x-2 text-amber-400 text-sm bg-amber-400/10 p-2 rounded">
+            <Lock className="w-4 h-4" />
+            <span>Sign in to access editing features</span>
+          </div>
+        )}
         
         <div className="flex flex-col xs:flex-row gap-2">
           <Button
@@ -101,9 +112,12 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
               size="sm"
               onClick={onToggleDeadCapManager}
               className="flex items-center justify-center space-x-2 min-h-[44px] text-sm"
+              disabled={!user}
+              title={!user ? 'Sign in to access dead cap management' : undefined}
             >
               <Skull className="w-4 h-4" />
               <span>Dynasty Dead Cap</span>
+              {!user && <Lock className="w-3 h-3 ml-1" />}
             </Button>
           )}
           

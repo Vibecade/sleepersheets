@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Check, X, Edit } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface EditableContractLengthProps {
   playerId: string;
@@ -15,11 +16,14 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
   currentLength,
   onContractUpdate
 }) => {
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(currentLength?.toString() || '');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSave = async () => {
+    if (!user) return; // Prevent saving when not authenticated
+    
     setIsLoading(true);
     const contractLength = tempValue === '' ? null : Number(tempValue);
     const success = await onContractUpdate(playerId, contractLength);
@@ -36,6 +40,7 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
   };
 
   const handleEdit = () => {
+    if (!user) return; // Prevent editing when not authenticated
     setTempValue(currentLength?.toString() || '');
     setIsEditing(true);
   };
@@ -43,13 +48,16 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
   if (!isEditing) {
     return (
       <div 
-        className="flex items-center space-x-1 cursor-pointer hover:bg-white/10 rounded px-2 py-1 transition-colors"
+        className={`flex items-center space-x-1 px-2 py-1 transition-colors rounded ${
+          user ? 'cursor-pointer hover:bg-white/10' : 'cursor-default opacity-75'
+        }`}
         onClick={handleEdit}
+        title={!user ? 'Sign in to edit contracts' : undefined}
       >
         <span className="text-gray-300 text-sm">
-          {currentLength ? `${currentLength} yr${currentLength !== 1 ? 's' : ''}` : 'Set contract'}
+          {currentLength ? `${currentLength} yr${currentLength !== 1 ? 's' : ''}` : (user ? 'Set contract' : 'No contract')}
         </span>
-        <Edit className="w-3 h-3 text-gray-400" />
+        {user && <Edit className="w-3 h-3 text-gray-400" />}
       </div>
     );
   }

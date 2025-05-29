@@ -1,13 +1,30 @@
 
 import React from 'react';
-import { Trophy } from 'lucide-react';
+import { Trophy, Lock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import UserMenu from '@/components/UserMenu';
 
 const LeagueHeader = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   return (
     <div className="text-center py-16 px-4 relative">
       <div className="absolute top-4 right-4">
-        <UserMenu />
+        {user ? (
+          <UserMenu />
+        ) : (
+          <Button 
+            onClick={() => navigate('/auth')}
+            variant="outline"
+            className="flex items-center space-x-2"
+          >
+            <Lock className="w-4 h-4" />
+            <span>Sign In</span>
+          </Button>
+        )}
       </div>
       
       <div className="max-w-4xl mx-auto">
@@ -23,6 +40,18 @@ const LeagueHeader = () => {
         <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
           The ultimate salary cap and contract management tool for your fantasy football dynasty league
         </p>
+
+        {!user && (
+          <div className="mb-6 p-4 bg-amber-400/10 border border-amber-400/20 rounded-lg max-w-2xl mx-auto">
+            <div className="flex items-center justify-center space-x-2 text-amber-400">
+              <Lock className="w-5 h-5" />
+              <span className="font-medium">Read-Only Mode</span>
+            </div>
+            <p className="text-sm text-amber-300 mt-2">
+              Sign in to modify salary caps, contracts, and claim league ownership
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-400">
           <div className="flex items-center space-x-2">
