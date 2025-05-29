@@ -38,7 +38,7 @@ const FantasyManager: React.FC<FantasyManagerProps> = ({
   const { teamSalaries } = useSalaryCalculations({
     rosters,
     salaries,
-    deadCapPlayers: {},
+    deadCapPlayers: [], // Fix: Pass empty array instead of empty object
     getEffectiveSalary
   });
 
