@@ -1,64 +1,52 @@
 
-import { saveAs } from 'file-saver';
+export const downloadCSV = (csvData: string[][], filename: string) => {
+  // Convert to CSV string with proper escaping
+  const csvContent = csvData.map(row => 
+    row.map(field => {
+      // Handle fields that contain commas, quotes, or newlines
+      const fieldStr = String(field || '');
+      if (fieldStr.includes(',') || fieldStr.includes('"') || fieldStr.includes('\n')) {
+        return `"${fieldStr.replace(/"/g, '""')}"`;
+      }
+      return fieldStr;
+    }).join(',')
+  ).join('\n');
 
-export const downloadCSV = (data: any[][], filename: string) => {
-  const csv = data.map(row => row.map(String).join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-  saveAs(blob, filename);
+  // Create and download file
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
 export const formatPlayerName = (player: any): string => {
-  if (!player) return 'Unknown Player';
-  return `${player.first_name} ${player.last_name}`;
+  return `${player.first_name || ''} ${player.last_name || ''}`.trim() || 'Unknown Player';
 };
 
 export const getPlayerFranchiseValue = (player: any): string => {
-  const age = getPlayerAge(player);
-  const experience = getPlayerExperience(player);
-
-  let franchiseValue = 'Low';
-
-  if (age <= 25 && experience <= 3) {
-    franchiseValue = 'Elite';
-  } else if ((age <= 28 && age > 25) && (experience <= 5 && experience > 3)) {
-    franchiseValue = 'High';
-  } else if ((age <= 30 && age > 28) && (experience <= 7 && experience > 5)) {
-    franchiseValue = 'Medium';
+  // Convert player value from cents to dollars if it exists
+  if (player?.fantasy_data_nfl?.fantasy_positions_value) {
+    const value = player.fantasy_data_nfl.fantasy_positions_value;
+    return `$${(value / 100).toFixed(2)}`;
   }
-
-  return franchiseValue;
-};
-
-export const getPlayerAge = (player: any): number | null => {
-  if (!player?.birth_date) return null;
-
-  const birthDate = new Date(player.birth_date);
-  const today = new Date();
-
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const month = today.getMonth() - birthDate.getMonth();
-
-  if (month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-
-  return age;
-};
-
-export const getPlayerExperience = (player: any): number | null => {
-  return player?.years_exp || null;
+  return '';
 };
 
 export const getDataTimestamp = (): string => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  return new Date().toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    timeZoneName: 'short'
+  });
 };
 
 export interface ExportOptionsData {
@@ -71,41 +59,51 @@ export interface ExportOptionsData {
   draftOrder: string;
 }
 
-export const addExportOptionsToCSV = (csvData: any[][], exportOptions: ExportOptionsData, leagueName: string): any[][] => {
-  const optionsData = [];
+export const addExportOptionsToCSV = (
+  csvData: string[][],
+  options: ExportOptionsData,
+  leagueName: string
+): string[][] => {
+  const enhancedData = [...csvData];
 
-  optionsData.push([`${leagueName} - Export Options`]);
-  optionsData.push([`Export Date: ${getDataTimestamp()}`]);
-  optionsData.push([]);
+  // Add export timestamp at the top
+  enhancedData.unshift([]);
+  enhancedData.unshift([`Data exported on: ${getDataTimestamp()}`]);
+  enhancedData.unshift([`League: ${leagueName}`]);
+  enhancedData.unshift([]);
 
-  if (exportOptions.includeLeagueRules) {
-    optionsData.push(['League Rules & Scoring']);
-    optionsData.push([exportOptions.leagueRules]);
-    optionsData.push([]);
+  // Add spacing and additional info sections
+  if (options.includeLeagueRules || options.includeFAAB || options.includeDraftOrder) {
+    enhancedData.push([]); // Empty row for spacing
+    enhancedData.push(['=== ADDITIONAL LEAGUE INFORMATION ===']);
+    enhancedData.push([]);
   }
 
-  if (exportOptions.includeFAAB) {
-    optionsData.push(['FAAB Information']);
-    optionsData.push([`FAAB Budget per Team: ${exportOptions.faabBudget}`]);
-    optionsData.push([`FAAB Notes: ${exportOptions.faabNotes}`]);
-    optionsData.push([]);
+  // Add League Rules
+  if (options.includeLeagueRules && options.leagueRules.trim()) {
+    enhancedData.push(['LEAGUE RULES & SCORING']);
+    enhancedData.push([options.leagueRules]);
+    enhancedData.push([]);
   }
 
-  if (exportOptions.includeDraftOrder) {
-    optionsData.push(['Draft Order & Details']);
-    optionsData.push([exportOptions.draftOrder]);
-    optionsData.push([]);
+  // Add FAAB Information
+  if (options.includeFAAB && (options.faabBudget.trim() || options.faabNotes.trim())) {
+    enhancedData.push(['FAAB INFORMATION']);
+    if (options.faabBudget.trim()) {
+      enhancedData.push(['Budget per Team:', options.faabBudget]);
+    }
+    if (options.faabNotes.trim()) {
+      enhancedData.push(['FAAB Notes:', options.faabNotes]);
+    }
+    enhancedData.push([]);
   }
 
-  return [...optionsData, ...csvData];
-};
+  // Add Draft Order
+  if (options.includeDraftOrder && options.draftOrder.trim()) {
+    enhancedData.push(['DRAFT ORDER & DETAILS']);
+    enhancedData.push([options.draftOrder]);
+    enhancedData.push([]);
+  }
 
-export const generateAnalyticsCSV = (analyticsData: any[], filename: string) => {
-  const headers = Object.keys(analyticsData[0]);
-  const csvData = [
-    headers,
-    ...analyticsData.map(item => headers.map(header => String(item[header])))
-  ];
-
-  downloadCSV(csvData, filename);
+  return enhancedData;
 };
