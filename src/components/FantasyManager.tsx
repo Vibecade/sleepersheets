@@ -5,6 +5,7 @@ import { Settings } from 'lucide-react';
 import TeamRosters from './TeamRosters';
 import TradeSimulator from './TradeSimulator';
 import DataDashboard from './DataDashboard';
+import ProTierUpgrade from './ProTierUpgrade';
 
 interface FantasyManagerProps {
   rosters: any[];
@@ -41,6 +42,9 @@ const FantasyManager: React.FC<FantasyManagerProps> = ({
           </div>
         </CardHeader>
       </Card>
+
+      {/* Pro Tier Upgrade */}
+      <ProTierUpgrade />
 
       {/* Team Rosters with all advanced features */}
       <TeamRosters
