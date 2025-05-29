@@ -1,69 +1,50 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Trophy, HelpCircle, BarChart3, FolderRoot as Football, ChartBar, MessageCircleQuestion as QuestionMarkCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
-export const LeagueHeader = () => {
+import React from 'react';
+import { Trophy } from 'lucide-react';
+import UserMenu from '@/components/UserMenu';
+
+const LeagueHeader = () => {
   return (
-    <header className="glass-header relative overflow-hidden">
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-10 left-10 w-32 h-32 bg-blue-500/10 rounded-full blur-xl"></div>
-        <div className="absolute bottom-10 right-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-xl"></div>
+    <div className="text-center py-16 px-4 relative">
+      <div className="absolute top-4 right-4">
+        <UserMenu />
       </div>
       
-      <div className="max-w-7xl mx-auto px-6 py-12 relative z-10 text-center">
-        <div className="flex flex-col items-center gap-6">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-3 shadow-lg">
-              <Football className="w-8 h-8 text-white" />
-            </div>
-            
-            <div className="space-y-4 max-w-2xl">
-              <div>
-                <h1 className="text-4xl lg:text-5xl font-bold text-yellow-500 mb-2">
-                  SleeperSheets
-                </h1>
-                <div className="flex items-center justify-center space-x-2 text-yellow-300/80 text-sm">
-                  <ChartBar className="w-4 h-4" />
-                  <span>Fantasy Football Management Hub</span>
-                </div>
-              </div>
-              
-              <p className="text-yellow-100/90 text-lg leading-relaxed">
-                Your complete fantasy sports command center. Manage contracts, drafts, and trades seamlessly 
-                with live Sleeper API integration. Save hours of commissioner work while keeping everything 
-                data-driven and transparent.
-              </p>
-              
-              <div className="flex items-center justify-center space-x-4 pt-2">
-                <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span className="text-sm text-yellow-300/80">Live Sync</span>
-                </div>
-                <div className="w-px h-4 bg-yellow-900/50"></div>
-                <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                  <span className="text-sm text-yellow-300/80">Auto Updates</span>
-                </div>
-              </div>
-            </div>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-center space-x-4 mb-6">
+          <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl p-4 shadow-2xl">
+            <Trophy className="w-12 h-12 text-white" />
           </div>
-          
-          <div className="flex items-center justify-center gap-3">
-            <Link to="/how-to">
-              <Button 
-                variant="outline" 
-                className="glass-button border-yellow-500/30 hover:border-yellow-500/50"
-                size="lg"
-              >
-                <QuestionMarkCircle className="w-5 h-5" />
-                <span>How It Works</span>
-              </Button>
-            </Link>
+          <h1 className="text-5xl md:text-7xl font-black bg-gradient-to-r from-white via-yellow-100 to-yellow-300 bg-clip-text text-transparent">
+            DYNASTY
+          </h1>
+        </div>
+        
+        <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
+          The ultimate salary cap and contract management tool for your fantasy football dynasty league
+        </p>
+
+        <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-400">
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+            <span>Real-time salary tracking</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <span>Contract management</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+            <span>Trade simulation</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+            <span>Protected league ownership</span>
           </div>
         </div>
       </div>
-    </header>
+    </div>
   );
 };
+
+export default LeagueHeader;

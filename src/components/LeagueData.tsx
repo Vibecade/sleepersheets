@@ -5,6 +5,7 @@ import TeamOverview from './TeamOverview';
 import FantasyManager from './FantasyManager';
 import PageNavigation from './PageNavigation';
 import ErrorBoundary from './ErrorBoundary';
+import LeagueOwnershipBanner from './LeagueOwnershipBanner';
 import { LeagueDataProvider, useLeagueData } from './LeagueDataProvider';
 
 interface LeagueDataProps {
@@ -27,6 +28,15 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void> }> = ({ 
   return (
     <div className="main-container">
       <div className="space-y-8">
+        <div className="slide-up">
+          <ErrorBoundary>
+            <LeagueOwnershipBanner 
+              leagueId={league.league_id} 
+              leagueName={league.name}
+            />
+          </ErrorBoundary>
+        </div>
+
         <div className="slide-up">
           <ErrorBoundary>
             <LeagueHeader

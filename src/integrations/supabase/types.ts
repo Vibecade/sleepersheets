@@ -129,6 +129,30 @@ export type Database = {
         }
         Relationships: []
       }
+      league_ownership: {
+        Row: {
+          claimed_at: string
+          id: string
+          is_active: boolean
+          league_id: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          id?: string
+          is_active?: boolean
+          league_id: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          id?: string
+          is_active?: boolean
+          league_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       league_settings: {
         Row: {
           created_at: string
@@ -272,6 +296,33 @@ export type Database = {
           player_id?: string
           salary?: number | null
           taxi_squad?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
           updated_at?: string
         }
         Relationships: []
