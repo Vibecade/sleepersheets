@@ -18,7 +18,6 @@ export const useFAABCalculations = ({ rosters, leagueId }: FAABCalculationsProps
     console.log('Calculating FAAB for teams');
     const calculations: Record<number, number> = {};
     const salaryCap = settings?.salary_cap || 200000;
-    const reserveLimit = settings?.reserve_limit || 100;
     const faabCap = settings?.faab_cap || 100;
     
     rosters.forEach((roster) => {
@@ -33,8 +32,8 @@ export const useFAABCalculations = ({ rosters, leagueId }: FAABCalculationsProps
         return total + (salary || 0);
       }, 0);
       
-      // FAAB = min(Salary Cap - Total Salary - Reserve Limit, FAAB Cap)
-      const availableFaab = Math.max(0, salaryCap - totalSalary - reserveLimit);
+      // FAAB = min(Salary Cap - Total Salary, FAAB Cap)
+      const availableFaab = Math.max(0, salaryCap - totalSalary);
       const faab = Math.min(availableFaab, faabCap);
       calculations[roster.roster_id] = faab;
     });
