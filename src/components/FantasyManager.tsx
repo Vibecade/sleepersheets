@@ -5,7 +5,6 @@ import { Settings } from 'lucide-react';
 import TeamRosters from './TeamRosters';
 import TradeSimulator from './TradeSimulator';
 import DataDashboard from './DataDashboard';
-import AnalyticsDashboard from './AnalyticsDashboard';
 import ProTierUpgrade from './ProTierUpgrade';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { useSalaryCalculations } from '@/hooks/useSalaryCalculations';
@@ -63,16 +62,6 @@ const FantasyManager: React.FC<FantasyManagerProps> = ({
 
       {/* Pro Tier Upgrade - Hidden by default */}
       <ProTierUpgrade hidden={true} />
-
-      {/* Analytics Dashboard */}
-      <AnalyticsDashboard 
-        rosters={rosters}
-        userMap={userMap}
-        players={players}
-        teamSalaries={teamSalaries}
-        salaryCap={salaryCap}
-        showSalaryFeatures={Object.keys(teamSalaries).length > 0}
-      />
 
       {/* Team Rosters with all advanced features */}
       <TeamRosters

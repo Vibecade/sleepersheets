@@ -69,6 +69,10 @@ const PositionDistributionChart: React.FC<PositionDistributionChartProps> = ({
     return null;
   };
 
+  const renderCustomLabel = ({ position, percentage }: PositionData) => {
+    return `${position} (${percentage}%)`;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -88,7 +92,7 @@ const PositionDistributionChart: React.FC<PositionDistributionChartProps> = ({
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="count"
-                label={({ position, percentage }) => `${position} (${percentage}%)`}
+                label={renderCustomLabel}
                 labelLine={false}
               >
                 {positionCounts.map((entry, index) => (
@@ -99,7 +103,13 @@ const PositionDistributionChart: React.FC<PositionDistributionChartProps> = ({
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
-              <Legend />
+              <Legend 
+                formatter={(value, entry) => (
+                  <span style={{ color: entry.color }}>
+                    {value}
+                  </span>
+                )}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>

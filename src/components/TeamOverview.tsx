@@ -2,7 +2,9 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users } from 'lucide-react';
-import AnalyticsDashboard from './AnalyticsDashboard';
+import TeamRosterSizeChart from './charts/TeamRosterSizeChart';
+import PositionDistributionChart from './charts/PositionDistributionChart';
+import TeamRostersGrid from './TeamRostersGrid';
 
 interface TeamOverviewProps {
   league: any;
@@ -53,11 +55,24 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
         </CardContent>
       </Card>
 
-      <AnalyticsDashboard 
+      {/* Analytics Charts - Only on Overview */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <TeamRosterSizeChart 
+          rosters={rosters}
+          userMap={userMap}
+        />
+        
+        <PositionDistributionChart 
+          rosters={rosters}
+          players={players}
+        />
+      </div>
+
+      {/* Team Rosters Grid - Show actual teams */}
+      <TeamRostersGrid
         rosters={rosters}
         userMap={userMap}
         players={players}
-        showSalaryFeatures={false}
       />
     </div>
   );
