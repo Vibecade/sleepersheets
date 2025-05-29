@@ -74,7 +74,7 @@ const FAABSettings: React.FC<FAABSettingsProps> = ({
             <strong>FAAB Calculation:</strong>
           </p>
           <p className="text-xs text-gray-400">
-            Available FAAB = min(Salary Cap - Total Team Salary - Reserve Limit, Maximum FAAB Budget)
+            Available FAAB = min(Salary Cap - Total Team Salary, Maximum FAAB Budget)
           </p>
         </div>
         
