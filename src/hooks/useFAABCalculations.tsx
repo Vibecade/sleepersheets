@@ -2,6 +2,7 @@
 import { useMemo } from 'react';
 import { usePlayerContracts } from './usePlayerContracts';
 import { usePlayerSalaries } from './usePlayerSalaries';
+import { useDeadCapPlayers } from './useDeadCapPlayers';
 import { useLeagueSettings } from './useLeagueSettings';
 
 interface FAABCalculationsProps {
@@ -12,6 +13,7 @@ interface FAABCalculationsProps {
 export const useFAABCalculations = ({ rosters, leagueId }: FAABCalculationsProps) => {
   const { salaries } = usePlayerSalaries(leagueId);
   const { settings } = useLeagueSettings(leagueId);
+  const { deadCapPlayers } = useDeadCapPlayers(leagueId);
   const { contracts } = usePlayerContracts(leagueId);
 
   const teamFAAB = useMemo(() => {
@@ -32,14 +34,21 @@ export const useFAABCalculations = ({ rosters, leagueId }: FAABCalculationsProps
         return total + (salary || 0);
       }, 0);
       
+      // Add dead cap to total salary
+      const deadCap = deadCapPlayers
+        .filter(player => player.roster_id === roster.roster_id)
+        .reduce((total, player) => total + (player.salary || 0), 0);
+      
+      const totalWithDeadCap = totalSalary + deadCap;
+      
       // FAAB = min(Salary Cap - Total Salary, FAAB Cap)
-      const availableFaab = Math.max(0, salaryCap - totalSalary);
+      const availableFaab = Math.max(0, salaryCap - totalWithDeadCap);
       const faab = Math.min(availableFaab, faabCap);
       calculations[roster.roster_id] = faab;
     });
     
     return calculations;
-  }, [rosters, salaries, settings?.salary_cap, settings?.reserve_limit, settings?.faab_cap]);
+  }, [rosters, salaries, deadCapPlayers, settings?.salary_cap, settings?.faab_cap]);
 
   const calculateDeadCap = useMemo(() => {
     return (playerId: string, currentYear: number = new Date().getFullYear()) => {
