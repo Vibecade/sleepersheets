@@ -11,36 +11,78 @@
 .main-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1rem;
   min-height: 100vh;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* Enhanced mobile responsiveness */
+/* Enhanced mobile responsiveness with proper breakpoints */
 @media (max-width: 768px) {
   .main-container {
-    padding: 1rem;
+    padding: 0.75rem;
     max-width: 100%;
   }
 }
 
+@media (max-width: 640px) {
+  .main-container {
+    padding: 0.5rem;
+  }
+}
+
+/* Extra small devices */
 @media (max-width: 480px) {
   .main-container {
-    padding: 0.75rem;
+    padding: 0.25rem;
   }
 }
 
 /* Landscape mobile optimization */
 @media (max-width: 768px) and (orientation: landscape) {
   .main-container {
-    padding: 0.75rem 1.5rem;
+    padding: 0.5rem 1rem;
   }
 }
 
 /* Very small devices */
 @media (max-width: 360px) {
   .main-container {
-    padding: 0.5rem;
+    padding: 0.25rem;
+  }
+}
+
+/* Custom breakpoint for extra small */
+@media (min-width: 475px) {
+  .xs\:inline {
+    display: inline;
+  }
+  
+  .xs\:flex-row {
+    flex-direction: row;
+  }
+  
+  .xs\:space-y-0 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(0px * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(0px * var(--tw-space-y-reverse));
+  }
+  
+  .xs\:space-x-3 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-x-reverse: 0;
+    margin-right: calc(0.75rem * var(--tw-space-x-reverse));
+    margin-left: calc(0.75rem * calc(1 - var(--tw-space-x-reverse)));
+  }
+  
+  .xs\:w-32 {
+    width: 8rem;
+  }
+  
+  .xs\:w-auto {
+    width: auto;
+  }
+  
+  .xs\:self-center {
+    align-self: center;
   }
 }

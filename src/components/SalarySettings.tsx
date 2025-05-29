@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Settings, Skull, Save, Lock } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface SalarySettingsProps {
   localSalaryCap: string;
@@ -27,6 +28,8 @@ const SalarySettings: React.FC<SalarySettingsProps> = ({
   onSalaryCapSave,
   canModifyLeague
 }) => {
+  const { toast } = useToast();
+
   const formatSalary = (amount: number) => {
     if (amount >= 1000000) {
       return `$${(amount / 1000000).toFixed(1)}M`;
@@ -36,13 +39,37 @@ const SalarySettings: React.FC<SalarySettingsProps> = ({
     return `$${amount.toLocaleString()}`;
   };
 
+  const handleDeadCapChange = async (enabled: boolean) => {
+    if (!canModifyLeague) {
+      toast({
+        title: "Claim Required",
+        description: "You must claim this league to modify dead cap settings",
+        variant: "destructive"
+      });
+      return;
+    }
+    await onDeadCapEnabledChange(enabled);
+  };
+
+  const handleSalaryCapSave = async () => {
+    if (!canModifyLeague) {
+      toast({
+        title: "Claim Required",
+        description: "You must claim this league to modify salary cap settings",
+        variant: "destructive"
+      });
+      return;
+    }
+    await onSalaryCapSave();
+  };
+
   if (settingsLoading) return null;
 
   return (
     <div className="space-y-4 p-3 sm:p-4 bg-white/5 rounded-lg border border-white/10">
       {!canModifyLeague && (
         <div className="flex items-center space-x-2 text-amber-400 text-sm bg-amber-400/10 p-2 rounded">
-          <Lock className="w-4 h-4" />
+          <Lock className="w-4 h-4 flex-shrink-0" />
           <span>Claim this league to modify salary settings</span>
         </div>
       )}
@@ -69,7 +96,7 @@ const SalarySettings: React.FC<SalarySettingsProps> = ({
                 disabled={!canModifyLeague}
               />
               <Button
-                onClick={onSalaryCapSave}
+                onClick={handleSalaryCapSave}
                 size="sm"
                 variant="outline"
                 className="h-10 px-3 min-w-[80px] whitespace-nowrap"
@@ -93,7 +120,7 @@ const SalarySettings: React.FC<SalarySettingsProps> = ({
           </div>
           <Switch
             checked={deadCapEnabled}
-            onCheckedChange={onDeadCapEnabledChange}
+            onCheckedChange={handleDeadCapChange}
             disabled={!canModifyLeague}
           />
         </div>
