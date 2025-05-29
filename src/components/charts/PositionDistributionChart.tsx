@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { ChartContainer } from '@/components/ui/chart';
@@ -20,7 +19,7 @@ const PositionDistributionChart: React.FC<PositionDistributionChartProps> = ({ r
     return acc;
   }, {} as Record<string, number>);
 
-  const totalPlayers = Object.values(positionCounts).reduce((sum: number, count: number) => sum + count, 0);
+  const totalPlayers: number = Object.values(positionCounts).reduce((sum: number, count: number) => sum + count, 0);
   
   const chartData = Object.entries(positionCounts).map(([position, count]: [string, number]) => ({
     position,
