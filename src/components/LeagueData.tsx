@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TeamRosters from './TeamRosters';
@@ -74,7 +73,6 @@ const LeagueData: React.FC<LeagueDataProps> = ({
           <TeamRosters 
             rosters={rosters}
             players={players}
-            league={league}
           />
         </TabsContent>
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import LeagueData from '@/components/LeagueData';
@@ -227,8 +226,12 @@ const Index = React.memo(() => {
             </div>
           ) : (
             <LeagueData 
-              data={leagueData} 
-              onRefreshData={handleRefreshData}
+              league={leagueData.league}
+              rosters={leagueData.rosters}
+              users={leagueData.users}
+              players={leagueData.players}
+              transactions={leagueData.transactions || []}
+              draftPicks={leagueData.draftPicks || []}
             />
           )}
         </EnhancedErrorBoundary>
