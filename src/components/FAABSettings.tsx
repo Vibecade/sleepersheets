@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lock } from 'lucide-react';
 
 interface FAABSettingsProps {
   faabCap: number;
@@ -15,6 +15,7 @@ interface FAABSettingsProps {
   setLocalReserveLimit: (value: string) => void;
   onFaabSettingsSave: () => Promise<void>;
   settingsLoading: boolean;
+  canModifyLeague: boolean;
 }
 
 const FAABSettings: React.FC<FAABSettingsProps> = ({
@@ -25,13 +26,21 @@ const FAABSettings: React.FC<FAABSettingsProps> = ({
   setLocalFaabCap,
   setLocalReserveLimit,
   onFaabSettingsSave,
-  settingsLoading
+  settingsLoading,
+  canModifyLeague
 }) => {
   return (
     <div className="space-y-4">
       <div className="space-y-3">
         <h4 className="text-sm font-medium">FAAB Configuration</h4>
         <Separator className="bg-white/10" />
+        
+        {!canModifyLeague && (
+          <div className="flex items-center space-x-2 text-amber-400 text-sm bg-amber-400/10 p-2 rounded">
+            <Lock className="w-4 h-4" />
+            <span>Claim this league to modify FAAB settings</span>
+          </div>
+        )}
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -44,7 +53,8 @@ const FAABSettings: React.FC<FAABSettingsProps> = ({
               value={localFaabCap}
               onChange={(e) => setLocalFaabCap(e.target.value)}
               placeholder="100"
-              className="bg-gray-800/50 border-gray-600 text-white placeholder-gray-400 text-sm"
+              disabled={!canModifyLeague}
+              className="bg-gray-800/50 border-gray-600 text-white placeholder-gray-400 text-sm disabled:opacity-50"
             />
             <p className="text-xs text-gray-400">
               Maximum FAAB budget per team (typically 100)
@@ -61,7 +71,8 @@ const FAABSettings: React.FC<FAABSettingsProps> = ({
               value={localReserveLimit}
               onChange={(e) => setLocalReserveLimit(e.target.value)}
               placeholder="100"
-              className="bg-gray-800/50 border-gray-600 text-white placeholder-gray-400 text-sm"
+              disabled={!canModifyLeague}
+              className="bg-gray-800/50 border-gray-600 text-white placeholder-gray-400 text-sm disabled:opacity-50"
             />
             <p className="text-xs text-gray-400">
               Amount reserved from salary cap for FAAB calculations
@@ -80,7 +91,7 @@ const FAABSettings: React.FC<FAABSettingsProps> = ({
         
         <Button 
           onClick={onFaabSettingsSave}
-          disabled={settingsLoading}
+          disabled={settingsLoading || !canModifyLeague}
           size="sm"
           className="w-full sm:w-auto"
         >
@@ -92,6 +103,7 @@ const FAABSettings: React.FC<FAABSettingsProps> = ({
           ) : (
             'Save FAAB Settings'
           )}
+          {!canModifyLeague && <Lock className="w-3 h-3 ml-1" />}
         </Button>
       </div>
     </div>

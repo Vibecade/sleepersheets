@@ -49,7 +49,6 @@ const TeamRostersGrid: React.FC<TeamRostersGridProps> = ({
               salaryCap={salaryCap}
               teamFAAB={faabBudget}
               showFAAB={showFAAB}
-              canModifyLeague={canModifyLeague}
             />
           );
         })}

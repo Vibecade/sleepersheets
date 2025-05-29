@@ -224,6 +224,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                             playerId={row.playerId}
                             currentSalary={salaries[row.playerId] || null}
                             onSalaryUpdate={updateSalary}
+                            leagueId={league.league_id}
                           />
                         )}
                       </TableCell>
@@ -244,6 +245,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                             playerId={row.playerId}
                             currentLength={contracts[row.playerId] || null}
                             onContractUpdate={updateContract}
+                            leagueId={league.league_id}
                           />
                         )}
                       </TableCell>
@@ -255,6 +257,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                             playerId={row.playerId}
                             currentStatus={taxiSquadStatus[row.playerId] || false}
                             onToggle={updateTaxiSquadStatus}
+                            leagueId={league.league_id}
                           />
                         )}
                       </TableCell>
@@ -310,6 +313,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                             playerId={row.playerId}
                             currentSalary={salaries[row.playerId] || null}
                             onSalaryUpdate={updateSalary}
+                            leagueId={league.league_id}
                           />
                         )}
                       </TableCell>
@@ -330,6 +334,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                             playerId={row.playerId}
                             currentLength={contracts[row.playerId] || null}
                             onContractUpdate={updateContract}
+                            leagueId={league.league_id}
                           />
                         )}
                       </TableCell>
@@ -341,6 +346,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                             playerId={row.playerId}
                             currentStatus={taxiSquadStatus[row.playerId] || false}
                             onToggle={updateTaxiSquadStatus}
+                            leagueId={league.league_id}
                           />
                         )}
                       </TableCell>
@@ -398,6 +404,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                             playerId={row.playerId}
                             currentSalary={salaries[row.playerId] || null}
                             onSalaryUpdate={updateSalary}
+                            leagueId={league.league_id}
                           />
                         )}
                       </TableCell>
@@ -418,6 +425,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                             playerId={row.playerId}
                             currentLength={contracts[row.playerId] || null}
                             onContractUpdate={updateContract}
+                            leagueId={league.league_id}
                           />
                         )}
                       </TableCell>
@@ -429,6 +437,7 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
                             playerId={row.playerId}
                             currentStatus={taxiSquadStatus[row.playerId] || false}
                             onToggle={updateTaxiSquadStatus}
+                            leagueId={league.league_id}
                           />
                         )}
                       </TableCell>
