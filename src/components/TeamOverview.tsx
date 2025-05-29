@@ -72,7 +72,14 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
       <TeamRostersGrid
         rosters={rosters}
         userMap={userMap}
-        players={players}
+        showSalaryFeatures={false}
+        deadCapEnabled={false}
+        teamSalaries={{}}
+        teamDeadCaps={{}}
+        salaryCap={200000}
+        teamFAAB={{}}
+        showFAAB={false}
+        canModifyLeague={false}
       />
     </div>
   );
