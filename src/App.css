@@ -6,6 +6,8 @@
   padding: 0;
   /* Ensure dark theme on mobile */
   color-scheme: dark;
+  /* Better touch responsiveness */
+  touch-action: manipulation;
 }
 
 .main-container {
@@ -23,11 +25,44 @@
     padding: 0.75rem;
     max-width: 100%;
   }
+  
+  /* Ensure minimum touch targets on mobile */
+  button, 
+  input[type="button"], 
+  input[type="submit"], 
+  .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better touch feedback */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  /* Improve text input on mobile */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+    min-height: 44px;
+  }
 }
 
 @media (max-width: 640px) {
   .main-container {
     padding: 0.5rem;
+  }
+  
+  /* Stack mobile layouts */
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+  
+  .mobile-full-width {
+    width: 100% !important;
   }
 }
 
@@ -36,6 +71,15 @@
   .main-container {
     padding: 0.25rem;
   }
+  
+  /* Larger text for readability */
+  .mobile-text-sm {
+    font-size: 0.875rem;
+  }
+  
+  .mobile-text-base {
+    font-size: 1rem;
+  }
 }
 
 /* Landscape mobile optimization */
@@ -43,12 +87,22 @@
   .main-container {
     padding: 0.5rem 1rem;
   }
+  
+  /* Compact navigation for landscape */
+  .landscape-compact {
+    padding: 0.25rem 0.5rem;
+  }
 }
 
 /* Very small devices */
 @media (max-width: 360px) {
   .main-container {
     padding: 0.25rem;
+  }
+  
+  /* Ultra-compact for very small screens */
+  .xs-text-xs {
+    font-size: 0.75rem;
   }
 }
 
@@ -84,5 +138,71 @@
   
   .xs\:self-center {
     align-self: center;
+  }
+  
+  .xs\:text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  
+  .xs\:items-center {
+    align-items: center;
+  }
+  
+  .xs\:justify-between {
+    justify-content: space-between;
+  }
+}
+
+/* Hover states only on non-touch devices */
+@media (hover: hover) and (pointer: fine) {
+  .hover-only:hover {
+    /* Hover styles here */
+  }
+}
+
+/* Focus styles for keyboard navigation */
+.focus\:ring-2:focus {
+  outline: 2px solid theme(colors.blue.500);
+  outline-offset: 2px;
+}
+
+/* Better scrollbar styling for mobile */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.5);
+    border-radius: 2px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.8);
+  }
+}
+
+/* Safe area handling for mobile devices with notches */
+@supports (padding: max(0px)) {
+  .safe-area-inset-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  
+  .safe-area-inset-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .safe-area-inset-left {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+  
+  .safe-area-inset-right {
+    padding-right: max(1rem, env(safe-area-inset-right));
   }
 }
