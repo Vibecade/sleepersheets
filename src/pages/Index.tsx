@@ -6,10 +6,11 @@ import Footer from '@/components/Footer';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import LeagueHeader from '@/components/home/LeagueHeader';
 import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
+import PageHead from '@/components/PageHead';
 import { cachedFetch } from '@/utils/apiCache';
 import type { SleeperLeague, SleeperUser, SleeperRoster, SleeperDraft, SleeperTransaction, SleeperPlayer } from '@/types/sleeper';
 
-const Index = () => {
+const Index = React.memo(() => {
   const [leagueId, setLeagueId] = useState('');
   const [username, setUsername] = useState('');
   const [leagueData, setLeagueData] = useState(null);
@@ -182,6 +183,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
+      <PageHead
+        title="Fantasy Football Salary Cap Management"
+        description="The ultimate salary cap and contract management tool for your fantasy football dynasty league. Track salaries, manage contracts, simulate trades, and export league data."
+      />
+      
       <LeagueHeader />
 
       <div className="max-w-6xl mx-auto px-4 py-12">
@@ -210,6 +216,8 @@ const Index = () => {
       <Footer />
     </div>
   );
-};
+});
 
-export default React.memo(Index);
+Index.displayName = 'Index';
+
+export default Index;
