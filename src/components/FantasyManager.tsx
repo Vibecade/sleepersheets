@@ -43,8 +43,8 @@ const FantasyManager: React.FC<FantasyManagerProps> = ({
         </CardHeader>
       </Card>
 
-      {/* Pro Tier Upgrade */}
-      <ProTierUpgrade />
+      {/* Pro Tier Upgrade - Hidden by default */}
+      <ProTierUpgrade hidden={true} />
 
       {/* Team Rosters with all advanced features */}
       <TeamRosters

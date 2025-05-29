@@ -33,7 +33,7 @@ const LeagueHeader = () => {
             <Trophy className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-5xl md:text-7xl font-black bg-gradient-to-r from-white via-yellow-100 to-yellow-300 bg-clip-text text-transparent">
-            DYNASTY
+            SLEEPERSHEETS
           </h1>
         </div>
         

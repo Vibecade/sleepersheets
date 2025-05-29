@@ -5,7 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Crown, Zap, TrendingUp, Calendar, CheckCircle, ArrowRight } from 'lucide-react';
 
-const ProTierUpgrade = () => {
+interface ProTierUpgradeProps {
+  hidden?: boolean;
+}
+
+const ProTierUpgrade: React.FC<ProTierUpgradeProps> = ({ hidden = true }) => {
+  if (hidden) {
+    return null;
+  }
+
   return (
     <Card className="bg-gradient-to-br from-amber-50/10 to-yellow-100/10 border-amber-400/30 relative overflow-hidden">
       {/* Background Pattern */}
