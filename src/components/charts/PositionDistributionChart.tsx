@@ -20,12 +20,12 @@ const PositionDistributionChart: React.FC<PositionDistributionChartProps> = ({ r
     return acc;
   }, {} as Record<string, number>);
 
-  const totalPlayers: number = Object.values(positionCounts).reduce((sum: number, count: number) => sum + count, 0);
+  const totalPlayers: number = Object.values(positionCounts).reduce((sum: number, count: number) => sum + (count as number), 0);
   
   const chartData = Object.entries(positionCounts).map(([position, count]) => ({
     position,
-    count,
-    percentage: totalPlayers > 0 ? Math.round((count / totalPlayers) * 100) : 0
+    count: count as number,
+    percentage: totalPlayers > 0 ? Math.round(((count as number) / totalPlayers) * 100) : 0
   }));
 
   const COLORS = {
