@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import LeagueData from '@/components/LeagueData';
 import Footer from '@/components/Footer';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { LeagueHeader } from '@/components/home/LeagueHeader';
+import LeagueHeader from '@/components/home/LeagueHeader';
 import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
 import { cachedFetch } from '@/utils/apiCache';
 import type { SleeperLeague, SleeperUser, SleeperRoster, SleeperDraft, SleeperTransaction, SleeperPlayer } from '@/types/sleeper';
