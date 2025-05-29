@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { Lightbulb, ExternalLink } from 'lucide-react';
 
 export const HowToFindLeagueId = () => {
   return (
-    <div className="glass rounded-xl p-6 border border-yellow-500/20 relative overflow-hidden">
+    <div className="glass rounded-xl p-4 sm:p-6 border border-yellow-500/20 relative overflow-hidden">
       {/* Background accent */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-500/5 rounded-full -translate-y-12 translate-x-12"></div>
       
@@ -19,7 +20,7 @@ export const HowToFindLeagueId = () => {
         
         <div className="space-y-3">
           <div className="flex items-start gap-3">
-            <div className="w-6 h-6 bg-yellow-500/20 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-400 mt-0.5">
+            <div className="w-6 h-6 bg-yellow-500/20 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-400 mt-0.5 flex-shrink-0">
               1
             </div>
             <p className="text-yellow-200/90 leading-relaxed">
@@ -28,7 +29,7 @@ export const HowToFindLeagueId = () => {
           </div>
           
           <div className="flex items-start gap-3">
-            <div className="w-6 h-6 bg-yellow-500/20 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-400 mt-0.5">
+            <div className="w-6 h-6 bg-yellow-500/20 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-400 mt-0.5 flex-shrink-0">
               2
             </div>
             <p className="text-yellow-200/90 leading-relaxed">
@@ -37,7 +38,7 @@ export const HowToFindLeagueId = () => {
           </div>
           
           <div className="flex items-start gap-3">
-            <div className="w-6 h-6 bg-yellow-500/20 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-400 mt-0.5">
+            <div className="w-6 h-6 bg-yellow-500/20 rounded-full flex items-center justify-center text-xs font-semibold text-yellow-400 mt-0.5 flex-shrink-0">
               3
             </div>
             <p className="text-yellow-200/90 leading-relaxed">
@@ -46,14 +47,16 @@ export const HowToFindLeagueId = () => {
           </div>
         </div>
         
-        <div className="mt-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+        <div className="mt-6 p-3 sm:p-4 bg-slate-800/50 rounded-lg border border-slate-700 overflow-hidden">
           <p className="text-xs text-slate-400 mb-2">Example URL:</p>
-          <div className="flex items-center gap-2 font-mono text-sm">
-            <span className="text-slate-500">sleeper.com/leagues/</span>
-            <span className="bg-yellow-600/30 px-2 py-1 rounded text-yellow-300 font-semibold">
-              123456789012345678
-            </span>
-            <span className="text-slate-500">/team</span>
+          <div className="overflow-x-auto">
+            <div className="flex items-center gap-1 sm:gap-2 font-mono text-xs sm:text-sm min-w-max">
+              <span className="text-slate-500">sleeper.com/leagues/</span>
+              <span className="bg-yellow-600/30 px-1 sm:px-2 py-1 rounded text-yellow-300 font-semibold">
+                123456789012345678
+              </span>
+              <span className="text-slate-500">/team</span>
+            </div>
           </div>
         </div>
       </div>

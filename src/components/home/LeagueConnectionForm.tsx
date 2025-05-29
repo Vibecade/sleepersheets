@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,19 +55,19 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
           <form onSubmit={handleLeagueSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="league-id">League ID</Label>
-              <div className="flex space-x-2">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <Input
                   id="league-id"
                   placeholder="Enter your Sleeper League ID"
                   value={leagueId}
                   onChange={(e) => setLeagueId(e.target.value)}
                   disabled={loading}
-                  className="bg-white/5 border-yellow-500/20"
+                  className="bg-white/5 border-yellow-500/20 flex-1"
                 />
                 <Button 
                   type="submit" 
                   disabled={loading || !leagueId.trim()}
-                  className="min-w-[100px]"
+                  className="min-w-[100px] w-full sm:w-auto"
                   variant="default"
                 >
                   {loading ? (
@@ -91,27 +92,28 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
           <form onSubmit={handleUsernameSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
-              <div className="flex space-x-2">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <Input
                   id="username"
                   placeholder="Enter your Sleeper username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   disabled={loading}
-                  className="bg-white/5 border-yellow-500/20"
+                  className="bg-white/5 border-yellow-500/20 flex-1"
                 />
                 <Button 
                   type="submit" 
                   variant="outline"
                   disabled={loading || !username.trim()}
-                  className="min-w-[100px]"
+                  className="min-w-[100px] w-full sm:w-auto"
                 >
                   {loading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <>
                       <MagnifyingGlass className="w-4 h-4 mr-2" />
-                      <span>Find Leagues</span>
+                      <span className="hidden xs:inline">Find Leagues</span>
+                      <span className="xs:hidden">Find</span>
                     </>
                   )}
                 </Button>
