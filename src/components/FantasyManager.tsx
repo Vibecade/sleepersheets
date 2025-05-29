@@ -5,7 +5,11 @@ import { Settings } from 'lucide-react';
 import TeamRosters from './TeamRosters';
 import TradeSimulator from './TradeSimulator';
 import DataDashboard from './DataDashboard';
+import AnalyticsDashboard from './AnalyticsDashboard';
 import ProTierUpgrade from './ProTierUpgrade';
+import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
+import { useSalaryCalculations } from '@/hooks/useSalaryCalculations';
+import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 
 interface FantasyManagerProps {
   rosters: any[];
@@ -26,6 +30,20 @@ const FantasyManager: React.FC<FantasyManagerProps> = ({
   transactions,
   draftPicks
 }) => {
+  const leagueId = league?.league_id || '';
+  const { salaries, getEffectiveSalary } = usePlayerSalaries(leagueId);
+  const { settings } = useLeagueSettings(leagueId);
+  
+  // Calculate team salaries for analytics
+  const { teamSalaries } = useSalaryCalculations({
+    rosters,
+    salaries,
+    deadCapPlayers: {},
+    getEffectiveSalary
+  });
+
+  const salaryCap = settings?.salary_cap || 200000;
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -45,6 +63,16 @@ const FantasyManager: React.FC<FantasyManagerProps> = ({
 
       {/* Pro Tier Upgrade - Hidden by default */}
       <ProTierUpgrade hidden={true} />
+
+      {/* Analytics Dashboard */}
+      <AnalyticsDashboard 
+        rosters={rosters}
+        userMap={userMap}
+        players={players}
+        teamSalaries={teamSalaries}
+        salaryCap={salaryCap}
+        showSalaryFeatures={Object.keys(teamSalaries).length > 0}
+      />
 
       {/* Team Rosters with all advanced features */}
       <TeamRosters
