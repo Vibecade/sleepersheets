@@ -6,9 +6,6 @@ import TeamRosters from './TeamRosters';
 import TradeSimulator from './TradeSimulator';
 import DataDashboard from './DataDashboard';
 import ProTierUpgrade from './ProTierUpgrade';
-import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
-import { useSalaryCalculations } from '@/hooks/useSalaryCalculations';
-import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 
 interface FantasyManagerProps {
   rosters: any[];
@@ -29,20 +26,6 @@ const FantasyManager: React.FC<FantasyManagerProps> = ({
   transactions,
   draftPicks
 }) => {
-  const leagueId = league?.league_id || '';
-  const { salaries, getEffectiveSalary } = usePlayerSalaries(leagueId);
-  const { settings } = useLeagueSettings(leagueId);
-  
-  // Calculate team salaries for analytics
-  const { teamSalaries } = useSalaryCalculations({
-    rosters,
-    salaries,
-    deadCapPlayers: [], // Fix: Pass empty array instead of empty object
-    getEffectiveSalary
-  });
-
-  const salaryCap = settings?.salary_cap || 200000;
-
   return (
     <div className="space-y-6">
       {/* Page Header */}
