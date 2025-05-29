@@ -2,29 +2,35 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 
 interface EditableSalaryProps {
   playerId: string;
   currentSalary: number | null;
   onSalaryUpdate: (playerId: string, salary: number | null) => Promise<boolean>;
+  leagueId: string;
 }
 
 const EditableSalary: React.FC<EditableSalaryProps> = ({
   playerId,
   currentSalary,
-  onSalaryUpdate
+  onSalaryUpdate,
+  leagueId
 }) => {
   const { user } = useAuth();
+  const { canModifyLeague } = useLeagueOwnership();
   const [value, setValue] = useState<string>('');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const canModify = canModifyLeague(leagueId);
 
   useEffect(() => {
     setValue(currentSalary ? currentSalary.toString() : '');
   }, [currentSalary]);
 
   const handleSave = useCallback(async () => {
-    if (!user) return; // Prevent saving when not authenticated
+    if (!canModify) return;
     
     setIsSaving(true);
     const numericValue = value.trim() === '' ? null : parseFloat(value);
@@ -47,7 +53,7 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
     } finally {
       setIsSaving(false);
     }
-  }, [playerId, value, currentSalary, onSalaryUpdate, user]);
+  }, [playerId, value, currentSalary, onSalaryUpdate, canModify]);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -59,18 +65,18 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
   }, [handleSave, currentSalary]);
 
   const handleEditToggle = useCallback(() => {
-    if (!user) return; // Prevent editing when not authenticated
+    if (!canModify) return;
     setIsEditing(true);
-  }, [user]);
+  }, [canModify]);
 
   const formatDisplayValue = useMemo(() => {
     if (currentSalary === null || currentSalary === undefined) {
-      return user ? 'Click to edit' : 'No salary set';
+      return canModify ? 'Click to edit' : 'No salary set';
     }
     return `$${currentSalary.toLocaleString()}`;
-  }, [currentSalary, user]);
+  }, [currentSalary, canModify]);
 
-  if (isEditing && user) {
+  if (isEditing && canModify) {
     return (
       <Input
         type="number"
@@ -90,10 +96,10 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
     <button
       onClick={handleEditToggle}
       className={`text-emerald-300 transition-colors text-xs p-1 border border-transparent rounded min-w-[100px] text-left ${
-        user ? 'hover:text-emerald-100 cursor-pointer hover:border-emerald-400/50' : 'cursor-default opacity-75'
+        canModify ? 'hover:text-emerald-100 cursor-pointer hover:border-emerald-400/50' : 'cursor-default opacity-75'
       }`}
-      disabled={isSaving || !user}
-      title={!user ? 'Sign in to edit salaries' : undefined}
+      disabled={isSaving || !canModify}
+      title={!canModify ? 'Claim this league to edit salaries' : undefined}
     >
       {isSaving ? 'Saving...' : formatDisplayValue}
     </button>

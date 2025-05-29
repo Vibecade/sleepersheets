@@ -4,28 +4,34 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Truck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 
 interface TaxiSquadToggleProps {
   playerId: string;
   currentStatus: boolean;
   onToggle: (playerId: string, taxiSquad: boolean) => Promise<boolean>;
   disabled?: boolean;
+  leagueId: string;
 }
 
 const TaxiSquadToggle: React.FC<TaxiSquadToggleProps> = ({
   playerId,
   currentStatus,
   onToggle,
-  disabled = false
+  disabled = false,
+  leagueId
 }) => {
   const { user } = useAuth();
+  const { canModifyLeague } = useLeagueOwnership();
+
+  const canModify = canModifyLeague(leagueId);
 
   const handleToggle = async (checked: boolean) => {
-    if (!user) return; // Prevent changes when not authenticated
+    if (!canModify) return;
     await onToggle(playerId, checked);
   };
 
-  const isDisabled = disabled || !user;
+  const isDisabled = disabled || !canModify;
 
   return (
     <div className="flex items-center space-x-2">
@@ -37,8 +43,8 @@ const TaxiSquadToggle: React.FC<TaxiSquadToggleProps> = ({
       />
       <Label 
         htmlFor={`taxi-${playerId}`} 
-        className={`flex items-center space-x-1 ${user ? 'cursor-pointer' : 'cursor-default opacity-75'}`}
-        title={!user ? 'Sign in to modify taxi squad' : undefined}
+        className={`flex items-center space-x-1 ${canModify ? 'cursor-pointer' : 'cursor-default opacity-75'}`}
+        title={!canModify ? 'Claim this league to modify taxi squad' : undefined}
       >
         <Truck className="w-3 h-3" />
         <span className="text-xs">Taxi Squad</span>

@@ -4,25 +4,31 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Check, X, Edit } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 
 interface EditableContractLengthProps {
   playerId: string;
   currentLength: number | null;
   onContractUpdate: (playerId: string, contractLength: number | null) => Promise<boolean>;
+  leagueId: string;
 }
 
 const EditableContractLength: React.FC<EditableContractLengthProps> = ({
   playerId,
   currentLength,
-  onContractUpdate
+  onContractUpdate,
+  leagueId
 }) => {
   const { user } = useAuth();
+  const { canModifyLeague } = useLeagueOwnership();
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(currentLength?.toString() || '');
   const [isLoading, setIsLoading] = useState(false);
 
+  const canModify = canModifyLeague(leagueId);
+
   const handleSave = async () => {
-    if (!user) return; // Prevent saving when not authenticated
+    if (!canModify) return;
     
     setIsLoading(true);
     const contractLength = tempValue === '' ? null : Number(tempValue);
@@ -40,7 +46,7 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
   };
 
   const handleEdit = () => {
-    if (!user) return; // Prevent editing when not authenticated
+    if (!canModify) return;
     setTempValue(currentLength?.toString() || '');
     setIsEditing(true);
   };
@@ -49,15 +55,15 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
     return (
       <div 
         className={`flex items-center space-x-1 px-2 py-1 transition-colors rounded ${
-          user ? 'cursor-pointer hover:bg-white/10' : 'cursor-default opacity-75'
+          canModify ? 'cursor-pointer hover:bg-white/10' : 'cursor-default opacity-75'
         }`}
         onClick={handleEdit}
-        title={!user ? 'Sign in to edit contracts' : undefined}
+        title={!canModify ? 'Claim this league to edit contracts' : undefined}
       >
         <span className="text-gray-300 text-sm">
-          {currentLength ? `${currentLength} yr${currentLength !== 1 ? 's' : ''}` : (user ? 'Set contract' : 'No contract')}
+          {currentLength ? `${currentLength} yr${currentLength !== 1 ? 's' : ''}` : (canModify ? 'Set contract' : 'No contract')}
         </span>
-        {user && <Edit className="w-3 h-3 text-gray-400" />}
+        {canModify && <Edit className="w-3 h-3 text-gray-400" />}
       </div>
     );
   }

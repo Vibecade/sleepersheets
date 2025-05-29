@@ -31,6 +31,7 @@ interface TeamRostersHeaderProps {
   setLocalFaabCap: (value: string) => void;
   setLocalReserveLimit: (value: string) => void;
   onFaabSettingsSave: () => Promise<void>;
+  canModifyLeague: boolean;
 }
 
 const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
@@ -55,7 +56,8 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
   localReserveLimit,
   setLocalFaabCap,
   setLocalReserveLimit,
-  onFaabSettingsSave
+  onFaabSettingsSave,
+  canModifyLeague
 }) => {
   const { user } = useAuth();
 
@@ -72,16 +74,18 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
                 {showSalaryFeatures && ' with salary tracking'}
                 {showDeadCapManager && ' and dead cap management'}
                 {showFAAB && ' and FAAB budgets'}
-                {!user && ' (read-only)'}
+                {!canModifyLeague && ' (read-only)'}
               </CardDescription>
             </div>
           </div>
         </div>
 
-        {!user && (
+        {!canModifyLeague && (
           <div className="flex items-center space-x-2 text-amber-400 text-sm bg-amber-400/10 p-2 rounded">
             <Lock className="w-4 h-4" />
-            <span>Sign in to access editing features</span>
+            <span>
+              {user ? 'Claim this league to enable editing features' : 'Sign in and claim this league to enable editing features'}
+            </span>
           </div>
         )}
         
@@ -112,12 +116,12 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
               size="sm"
               onClick={onToggleDeadCapManager}
               className="flex items-center justify-center space-x-2 min-h-[44px] text-sm"
-              disabled={!user}
-              title={!user ? 'Sign in to access dead cap management' : undefined}
+              disabled={!canModifyLeague}
+              title={!canModifyLeague ? 'Claim this league to access dead cap management' : undefined}
             >
               <Skull className="w-4 h-4" />
               <span>Dynasty Dead Cap</span>
-              {!user && <Lock className="w-3 h-3 ml-1" />}
+              {!canModifyLeague && <Lock className="w-3 h-3 ml-1" />}
             </Button>
           )}
           
@@ -143,6 +147,7 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
             onDeadCapEnabledChange={onDeadCapEnabledChange}
             settingsLoading={settingsLoading}
             onSalaryCapSave={onSalaryCapSave}
+            canModifyLeague={canModifyLeague}
           />
         </div>
       )}
@@ -158,6 +163,7 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
             setLocalReserveLimit={setLocalReserveLimit}
             onFaabSettingsSave={onFaabSettingsSave}
             settingsLoading={settingsLoading}
+            canModifyLeague={canModifyLeague}
           />
         </div>
       )}

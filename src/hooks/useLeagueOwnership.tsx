@@ -52,6 +52,12 @@ export const useLeagueOwnership = () => {
     return ownedLeagues.some(ownership => ownership.league_id === leagueId);
   };
 
+  // Check if current user can modify a specific league
+  const canModifyLeague = (leagueId: string): boolean => {
+    if (!user) return false;
+    return isLeagueOwned(leagueId);
+  };
+
   // Claim a league
   const claimLeague = async (leagueId: string): Promise<boolean> => {
     if (!user) {
@@ -101,7 +107,7 @@ export const useLeagueOwnership = () => {
 
       toast({
         title: "Success!",
-        description: "League claimed successfully. Your settings are now protected.",
+        description: "League claimed successfully. You can now modify league settings.",
       });
       return true;
     } catch (error) {
@@ -120,6 +126,7 @@ export const useLeagueOwnership = () => {
   return {
     ownedLeagues,
     isLeagueOwned,
+    canModifyLeague,
     claimLeague,
     loading
   };

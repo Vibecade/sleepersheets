@@ -13,6 +13,7 @@ interface TeamRostersGridProps {
   salaryCap: number;
   teamFAAB?: Record<number, number>;
   showFAAB?: boolean;
+  canModifyLeague: boolean;
 }
 
 const TeamRostersGrid: React.FC<TeamRostersGridProps> = ({
@@ -24,7 +25,8 @@ const TeamRostersGrid: React.FC<TeamRostersGridProps> = ({
   teamDeadCaps,
   salaryCap,
   teamFAAB = {},
-  showFAAB = false
+  showFAAB = false,
+  canModifyLeague
 }) => {
   return (
     <CardContent className="pt-0">
@@ -47,6 +49,7 @@ const TeamRostersGrid: React.FC<TeamRostersGridProps> = ({
               salaryCap={salaryCap}
               teamFAAB={faabBudget}
               showFAAB={showFAAB}
+              canModifyLeague={canModifyLeague}
             />
           );
         })}

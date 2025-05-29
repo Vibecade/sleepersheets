@@ -7,6 +7,7 @@ import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { useFAABCalculations } from '@/hooks/useFAABCalculations';
 import { useToast } from '@/hooks/use-toast';
 import { useSalaryCalculations } from '@/hooks/useSalaryCalculations';
+import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 import MinimizableDeadCapManager from '@/components/MinimizableDeadCapManager';
 import MinimizableContractCalculator from '@/components/MinimizableContractCalculator';
 import TeamRostersHeader from '@/components/TeamRostersHeader';
@@ -36,6 +37,10 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   const { salaries, getEffectiveSalary } = usePlayerSalaries(leagueId);
   const { deadCapPlayers } = useDeadCapPlayers(leagueId);
   const { settings, updateSettings, loading: settingsLoading } = useLeagueSettings(leagueId);
+  const { canModifyLeague } = useLeagueOwnership();
+
+  // Check if current user can modify this league
+  const canModify = canModifyLeague(leagueId);
 
   // Calculate team salaries and dead caps using optimized hook
   const { teamSalaries, teamDeadCaps } = useSalaryCalculations({
@@ -66,6 +71,15 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   }, [settings]);
 
   const handleSalaryCapSave = async () => {
+    if (!canModify) {
+      toast({
+        title: "Access Denied",
+        description: "You must claim this league to modify settings",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!localSalaryCap) {
       toast({
         title: "Error",
@@ -103,6 +117,15 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   };
 
   const handleFaabSettingsSave = async () => {
+    if (!canModify) {
+      toast({
+        title: "Access Denied",
+        description: "You must claim this league to modify settings",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!localFaabCap || !localReserveLimit) {
       toast({
         title: "Error",
@@ -144,6 +167,15 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   };
 
   const handleDeadCapEnabledChange = async (enabled: boolean) => {
+    if (!canModify) {
+      toast({
+        title: "Access Denied",
+        description: "You must claim this league to modify settings",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       await updateSettings({ dead_cap_enabled: enabled });
     } catch (error) {
@@ -188,6 +220,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
             setLocalFaabCap={setLocalFaabCap}
             setLocalReserveLimit={setLocalReserveLimit}
             onFaabSettingsSave={handleFaabSettingsSave}
+            canModifyLeague={canModify}
           />
           
           <TeamRostersGrid
@@ -200,6 +233,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
             salaryCap={salaryCap}
             teamFAAB={teamFAAB}
             showFAAB={showFAAB}
+            canModifyLeague={canModify}
           />
         </Card>
 

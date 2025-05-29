@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Settings, Skull, Save, Lock } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface SalarySettingsProps {
   localSalaryCap: string;
@@ -15,6 +14,7 @@ interface SalarySettingsProps {
   onDeadCapEnabledChange: (enabled: boolean) => Promise<void>;
   settingsLoading: boolean;
   onSalaryCapSave: () => Promise<void>;
+  canModifyLeague: boolean;
 }
 
 const SalarySettings: React.FC<SalarySettingsProps> = ({
@@ -24,10 +24,9 @@ const SalarySettings: React.FC<SalarySettingsProps> = ({
   deadCapEnabled,
   onDeadCapEnabledChange,
   settingsLoading,
-  onSalaryCapSave
+  onSalaryCapSave,
+  canModifyLeague
 }) => {
-  const { user } = useAuth();
-
   const formatSalary = (amount: number) => {
     if (amount >= 1000000) {
       return `$${(amount / 1000000).toFixed(1)}M`;
@@ -41,10 +40,10 @@ const SalarySettings: React.FC<SalarySettingsProps> = ({
 
   return (
     <div className="space-y-4 p-3 sm:p-4 bg-white/5 rounded-lg border border-white/10">
-      {!user && (
+      {!canModifyLeague && (
         <div className="flex items-center space-x-2 text-amber-400 text-sm bg-amber-400/10 p-2 rounded">
           <Lock className="w-4 h-4" />
-          <span>Sign in to modify salary settings</span>
+          <span>Claim this league to modify salary settings</span>
         </div>
       )}
       
@@ -67,14 +66,14 @@ const SalarySettings: React.FC<SalarySettingsProps> = ({
                 }}
                 className="flex-1 xs:w-32 h-10 bg-white/10 border-white/20 text-white text-base"
                 placeholder="200000"
-                disabled={!user}
+                disabled={!canModifyLeague}
               />
               <Button
                 onClick={onSalaryCapSave}
                 size="sm"
                 variant="outline"
                 className="h-10 px-3 min-w-[80px] whitespace-nowrap"
-                disabled={!user}
+                disabled={!canModifyLeague}
               >
                 <Save className="w-3 h-3 mr-1" />
                 Save
@@ -95,7 +94,7 @@ const SalarySettings: React.FC<SalarySettingsProps> = ({
           <Switch
             checked={deadCapEnabled}
             onCheckedChange={onDeadCapEnabledChange}
-            disabled={!user}
+            disabled={!canModifyLeague}
           />
         </div>
       </div>
