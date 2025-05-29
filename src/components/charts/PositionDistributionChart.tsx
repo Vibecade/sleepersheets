@@ -20,7 +20,7 @@ const PositionDistributionChart: React.FC<PositionDistributionChartProps> = ({ r
     return acc;
   }, {} as Record<string, number>);
 
-  const totalPlayers = Object.values(positionCounts).reduce((sum: number, count: number) => sum + count, 0);
+  const totalPlayers: number = Object.values(positionCounts).reduce((sum: number, count: number) => sum + count, 0);
   
   const chartData = Object.entries(positionCounts).map(([position, count]) => ({
     position,

@@ -73,6 +73,7 @@ const LeagueData: React.FC<LeagueDataProps> = ({
           <TeamRosters 
             rosters={rosters}
             players={players}
+            userMap={userMap}
           />
         </TabsContent>
 

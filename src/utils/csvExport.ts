@@ -1,5 +1,5 @@
+
 import { saveAs } from 'file-saver';
-import { ExportOptionsData } from './exports/ExportOptions';
 
 export const downloadCSV = (data: any[][], filename: string) => {
   const csv = data.map(row => row.map(String).join(',')).join('\n');
