@@ -17,7 +17,14 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
   leagueName 
 }) => {
   const { user } = useAuth();
-  const { isLeagueOwned, claimLeague, loading, checkLeagueOwnership, getLeagueOwnership } = useLeagueOwnership();
+  const { 
+    isLeagueOwned, 
+    isLeagueOwnedByOther,
+    claimLeague, 
+    loading, 
+    checkLeagueOwnership, 
+    getLeagueOwnership 
+  } = useLeagueOwnership();
   const navigate = useNavigate();
   const [ownershipChecked, setOwnershipChecked] = useState(false);
 
@@ -29,9 +36,6 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
     };
     loadOwnership();
   }, [leagueId, checkLeagueOwnership]);
-
-  const owned = isLeagueOwned(leagueId);
-  const ownershipInfo = getLeagueOwnership(leagueId);
 
   const handleClaimLeague = async () => {
     if (!user) {
@@ -46,6 +50,18 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
   if (!ownershipChecked) {
     return null;
   }
+
+  const owned = isLeagueOwned(leagueId);
+  const ownedByOther = isLeagueOwnedByOther(leagueId);
+  const ownershipInfo = getLeagueOwnership(leagueId);
+
+  console.log('Banner state:', { 
+    leagueId, 
+    owned, 
+    ownedByOther, 
+    hasOwnershipInfo: !!ownershipInfo,
+    user: !!user 
+  });
 
   if (!user) {
     return (
@@ -92,7 +108,7 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
   }
 
   // League is owned by someone else
-  if (ownershipInfo) {
+  if (ownedByOther && ownershipInfo) {
     const ownerName = ownershipInfo.profiles?.full_name || ownershipInfo.profiles?.email || 'Another user';
     
     return (

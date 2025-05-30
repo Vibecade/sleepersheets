@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -102,9 +103,16 @@ export const useLeagueOwnership = () => {
     }
   };
 
-  // Check if user owns a specific league
+  // Check if user owns a specific league (enhanced to check both sources)
   const isLeagueOwned = (leagueId: string): boolean => {
-    return ownedLeagues.some(ownership => ownership.league_id === leagueId);
+    // First check the ownedLeagues array (user's leagues)
+    const ownedByUser = ownedLeagues.some(ownership => ownership.league_id === leagueId);
+    
+    // Also check if we have ownership info and it belongs to the current user
+    const ownershipInfo = leagueOwnership[leagueId];
+    const ownedByUserFromCheck = ownershipInfo && user && ownershipInfo.user_id === user.id;
+    
+    return ownedByUser || !!ownedByUserFromCheck;
   };
 
   // Check if current user can modify a specific league
@@ -116,6 +124,12 @@ export const useLeagueOwnership = () => {
   // Get league ownership info
   const getLeagueOwnership = (leagueId: string): LeagueOwnership | null => {
     return leagueOwnership[leagueId] || null;
+  };
+
+  // Check if a league is owned by someone else
+  const isLeagueOwnedByOther = (leagueId: string): boolean => {
+    const ownershipInfo = leagueOwnership[leagueId];
+    return !!(ownershipInfo && user && ownershipInfo.user_id !== user.id);
   };
 
   // Claim a league
@@ -156,7 +170,7 @@ export const useLeagueOwnership = () => {
         return false;
       }
 
-      // Reload owned leagues and clear ownership cache for this league
+      // Reload owned leagues
       const { data } = await supabase
         .from('league_ownership')
         .select('*')
@@ -195,6 +209,7 @@ export const useLeagueOwnership = () => {
   return {
     ownedLeagues,
     isLeagueOwned,
+    isLeagueOwnedByOther,
     canModifyLeague,
     claimLeague,
     checkLeagueOwnership,
