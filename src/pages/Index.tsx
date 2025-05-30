@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import LeagueData from '@/components/LeagueData';
@@ -5,7 +6,6 @@ import Footer from '@/components/Footer';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import LeagueHeader from '@/components/home/LeagueHeader';
 import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
-import LeagueOwnershipBanner from '@/components/LeagueOwnershipBanner';
 import PageHead from '@/components/PageHead';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import OfflineIndicator from '@/components/OfflineIndicator';
@@ -226,17 +226,10 @@ const Index = React.memo(() => {
               />
             </div>
           ) : (
-            <div className="space-y-6">
-              <LeagueOwnershipBanner 
-                key={leagueData.league.league_id}
-                leagueId={leagueData.league.league_id}
-                leagueName={leagueData.league.name}
-              />
-              <LeagueData 
-                data={leagueData} 
-                onRefreshData={handleRefreshData}
-              />
-            </div>
+            <LeagueData 
+              data={leagueData} 
+              onRefreshData={handleRefreshData}
+            />
           )}
         </EnhancedErrorBoundary>
       </div>

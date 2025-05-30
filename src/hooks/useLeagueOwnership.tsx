@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -9,15 +10,10 @@ interface LeagueOwnership {
   user_id: string;
   claimed_at: string;
   is_active: boolean;
-  profiles?: {
-    full_name: string | null;
-    email: string | null;
-  } | null;
 }
 
 export const useLeagueOwnership = () => {
   const [ownedLeagues, setOwnedLeagues] = useState<LeagueOwnership[]>([]);
-  const [leagueOwnership, setLeagueOwnership] = useState<Record<string, LeagueOwnership | null>>({});
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -51,80 +47,15 @@ export const useLeagueOwnership = () => {
     loadOwnedLeagues();
   }, [user]);
 
-  // Check ownership for a specific league
-  const checkLeagueOwnership = async (leagueId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('league_ownership')
-        .select('*')
-        .eq('league_id', leagueId)
-        .eq('is_active', true)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error checking league ownership:', error);
-        return null;
-      }
-
-      // If we have ownership data, try to get the profile info separately
-      let ownershipWithProfile: LeagueOwnership | null = data;
-      if (data) {
-        try {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('full_name, email')
-            .eq('id', data.user_id)
-            .maybeSingle();
-          
-          ownershipWithProfile = {
-            ...data,
-            profiles: profileData
-          } as LeagueOwnership;
-        } catch (profileError) {
-          console.log('Could not fetch profile data:', profileError);
-          // Keep the ownership data without profile info
-        }
-      }
-
-      setLeagueOwnership(prev => ({
-        ...prev,
-        [leagueId]: ownershipWithProfile
-      }));
-
-      return ownershipWithProfile;
-    } catch (error) {
-      console.error('Error checking league ownership:', error);
-      return null;
-    }
-  };
-
-  // Check if user owns a specific league (enhanced to check both sources)
+  // Check if user owns a specific league
   const isLeagueOwned = (leagueId: string): boolean => {
-    // First check the ownedLeagues array (user's leagues)
-    const ownedByUser = ownedLeagues.some(ownership => ownership.league_id === leagueId);
-    
-    // Also check if we have ownership info and it belongs to the current user
-    const ownershipInfo = leagueOwnership[leagueId];
-    const ownedByUserFromCheck = ownershipInfo && user && ownershipInfo.user_id === user.id;
-    
-    return ownedByUser || !!ownedByUserFromCheck;
+    return ownedLeagues.some(ownership => ownership.league_id === leagueId);
   };
 
   // Check if current user can modify a specific league
   const canModifyLeague = (leagueId: string): boolean => {
     if (!user) return false;
     return isLeagueOwned(leagueId);
-  };
-
-  // Get league ownership info
-  const getLeagueOwnership = (leagueId: string): LeagueOwnership | null => {
-    return leagueOwnership[leagueId] || null;
-  };
-
-  // Check if a league is owned by someone else
-  const isLeagueOwnedByOther = (leagueId: string): boolean => {
-    const ownershipInfo = leagueOwnership[leagueId];
-    return !!(ownershipInfo && user && ownershipInfo.user_id !== user.id);
   };
 
   // Claim a league
@@ -173,9 +104,6 @@ export const useLeagueOwnership = () => {
         .eq('is_active', true);
 
       setOwnedLeagues(data || []);
-      
-      // Force a fresh check of this league's ownership
-      await checkLeagueOwnership(leagueId);
 
       toast({
         title: "Success!",
@@ -198,11 +126,8 @@ export const useLeagueOwnership = () => {
   return {
     ownedLeagues,
     isLeagueOwned,
-    isLeagueOwnedByOther,
     canModifyLeague,
     claimLeague,
-    checkLeagueOwnership,
-    getLeagueOwnership,
     loading
   };
 };
