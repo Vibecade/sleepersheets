@@ -36,7 +36,7 @@ export const useLeagueOwnership = () => {
           .from('league_ownership')
           .select(`
             *,
-            profiles:user_id (
+            profiles!league_ownership_user_id_fkey (
               full_name,
               email
             )
@@ -69,7 +69,7 @@ export const useLeagueOwnership = () => {
         .from('league_ownership')
         .select(`
           *,
-          profiles:user_id (
+          profiles!league_ownership_user_id_fkey (
             full_name,
             email
           )
@@ -154,7 +154,7 @@ export const useLeagueOwnership = () => {
         .from('league_ownership')
         .select(`
           *,
-          profiles:user_id (
+          profiles!league_ownership_user_id_fkey (
             full_name,
             email
           )
