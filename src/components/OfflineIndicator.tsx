@@ -55,7 +55,7 @@ const OfflineIndicator: React.FC = () => {
               <span>{pendingSync} changes pending sync</span>
               <Button
                 variant="outline"
-                size={isMobile ? "sm" : "xs"}
+                size="sm"
                 onClick={syncPendingData}
                 className="xs:w-auto w-full touch-manipulation"
               >
