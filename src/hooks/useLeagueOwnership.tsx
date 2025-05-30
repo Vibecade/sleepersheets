@@ -10,10 +10,15 @@ interface LeagueOwnership {
   user_id: string;
   claimed_at: string;
   is_active: boolean;
+  profiles?: {
+    full_name: string | null;
+    email: string | null;
+  };
 }
 
 export const useLeagueOwnership = () => {
   const [ownedLeagues, setOwnedLeagues] = useState<LeagueOwnership[]>([]);
+  const [leagueOwnership, setLeagueOwnership] = useState<Record<string, LeagueOwnership | null>>({});
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -29,7 +34,13 @@ export const useLeagueOwnership = () => {
       try {
         const { data, error } = await supabase
           .from('league_ownership')
-          .select('*')
+          .select(`
+            *,
+            profiles:user_id (
+              full_name,
+              email
+            )
+          `)
           .eq('user_id', user.id)
           .eq('is_active', true);
 
@@ -47,6 +58,43 @@ export const useLeagueOwnership = () => {
     loadOwnedLeagues();
   }, [user]);
 
+  // Check ownership for a specific league
+  const checkLeagueOwnership = async (leagueId: string) => {
+    if (leagueOwnership[leagueId] !== undefined) {
+      return leagueOwnership[leagueId];
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('league_ownership')
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            email
+          )
+        `)
+        .eq('league_id', leagueId)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking league ownership:', error);
+        return null;
+      }
+
+      setLeagueOwnership(prev => ({
+        ...prev,
+        [leagueId]: data
+      }));
+
+      return data;
+    } catch (error) {
+      console.error('Error checking league ownership:', error);
+      return null;
+    }
+  };
+
   // Check if user owns a specific league
   const isLeagueOwned = (leagueId: string): boolean => {
     return ownedLeagues.some(ownership => ownership.league_id === leagueId);
@@ -56,6 +104,11 @@ export const useLeagueOwnership = () => {
   const canModifyLeague = (leagueId: string): boolean => {
     if (!user) return false;
     return isLeagueOwned(leagueId);
+  };
+
+  // Get league ownership info
+  const getLeagueOwnership = (leagueId: string): LeagueOwnership | null => {
+    return leagueOwnership[leagueId] || null;
   };
 
   // Claim a league
@@ -96,14 +149,29 @@ export const useLeagueOwnership = () => {
         return false;
       }
 
-      // Reload owned leagues
+      // Reload owned leagues and clear ownership cache for this league
       const { data } = await supabase
         .from('league_ownership')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            email
+          )
+        `)
         .eq('user_id', user.id)
         .eq('is_active', true);
 
       setOwnedLeagues(data || []);
+      
+      // Clear and reload ownership info for this league
+      setLeagueOwnership(prev => {
+        const newState = { ...prev };
+        delete newState[leagueId];
+        return newState;
+      });
+      
+      await checkLeagueOwnership(leagueId);
 
       toast({
         title: "Success!",
@@ -128,6 +196,8 @@ export const useLeagueOwnership = () => {
     isLeagueOwned,
     canModifyLeague,
     claimLeague,
+    checkLeagueOwnership,
+    getLeagueOwnership,
     loading
   };
 };

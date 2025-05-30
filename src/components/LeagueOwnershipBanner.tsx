@@ -1,10 +1,10 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
-import { Shield, ShieldCheck, User, LogIn } from 'lucide-react';
+import { Shield, ShieldCheck, User, LogIn, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface LeagueOwnershipBannerProps {
@@ -17,10 +17,21 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
   leagueName 
 }) => {
   const { user } = useAuth();
-  const { isLeagueOwned, claimLeague, loading } = useLeagueOwnership();
+  const { isLeagueOwned, claimLeague, loading, checkLeagueOwnership, getLeagueOwnership } = useLeagueOwnership();
   const navigate = useNavigate();
+  const [ownershipChecked, setOwnershipChecked] = useState(false);
+
+  // Check ownership when component mounts
+  useEffect(() => {
+    const loadOwnership = async () => {
+      await checkLeagueOwnership(leagueId);
+      setOwnershipChecked(true);
+    };
+    loadOwnership();
+  }, [leagueId, checkLeagueOwnership]);
 
   const owned = isLeagueOwned(leagueId);
+  const ownershipInfo = getLeagueOwnership(leagueId);
 
   const handleClaimLeague = async () => {
     if (!user) {
@@ -30,6 +41,11 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
     
     await claimLeague(leagueId);
   };
+
+  // Don't show anything until ownership is checked
+  if (!ownershipChecked) {
+    return null;
+  }
 
   if (!user) {
     return (
@@ -75,6 +91,29 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
     );
   }
 
+  // League is owned by someone else
+  if (ownershipInfo) {
+    const ownerName = ownershipInfo.profiles?.full_name || ownershipInfo.profiles?.email || 'Another user';
+    
+    return (
+      <Card className="border-red-500/30 bg-gradient-to-r from-red-500/10 to-orange-500/10 mb-6">
+        <CardContent className="p-4">
+          <div className="flex items-center space-x-3">
+            <Lock className="w-5 h-5 text-red-500" />
+            <div>
+              <h3 className="font-semibold text-white">League Already Claimed</h3>
+              <p className="text-sm text-gray-300">
+                This league is owned by <span className="font-medium text-red-300">{ownerName}</span>. 
+                Only the owner can modify salary cap and contract settings.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // League is unclaimed and user can claim it
   return (
     <Card className="border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 mb-6">
       <CardContent className="p-4">
