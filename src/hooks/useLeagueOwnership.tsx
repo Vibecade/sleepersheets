@@ -71,7 +71,7 @@ export const useLeagueOwnership = () => {
       }
 
       // If we have ownership data, try to get the profile info separately
-      let ownershipWithProfile = data;
+      let ownershipWithProfile: LeagueOwnership | null = data;
       if (data) {
         try {
           const { data: profileData } = await supabase
@@ -83,7 +83,7 @@ export const useLeagueOwnership = () => {
           ownershipWithProfile = {
             ...data,
             profiles: profileData
-          };
+          } as LeagueOwnership;
         } catch (profileError) {
           console.log('Could not fetch profile data:', profileError);
           // Keep the ownership data without profile info
