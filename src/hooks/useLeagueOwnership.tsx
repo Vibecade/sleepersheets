@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -54,10 +53,6 @@ export const useLeagueOwnership = () => {
 
   // Check ownership for a specific league
   const checkLeagueOwnership = async (leagueId: string) => {
-    if (leagueOwnership[leagueId] !== undefined) {
-      return leagueOwnership[leagueId];
-    }
-
     try {
       const { data, error } = await supabase
         .from('league_ownership')
@@ -179,13 +174,7 @@ export const useLeagueOwnership = () => {
 
       setOwnedLeagues(data || []);
       
-      // Clear and reload ownership info for this league
-      setLeagueOwnership(prev => {
-        const newState = { ...prev };
-        delete newState[leagueId];
-        return newState;
-      });
-      
+      // Force a fresh check of this league's ownership
       await checkLeagueOwnership(leagueId);
 
       toast({

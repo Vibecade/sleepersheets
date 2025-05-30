@@ -63,6 +63,7 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
     user: !!user 
   });
 
+  // User is not signed in
   if (!user) {
     return (
       <Card className="border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 mb-6">
@@ -89,6 +90,7 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
     );
   }
 
+  // User owns this league
   if (owned) {
     return (
       <Card className="border-green-500/30 bg-gradient-to-r from-green-500/10 to-emerald-500/10 mb-6">
@@ -108,8 +110,8 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
   }
 
   // League is owned by someone else
-  if (ownedByOther && ownershipInfo) {
-    const ownerName = ownershipInfo.profiles?.full_name || ownershipInfo.profiles?.email || 'Another user';
+  if (ownedByOther) {
+    const ownerName = ownershipInfo?.profiles?.full_name || ownershipInfo?.profiles?.email || 'Another user';
     
     return (
       <Card className="border-red-500/30 bg-gradient-to-r from-red-500/10 to-orange-500/10 mb-6">
@@ -129,7 +131,7 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
     );
   }
 
-  // League is unclaimed and user can claim it
+  // League is unclaimed and user can claim it (only remaining case)
   return (
     <Card className="border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 mb-6">
       <CardContent className="p-4">
