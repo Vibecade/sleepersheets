@@ -228,6 +228,7 @@ const Index = React.memo(() => {
           ) : (
             <div className="space-y-6">
               <LeagueOwnershipBanner 
+                key={leagueData.league.league_id}
                 leagueId={leagueData.league.league_id}
                 leagueName={leagueData.league.name}
               />

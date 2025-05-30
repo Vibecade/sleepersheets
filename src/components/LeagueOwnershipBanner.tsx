@@ -26,16 +26,36 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
     getLeagueOwnership 
   } = useLeagueOwnership();
   const navigate = useNavigate();
-  const [ownershipChecked, setOwnershipChecked] = useState(false);
+  const [ownershipState, setOwnershipState] = useState<'loading' | 'owned' | 'other' | 'unclaimed' | 'unauthenticated'>('loading');
 
   // Check ownership when component mounts
   useEffect(() => {
     const loadOwnership = async () => {
+      console.log('Loading ownership for league:', leagueId);
       await checkLeagueOwnership(leagueId);
-      setOwnershipChecked(true);
+      
+      // Determine the final state after checking
+      if (!user) {
+        setOwnershipState('unauthenticated');
+      } else if (isLeagueOwned(leagueId)) {
+        setOwnershipState('owned');
+      } else if (isLeagueOwnedByOther(leagueId)) {
+        setOwnershipState('other');
+      } else {
+        setOwnershipState('unclaimed');
+      }
+      
+      console.log('Ownership state determined:', {
+        leagueId,
+        user: !!user,
+        owned: isLeagueOwned(leagueId),
+        ownedByOther: isLeagueOwnedByOther(leagueId),
+        finalState: ownershipState
+      });
     };
+    
     loadOwnership();
-  }, [leagueId, checkLeagueOwnership]);
+  }, [leagueId, user, checkLeagueOwnership]);
 
   const handleClaimLeague = async () => {
     if (!user) {
@@ -43,28 +63,21 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
       return;
     }
     
-    await claimLeague(leagueId);
+    const success = await claimLeague(leagueId);
+    if (success) {
+      setOwnershipState('owned');
+    }
   };
 
-  // Don't show anything until ownership is checked
-  if (!ownershipChecked) {
+  // Don't render anything while loading
+  if (ownershipState === 'loading') {
     return null;
   }
 
-  const owned = isLeagueOwned(leagueId);
-  const ownedByOther = isLeagueOwnedByOther(leagueId);
   const ownershipInfo = getLeagueOwnership(leagueId);
 
-  console.log('Banner state:', { 
-    leagueId, 
-    owned, 
-    ownedByOther, 
-    hasOwnershipInfo: !!ownershipInfo,
-    user: !!user 
-  });
-
   // User is not signed in
-  if (!user) {
+  if (ownershipState === 'unauthenticated') {
     return (
       <Card className="border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 mb-6">
         <CardContent className="p-4">
@@ -91,7 +104,7 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
   }
 
   // User owns this league
-  if (owned) {
+  if (ownershipState === 'owned') {
     return (
       <Card className="border-green-500/30 bg-gradient-to-r from-green-500/10 to-emerald-500/10 mb-6">
         <CardContent className="p-4">
@@ -110,7 +123,7 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
   }
 
   // League is owned by someone else
-  if (ownedByOther) {
+  if (ownershipState === 'other') {
     const ownerName = ownershipInfo?.profiles?.full_name || ownershipInfo?.profiles?.email || 'Another user';
     
     return (
@@ -131,7 +144,7 @@ const LeagueOwnershipBanner: React.FC<LeagueOwnershipBannerProps> = ({
     );
   }
 
-  // League is unclaimed and user can claim it (only remaining case)
+  // League is unclaimed and user can claim it
   return (
     <Card className="border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 mb-6">
       <CardContent className="p-4">
