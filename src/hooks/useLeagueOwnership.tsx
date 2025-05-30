@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -13,7 +12,7 @@ interface LeagueOwnership {
   profiles?: {
     full_name: string | null;
     email: string | null;
-  };
+  } | null;
 }
 
 export const useLeagueOwnership = () => {
@@ -34,13 +33,7 @@ export const useLeagueOwnership = () => {
       try {
         const { data, error } = await supabase
           .from('league_ownership')
-          .select(`
-            *,
-            profiles!league_ownership_user_id_fkey (
-              full_name,
-              email
-            )
-          `)
+          .select('*')
           .eq('user_id', user.id)
           .eq('is_active', true);
 
@@ -67,13 +60,7 @@ export const useLeagueOwnership = () => {
     try {
       const { data, error } = await supabase
         .from('league_ownership')
-        .select(`
-          *,
-          profiles!league_ownership_user_id_fkey (
-            full_name,
-            email
-          )
-        `)
+        .select('*')
         .eq('league_id', leagueId)
         .eq('is_active', true)
         .maybeSingle();
@@ -83,12 +70,32 @@ export const useLeagueOwnership = () => {
         return null;
       }
 
+      // If we have ownership data, try to get the profile info separately
+      let ownershipWithProfile = data;
+      if (data) {
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', data.user_id)
+            .maybeSingle();
+          
+          ownershipWithProfile = {
+            ...data,
+            profiles: profileData
+          };
+        } catch (profileError) {
+          console.log('Could not fetch profile data:', profileError);
+          // Keep the ownership data without profile info
+        }
+      }
+
       setLeagueOwnership(prev => ({
         ...prev,
-        [leagueId]: data
+        [leagueId]: ownershipWithProfile
       }));
 
-      return data;
+      return ownershipWithProfile;
     } catch (error) {
       console.error('Error checking league ownership:', error);
       return null;
@@ -152,13 +159,7 @@ export const useLeagueOwnership = () => {
       // Reload owned leagues and clear ownership cache for this league
       const { data } = await supabase
         .from('league_ownership')
-        .select(`
-          *,
-          profiles!league_ownership_user_id_fkey (
-            full_name,
-            email
-          )
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .eq('is_active', true);
 
