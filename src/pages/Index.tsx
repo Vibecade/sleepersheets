@@ -5,11 +5,10 @@ import Footer from '@/components/Footer';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import LeagueHeader from '@/components/home/LeagueHeader';
 import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
-import LeagueOwnershipStatusBanner from '@/components/LeagueOwnershipStatusBanner';
+import LeagueOwnershipChecker from '@/components/home/LeagueOwnershipChecker';
 import PageHead from '@/components/PageHead';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import OfflineIndicator from '@/components/OfflineIndicator';
-import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 import { cachedFetch } from '@/utils/apiCache';
 import { validateLeagueId, validateUsername, sanitizeInput, rateLimiter } from '@/utils/inputValidation';
 import type { SleeperLeague, SleeperUser, SleeperRoster, SleeperDraft, SleeperTransaction, SleeperPlayer } from '@/types/sleeper';
@@ -20,7 +19,6 @@ const Index = React.memo(() => {
   const [leagueData, setLeagueData] = useState(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { isLeagueOwned, claimLeague, loading: claimingLeague } = useLeagueOwnership();
 
   const fetchLeagueData = useCallback(async (targetLeagueId: string, preserveCurrentLeagueId: boolean = false) => {
     console.log('Fetching league data for ID:', targetLeagueId);
@@ -201,11 +199,6 @@ const Index = React.memo(() => {
     }
   }, [leagueData?.league?.league_id, fetchLeagueData, toast]);
 
-  const handleClaimLeague = async () => {
-    if (!leagueData?.league?.league_id) return;
-    await claimLeague(leagueData.league.league_id);
-  };
-
   return (
     <div className="min-h-screen">
       <PageHead
@@ -234,17 +227,11 @@ const Index = React.memo(() => {
             </div>
           ) : (
             <div>
-              {/* Show ownership status for loaded league */}
-              <LeagueOwnershipStatusBanner
+              {/* Use the proper LeagueOwnershipChecker component */}
+              <LeagueOwnershipChecker
                 leagueId={leagueData.league.league_id}
                 leagueName={leagueData.league.name}
-                ownershipStatus={{
-                  isOwned: isLeagueOwned(leagueData.league.league_id),
-                  ownedByCurrentUser: isLeagueOwned(leagueData.league.league_id),
-                  ownerInfo: undefined // This would need to be fetched if we want to show claim time
-                }}
-                onClaimLeague={isLeagueOwned(leagueData.league.league_id) ? undefined : handleClaimLeague}
-                claiming={claimingLeague}
+                onOwnershipChanged={handleRefreshData}
               />
               
               <LeagueData 
