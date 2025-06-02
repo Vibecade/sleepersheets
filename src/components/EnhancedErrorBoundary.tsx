@@ -3,7 +3,6 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw, Bug, Home } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 interface EnhancedErrorBoundaryProps {
   children: React.ReactNode;
@@ -115,8 +114,6 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({
   level = 'component', 
   onRetry 
 }) => {
-  const navigate = useNavigate();
-
   const getErrorTitle = () => {
     switch (level) {
       case 'critical': return 'Critical Error Occurred';
@@ -133,6 +130,14 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({
         return 'An error occurred while loading this page. You can try refreshing or return to the homepage.';
       default: 
         return 'An error occurred while rendering this component. Please try again or contact support if the problem persists.';
+    }
+  };
+
+  const handleGoHome = () => {
+    try {
+      window.location.href = '/';
+    } catch (e) {
+      console.error('Failed to navigate home:', e);
     }
   };
 
@@ -163,7 +168,7 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({
           
           {level === 'page' && (
             <Button
-              onClick={() => navigate('/')}
+              onClick={handleGoHome}
               variant="outline"
               className="flex items-center space-x-2"
             >
