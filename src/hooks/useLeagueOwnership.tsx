@@ -58,15 +58,15 @@ export const useLeagueOwnership = () => {
     return isLeagueOwned(leagueId);
   };
 
-  // Claim a league
-  const claimLeague = async (leagueId: string): Promise<boolean> => {
+  // Claim a league - returns the ownership status result
+  const claimLeague = async (leagueId: string): Promise<{ success: boolean; alreadyClaimed: boolean }> => {
     if (!user) {
       toast({
         title: "Authentication Required",
         description: "Please sign in to claim a league",
         variant: "destructive"
       });
-      return false;
+      return { success: false, alreadyClaimed: false };
     }
 
     setLoading(true);
@@ -79,12 +79,13 @@ export const useLeagueOwnership = () => {
         });
 
       if (error) {
-        if (error.code === '23505') { // Unique constraint violation
+        if (error.code === '23505') { // Unique constraint violation - league already claimed
           toast({
             title: "League Already Claimed",
             description: "This league has already been claimed by another user",
             variant: "destructive"
           });
+          return { success: false, alreadyClaimed: true };
         } else {
           console.error('Error claiming league:', error);
           toast({
@@ -92,8 +93,8 @@ export const useLeagueOwnership = () => {
             description: "Failed to claim league",
             variant: "destructive"
           });
+          return { success: false, alreadyClaimed: false };
         }
-        return false;
       }
 
       // Reload owned leagues
@@ -109,7 +110,7 @@ export const useLeagueOwnership = () => {
         title: "Success!",
         description: "League claimed successfully. You can now modify league settings.",
       });
-      return true;
+      return { success: true, alreadyClaimed: false };
     } catch (error) {
       console.error('Error claiming league:', error);
       toast({
@@ -117,7 +118,7 @@ export const useLeagueOwnership = () => {
         description: "Failed to claim league",
         variant: "destructive"
       });
-      return false;
+      return { success: false, alreadyClaimed: false };
     } finally {
       setLoading(false);
     }

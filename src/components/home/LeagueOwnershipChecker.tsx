@@ -30,11 +30,15 @@ const LeagueOwnershipChecker: React.FC<LeagueOwnershipCheckerProps> = ({
   }, [leagueId, checkOwnershipStatus]);
 
   const handleClaimLeague = async () => {
-    const success = await claimLeague(leagueId);
-    if (success) {
-      // Refresh ownership status
-      const newStatus = await checkOwnershipStatus(leagueId);
-      setOwnershipStatus(newStatus);
+    const result = await claimLeague(leagueId);
+    
+    // Always refresh ownership status after a claim attempt
+    // This will hide the claim prompt if the league was already claimed
+    const newStatus = await checkOwnershipStatus(leagueId);
+    setOwnershipStatus(newStatus);
+    
+    // Only call onOwnershipChanged if the claim was successful
+    if (result.success) {
       onOwnershipChanged?.();
     }
   };
