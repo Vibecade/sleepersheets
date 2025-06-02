@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import LeagueData from '@/components/LeagueData';
 import Footer from '@/components/Footer';
@@ -9,7 +9,18 @@ import LeagueOwnershipChecker from '@/components/home/LeagueOwnershipChecker';
 import PageHead from '@/components/PageHead';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import OfflineIndicator from '@/components/OfflineIndicator';
+import UserDashboard from '@/components/dashboard/UserDashboard';
+import LeagueShareDialog from '@/components/league/LeagueShareDialog';
+import OwnershipTransferDialog from '@/components/league/OwnershipTransferDialog';
+import { ProgressIndicator } from '@/components/ui/progress-indicator';
+import { CacheIndicator } from '@/components/ui/cache-indicator';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cachedFetch } from '@/utils/apiCache';
+import { enhancedApiCache } from '@/utils/enhancedApiCache';
+import { useUserLeagues } from '@/hooks/useUserLeagues';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUrlParams } from '@/hooks/useUrlParams';
 import { validateLeagueId, validateUsername, sanitizeInput, rateLimiter } from '@/utils/inputValidation';
 import type { SleeperLeague, SleeperUser, SleeperRoster, SleeperDraft, SleeperTransaction, SleeperPlayer } from '@/types/sleeper';
 
@@ -18,7 +29,38 @@ const Index = React.memo(() => {
   const [username, setUsername] = useState('');
   const [leagueData, setLeagueData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [cacheMetadata, setCacheMetadata] = useState<{ isCached: boolean; lastFetched?: Date } | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { addRecentLeague } = useUserLeagues();
+  const { getLeagueFromUrl, setLeagueInUrl, clearUrlParams } = useUrlParams();
+
+  // Handle URL parameters on mount
+  useEffect(() => {
+    const urlLeagueId = getLeagueFromUrl();
+    if (urlLeagueId && !leagueData) {
+      setLeagueId(urlLeagueId);
+      // Auto-load the league from URL
+      const loadUrlLeague = async () => {
+        const sanitizedLeagueId = sanitizeInput(urlLeagueId);
+        const validation = validateLeagueId(sanitizedLeagueId);
+        
+        if (validation.isValid) {
+          setLoading(true);
+          try {
+            await fetchLeagueData(sanitizedLeagueId);
+          } catch (error) {
+            console.error('Error loading league from URL:', error);
+          } finally {
+            setLoading(false);
+          }
+        }
+      };
+      loadUrlLeague();
+    }
+  }, [getLeagueFromUrl, leagueData]);
 
   const fetchLeagueData = useCallback(async (targetLeagueId: string, preserveCurrentLeagueId: boolean = false) => {
     console.log('Fetching league data for ID:', targetLeagueId);
@@ -199,6 +241,18 @@ const Index = React.memo(() => {
     }
   }, [leagueData?.league?.league_id, fetchLeagueData, toast]);
 
+  const handleSelectLeague = useCallback((selectedLeagueId: string) => {
+    setLeagueId(selectedLeagueId);
+    setLeagueInUrl(selectedLeagueId);
+    // The useEffect will handle loading the league
+  }, [setLeagueInUrl]);
+
+  const handleBackToLeagues = useCallback(() => {
+    setLeagueData(null);
+    setLeagueId('');
+    clearUrlParams();
+  }, [clearUrlParams]);
+
   return (
     <div className="min-h-screen">
       <PageHead
@@ -214,20 +268,105 @@ const Index = React.memo(() => {
         
         <EnhancedErrorBoundary level="page">
           {!leagueData ? (
-            <div className="max-w-2xl mx-auto space-y-8">
-              <LeagueConnectionForm
-                leagueId={leagueId}
-                setLeagueId={setLeagueId}
-                username={username}
-                setUsername={setUsername}
-                onLeagueSubmit={handleLeagueSubmit}
-                onUsernameSubmit={handleUsernameSubmit}
-                loading={loading}
-              />
+            <div className="max-w-4xl mx-auto">
+              {user ? (
+                <Tabs defaultValue="connect" className="space-y-8">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="connect">Connect League</TabsTrigger>
+                    <TabsTrigger value="dashboard">My Dashboard</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="connect" className="space-y-8">
+                    <LeagueConnectionForm
+                      leagueId={leagueId}
+                      setLeagueId={setLeagueId}
+                      username={username}
+                      setUsername={setUsername}
+                      onLeagueSubmit={handleLeagueSubmit}
+                      onUsernameSubmit={handleUsernameSubmit}
+                      loading={loading}
+                    />
+                    
+                    {loading && (
+                      <div className="mt-6">
+                        <ProgressIndicator
+                          message={loadingMessage || 'Loading...'}
+                          progress={loadingProgress}
+                          showPercentage={true}
+                        />
+                      </div>
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="dashboard">
+                    <UserDashboard onSelectLeague={handleSelectLeague} />
+                  </TabsContent>
+                </Tabs>
+              ) : (
+                <div className="max-w-2xl mx-auto space-y-8">
+                  <LeagueConnectionForm
+                    leagueId={leagueId}
+                    setLeagueId={setLeagueId}
+                    username={username}
+                    setUsername={setUsername}
+                    onLeagueSubmit={handleLeagueSubmit}
+                    onUsernameSubmit={handleUsernameSubmit}
+                    loading={loading}
+                  />
+                  
+                  {loading && (
+                    <div className="mt-6">
+                      <ProgressIndicator
+                        message={loadingMessage || 'Loading...'}
+                        progress={loadingProgress}
+                        showPercentage={true}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <div>
-              {/* Use the proper LeagueOwnershipChecker component */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-4">
+                  <Button
+                    variant="outline"
+                    onClick={handleBackToLeagues}
+                  >
+                    ← Back to Leagues
+                  </Button>
+                  
+                  {cacheMetadata && (
+                    <CacheIndicator 
+                      isCached={cacheMetadata.isCached}
+                      lastFetched={cacheMetadata.lastFetched}
+                    />
+                  )}
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <LeagueShareDialog
+                    leagueId={leagueData.league.league_id}
+                    leagueName={leagueData.league.name}
+                  />
+                  
+                  {user && (
+                    <OwnershipTransferDialog
+                      leagueId={leagueData.league.league_id}
+                      leagueName={leagueData.league.name}
+                      onTransferComplete={() => {
+                        toast({
+                          title: "Ownership Transferred",
+                          description: "You no longer own this league"
+                        });
+                        handleRefreshData();
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
+
               <LeagueOwnershipChecker
                 leagueId={leagueData.league.league_id}
                 leagueName={leagueData.league.name}
