@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { cachedFetch } from '@/utils/apiCache';
+import type { SleeperLeague } from '@/types/sleeper';
 
 interface UserLeague {
   league_id: string;
@@ -50,7 +51,8 @@ export const useUserLeagues = () => {
                 `https://api.sleeper.app/v1/league/${ownership.league_id}`,
                 {},
                 10 * 60 * 1000 // 10 minutes cache
-              );
+              ) as SleeperLeague;
+              
               return {
                 ...ownership,
                 leagueData: {
