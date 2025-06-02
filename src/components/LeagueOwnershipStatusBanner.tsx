@@ -109,7 +109,7 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
               </Button>
             </div>
           </CardContent>
-        );
+        </Card>
       );
     }
 
