@@ -35,33 +35,6 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
   const navigate = useNavigate();
   const { isOwned, ownedByCurrentUser, ownerInfo } = ownershipStatus;
 
-  // Not authenticated - prompt to sign in
-  if (!user) {
-    return (
-      <Card className="border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 mb-6">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <LogIn className="w-5 h-5 text-blue-500" />
-              <div>
-                <h3 className="font-semibold text-white">Sign In to Claim This League</h3>
-                <p className="text-sm text-gray-300">
-                  Protect your league settings by signing in and claiming ownership
-                </p>
-              </div>
-            </div>
-            <Button 
-              onClick={() => navigate('/auth')}
-              className="bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              Sign In
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   // User owns the league
   if (isOwned && ownedByCurrentUser) {
     return (
@@ -86,7 +59,7 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
     );
   }
 
-  // League is owned by someone else
+  // League is owned by someone else - show this regardless of authentication status
   if (isOwned && !ownedByCurrentUser) {
     return (
       <Card className="border-red-500/30 bg-gradient-to-r from-red-500/10 to-pink-500/10 mb-6">
@@ -111,33 +84,66 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
     );
   }
 
-  // League is available to claim
-  return (
-    <Card className="border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 mb-6">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Shield className="w-5 h-5 text-yellow-500" />
-            <div>
-              <h3 className="font-semibold text-white">League Available to Claim</h3>
-              <p className="text-sm text-gray-300">
-                {leagueName ? `Claim "${leagueName}"` : 'Claim this league'} to protect your settings and prevent unauthorized changes
-              </p>
+  // League is not owned by anyone - check authentication status
+  if (!isOwned) {
+    // Not authenticated - prompt to sign in
+    if (!user) {
+      return (
+        <Card className="border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 mb-6">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <LogIn className="w-5 h-5 text-blue-500" />
+                <div>
+                  <h3 className="font-semibold text-white">Sign In to Claim This League</h3>
+                  <p className="text-sm text-gray-300">
+                    Protect your league settings by signing in and claiming ownership
+                  </p>
+                </div>
+              </div>
+              <Button 
+                onClick={() => navigate('/auth')}
+                className="bg-blue-500 hover:bg-blue-600 text-white"
+              >
+                Sign In
+              </Button>
             </div>
+          </CardContent>
+        );
+      );
+    }
+
+    // Authenticated but league is available to claim
+    return (
+      <Card className="border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 mb-6">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Shield className="w-5 h-5 text-yellow-500" />
+              <div>
+                <h3 className="font-semibold text-white">League Available to Claim</h3>
+                <p className="text-sm text-gray-300">
+                  {leagueName ? `Claim "${leagueName}"` : 'Claim this league'} to protect your settings and prevent unauthorized changes
+                </p>
+              </div>
+            </div>
+            {onClaimLeague && (
+              <Button 
+                onClick={onClaimLeague}
+                disabled={claiming}
+                className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+              >
+                {claiming ? 'Claiming...' : 'Claim League'}
+              </Button>
+            )}
           </div>
-          {onClaimLeague && (
-            <Button 
-              onClick={onClaimLeague}
-              disabled={claiming}
-              className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-            >
-              {claiming ? 'Claiming...' : 'Claim League'}
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Fallback - should not reach here
+  return null;
 };
 
 export default LeagueOwnershipStatusBanner;
