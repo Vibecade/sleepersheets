@@ -21,6 +21,7 @@ import { enhancedApiCache } from '@/utils/enhancedApiCache';
 import { useUserLeagues } from '@/hooks/useUserLeagues';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUrlParams } from '@/hooks/useUrlParams';
+import { useLeagueOwnershipStatus } from '@/hooks/useLeagueOwnershipStatus';
 import { validateLeagueId, validateUsername, sanitizeInput, rateLimiter } from '@/utils/inputValidation';
 import type { SleeperLeague, SleeperUser, SleeperRoster, SleeperDraft, SleeperTransaction, SleeperPlayer } from '@/types/sleeper';
 
@@ -32,10 +33,26 @@ const Index = React.memo(() => {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [cacheMetadata, setCacheMetadata] = useState<{ isCached: boolean; lastFetched?: Date } | null>(null);
+  const [ownershipStatus, setOwnershipStatus] = useState<{
+    isOwned: boolean;
+    ownedByCurrentUser: boolean;
+    ownerInfo?: { id: string; claimed_at: string };
+  } | null>(null);
+  
   const { toast } = useToast();
   const { user } = useAuth();
   const { addRecentLeague } = useUserLeagues();
   const { getLeagueFromUrl, setLeagueInUrl, clearUrlParams } = useUrlParams();
+  const { checkOwnershipStatus } = useLeagueOwnershipStatus();
+
+  // Check ownership status when league data loads
+  useEffect(() => {
+    if (leagueData?.league?.league_id) {
+      checkOwnershipStatus(leagueData.league.league_id).then(setOwnershipStatus);
+    } else {
+      setOwnershipStatus(null);
+    }
+  }, [leagueData?.league?.league_id, checkOwnershipStatus]);
 
   // Handle URL parameters on mount
   useEffect(() => {
@@ -250,8 +267,16 @@ const Index = React.memo(() => {
   const handleBackToLeagues = useCallback(() => {
     setLeagueData(null);
     setLeagueId('');
+    setOwnershipStatus(null);
     clearUrlParams();
   }, [clearUrlParams]);
+
+  const handleOwnershipChanged = useCallback(async () => {
+    if (leagueData?.league?.league_id) {
+      const newStatus = await checkOwnershipStatus(leagueData.league.league_id);
+      setOwnershipStatus(newStatus);
+    }
+  }, [leagueData?.league?.league_id, checkOwnershipStatus]);
 
   return (
     <div className="min-h-screen">
@@ -351,7 +376,8 @@ const Index = React.memo(() => {
                     leagueName={leagueData.league.name}
                   />
                   
-                  {user && (
+                  {/* Only show transfer dialog if user owns the league */}
+                  {user && ownershipStatus?.ownedByCurrentUser && (
                     <OwnershipTransferDialog
                       leagueId={leagueData.league.league_id}
                       leagueName={leagueData.league.name}
@@ -360,7 +386,7 @@ const Index = React.memo(() => {
                           title: "Ownership Transferred",
                           description: "You no longer own this league"
                         });
-                        handleRefreshData();
+                        handleOwnershipChanged();
                       }}
                     />
                   )}
@@ -370,7 +396,7 @@ const Index = React.memo(() => {
               <LeagueOwnershipChecker
                 leagueId={leagueData.league.league_id}
                 leagueName={leagueData.league.name}
-                onOwnershipChanged={handleRefreshData}
+                onOwnershipChanged={handleOwnershipChanged}
               />
               
               <LeagueData 
