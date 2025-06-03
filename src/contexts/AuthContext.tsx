@@ -32,23 +32,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     let mounted = true;
+    let authSubscription: any = null;
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!mounted) return;
-        
-        console.log('Auth state changed:', event, session?.user?.id);
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    // Check for existing session
-    const getSession = async () => {
+    const initializeAuth = async () => {
       try {
+        // Set up auth state listener first
+        authSubscription = supabase.auth.onAuthStateChange(
+          (event, session) => {
+            if (!mounted) return;
+            
+            console.log('Auth state changed:', event, session?.user?.id);
+            
+            // Only update state, no side effects here to prevent loops
+            setSession(session);
+            setUser(session?.user ?? null);
+            setLoading(false);
+          }
+        );
+
+        // Check for existing session
         const { data: { session }, error } = await supabase.auth.getSession();
+        
         if (!mounted) return;
         
         if (error) {
@@ -59,20 +63,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(session?.user ?? null);
         setLoading(false);
       } catch (error) {
-        console.error('Error in getSession:', error);
+        console.error('Error in auth initialization:', error);
         if (mounted) {
           setLoading(false);
         }
       }
     };
 
-    getSession();
+    initializeAuth();
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      if (authSubscription?.data?.subscription) {
+        authSubscription.data.subscription.unsubscribe();
+      }
     };
-  }, []);
+  }, []); // Empty dependency array to prevent re-initialization
 
   const signInWithGoogle = async () => {
     console.log('Attempting Google sign in...');
@@ -81,7 +87,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: 'https://sleepersheets.com/'
+          redirectTo: window.location.origin
         }
       });
 

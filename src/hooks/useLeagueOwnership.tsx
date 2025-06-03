@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,48 +18,49 @@ export const useLeagueOwnership = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Load user's owned leagues
-  useEffect(() => {
-    const loadOwnedLeagues = async () => {
-      if (!user) {
-        setOwnedLeagues([]);
+  // Memoize the loadOwnedLeagues function
+  const loadOwnedLeagues = useCallback(async () => {
+    if (!user?.id) {
+      setOwnedLeagues([]);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('league_ownership')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+
+      if (error) {
+        console.error('Error loading owned leagues:', error);
         return;
       }
 
-      try {
-        const { data, error } = await supabase
-          .from('league_ownership')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('is_active', true);
+      setOwnedLeagues(data || []);
+    } catch (error) {
+      console.error('Error loading owned leagues:', error);
+    }
+  }, [user?.id]); // Only depend on user.id
 
-        if (error) {
-          console.error('Error loading owned leagues:', error);
-          return;
-        }
-
-        setOwnedLeagues(data || []);
-      } catch (error) {
-        console.error('Error loading owned leagues:', error);
-      }
-    };
-
+  // Load user's owned leagues when user changes
+  useEffect(() => {
     loadOwnedLeagues();
-  }, [user]);
+  }, [loadOwnedLeagues]);
 
   // Check if user owns a specific league
-  const isLeagueOwned = (leagueId: string): boolean => {
+  const isLeagueOwned = useCallback((leagueId: string): boolean => {
     return ownedLeagues.some(ownership => ownership.league_id === leagueId);
-  };
+  }, [ownedLeagues]);
 
   // Check if current user can modify a specific league
-  const canModifyLeague = (leagueId: string): boolean => {
+  const canModifyLeague = useCallback((leagueId: string): boolean => {
     if (!user) return false;
     return isLeagueOwned(leagueId);
-  };
+  }, [user, isLeagueOwned]);
 
   // Claim a league - returns the ownership status result
-  const claimLeague = async (leagueId: string): Promise<{ success: boolean; alreadyClaimed: boolean }> => {
+  const claimLeague = useCallback(async (leagueId: string): Promise<{ success: boolean; alreadyClaimed: boolean }> => {
     if (!user) {
       toast({
         title: "Authentication Required",
@@ -97,14 +98,8 @@ export const useLeagueOwnership = () => {
         }
       }
 
-      // Reload owned leagues
-      const { data } = await supabase
-        .from('league_ownership')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('is_active', true);
-
-      setOwnedLeagues(data || []);
+      // Reload owned leagues after successful claim
+      await loadOwnedLeagues();
 
       toast({
         title: "Success!",
@@ -122,7 +117,7 @@ export const useLeagueOwnership = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast, loadOwnedLeagues]);
 
   return {
     ownedLeagues,

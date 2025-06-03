@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -16,8 +16,8 @@ export const useLeagueOwnershipStatus = () => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  const checkOwnershipStatus = async (leagueId: string): Promise<OwnershipStatus> => {
-    if (!leagueId.trim()) {
+  const checkOwnershipStatus = useCallback(async (leagueId: string): Promise<OwnershipStatus> => {
+    if (!leagueId?.trim()) {
       return { isOwned: false, ownedByCurrentUser: false };
     }
 
@@ -28,7 +28,7 @@ export const useLeagueOwnershipStatus = () => {
         .select('user_id, claimed_at')
         .eq('league_id', leagueId)
         .eq('is_active', true)
-        .maybeSingle();
+        .maybeSingle(); // Use maybeSingle to avoid errors when no data found
 
       if (error) {
         console.error('Error checking ownership status:', error);
@@ -55,7 +55,7 @@ export const useLeagueOwnershipStatus = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]); // Only depend on user.id
 
   return {
     checkOwnershipStatus,
