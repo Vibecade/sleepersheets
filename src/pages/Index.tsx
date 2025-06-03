@@ -393,7 +393,7 @@ const Index = React.memo(() => {
                 </div>
               </div>
 
-              {/* Single ownership checker - this handles all ownership status display */}
+              {/* ONLY render the ownership checker - remove any other ownership banners */}
               <LeagueOwnershipChecker
                 leagueId={leagueData.league.league_id}
                 leagueName={leagueData.league.name}

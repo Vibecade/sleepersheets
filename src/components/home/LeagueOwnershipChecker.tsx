@@ -33,7 +33,6 @@ const LeagueOwnershipChecker: React.FC<LeagueOwnershipCheckerProps> = ({
     const result = await claimLeague(leagueId);
     
     // Always refresh ownership status after a claim attempt
-    // This will hide the claim prompt if the league was already claimed
     const newStatus = await checkOwnershipStatus(leagueId);
     setOwnershipStatus(newStatus);
     
@@ -47,6 +46,7 @@ const LeagueOwnershipChecker: React.FC<LeagueOwnershipCheckerProps> = ({
     return null;
   }
 
+  // Only render one banner - this should prevent duplicates
   return (
     <LeagueOwnershipStatusBanner
       leagueId={leagueId}
