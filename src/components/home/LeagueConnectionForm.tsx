@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Users as UserGroup, Search as MagnifyingGlass, Loader2 } from 'lucide-react';
 import { HowToFindLeagueId } from './HowToFindLeagueId';
-import LeagueOwnershipChecker from './LeagueOwnershipChecker';
 
 interface LeagueConnectionFormProps {
   leagueId: string;
@@ -37,9 +36,6 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
     e.preventDefault();
     onUsernameSubmit();
   };
-
-  // Show ownership status for valid league IDs
-  const showOwnershipStatus = leagueId?.trim().length >= 10;
 
   return (
     <div className="space-y-8">
@@ -83,18 +79,6 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
               </div>
             </div>
           </form>
-
-          {/* Show ownership status when user enters a League ID */}
-          {showOwnershipStatus && (
-            <div className="mt-4">
-              <LeagueOwnershipChecker 
-                leagueId={leagueId}
-                onOwnershipChanged={() => {
-                  // Could trigger a refresh or update if needed
-                }}
-              />
-            </div>
-          )}
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
