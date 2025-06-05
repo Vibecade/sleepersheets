@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import LeagueOwnershipStatusBanner from '@/components/LeagueOwnershipStatusBanner';
 import { validateAndSanitizeLeagueId } from '@/utils/enhancedInputValidation';
 import { useToast } from '@/hooks/use-toast';
+import { useDismissibleBanners } from '@/hooks/useDismissibleBanners';
 
 interface LeagueOwnershipCheckerProps {
   leagueId: string;
@@ -22,6 +23,7 @@ const LeagueOwnershipChecker: React.FC<LeagueOwnershipCheckerProps> = ({
   const { checkOwnershipStatus, loading: checkingStatus } = useLeagueOwnershipStatus();
   const { claimLeague, loading: claiming } = useLeagueOwnership();
   const { toast } = useToast();
+  const { resetLeagueBanners } = useDismissibleBanners();
   
   const [ownershipStatus, setOwnershipStatus] = useState<{
     isOwned: boolean;
@@ -91,8 +93,9 @@ const LeagueOwnershipChecker: React.FC<LeagueOwnershipCheckerProps> = ({
       const newStatus = await checkOwnershipStatus(leagueId);
       setOwnershipStatus(newStatus);
       
-      // Only call onOwnershipChanged if the claim was successful
+      // Reset banner preferences when ownership changes
       if (result.success) {
+        resetLeagueBanners(leagueId);
         onOwnershipChanged?.();
       }
     } catch (error) {

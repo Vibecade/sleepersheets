@@ -2,10 +2,11 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, ShieldCheck, ShieldX, User, LogIn, Clock } from 'lucide-react';
+import { Shield, ShieldCheck, ShieldX, User, LogIn, Clock, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
+import { useDismissibleBanners } from '@/hooks/useDismissibleBanners';
 
 interface OwnershipStatus {
   isOwned: boolean;
@@ -34,8 +35,9 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
   const { user } = useAuth();
   const navigate = useNavigate();
   const { isOwned, ownedByCurrentUser, ownerInfo } = ownershipStatus;
+  const { dismissBanner, isBannerDismissed } = useDismissibleBanners();
 
-  // User owns the league
+  // User owns the league - always show this, no dismiss option
   if (isOwned && ownedByCurrentUser) {
     return (
       <Card className="border-green-500/30 bg-gradient-to-r from-green-500/10 to-emerald-500/10 mb-6">
@@ -59,25 +61,39 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
     );
   }
 
-  // League is owned by someone else - show this regardless of authentication status
+  // League is owned by someone else - dismissible
   if (isOwned && !ownedByCurrentUser) {
+    if (isBannerDismissed(leagueId, 'ownership')) {
+      return null;
+    }
+
     return (
       <Card className="border-red-500/30 bg-gradient-to-r from-red-500/10 to-pink-500/10 mb-6">
         <CardContent className="p-4">
-          <div className="flex items-center space-x-3">
-            <ShieldX className="w-5 h-5 text-red-500" />
-            <div>
-              <h3 className="font-semibold text-white">League Already Claimed</h3>
-              <p className="text-sm text-gray-300">
-                This league is owned by another user. You can view the data but cannot modify settings.
-                {ownerInfo && (
-                  <span className="block mt-1 text-xs text-gray-400">
-                    <Clock className="w-3 h-3 inline mr-1" />
-                    Claimed {formatDistanceToNow(new Date(ownerInfo.claimed_at))} ago
-                  </span>
-                )}
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <ShieldX className="w-5 h-5 text-red-500" />
+              <div>
+                <h3 className="font-semibold text-white">League Already Claimed</h3>
+                <p className="text-sm text-gray-300">
+                  This league is owned by another user. You can view the data but cannot modify settings.
+                  {ownerInfo && (
+                    <span className="block mt-1 text-xs text-gray-400">
+                      <Clock className="w-3 h-3 inline mr-1" />
+                      Claimed {formatDistanceToNow(new Date(ownerInfo.claimed_at))} ago
+                    </span>
+                  )}
+                </p>
+              </div>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => dismissBanner(leagueId, 'ownership')}
+              className="text-gray-400 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -86,8 +102,12 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
 
   // League is not owned by anyone - check authentication status
   if (!isOwned) {
-    // Not authenticated - prompt to sign in
+    // Not authenticated - prompt to sign in - dismissible
     if (!user) {
+      if (isBannerDismissed(leagueId, 'claimPrompt')) {
+        return null;
+      }
+
       return (
         <Card className="border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 mb-6">
           <CardContent className="p-4">
@@ -101,19 +121,33 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
                   </p>
                 </div>
               </div>
-              <Button 
-                onClick={() => navigate('/auth')}
-                className="bg-blue-500 hover:bg-blue-600 text-white"
-              >
-                Sign In
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  onClick={() => navigate('/auth')}
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  Sign In
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => dismissBanner(leagueId, 'claimPrompt')}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
       );
     }
 
-    // Authenticated but league is available to claim
+    // Authenticated but league is available to claim - dismissible
+    if (isBannerDismissed(leagueId, 'claimPrompt')) {
+      return null;
+    }
+
     return (
       <Card className="border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 mb-6">
         <CardContent className="p-4">
@@ -127,15 +161,25 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
                 </p>
               </div>
             </div>
-            {onClaimLeague && (
-              <Button 
-                onClick={onClaimLeague}
-                disabled={claiming}
-                className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+            <div className="flex items-center space-x-2">
+              {onClaimLeague && (
+                <Button 
+                  onClick={onClaimLeague}
+                  disabled={claiming}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+                >
+                  {claiming ? 'Claiming...' : 'Claim League'}
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => dismissBanner(leagueId, 'claimPrompt')}
+                className="text-gray-400 hover:text-white"
               >
-                {claiming ? 'Claiming...' : 'Claim League'}
+                <X className="w-4 h-4" />
               </Button>
-            )}
+            </div>
           </div>
         </CardContent>
       </Card>
