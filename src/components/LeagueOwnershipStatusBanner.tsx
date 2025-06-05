@@ -143,7 +143,7 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
       );
     }
 
-    // Authenticated but league is available to claim - dismissible
+    // Authenticated and league is available to claim (not owned by anyone) - dismissible
     if (isBannerDismissed(leagueId, 'claimPrompt')) {
       return null;
     }
