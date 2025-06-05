@@ -95,11 +95,8 @@ export const useLeagueOwnership = () => {
 
       if (error) {
         if (error.code === '23505') { // Unique constraint violation - league already claimed
-          toast({
-            title: "League Already Claimed",
-            description: "This league has already been claimed by another user",
-            variant: "destructive"
-          });
+          // Don't show toast for 409 errors since we'll dismiss the banner instead
+          console.log('League already claimed by another user');
           return { success: false, alreadyClaimed: true };
         } else {
           console.error('Error claiming league:', error);

@@ -23,7 +23,7 @@ const LeagueOwnershipChecker: React.FC<LeagueOwnershipCheckerProps> = ({
   const { checkOwnershipStatus, loading: checkingStatus } = useLeagueOwnershipStatus();
   const { claimLeague, loading: claiming } = useLeagueOwnership();
   const { toast } = useToast();
-  const { resetLeagueBanners } = useDismissibleBanners();
+  const { resetLeagueBanners, dismissBanner } = useDismissibleBanners();
   
   const [ownershipStatus, setOwnershipStatus] = useState<{
     isOwned: boolean;
@@ -93,7 +93,12 @@ const LeagueOwnershipChecker: React.FC<LeagueOwnershipCheckerProps> = ({
       const newStatus = await checkOwnershipStatus(leagueId);
       setOwnershipStatus(newStatus);
       
-      // Reset banner preferences when ownership changes
+      // If we get alreadyClaimed (409 error), dismiss the claim prompt for this league
+      if (result.alreadyClaimed) {
+        dismissBanner(leagueId, 'claimPrompt');
+      }
+      
+      // Reset banner preferences when ownership changes successfully
       if (result.success) {
         resetLeagueBanners(leagueId);
         onOwnershipChanged?.();
