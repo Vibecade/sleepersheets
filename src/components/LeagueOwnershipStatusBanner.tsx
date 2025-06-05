@@ -37,8 +37,15 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
   const { isOwned, ownedByCurrentUser, ownerInfo } = ownershipStatus;
   const { dismissBanner, isBannerDismissed } = useDismissibleBanners();
 
+  console.log('LeagueOwnershipStatusBanner render for league', leagueId, ':', {
+    isOwned,
+    ownedByCurrentUser,
+    user: !!user
+  });
+
   // User owns the league - always show this, no dismiss option
   if (isOwned && ownedByCurrentUser) {
+    console.log('Showing owned banner for league', leagueId);
     return (
       <Card className="border-green-500/30 bg-gradient-to-r from-green-500/10 to-emerald-500/10 mb-6">
         <CardContent className="p-4">
@@ -63,7 +70,10 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
 
   // League is owned by someone else - dismissible
   if (isOwned && !ownedByCurrentUser) {
-    if (isBannerDismissed(leagueId, 'ownership')) {
+    const ownershipDismissed = isBannerDismissed(leagueId, 'ownership');
+    console.log('League owned by other user, dismissed:', ownershipDismissed);
+    
+    if (ownershipDismissed) {
       return null;
     }
 
@@ -102,12 +112,16 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
 
   // League is not owned by anyone - check if dismissed first
   if (!isOwned) {
-    if (isBannerDismissed(leagueId, 'claimPrompt')) {
+    const claimPromptDismissed = isBannerDismissed(leagueId, 'claimPrompt');
+    console.log('League not owned, claim prompt dismissed:', claimPromptDismissed);
+    
+    if (claimPromptDismissed) {
       return null;
     }
 
     // Not authenticated - prompt to sign in
     if (!user) {
+      console.log('Showing sign in banner for league', leagueId);
       return (
         <Card className="border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 mb-6">
           <CardContent className="p-4">
@@ -144,6 +158,7 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
     }
 
     // Authenticated and league is available to claim
+    console.log('Showing claim banner for league', leagueId);
     return (
       <Card className="border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 mb-6">
         <CardContent className="p-4">
@@ -183,6 +198,7 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
   }
 
   // Fallback - should not reach here
+  console.log('LeagueOwnershipStatusBanner fallback case for league', leagueId);
   return null;
 };
 

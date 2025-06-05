@@ -17,7 +17,9 @@ export const useDismissibleBanners = () => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        setDismissedBanners(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        console.log('Loaded dismissed banners from localStorage:', parsed);
+        setDismissedBanners(parsed);
       }
     } catch (error) {
       console.error('Error loading dismissed banners:', error);
@@ -26,6 +28,7 @@ export const useDismissibleBanners = () => {
 
   const saveToDisk = (newBanners: DismissedBanners) => {
     try {
+      console.log('Saving dismissed banners to localStorage:', newBanners);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newBanners));
     } catch (error) {
       console.error('Error saving dismissed banners:', error);
@@ -33,6 +36,7 @@ export const useDismissibleBanners = () => {
   };
 
   const dismissBanner = (leagueId: string, bannerType: 'ownership' | 'claimPrompt') => {
+    console.log('Dismissing banner for league', leagueId, 'type:', bannerType);
     const newBanners = {
       ...dismissedBanners,
       [leagueId]: {
@@ -40,15 +44,19 @@ export const useDismissibleBanners = () => {
         [bannerType]: true
       }
     };
+    console.log('New dismissed banners state:', newBanners);
     setDismissedBanners(newBanners);
     saveToDisk(newBanners);
   };
 
   const isBannerDismissed = (leagueId: string, bannerType: 'ownership' | 'claimPrompt'): boolean => {
-    return dismissedBanners[leagueId]?.[bannerType] === true;
+    const dismissed = dismissedBanners[leagueId]?.[bannerType] === true;
+    console.log('Checking if banner is dismissed for league', leagueId, 'type:', bannerType, 'result:', dismissed);
+    return dismissed;
   };
 
   const resetLeagueBanners = (leagueId: string) => {
+    console.log('Resetting banners for league:', leagueId);
     const newBanners = { ...dismissedBanners };
     delete newBanners[leagueId];
     setDismissedBanners(newBanners);

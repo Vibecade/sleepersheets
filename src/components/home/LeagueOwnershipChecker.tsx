@@ -23,7 +23,7 @@ const LeagueOwnershipChecker: React.FC<LeagueOwnershipCheckerProps> = ({
   const { checkOwnershipStatus, loading: checkingStatus } = useLeagueOwnershipStatus();
   const { claimLeague, loading: claiming } = useLeagueOwnership();
   const { toast } = useToast();
-  const { resetLeagueBanners, dismissBanner } = useDismissibleBanners();
+  const { resetLeagueBanners, dismissBanner, isBannerDismissed } = useDismissibleBanners();
   
   const [ownershipStatus, setOwnershipStatus] = useState<{
     isOwned: boolean;
@@ -51,6 +51,7 @@ const LeagueOwnershipChecker: React.FC<LeagueOwnershipCheckerProps> = ({
       
       try {
         const status = await checkOwnershipStatus(leagueId);
+        console.log('Ownership status for league', leagueId, ':', status);
         setOwnershipStatus(status);
       } catch (error) {
         console.error('Error checking ownership status:', error);
@@ -87,15 +88,21 @@ const LeagueOwnershipChecker: React.FC<LeagueOwnershipCheckerProps> = ({
     }
 
     try {
+      console.log('Attempting to claim league:', leagueId);
       const result = await claimLeague(leagueId);
+      console.log('Claim result:', result);
       
       // Always refresh ownership status after a claim attempt
       const newStatus = await checkOwnershipStatus(leagueId);
+      console.log('New ownership status after claim attempt:', newStatus);
       setOwnershipStatus(newStatus);
       
       // If we get alreadyClaimed (409 error), dismiss the claim prompt for this league
       if (result.alreadyClaimed) {
+        console.log('League already claimed, dismissing claimPrompt banner for league:', leagueId);
         dismissBanner(leagueId, 'claimPrompt');
+        // Force a re-render by updating state
+        setOwnershipStatus(prev => ({ ...prev }));
       }
       
       // Reset banner preferences when ownership changes successfully
@@ -117,6 +124,16 @@ const LeagueOwnershipChecker: React.FC<LeagueOwnershipCheckerProps> = ({
   if (!leagueId?.trim() || validationError || checkingStatus) {
     return null;
   }
+
+  // Add debug logging for banner dismissal state
+  const claimPromptDismissed = isBannerDismissed(leagueId, 'claimPrompt');
+  const ownershipDismissed = isBannerDismissed(leagueId, 'ownership');
+  
+  console.log('Banner dismissal state for league', leagueId, ':', {
+    claimPromptDismissed,
+    ownershipDismissed,
+    ownershipStatus
+  });
 
   return (
     <LeagueOwnershipStatusBanner
