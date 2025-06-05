@@ -100,14 +100,14 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
     );
   }
 
-  // League is not owned by anyone - check authentication status
+  // League is not owned by anyone - check if dismissed first
   if (!isOwned) {
-    // Not authenticated - prompt to sign in - dismissible
-    if (!user) {
-      if (isBannerDismissed(leagueId, 'claimPrompt')) {
-        return null;
-      }
+    if (isBannerDismissed(leagueId, 'claimPrompt')) {
+      return null;
+    }
 
+    // Not authenticated - prompt to sign in
+    if (!user) {
       return (
         <Card className="border-blue-500/30 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 mb-6">
           <CardContent className="p-4">
@@ -143,11 +143,7 @@ const LeagueOwnershipStatusBanner: React.FC<LeagueOwnershipStatusBannerProps> = 
       );
     }
 
-    // Authenticated and league is available to claim (not owned by anyone) - dismissible
-    if (isBannerDismissed(leagueId, 'claimPrompt')) {
-      return null;
-    }
-
+    // Authenticated and league is available to claim
     return (
       <Card className="border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 mb-6">
         <CardContent className="p-4">
