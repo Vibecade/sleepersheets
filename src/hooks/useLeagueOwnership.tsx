@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { validateAndSanitizeLeagueId } from '@/utils/enhancedInputValidation';
 
 interface LeagueOwnership {
   id: string;
@@ -18,7 +19,6 @@ export const useLeagueOwnership = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Memoize the loadOwnedLeagues function
   const loadOwnedLeagues = useCallback(async () => {
     if (!user?.id) {
       setOwnedLeagues([]);
@@ -41,25 +41,26 @@ export const useLeagueOwnership = () => {
     } catch (error) {
       console.error('Error loading owned leagues:', error);
     }
-  }, [user?.id]); // Only depend on user.id
+  }, [user?.id]);
 
-  // Load user's owned leagues when user changes
   useEffect(() => {
     loadOwnedLeagues();
   }, [loadOwnedLeagues]);
 
-  // Check if user owns a specific league
   const isLeagueOwned = useCallback((leagueId: string): boolean => {
-    return ownedLeagues.some(ownership => ownership.league_id === leagueId);
+    const validation = validateAndSanitizeLeagueId(leagueId);
+    if (!validation.isValid) {
+      return false;
+    }
+    
+    return ownedLeagues.some(ownership => ownership.league_id === validation.sanitizedValue);
   }, [ownedLeagues]);
 
-  // Check if current user can modify a specific league
   const canModifyLeague = useCallback((leagueId: string): boolean => {
     if (!user) return false;
     return isLeagueOwned(leagueId);
   }, [user, isLeagueOwned]);
 
-  // Claim a league - returns the ownership status result
   const claimLeague = useCallback(async (leagueId: string): Promise<{ success: boolean; alreadyClaimed: boolean }> => {
     if (!user) {
       toast({
@@ -70,12 +71,25 @@ export const useLeagueOwnership = () => {
       return { success: false, alreadyClaimed: false };
     }
 
+    // Validate league ID before claiming
+    const validation = validateAndSanitizeLeagueId(leagueId);
+    if (!validation.isValid) {
+      toast({
+        title: "Invalid League ID",
+        description: validation.error || "Invalid league ID format",
+        variant: "destructive"
+      });
+      return { success: false, alreadyClaimed: false };
+    }
+
+    const sanitizedLeagueId = validation.sanitizedValue!;
+
     setLoading(true);
     try {
       const { error } = await supabase
         .from('league_ownership')
         .insert({
-          league_id: leagueId,
+          league_id: sanitizedLeagueId,
           user_id: user.id
         });
 
@@ -91,7 +105,7 @@ export const useLeagueOwnership = () => {
           console.error('Error claiming league:', error);
           toast({
             title: "Error",
-            description: "Failed to claim league",
+            description: "Failed to claim league. Please try again.",
             variant: "destructive"
           });
           return { success: false, alreadyClaimed: false };
@@ -110,7 +124,7 @@ export const useLeagueOwnership = () => {
       console.error('Error claiming league:', error);
       toast({
         title: "Error",
-        description: "Failed to claim league",
+        description: "Failed to claim league. Please try again.",
         variant: "destructive"
       });
       return { success: false, alreadyClaimed: false };

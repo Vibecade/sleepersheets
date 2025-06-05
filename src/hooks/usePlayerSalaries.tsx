@@ -2,6 +2,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { validateSalary } from '@/utils/enhancedInputValidation';
+import { logDataAccess } from '@/utils/securityLogger';
 
 interface PlayerSalary {
   player_id: string;
@@ -14,8 +17,8 @@ export const usePlayerSalaries = (leagueId: string) => {
   const [taxiSquadStatus, setTaxiSquadStatus] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  // Load existing salaries from database
   useEffect(() => {
     const loadSalaries = async () => {
       try {
@@ -24,6 +27,8 @@ export const usePlayerSalaries = (leagueId: string) => {
           .from('player_salaries')
           .select('player_id, salary, taxi_squad')
           .eq('league_id', leagueId);
+
+        logDataAccess(user?.id, 'player_salaries', 'read', !error);
 
         if (error) {
           console.error('Error loading salaries:', error);
@@ -45,6 +50,7 @@ export const usePlayerSalaries = (leagueId: string) => {
         setTaxiSquadStatus(taxiMap);
       } catch (error) {
         console.error('Error loading salaries:', error);
+        logDataAccess(user?.id, 'player_salaries', 'read', false);
       } finally {
         setLoading(false);
       }
@@ -53,10 +59,22 @@ export const usePlayerSalaries = (leagueId: string) => {
     if (leagueId) {
       loadSalaries();
     }
-  }, [leagueId]);
+  }, [leagueId, user?.id]);
 
-  // Update salary in database
   const updateSalary = async (playerId: string, salary: number | null) => {
+    // Validate salary input
+    if (salary !== null) {
+      const validation = validateSalary(salary);
+      if (!validation.isValid) {
+        toast({
+          title: "Invalid Salary",
+          description: validation.error,
+          variant: "destructive"
+        });
+        return false;
+      }
+    }
+
     try {
       console.log('Updating salary for player:', playerId, 'salary:', salary);
       const { error } = await supabase
@@ -70,6 +88,8 @@ export const usePlayerSalaries = (leagueId: string) => {
         }, {
           onConflict: 'league_id,player_id'
         });
+
+      logDataAccess(user?.id, 'player_salaries', 'write', !error);
 
       if (error) {
         console.error('Error updating salary:', error);
@@ -89,6 +109,7 @@ export const usePlayerSalaries = (leagueId: string) => {
       return true;
     } catch (error) {
       console.error('Error updating salary:', error);
+      logDataAccess(user?.id, 'player_salaries', 'write', false);
       toast({
         title: "Error",
         description: "Failed to save salary",
@@ -98,7 +119,6 @@ export const usePlayerSalaries = (leagueId: string) => {
     }
   };
 
-  // Update taxi squad status
   const updateTaxiSquadStatus = async (playerId: string, taxiSquad: boolean) => {
     try {
       console.log('Updating taxi squad status for player:', playerId, 'taxi_squad:', taxiSquad);
@@ -113,6 +133,8 @@ export const usePlayerSalaries = (leagueId: string) => {
         }, {
           onConflict: 'league_id,player_id'
         });
+
+      logDataAccess(user?.id, 'player_salaries', 'write', !error);
 
       if (error) {
         console.error('Error updating taxi squad status:', error);
@@ -132,6 +154,7 @@ export const usePlayerSalaries = (leagueId: string) => {
       return true;
     } catch (error) {
       console.error('Error updating taxi squad status:', error);
+      logDataAccess(user?.id, 'player_salaries', 'write', false);
       toast({
         title: "Error",
         description: "Failed to save taxi squad status",
@@ -141,7 +164,6 @@ export const usePlayerSalaries = (leagueId: string) => {
     }
   };
 
-  // Get effective salary (considering taxi squad discount)
   const getEffectiveSalary = (playerId: string): number => {
     const baseSalary = salaries[playerId] || 0;
     const isTaxiSquad = taxiSquadStatus[playerId] || false;

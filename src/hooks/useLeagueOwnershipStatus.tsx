@@ -2,6 +2,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { validateAndSanitizeLeagueId } from '@/utils/enhancedInputValidation';
 
 interface OwnershipStatus {
   isOwned: boolean;
@@ -17,21 +18,26 @@ export const useLeagueOwnershipStatus = () => {
   const { user } = useAuth();
 
   const checkOwnershipStatus = useCallback(async (leagueId: string): Promise<OwnershipStatus> => {
-    if (!leagueId?.trim()) {
+    // Validate input before making database call
+    const validation = validateAndSanitizeLeagueId(leagueId);
+    if (!validation.isValid) {
+      console.error('Invalid league ID provided to checkOwnershipStatus:', validation.error);
       return { isOwned: false, ownedByCurrentUser: false };
     }
+
+    const sanitizedLeagueId = validation.sanitizedValue!;
 
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('league_ownership')
         .select('user_id, claimed_at')
-        .eq('league_id', leagueId)
+        .eq('league_id', sanitizedLeagueId)
         .eq('is_active', true)
-        .maybeSingle(); // Use maybeSingle to avoid errors when no data found
+        .maybeSingle();
 
       if (error) {
-        console.error('Error checking ownership status:', error);
+        console.error('Database error checking ownership status:', error);
         return { isOwned: false, ownedByCurrentUser: false };
       }
 
@@ -55,7 +61,7 @@ export const useLeagueOwnershipStatus = () => {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]); // Only depend on user.id
+  }, [user?.id]);
 
   return {
     checkOwnershipStatus,
