@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import UserMenu from '@/components/UserMenu';
+import HeaderNavigation from '@/components/HeaderNavigation';
 
 const LeagueHeader = () => {
   const { user } = useAuth();
@@ -14,6 +15,8 @@ const LeagueHeader = () => {
 
   return (
     <div className="text-center py-8 sm:py-12 lg:py-16 px-4 relative">
+      <HeaderNavigation />
+      
       <div className="absolute top-4 right-4">
         {user ? (
           <UserMenu />
