@@ -1,10 +1,9 @@
-
 import React, { useState, Suspense } from 'react';
 import LeagueHeader from './LeagueHeader';
 import { LazyTeamOverview, LazyFantasyManager } from './LazyComponents';
 import PageNavigation from './PageNavigation';
 import ErrorBoundary from './ErrorBoundary';
-import LeagueOwnershipBanner from './LeagueOwnershipBanner';
+import LeagueOwnershipChecker from './home/LeagueOwnershipChecker';
 import PageHead from './PageHead';
 import { LeagueDataProvider, useLeagueData } from './LeagueDataProvider';
 import LeagueHeaderSkeleton from './skeletons/LeagueHeaderSkeleton';
@@ -50,7 +49,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void> }> = Rea
       <div className="space-y-8">
         <div className="slide-up">
           <ErrorBoundary>
-            <LeagueOwnershipBanner 
+            <LeagueOwnershipChecker 
               leagueId={league.league_id} 
               leagueName={league.name}
             />
