@@ -1,4 +1,3 @@
-
 import { lazy } from 'react';
 
 // Lazy load heavy components for better performance
