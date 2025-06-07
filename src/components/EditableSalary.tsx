@@ -1,10 +1,10 @@
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Check, X, Edit } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
-import { useToast } from '@/hooks/use-toast';
 
 interface EditableSalaryProps {
   playerId: string;
@@ -21,7 +21,6 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
 }) => {
   const { user } = useAuth();
   const { canModifyLeague } = useLeagueOwnership();
-  const { toast } = useToast();
   const [value, setValue] = useState<string>('');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -58,7 +57,7 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
     } finally {
       setIsSaving(false);
     }
-  }, [playerId, value, currentSalary, onSalaryUpdate, canModify, isSaving]);
+  }, [playerId, value, currentSalary, onSalaryUpdate, canModify]);
   )
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -75,7 +74,7 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
   const handleEditToggle = useCallback(() => {
     if (!canModify || isSaving) return;
     setIsEditing(true);
-  }, [canModify, isSaving]);
+  }, [canModify]);
 
   const formatDisplayValue = useMemo(() => {
     if (currentSalary === null || currentSalary === undefined) {
@@ -147,4 +146,5 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
 };
 
 export default React.memo(EditableSalary);
+
 }
