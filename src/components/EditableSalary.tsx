@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Check, X, Edit } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
+import { useToast } from '@/hooks/use-toast';
 
 interface EditableSalaryProps {
   playerId: string;
@@ -20,6 +21,7 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
 }) => {
   const { user } = useAuth();
   const { canModifyLeague } = useLeagueOwnership();
+  const { toast } = useToast();
   const [value, setValue] = useState<string>('');
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -42,8 +44,6 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
       setIsSaving(false);
       return;
     }
-    )
-    )
 
     try {
       const success = await onSalaryUpdate(playerId, numericValue);
@@ -57,7 +57,6 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
       setIsSaving(false);
     }
   }, [playerId, value, currentSalary, onSalaryUpdate, canModify]);
-  )
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -145,4 +144,3 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
 };
 
 export default React.memo(EditableSalary);
-}
