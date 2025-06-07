@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { usePWA } from './usePWA';
 import { supabase } from '@/integrations/supabase/client';
