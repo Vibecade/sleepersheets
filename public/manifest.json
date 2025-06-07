@@ -1,3 +1,4 @@
+
 {
   "name": "SleeperSheets - Fantasy Football Salary Cap Management",
   "short_name": "SleeperSheets",
@@ -18,9 +19,9 @@
   "categories": ["sports", "productivity"],
   "screenshots": [
     {
-      "src": "/images/og-image.webp",
+      "src": "/og-image.jpg",
       "sizes": "1200x630",
-      "type": "image/webp",
+      "type": "image/jpeg",
       "form_factor": "wide"
     }
   ]

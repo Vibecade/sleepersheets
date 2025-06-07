@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Check, X, Edit } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
-import { useToast } from '@/hooks/use-toast';
 
 interface EditableContractLengthProps {
   playerId: string;
@@ -22,7 +21,6 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
 }) => {
   const { user } = useAuth();
   const { canModifyLeague } = useLeagueOwnership();
-  const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(currentLength?.toString() || '');
   const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +28,7 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
   const canModify = canModifyLeague(leagueId);
 
   const handleSave = async () => {
-    if (!canModify || isLoading) return;
+    if (!canModify) return;
     
     setIsLoading(true);
     const contractLength = tempValue === '' ? null : Number(tempValue);
@@ -39,25 +37,12 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
     if (success) {
       setIsEditing(false);
     }
-    else {
-      toast({
-        title: "Error",
-        description: "Failed to update contract length",
-        variant: "destructive"
-      });
-    }
     setIsLoading(false);
   };
 
-  const handleCancel = (e?: React.MouseEvent) => {
-    if (e) e.preventDefault();
+  const handleCancel = () => {
     setTempValue(currentLength?.toString() || '');
     setIsEditing(false);
-  };
-  
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleSave();
-    if (e.key === 'Escape') handleCancel();
   };
 
   const handleEdit = () => {
@@ -70,12 +55,9 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
     return (
       <div 
         className={`flex items-center space-x-1 px-2 py-1 transition-colors rounded ${
-          canModify ? 'cursor-pointer hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-emerald-400/50' : 'cursor-default opacity-75'
+          canModify ? 'cursor-pointer hover:bg-white/10' : 'cursor-default opacity-75'
         }`}
         onClick={handleEdit}
-        onKeyDown={(e) => e.key === 'Enter' && handleEdit()}
-        tabIndex={canModify ? 0 : -1}
-        role="button"
         title={!canModify ? 'Claim this league to edit contracts' : undefined}
       >
         <span className="text-gray-300 text-sm">
@@ -91,8 +73,6 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
       <Input
         type="number"
         value={tempValue}
-        onKeyDown={handleKeyDown}
-        aria-label="Contract length in years"
         onChange={(e) => setTempValue(e.target.value)}
         className="w-16 h-7 text-xs bg-white/10 border-white/20 text-white"
         placeholder="0"
@@ -104,7 +84,6 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
         size="sm"
         variant="ghost"
         onClick={handleSave}
-        aria-label="Save contract length"
         disabled={isLoading}
         className="h-7 w-7 p-0 hover:bg-green-500/20"
       >
@@ -114,7 +93,6 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
         size="sm"
         variant="ghost"
         onClick={handleCancel}
-        aria-label="Cancel editing"
         className="h-7 w-7 p-0 hover:bg-red-500/20"
       >
         <X className="w-3 h-3 text-red-400" />
