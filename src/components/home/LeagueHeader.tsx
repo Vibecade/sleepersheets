@@ -38,12 +38,12 @@ const LeagueHeader = () => {
           <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl p-3 sm:p-4 shadow-2xl">
             <Trophy className="w-8 h-8 sm:w-10 lg:w-12 sm:h-10 lg:h-12 text-white" />
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black bg-gradient-to-r from-white via-yellow-100 to-yellow-300 bg-clip-text text-transparent text-center sm:text-left">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black bg-gradient-to-r from-white via-yellow-100 to-yellow-300 bg-clip-text text-transparent text-center sm:text-left text-glow">
             SLEEPERSHEETS
           </h1>
         </div>
         
-        <p className="text-lg sm:text-xl lg:text-2xl text-gray-300 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-2">
+        <p className="text-lg sm:text-xl lg:text-2xl text-gray-400 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-2">
           The ultimate salary cap and contract management tool for your fantasy football dynasty league
         </p>
 
@@ -59,21 +59,21 @@ const LeagueHeader = () => {
           </div>
         )}
 
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-400 px-2">
-          <div className="flex items-center space-x-1 sm:space-x-2">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+        <div className="flex flex-wrap justify-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-400 px-2 mt-8">
+          <div className="flex items-center space-x-2 backdrop-blur-sm bg-white/5 p-2 px-3 rounded-full">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
             <span>Real-time salary tracking</span>
           </div>
-          <div className="flex items-center space-x-1 sm:space-x-2">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+          <div className="flex items-center space-x-2 backdrop-blur-sm bg-white/5 p-2 px-3 rounded-full">
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
             <span>Contract management</span>
           </div>
-          <div className="flex items-center space-x-1 sm:space-x-2">
-            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+          <div className="flex items-center space-x-2 backdrop-blur-sm bg-white/5 p-2 px-3 rounded-full">
+            <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
             <span>Trade simulation</span>
           </div>
-          <div className="flex items-center space-x-1 sm:space-x-2">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+          <div className="flex items-center space-x-2 backdrop-blur-sm bg-white/5 p-2 px-3 rounded-full">
+            <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" style={{animationDelay: '0.6s'}}></div>
             <span>Protected league ownership</span>
           </div>
         </div>
