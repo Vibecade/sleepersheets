@@ -3,12 +3,12 @@ import LeagueHeader from './LeagueHeader';
 import { LazyTeamOverview, LazyFantasyManager } from './LazyComponents';
 import PageNavigation from './PageNavigation';
 import ErrorBoundary from './ErrorBoundary';
-import LeagueOwnershipChecker from './home/LeagueOwnershipChecker';
 import PageHead from './PageHead';
 import { LeagueDataProvider, useLeagueData } from './LeagueDataProvider';
 import LeagueHeaderSkeleton from './skeletons/LeagueHeaderSkeleton';
 import TeamOverviewSkeleton from './skeletons/TeamOverviewSkeleton';
 import PageNavigationSkeleton from './skeletons/PageNavigationSkeleton';
+import LeagueStatusBadge from './LeagueStatusBadge';
 
 interface LeagueDataProps {
   data: {
@@ -21,9 +21,10 @@ interface LeagueDataProps {
     draftPicks?: any[];
   };
   onRefreshData?: () => Promise<void>;
+  onOwnershipChanged?: () => void;
 }
 
-const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void> }> = React.memo(({ onRefreshData }) => {
+const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwnershipChanged?: () => void; }> = React.memo(({ onRefreshData, onOwnershipChanged }) => {
   const { league, rosters, userMap, rosterUserMap, players, transactions, draftPicks, stats } = useLeagueData();
   const [currentPage, setCurrentPage] = useState<'overview' | 'manager'>('overview');
 
@@ -48,15 +49,9 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void> }> = Rea
       
       <div className="space-y-8">
         <div className="slide-up">
-          <ErrorBoundary>
-            <LeagueOwnershipChecker 
-              leagueId={league.league_id} 
-              leagueName={league.name}
-            />
-          </ErrorBoundary>
-        </div>
-
-        <div className="slide-up">
+          <div className="flex justify-end mb-4">
+            <LeagueStatusBadge leagueId={league.league_id} onOwnershipChanged={onOwnershipChanged} />
+          </div>
           <ErrorBoundary fallback={<LeagueHeaderSkeleton />}>
             <Suspense fallback={<LeagueHeaderSkeleton />}>
               <LeagueHeader
@@ -121,10 +116,10 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void> }> = Rea
 
 LeagueDataContent.displayName = 'LeagueDataContent';
 
-const LeagueData: React.FC<LeagueDataProps> = React.memo(({ data, onRefreshData }) => {
+const LeagueData: React.FC<LeagueDataProps> = React.memo(({ data, onRefreshData, onOwnershipChanged }) => {
   return (
     <LeagueDataProvider data={data}>
-      <LeagueDataContent onRefreshData={onRefreshData} />
+      <LeagueDataContent onRefreshData={onRefreshData} onOwnershipChanged={onOwnershipChanged} />
     </LeagueDataProvider>
   );
 });

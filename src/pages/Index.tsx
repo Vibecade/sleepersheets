@@ -5,7 +5,6 @@ import Footer from '@/components/Footer';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import LeagueHeader from '@/components/home/LeagueHeader';
 import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
-import LeagueOwnershipChecker from '@/components/home/LeagueOwnershipChecker';
 import PageHead from '@/components/PageHead';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import OfflineIndicator from '@/components/OfflineIndicator';
@@ -393,16 +392,10 @@ const Index = React.memo(() => {
                 </div>
               </div>
 
-              {/* ONLY render the ownership checker - remove any other ownership banners */}
-              <LeagueOwnershipChecker
-                leagueId={leagueData.league.league_id}
-                leagueName={leagueData.league.name}
-                onOwnershipChanged={handleOwnershipChanged}
-              />
-              
               <LeagueData 
                 data={leagueData} 
                 onRefreshData={handleRefreshData}
+                onOwnershipChanged={handleOwnershipChanged}
               />
             </div>
           )}
