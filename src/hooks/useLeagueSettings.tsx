@@ -22,6 +22,7 @@ export const useLeagueSettings = (leagueId: string) => {
   // Load existing settings from database
   useEffect(() => {
     const loadSettings = async () => {
+      setLoading(true);
       try {
         console.log('Loading league settings for:', leagueId);
         const { data, error } = await supabase
@@ -69,6 +70,9 @@ export const useLeagueSettings = (leagueId: string) => {
 
     if (leagueId) {
       loadSettings();
+    } else {
+      setLoading(false);
+      setSettings(null);
     }
   }, [leagueId]);
 
@@ -119,3 +123,4 @@ export const useLeagueSettings = (leagueId: string) => {
     loading
   };
 };
+
