@@ -23,9 +23,6 @@ const Index = React.memo(() => {
     setUsername,
     leagueData,
     loading,
-    loadingProgress,
-    loadingMessage,
-    cacheMetadata,
     ownershipStatus,
     handleLeagueSubmit,
     handleUsernameSubmit,
@@ -72,9 +69,8 @@ const Index = React.memo(() => {
                     {loading && (
                       <div className="mt-6">
                         <ProgressIndicator
-                          message={loadingMessage || 'Loading...'}
-                          progress={loadingProgress}
-                          showPercentage={true}
+                          message={'Loading...'}
+                          showPercentage={false}
                         />
                       </div>
                     )}
@@ -99,9 +95,8 @@ const Index = React.memo(() => {
                   {loading && (
                     <div className="mt-6">
                       <ProgressIndicator
-                        message={loadingMessage || 'Loading...'}
-                        progress={loadingProgress}
-                        showPercentage={true}
+                        message={'Loading...'}
+                        showPercentage={false}
                       />
                     </div>
                   )}
@@ -114,7 +109,6 @@ const Index = React.memo(() => {
               onRefreshData={handleRefreshData}
               onBackToLeagues={handleBackToLeagues}
               onOwnershipChanged={handleOwnershipChanged}
-              cacheMetadata={cacheMetadata}
               ownershipStatus={ownershipStatus}
             />
           )}

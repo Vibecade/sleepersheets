@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { CacheIndicator } from '@/components/ui/cache-indicator';
@@ -7,14 +6,13 @@ import OwnershipTransferDialog from '@/components/league/OwnershipTransferDialog
 import LeagueData from '@/components/LeagueData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import type { CombinedLeagueData } from '@/hooks/useLeagueManager';
+import type { CombinedLeagueData } from '@/utils/leagueApi';
 
 interface LeagueViewProps {
   leagueData: CombinedLeagueData;
   onRefreshData: () => Promise<void>;
   onBackToLeagues: () => void;
   onOwnershipChanged: () => Promise<void>;
-  cacheMetadata: { isCached: boolean; lastFetched?: Date } | null;
   ownershipStatus: {
     isOwned: boolean;
     ownedByCurrentUser: boolean;
@@ -27,7 +25,6 @@ const LeagueView: React.FC<LeagueViewProps> = ({
   onRefreshData,
   onBackToLeagues,
   onOwnershipChanged,
-  cacheMetadata,
   ownershipStatus,
 }) => {
   const { user } = useAuth();
@@ -43,13 +40,6 @@ const LeagueView: React.FC<LeagueViewProps> = ({
           >
             ← Back to Leagues
           </Button>
-          
-          {cacheMetadata && (
-            <CacheIndicator 
-              isCached={cacheMetadata.isCached}
-              lastFetched={cacheMetadata.lastFetched}
-            />
-          )}
         </div>
         
         <div className="flex items-center space-x-2">
