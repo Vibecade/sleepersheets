@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
+import { usePlayerContracts } from '@/hooks/usePlayerContracts';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { useFAABCalculations } from '@/hooks/useFAABCalculations';
@@ -34,7 +34,8 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
   const leagueId = rosters[0]?.league_id || '';
   
   // Load data with error boundaries
-  const { salaries, getEffectiveSalary } = usePlayerSalaries(leagueId);
+  const { salaries, getEffectiveSalary, loading: salariesLoading } = usePlayerSalaries(leagueId);
+  const { contracts, loading: contractsLoading } = usePlayerContracts(leagueId);
   const { deadCapPlayers } = useDeadCapPlayers(leagueId);
   const { settings, updateSettings, loading: settingsLoading } = useLeagueSettings(leagueId);
   const { canModifyLeague } = useLeagueOwnership();
@@ -52,6 +53,15 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
 
   // Calculate FAAB for teams
   const { teamFAAB } = useFAABCalculations({ rosters, leagueId });
+
+  useEffect(() => {
+    if (!salariesLoading && Object.values(salaries).some(s => s !== null && s > 0)) {
+      setShowSalaryFeatures(true);
+    }
+    if (!contractsLoading && Object.values(contracts).some(c => c !== null && c > 0)) {
+      setShowContractCalculator(true);
+    }
+  }, [salaries, salariesLoading, contracts, contractsLoading]);
 
   // Update local values when settings change
   useEffect(() => {
