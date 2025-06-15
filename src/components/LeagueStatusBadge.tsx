@@ -74,15 +74,20 @@ const LeagueStatusBadge: React.FC<LeagueStatusBadgeProps> = ({ leagueId, onOwner
         badgeText = claiming ? "Claiming..." : "Claim League";
         tooltipText = "Click to claim this league and protect its settings.";
         variant = "secondary";
-        className = "cursor-pointer hover:bg-white/20";
-        onClick = handleClaim;
+        if (claiming) {
+            className = "cursor-not-allowed opacity-50";
+            onClick = undefined;
+        } else {
+            className = "cursor-pointer hover:bg-white/20";
+            onClick = handleClaim;
+        }
     }
 
     return (
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Badge variant={variant} onClick={onClick} disabled={claiming} className={className}>
+                    <Badge variant={variant} onClick={onClick} className={className}>
                         {badgeText}
                     </Badge>
                 </TooltipTrigger>
