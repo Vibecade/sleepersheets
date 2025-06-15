@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { useFAABCalculations } from '@/hooks/useFAABCalculations';
 import { useToast } from '@/hooks/use-toast';
-import { useSalaryCalculations } from '@/hooks/useSalaryCalculations';
+import { useOptimizedSalaryCalculations } from '@/hooks/useOptimizedSalaryCalculations';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 
 interface UseTeamRostersManagerProps {
@@ -31,12 +30,16 @@ export const useTeamRostersManager = ({ rosters }: UseTeamRostersManagerProps) =
 
   const canModify = canModifyLeague(leagueId);
 
-  const { teamSalaries, teamDeadCaps } = useSalaryCalculations({
+  const salaryCap = settings?.salary_cap || 200000;
+  const deadCapEnabled = settings?.dead_cap_enabled ?? true;
+  const faabCap = settings?.faab_cap || 100;
+  const reserveLimit = settings?.reserve_limit || 100;
+
+  const { teamSalaries, teamDeadCaps } = useOptimizedSalaryCalculations({
     rosters,
-    salaries,
     deadCapPlayers,
-    getEffectiveSalary
-  });
+    getEffectiveSalary,
+  }, salaryCap);
 
   const { teamFAAB } = useFAABCalculations({ rosters, leagueId });
 
@@ -179,11 +182,6 @@ export const useTeamRostersManager = ({ rosters }: UseTeamRostersManagerProps) =
       });
     }
   };
-
-  const salaryCap = settings?.salary_cap || 200000;
-  const deadCapEnabled = settings?.dead_cap_enabled ?? true;
-  const faabCap = settings?.faab_cap || 100;
-  const reserveLimit = settings?.reserve_limit || 100;
 
   return {
     leagueId,
