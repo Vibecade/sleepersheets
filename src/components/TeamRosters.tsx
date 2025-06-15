@@ -58,10 +58,7 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
     if (!salariesLoading && Object.values(salaries).some(s => s !== null && s > 0)) {
       setShowSalaryFeatures(true);
     }
-    if (!contractsLoading && Object.values(contracts).some(c => c !== null && c > 0)) {
-      setShowContractCalculator(true);
-    }
-  }, [salaries, salariesLoading, contracts, contractsLoading]);
+  }, [salaries, salariesLoading]);
 
   // Update local values when settings change
   useEffect(() => {
