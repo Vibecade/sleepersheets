@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useMemo } from 'react';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { useFAABCalculations } from '@/hooks/useFAABCalculations';
 import { useToast } from '@/hooks/use-toast';
-import { useOptimizedSalaryCalculations } from '@/hooks/useOptimizedSalaryCalculations';
+import { calculateOptimizedSalaries } from '@/utils/salaryCalculations';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 
 interface UseTeamRostersManagerProps {
@@ -35,11 +36,14 @@ export const useTeamRostersManager = ({ rosters }: UseTeamRostersManagerProps) =
   const faabCap = settings?.faab_cap || 100;
   const reserveLimit = settings?.reserve_limit || 100;
 
-  const { teamSalaries, teamDeadCaps } = useOptimizedSalaryCalculations({
-    rosters,
-    deadCapPlayers,
-    getEffectiveSalary,
-  }, salaryCap);
+  const { teamSalaries, teamDeadCaps } = useMemo(() => {
+    return calculateOptimizedSalaries({
+      rosters,
+      deadCapPlayers,
+      getEffectiveSalary,
+      salaryCap,
+    });
+  }, [rosters, deadCapPlayers, getEffectiveSalary, salaryCap]);
 
   const { teamFAAB } = useFAABCalculations({ rosters, leagueId });
 
