@@ -1,17 +1,20 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUrlParams } from '@/hooks/useUrlParams';
 import { useLeagueOwnershipStatus } from '@/hooks/useLeagueOwnershipStatus';
-import { fetchLeagueData } from '@/utils/leagueApi';
-import type { CombinedLeagueData } from '@/utils/leagueApi';
 import { useLeagueSubmissions } from './useLeagueSubmissions';
 import { useUrlLeagueLoader } from './useUrlLeagueLoader';
+import { useLeagueQuery } from './useLeagueQuery';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const useLeagueManager = () => {
-  const [leagueId, setLeagueId] = useState('');
+  const [activeLeagueId, setActiveLeagueId] = useState('');
+  const [leagueIdInput, setLeagueIdInput] = useState('');
   const [username, setUsername] = useState('');
-  const [leagueData, setLeagueData] = useState<CombinedLeagueData | null>(null);
-  const [loading, setLoading] = useState(false);
+  
+  const { data: leagueData, isLoading, error, refetch } = useLeagueQuery(activeLeagueId);
+
   const [ownershipStatus, setOwnershipStatus] = useState<{
     isOwned: boolean;
     ownedByCurrentUser: boolean;
@@ -21,16 +24,31 @@ export const useLeagueManager = () => {
   const { toast } = useToast();
   const { setLeagueInUrl, clearUrlParams } = useUrlParams();
   const { checkOwnershipStatus } = useLeagueOwnershipStatus();
+  const queryClient = useQueryClient();
 
-  useUrlLeagueLoader({ leagueData, setLeagueData, setLeagueId, setLoading });
-
-  const { handleLeagueSubmit, handleUsernameSubmit } = useLeagueSubmissions({
-    leagueId,
-    username,
-    setLeagueData,
-    setLeagueId,
-    setLoading,
+  useUrlLeagueLoader({
+    leagueIdFromState: activeLeagueId,
+    setLeagueId: (id) => {
+      setLeagueIdInput(id);
+      setActiveLeagueId(id);
+    },
   });
+
+  const { handleLeagueSubmit, handleUsernameSubmit, isUsernameLoading } = useLeagueSubmissions({
+    leagueIdFromInput: leagueIdInput,
+    usernameFromInput: username,
+    setLeagueId: setActiveLeagueId,
+  });
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  }, [error, toast]);
 
   useEffect(() => {
     if (leagueData?.league?.league_id) {
@@ -42,40 +60,36 @@ export const useLeagueManager = () => {
   }, [leagueData?.league?.league_id, checkOwnershipStatus, setLeagueInUrl]);
 
   const handleRefreshData = useCallback(async () => {
-    if (!leagueData?.league?.league_id) return;
+    if (!activeLeagueId) return;
     
-    setLoading(true);
     try {
-      const data = await fetchLeagueData(leagueData.league.league_id);
-      setLeagueData(data);
+      await refetch();
       toast({
         title: "Success!",
-        description: `Refreshed data for ${data.league.name}`
+        description: `Refreshed data for ${leagueData?.league.name}`
       });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to refresh league data.";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      // error is already handled by the useEffect
     }
-  }, [leagueData?.league?.league_id, toast]);
+  }, [activeLeagueId, refetch, toast, leagueData?.league.name]);
 
   const handleSelectLeague = useCallback((selectedLeagueId: string) => {
-    setLeagueId(selectedLeagueId);
+    setLeagueIdInput(selectedLeagueId);
+    setActiveLeagueId(selectedLeagueId);
     setLeagueInUrl(selectedLeagueId);
   }, [setLeagueInUrl]);
 
   const handleBackToLeagues = useCallback(() => {
-    setLeagueData(null);
-    setLeagueId('');
+    const previousLeagueId = activeLeagueId;
+    setActiveLeagueId('');
+    setLeagueIdInput('');
     setUsername('');
     setOwnershipStatus(null);
     clearUrlParams();
-  }, [clearUrlParams]);
+    if (previousLeagueId) {
+      queryClient.removeQueries({ queryKey: ['league', previousLeagueId] });
+    }
+  }, [clearUrlParams, queryClient, activeLeagueId]);
 
   const handleOwnershipChanged = useCallback(async () => {
     if (leagueData?.league?.league_id) {
@@ -85,12 +99,12 @@ export const useLeagueManager = () => {
   }, [leagueData?.league?.league_id, checkOwnershipStatus]);
   
   return {
-    leagueId,
-    setLeagueId,
+    leagueId: leagueIdInput,
+    setLeagueId: setLeagueIdInput,
     username,
     setUsername,
-    leagueData,
-    loading,
+    leagueData: leagueData || null,
+    loading: isLoading || isUsernameLoading,
     ownershipStatus,
     handleLeagueSubmit,
     handleUsernameSubmit,
