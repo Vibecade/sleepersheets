@@ -52,7 +52,7 @@ export const useLeagueSubmissions = ({
     setLeagueId(sanitizedLeagueId);
   }, [leagueIdFromInput, setLeagueId, toast]);
 
-  const { mutate, isLoading: isUsernameLoading } = useMutation({
+  const { mutateAsync, isPending: isUsernameLoading } = useMutation({
       mutationFn: fetchUserLeaguesAndGetFirstId,
       onSuccess: (foundLeagueId) => {
           setLeagueId(foundLeagueId);
@@ -70,8 +70,8 @@ export const useLeagueSubmissions = ({
       }
   });
 
-  const handleUsernameSubmit = () => {
-      mutate(usernameFromInput);
+  const handleUsernameSubmit = async () => {
+      await mutateAsync(usernameFromInput);
   };
 
   return { handleLeagueSubmit, handleUsernameSubmit, isUsernameLoading };
