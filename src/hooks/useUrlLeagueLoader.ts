@@ -51,7 +51,7 @@ export const useUrlLeagueLoader = ({
                 toast({
                     title: "Invalid League ID in URL",
                     description: "The league ID in the URL is not valid. Clearing it.",
-                    variant: "warning"
+                    variant: "default"
                 });
                 clearUrlParams();
             }
