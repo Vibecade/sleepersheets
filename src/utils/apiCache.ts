@@ -1,4 +1,3 @@
-
 interface CacheEntry<T> {
   data: T;
   timestamp: number;
@@ -8,6 +7,8 @@ interface CacheEntry<T> {
 class ApiCache {
   private cache = new Map<string, CacheEntry<any>>();
   private defaultTTL = 5 * 60 * 1000; // 5 minutes
+  private requestCounts = new Map<string, { count: number; resetTime: number }>();
+  private maxRequestsPerMinute = 10; // Reduced from unlimited
 
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
@@ -29,6 +30,25 @@ class ApiCache {
     });
   }
 
+  private checkRateLimit(url: string): boolean {
+    const now = Date.now();
+    const key = new URL(url).hostname;
+    const current = this.requestCounts.get(key);
+    
+    if (!current || now > current.resetTime) {
+      this.requestCounts.set(key, { count: 1, resetTime: now + 60000 });
+      return true;
+    }
+    
+    if (current.count >= this.maxRequestsPerMinute) {
+      console.warn(`Rate limit exceeded for ${key}. Please wait.`);
+      return false;
+    }
+    
+    current.count++;
+    return true;
+  }
+
   clear(): void {
     this.cache.clear();
   }
@@ -40,7 +60,7 @@ class ApiCache {
 
 export const apiCache = new ApiCache();
 
-// Helper function for cached fetch
+// Helper function for cached fetch with rate limiting
 export const cachedFetch = async <T>(
   url: string, 
   options?: RequestInit,
@@ -53,6 +73,11 @@ export const cachedFetch = async <T>(
   if (cached) {
     console.log(`Cache hit for: ${url}`);
     return cached;
+  }
+  
+  // Check rate limit before making request
+  if (!apiCache['checkRateLimit'](url)) {
+    throw new Error('Rate limit exceeded. Please wait before making more requests.');
   }
   
   console.log(`Cache miss for: ${url}`);

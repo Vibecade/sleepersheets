@@ -1,4 +1,3 @@
-
 import { cachedFetch } from '@/utils/apiCache';
 import { rateLimiter } from '@/utils/inputValidation';
 import type { SleeperLeague, SleeperUser, SleeperRoster, SleeperDraft, SleeperTransaction, SleeperPlayer } from '@/types/sleeper';
@@ -13,19 +12,36 @@ export interface CombinedLeagueData {
   draftPicks: { draft: SleeperDraft; picks: any[] }[];
 }
 
+// Cache for player data since it rarely changes
+let playersCache: Record<string, SleeperPlayer> | null = null;
+let playersCacheTimestamp = 0;
+const PLAYERS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
 export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedLeagueData> => {
   console.log('Fetching league data for ID:', targetLeagueId);
 
   const clientId = 'league_fetch';
-  if (!rateLimiter.isAllowed(clientId, 20, 60000)) { 
+  if (!rateLimiter.isAllowed(clientId, 5, 60000)) { // Reduced from 20 to 5 requests per minute
     throw new Error('Too many requests. Please wait a moment before trying again.');
   }
 
-  const [league, rosters, users, players] = await Promise.all([
-    cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}`, {}, 10 * 60 * 1000) as Promise<SleeperLeague>,
-    cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/rosters`, {}, 5 * 60 * 1000) as Promise<SleeperRoster[]>,
-    cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/users`, {}, 10 * 60 * 1000) as Promise<SleeperUser[]>,
-    cachedFetch('https://api.sleeper.app/v1/players/nfl', {}, 60 * 60 * 1000) as Promise<Record<string, SleeperPlayer>>
+  // Fetch league, rosters, and users in parallel
+  const [league, rosters, users] = await Promise.all([
+    cachedFetch<SleeperLeague>(
+      `https://api.sleeper.app/v1/league/${targetLeagueId}`, 
+      {}, 
+      10 * 60 * 1000 // 10 minutes cache
+    ),
+    cachedFetch<SleeperRoster[]>(
+      `https://api.sleeper.app/v1/league/${targetLeagueId}/rosters`, 
+      {}, 
+      5 * 60 * 1000 // 5 minutes cache
+    ),
+    cachedFetch<SleeperUser[]>(
+      `https://api.sleeper.app/v1/league/${targetLeagueId}/users`, 
+      {}, 
+      10 * 60 * 1000 // 10 minutes cache
+    )
   ]);
 
   console.log('League data retrieved:', { 
@@ -34,21 +50,58 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     league_id: league.league_id 
   });
 
-  const currentWeek = league.settings?.week || 1;
-  const [transactions, drafts] = await Promise.all([
-    cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/transactions/${currentWeek}`, {}, 2 * 60 * 1000) as Promise<SleeperTransaction[]>,
-    cachedFetch(`https://api.sleeper.app/v1/league/${targetLeagueId}/drafts`, {}, 10 * 60 * 1000) as Promise<SleeperDraft[]>
-  ]);
+  // Use cached players data if available and not expired
+  let players: Record<string, SleeperPlayer>;
+  if (playersCache && Date.now() - playersCacheTimestamp < PLAYERS_CACHE_TTL) {
+    console.log('Using cached players data');
+    players = playersCache;
+  } else {
+    console.log('Fetching fresh players data');
+    players = await cachedFetch<Record<string, SleeperPlayer>>(
+      'https://api.sleeper.app/v1/players/nfl', 
+      {}, 
+      24 * 60 * 60 * 1000 // 24 hours cache
+    );
+    playersCache = players;
+    playersCacheTimestamp = Date.now();
+  }
+
+  // Fetch transactions and drafts with rate limiting
+  await new Promise(resolve => setTimeout(resolve, 500)); // Add delay to avoid rate limiting
   
+  const currentWeek = league.settings?.week || 1;
+  const transactions = await cachedFetch<SleeperTransaction[]>(
+    `https://api.sleeper.app/v1/league/${targetLeagueId}/transactions/${currentWeek}`, 
+    {}, 
+    5 * 60 * 1000 // 5 minutes cache
+  );
+  
+  await new Promise(resolve => setTimeout(resolve, 500)); // Add delay to avoid rate limiting
+  
+  const drafts = await cachedFetch<SleeperDraft[]>(
+    `https://api.sleeper.app/v1/league/${targetLeagueId}/drafts`, 
+    {}, 
+    10 * 60 * 1000 // 10 minutes cache
+  );
+  
+  // Fetch draft picks with rate limiting
   const draftPicks = [];
   if (drafts.length > 0) {
-    const draftPickPromises = drafts.map(async (draft) => {
-      const picks = await cachedFetch(`https://api.sleeper.app/v1/draft/${draft.draft_id}/picks`, {}, 10 * 60 * 1000);
-      return { draft, picks };
-    });
+    // Only fetch picks for the most recent draft to reduce API calls
+    const mostRecentDraft = drafts[0];
+    await new Promise(resolve => setTimeout(resolve, 500)); // Add delay to avoid rate limiting
     
-    const results = await Promise.all(draftPickPromises);
-    draftPicks.push(...results.filter(Boolean));
+    try {
+      const picks = await cachedFetch(
+        `https://api.sleeper.app/v1/draft/${mostRecentDraft.draft_id}/picks`, 
+        {}, 
+        10 * 60 * 1000 // 10 minutes cache
+      );
+      draftPicks.push({ draft: mostRecentDraft, picks });
+    } catch (error) {
+      console.error(`Error fetching picks for draft ${mostRecentDraft.draft_id}:`, error);
+      draftPicks.push({ draft: mostRecentDraft, picks: [] });
+    }
   }
 
   return {

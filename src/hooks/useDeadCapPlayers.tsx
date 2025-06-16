@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -13,39 +12,66 @@ interface DeadCapPlayer {
   updated_at: string;
 }
 
+// Cache for dead cap players to prevent repeated calls
+const deadCapCache = new Map<string, { data: DeadCapPlayer[]; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export const useDeadCapPlayers = (leagueId: string) => {
   const [deadCapPlayers, setDeadCapPlayers] = useState<DeadCapPlayer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastLeagueId, setLastLeagueId] = useState<string>('');
   const { toast } = useToast();
 
   // Load existing dead cap players from database
-  useEffect(() => {
-    const loadDeadCapPlayers = async () => {
-      try {
-        console.log('Loading dead cap players for league:', leagueId);
-        const { data, error } = await supabase
-          .from('dead_cap_players')
-          .select('*')
-          .eq('league_id', leagueId);
-
-        if (error) {
-          console.error('Error loading dead cap players:', error);
-          return;
-        }
-
-        console.log('Loaded dead cap players:', data);
-        setDeadCapPlayers(data || []);
-      } catch (error) {
-        console.error('Error loading dead cap players:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (leagueId) {
-      loadDeadCapPlayers();
+  const loadDeadCapPlayers = useCallback(async (currentLeagueId: string) => {
+    if (!currentLeagueId || currentLeagueId === lastLeagueId) {
+      setLoading(false);
+      return;
     }
-  }, [leagueId]);
+
+    try {
+      console.log('Loading dead cap players for league:', currentLeagueId);
+      setLoading(true);
+      
+      // Check cache first
+      const cacheKey = currentLeagueId;
+      const cached = deadCapCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        console.log('Using cached dead cap players for:', currentLeagueId);
+        setDeadCapPlayers(cached.data);
+        setLastLeagueId(currentLeagueId);
+        setLoading(false);
+        return;
+      }
+      
+      const { data, error } = await supabase
+        .from('dead_cap_players')
+        .select('*')
+        .eq('league_id', currentLeagueId);
+
+      if (error) {
+        console.error('Error loading dead cap players:', error);
+        return;
+      }
+
+      console.log('Loaded dead cap players:', data);
+      setDeadCapPlayers(data || []);
+      setLastLeagueId(currentLeagueId);
+      
+      // Cache the result
+      deadCapCache.set(cacheKey, { data: data || [], timestamp: Date.now() });
+    } catch (error) {
+      console.error('Error loading dead cap players:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [lastLeagueId]);
+
+  useEffect(() => {
+    if (leagueId && leagueId !== lastLeagueId) {
+      loadDeadCapPlayers(leagueId);
+    }
+  }, [leagueId, loadDeadCapPlayers, lastLeagueId]);
 
   // Add dead cap player
   const addDeadCapPlayer = async (playerId: string, rosterId: number, salary: number | null) => {
@@ -73,6 +99,17 @@ export const useDeadCapPlayers = (leagueId: string) => {
       }
 
       setDeadCapPlayers(prev => [...prev, data]);
+      
+      // Update cache
+      const cacheKey = leagueId;
+      const cached = deadCapCache.get(cacheKey);
+      if (cached) {
+        deadCapCache.set(cacheKey, { 
+          data: [...cached.data, data], 
+          timestamp: Date.now() 
+        });
+      }
+      
       toast({
         title: "Success",
         description: "Dead cap player added successfully",
@@ -111,11 +148,19 @@ export const useDeadCapPlayers = (leagueId: string) => {
         return false;
       }
 
-      setDeadCapPlayers(prev => 
-        prev.map(player => 
-          player.id === id ? { ...player, salary, updated_at: new Date().toISOString() } : player
-        )
+      const updatedPlayers = deadCapPlayers.map(player => 
+        player.id === id ? { ...player, salary, updated_at: new Date().toISOString() } : player
       );
+      
+      setDeadCapPlayers(updatedPlayers);
+      
+      // Update cache
+      const cacheKey = leagueId;
+      deadCapCache.set(cacheKey, { 
+        data: updatedPlayers, 
+        timestamp: Date.now() 
+      });
+      
       toast({
         title: "Success",
         description: "Dead cap player updated successfully",
@@ -151,7 +196,16 @@ export const useDeadCapPlayers = (leagueId: string) => {
         return false;
       }
 
-      setDeadCapPlayers(prev => prev.filter(player => player.id !== id));
+      const filteredPlayers = deadCapPlayers.filter(player => player.id !== id);
+      setDeadCapPlayers(filteredPlayers);
+      
+      // Update cache
+      const cacheKey = leagueId;
+      deadCapCache.set(cacheKey, { 
+        data: filteredPlayers, 
+        timestamp: Date.now() 
+      });
+      
       toast({
         title: "Success",
         description: "Dead cap player removed successfully",

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -14,67 +13,93 @@ interface LeagueSettings {
   updated_at: string;
 }
 
+// Cache for league settings to prevent repeated calls
+const settingsCache = new Map<string, { data: LeagueSettings | null; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export const useLeagueSettings = (leagueId: string) => {
   const [settings, setSettings] = useState<LeagueSettings | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lastLeagueId, setLastLeagueId] = useState<string>('');
   const { toast } = useToast();
 
   // Load existing settings from database
-  useEffect(() => {
-    const loadSettings = async () => {
-      setLoading(true);
-      try {
-        console.log('Loading league settings for:', leagueId);
-        const { data, error } = await supabase
-          .from('league_settings')
-          .select('*')
-          .eq('league_id', leagueId)
-          .maybeSingle();
+  const loadSettings = useCallback(async (currentLeagueId: string) => {
+    if (!currentLeagueId || currentLeagueId === lastLeagueId) {
+      setLoading(false);
+      return;
+    }
 
-        if (error) {
-          console.error('Error loading league settings:', error);
-          return;
-        }
-
-        console.log('Loaded league settings:', data);
-        if (data) {
-          setSettings(data);
-        } else {
-          // Create default settings if none exist
-          const defaultSettings = {
-            league_id: leagueId,
-            salary_cap: 200000,
-            dead_cap_enabled: true,
-            faab_cap: 100,
-            reserve_limit: 100,
-          };
-          
-          const { data: newSettings, error: createError } = await supabase
-            .from('league_settings')
-            .insert(defaultSettings)
-            .select()
-            .single();
-
-          if (createError) {
-            console.error('Error creating default league settings:', createError);
-          } else {
-            setSettings(newSettings);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading league settings:', error);
-      } finally {
+    setLoading(true);
+    try {
+      console.log('Loading league settings for:', currentLeagueId);
+      
+      // Check cache first
+      const cacheKey = currentLeagueId;
+      const cached = settingsCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        console.log('Using cached league settings for:', currentLeagueId);
+        setSettings(cached.data);
+        setLastLeagueId(currentLeagueId);
         setLoading(false);
+        return;
       }
-    };
+      
+      const { data, error } = await supabase
+        .from('league_settings')
+        .select('*')
+        .eq('league_id', currentLeagueId)
+        .maybeSingle();
 
-    if (leagueId) {
-      loadSettings();
-    } else {
+      if (error) {
+        console.error('Error loading league settings:', error);
+        return;
+      }
+
+      console.log('Loaded league settings:', data);
+      if (data) {
+        setSettings(data);
+        settingsCache.set(cacheKey, { data, timestamp: Date.now() });
+      } else {
+        // Create default settings if none exist
+        const defaultSettings = {
+          league_id: currentLeagueId,
+          salary_cap: 200000,
+          dead_cap_enabled: true,
+          faab_cap: 100,
+          reserve_limit: 100,
+        };
+        
+        const { data: newSettings, error: createError } = await supabase
+          .from('league_settings')
+          .insert(defaultSettings)
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Error creating default league settings:', createError);
+        } else {
+          setSettings(newSettings);
+          settingsCache.set(cacheKey, { data: newSettings, timestamp: Date.now() });
+        }
+      }
+      
+      setLastLeagueId(currentLeagueId);
+    } catch (error) {
+      console.error('Error loading league settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [lastLeagueId]);
+
+  useEffect(() => {
+    if (leagueId && leagueId !== lastLeagueId) {
+      loadSettings(leagueId);
+    } else if (!leagueId) {
       setLoading(false);
       setSettings(null);
     }
-  }, [leagueId]);
+  }, [leagueId, loadSettings, lastLeagueId]);
 
   // Update settings in database - using useCallback to stabilize the function reference
   const updateSettings = useCallback(async (updates: Partial<Pick<LeagueSettings, 'salary_cap' | 'dead_cap_enabled' | 'faab_cap' | 'reserve_limit'>>) => {
@@ -101,6 +126,11 @@ export const useLeagueSettings = (leagueId: string) => {
       }
 
       setSettings(data);
+      
+      // Update cache
+      const cacheKey = leagueId;
+      settingsCache.set(cacheKey, { data, timestamp: Date.now() });
+      
       toast({
         title: "Success",
         description: "League settings saved successfully",
@@ -123,4 +153,3 @@ export const useLeagueSettings = (leagueId: string) => {
     loading
   };
 };
-

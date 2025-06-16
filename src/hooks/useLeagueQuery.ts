@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { fetchLeagueData, type CombinedLeagueData } from '@/utils/leagueApi';
 import { validateLeagueId, sanitizeInput } from '@/utils/inputValidation';
@@ -16,8 +15,11 @@ export const useLeagueQuery = (leagueId: string | null) => {
       return fetchLeagueData(sanitizedLeagueId);
     },
     enabled: !!sanitizedLeagueId && isValid,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 10, // 10 minutes - increased from 5
+    gcTime: 1000 * 60 * 30, // 30 minutes - increased from 10
     refetchOnWindowFocus: false,
+    refetchOnMount: false, // Prevent refetch on mount if data exists
+    refetchOnReconnect: false, // Prevent refetch on reconnect
     retry: 1,
   });
 };

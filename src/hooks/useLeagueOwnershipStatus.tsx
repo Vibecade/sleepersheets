@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,6 +12,10 @@ interface OwnershipStatus {
   };
 }
 
+// Cache for ownership status to prevent repeated calls
+const ownershipCache = new Map<string, { data: OwnershipStatus; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export const useLeagueOwnershipStatus = () => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
@@ -26,6 +29,14 @@ export const useLeagueOwnershipStatus = () => {
     }
 
     const sanitizedLeagueId = validation.sanitizedValue!;
+    const cacheKey = `${sanitizedLeagueId}-${user?.id || 'anonymous'}`;
+    
+    // Check cache first
+    const cached = ownershipCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      console.log('Using cached ownership status for:', sanitizedLeagueId);
+      return cached.data;
+    }
 
     setLoading(true);
     try {
@@ -41,20 +52,19 @@ export const useLeagueOwnershipStatus = () => {
         return { isOwned: false, ownedByCurrentUser: false };
       }
 
-      if (!data) {
-        return { isOwned: false, ownedByCurrentUser: false };
-      }
-
-      const ownedByCurrentUser = user ? data.user_id === user.id : false;
-
-      return {
+      const result: OwnershipStatus = data ? {
         isOwned: true,
-        ownedByCurrentUser,
+        ownedByCurrentUser: user ? data.user_id === user.id : false,
         ownerInfo: {
           id: data.user_id,
           claimed_at: data.claimed_at
         }
-      };
+      } : { isOwned: false, ownedByCurrentUser: false };
+
+      // Cache the result
+      ownershipCache.set(cacheKey, { data: result, timestamp: Date.now() });
+      
+      return result;
     } catch (error) {
       console.error('Error checking ownership status:', error);
       return { isOwned: false, ownedByCurrentUser: false };

@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,50 +15,59 @@ export const usePlayerSalaries = (leagueId: string) => {
   const [salaries, setSalaries] = useState<Record<string, number | null>>({});
   const [taxiSquadStatus, setTaxiSquadStatus] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
+  const [lastLeagueId, setLastLeagueId] = useState<string>('');
   const { toast } = useToast();
   const { user } = useAuth();
 
-  useEffect(() => {
-    const loadSalaries = async () => {
-      try {
-        console.log('Loading salaries for league:', leagueId);
-        const { data, error } = await supabase
-          .from('player_salaries')
-          .select('player_id, salary, taxi_squad')
-          .eq('league_id', leagueId);
-
-        logDataAccess(user?.id, 'player_salaries', 'read', !error);
-
-        if (error) {
-          console.error('Error loading salaries:', error);
-          return;
-        }
-
-        console.log('Loaded salary data:', data);
-        const salaryMap: Record<string, number | null> = {};
-        const taxiMap: Record<string, boolean> = {};
-        
-        if (data) {
-          data.forEach((item) => {
-            salaryMap[item.player_id] = item.salary;
-            taxiMap[item.player_id] = item.taxi_squad || false;
-          });
-        }
-        
-        setSalaries(salaryMap);
-        setTaxiSquadStatus(taxiMap);
-      } catch (error) {
-        console.error('Error loading salaries:', error);
-        logDataAccess(user?.id, 'player_salaries', 'read', false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (leagueId) {
-      loadSalaries();
+  const loadSalaries = useCallback(async (currentLeagueId: string) => {
+    if (!currentLeagueId || currentLeagueId === lastLeagueId) {
+      setLoading(false);
+      return;
     }
-  }, [leagueId, user?.id]);
+
+    try {
+      console.log('Loading salaries for league:', currentLeagueId);
+      setLoading(true);
+      
+      const { data, error } = await supabase
+        .from('player_salaries')
+        .select('player_id, salary, taxi_squad')
+        .eq('league_id', currentLeagueId);
+
+      logDataAccess(user?.id, 'player_salaries', 'read', !error);
+
+      if (error) {
+        console.error('Error loading salaries:', error);
+        return;
+      }
+
+      console.log('Loaded salary data:', data);
+      const salaryMap: Record<string, number | null> = {};
+      const taxiMap: Record<string, boolean> = {};
+      
+      if (data) {
+        data.forEach((item) => {
+          salaryMap[item.player_id] = item.salary;
+          taxiMap[item.player_id] = item.taxi_squad || false;
+        });
+      }
+      
+      setSalaries(salaryMap);
+      setTaxiSquadStatus(taxiMap);
+      setLastLeagueId(currentLeagueId);
+    } catch (error) {
+      console.error('Error loading salaries:', error);
+      logDataAccess(user?.id, 'player_salaries', 'read', false);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.id, lastLeagueId]);
+
+  useEffect(() => {
+    if (leagueId && leagueId !== lastLeagueId) {
+      loadSalaries(leagueId);
+    }
+  }, [leagueId, loadSalaries, lastLeagueId]);
 
   const updateSalary = async (playerId: string, salary: number | null) => {
     // Validate salary input
@@ -164,7 +172,7 @@ export const usePlayerSalaries = (leagueId: string) => {
     }
   };
 
-  const getEffectiveSalary = (playerId: string): number => {
+  const getEffectiveSalary = useCallback((playerId: string): number => {
     const baseSalary = salaries[playerId] || 0;
     const isTaxiSquad = taxiSquadStatus[playerId] || false;
     
@@ -173,7 +181,7 @@ export const usePlayerSalaries = (leagueId: string) => {
     }
     
     return baseSalary;
-  };
+  }, [salaries, taxiSquadStatus]);
 
   return {
     salaries,

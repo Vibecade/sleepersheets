@@ -1,5 +1,4 @@
-
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { usePlayerContracts } from './usePlayerContracts';
 import { usePlayerSalaries } from './usePlayerSalaries';
 import { useDeadCapPlayers } from './useDeadCapPlayers';
@@ -17,6 +16,8 @@ export const useFAABCalculations = ({ rosters, leagueId }: FAABCalculationsProps
   const { contracts } = usePlayerContracts(leagueId);
 
   const teamFAAB = useMemo(() => {
+    if (!rosters.length) return {};
+    
     console.log('Calculating FAAB for teams');
     const calculations: Record<number, number> = {};
     const salaryCap = settings?.salary_cap || 200000;
@@ -48,44 +49,40 @@ export const useFAABCalculations = ({ rosters, leagueId }: FAABCalculationsProps
     });
     
     return calculations;
-  }, [rosters, salaries, deadCapPlayers, settings?.salary_cap, settings?.faab_cap, getEffectiveSalary]);
+  }, [rosters, settings?.salary_cap, settings?.faab_cap, deadCapPlayers, getEffectiveSalary]);
 
-  const calculateDeadCap = useMemo(() => {
-    return (playerId: string, currentYear: number = new Date().getFullYear()) => {
-      const contractLength = contracts[playerId];
-      if (!contractLength || contractLength <= 0) return 0;
-      
-      const effectiveSalary = getEffectiveSalary(playerId);
-      if (effectiveSalary === 0) return 0;
-      
-      // Dead cap = 25% of effective salary for remaining years
-      // If dropped in last year, 25% applies this year only
-      const deadCapPercentage = 0.25;
-      const deadCapAmount = effectiveSalary * deadCapPercentage;
-      
-      return Math.max(1, Math.round(deadCapAmount));
-    };
+  const calculateDeadCap = useCallback((playerId: string, currentYear: number = new Date().getFullYear()) => {
+    const contractLength = contracts[playerId];
+    if (!contractLength || contractLength <= 0) return 0;
+    
+    const effectiveSalary = getEffectiveSalary(playerId);
+    if (effectiveSalary === 0) return 0;
+    
+    // Dead cap = 25% of effective salary for remaining years
+    // If dropped in last year, 25% applies this year only
+    const deadCapPercentage = 0.25;
+    const deadCapAmount = effectiveSalary * deadCapPercentage;
+    
+    return Math.max(1, Math.round(deadCapAmount));
   }, [contracts, getEffectiveSalary]);
 
-  const calculateTotalDeadCapForPlayer = useMemo(() => {
-    return (playerId: string, currentYear: number = new Date().getFullYear()) => {
-      const contractLength = contracts[playerId];
-      if (!contractLength || contractLength <= 0) return { currentYear: 0, nextYear: 0 };
-      
-      const effectiveSalary = getEffectiveSalary(playerId);
-      if (effectiveSalary === 0) return { currentYear: 0, nextYear: 0 };
-      
-      const deadCapPercentage = 0.25;
-      const deadCapAmount = Math.max(1, Math.round(effectiveSalary * deadCapPercentage));
-      
-      // If in last year of contract, only current year penalty
-      if (contractLength === 1) {
-        return { currentYear: deadCapAmount, nextYear: 0 };
-      }
-      
-      // Otherwise, penalty applies to current and next year
-      return { currentYear: deadCapAmount, nextYear: deadCapAmount };
-    };
+  const calculateTotalDeadCapForPlayer = useCallback((playerId: string, currentYear: number = new Date().getFullYear()) => {
+    const contractLength = contracts[playerId];
+    if (!contractLength || contractLength <= 0) return { currentYear: 0, nextYear: 0 };
+    
+    const effectiveSalary = getEffectiveSalary(playerId);
+    if (effectiveSalary === 0) return { currentYear: 0, nextYear: 0 };
+    
+    const deadCapPercentage = 0.25;
+    const deadCapAmount = Math.max(1, Math.round(effectiveSalary * deadCapPercentage));
+    
+    // If in last year of contract, only current year penalty
+    if (contractLength === 1) {
+      return { currentYear: deadCapAmount, nextYear: 0 };
+    }
+    
+    // Otherwise, penalty applies to current and next year
+    return { currentYear: deadCapAmount, nextYear: deadCapAmount };
   }, [contracts, getEffectiveSalary]);
 
   return {

@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 import { useLeagueSettings } from '@/hooks/useLeagueSettings';
@@ -25,7 +24,7 @@ export const useTeamRostersManager = ({ rosters }: UseTeamRostersManagerProps) =
   const leagueId = rosters[0]?.league_id || '';
   
   const { salaries, getEffectiveSalary, loading: salariesLoading } = usePlayerSalaries(leagueId);
-  const { deadCapPlayers } = useDeadCapPlayers(leagueId);
+  const { deadCapPlayers, loading: deadCapLoading } = useDeadCapPlayers(leagueId);
   const { settings, updateSettings, loading: settingsLoading } = useLeagueSettings(leagueId);
   const { canModifyLeague } = useLeagueOwnership();
 
@@ -36,23 +35,30 @@ export const useTeamRostersManager = ({ rosters }: UseTeamRostersManagerProps) =
   const faabCap = settings?.faab_cap || 100;
   const reserveLimit = settings?.reserve_limit || 100;
 
+  // Memoize salary calculations to prevent recalculation on every render
   const { teamSalaries, teamDeadCaps } = useMemo(() => {
+    if (!rosters.length || salariesLoading || deadCapLoading) {
+      return { teamSalaries: {}, teamDeadCaps: {} };
+    }
+    
     return calculateOptimizedSalaries({
       rosters,
       deadCapPlayers,
       getEffectiveSalary,
       salaryCap,
     });
-  }, [rosters, deadCapPlayers, getEffectiveSalary, salaryCap]);
+  }, [rosters, deadCapPlayers, getEffectiveSalary, salaryCap, salariesLoading, deadCapLoading]);
 
   const { teamFAAB } = useFAABCalculations({ rosters, leagueId });
 
+  // Only show salary features if there are actual salaries
   useEffect(() => {
     if (!salariesLoading && Object.values(salaries).some(s => s !== null && s > 0)) {
       setShowSalaryFeatures(true);
     }
   }, [salaries, salariesLoading]);
 
+  // Update local state when settings change
   useEffect(() => {
     if (settings?.salary_cap) {
       setLocalSalaryCap(settings.salary_cap.toString());
@@ -69,7 +75,7 @@ export const useTeamRostersManager = ({ rosters }: UseTeamRostersManagerProps) =
     }
   }, [settings]);
 
-  const handleSalaryCapSave = async () => {
+  const handleSalaryCapSave = useCallback(async () => {
     if (!canModify) {
       toast({
         title: "Access Denied",
@@ -113,9 +119,9 @@ export const useTeamRostersManager = ({ rosters }: UseTeamRostersManagerProps) =
         variant: "destructive"
       });
     }
-  };
+  }, [canModify, localSalaryCap, toast, updateSettings]);
 
-  const handleFaabSettingsSave = async () => {
+  const handleFaabSettingsSave = useCallback(async () => {
     if (!canModify) {
       toast({
         title: "Access Denied",
@@ -163,9 +169,9 @@ export const useTeamRostersManager = ({ rosters }: UseTeamRostersManagerProps) =
         variant: "destructive"
       });
     }
-  };
+  }, [canModify, localFaabCap, localReserveLimit, toast, updateSettings]);
 
-  const handleDeadCapEnabledChange = async (enabled: boolean) => {
+  const handleDeadCapEnabledChange = useCallback(async (enabled: boolean) => {
     if (!canModify) {
       toast({
         title: "Access Denied",
@@ -185,7 +191,7 @@ export const useTeamRostersManager = ({ rosters }: UseTeamRostersManagerProps) =
         variant: "destructive"
       });
     }
-  };
+  }, [canModify, toast, updateSettings]);
 
   return {
     leagueId,

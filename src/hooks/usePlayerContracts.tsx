@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -8,43 +7,71 @@ interface PlayerContract {
   contract_length: number | null;
 }
 
+// Cache for contracts to prevent repeated calls
+const contractsCache = new Map<string, { data: Record<string, number | null>; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export const usePlayerContracts = (leagueId: string) => {
   const [contracts, setContracts] = useState<Record<string, number | null>>({});
   const [loading, setLoading] = useState(true);
+  const [lastLeagueId, setLastLeagueId] = useState<string>('');
   const { toast } = useToast();
 
   // Load existing contracts from database
-  useEffect(() => {
-    const loadContracts = async () => {
-      try {
-        console.log('Loading contracts for league:', leagueId);
-        const { data, error } = await supabase
-          .from('player_contracts')
-          .select('player_id, contract_length')
-          .eq('league_id', leagueId);
-
-        if (error) {
-          console.error('Error loading contracts:', error);
-          return;
-        }
-
-        console.log('Loaded contract data:', data);
-        const contractMap: Record<string, number | null> = {};
-        data?.forEach((item) => {
-          contractMap[item.player_id] = item.contract_length;
-        });
-        setContracts(contractMap);
-      } catch (error) {
-        console.error('Error loading contracts:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (leagueId) {
-      loadContracts();
+  const loadContracts = useCallback(async (currentLeagueId: string) => {
+    if (!currentLeagueId || currentLeagueId === lastLeagueId) {
+      setLoading(false);
+      return;
     }
-  }, [leagueId]);
+
+    try {
+      console.log('Loading contracts for league:', currentLeagueId);
+      setLoading(true);
+      
+      // Check cache first
+      const cacheKey = currentLeagueId;
+      const cached = contractsCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        console.log('Using cached contracts for:', currentLeagueId);
+        setContracts(cached.data);
+        setLastLeagueId(currentLeagueId);
+        setLoading(false);
+        return;
+      }
+      
+      const { data, error } = await supabase
+        .from('player_contracts')
+        .select('player_id, contract_length')
+        .eq('league_id', currentLeagueId);
+
+      if (error) {
+        console.error('Error loading contracts:', error);
+        return;
+      }
+
+      console.log('Loaded contract data:', data);
+      const contractMap: Record<string, number | null> = {};
+      data?.forEach((item) => {
+        contractMap[item.player_id] = item.contract_length;
+      });
+      
+      setContracts(contractMap);
+      setLastLeagueId(currentLeagueId);
+      
+      // Cache the result
+      contractsCache.set(cacheKey, { data: contractMap, timestamp: Date.now() });
+    } catch (error) {
+      console.error('Error loading contracts:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [lastLeagueId]);
+
+  useEffect(() => {
+    if (leagueId && leagueId !== lastLeagueId) {
+      loadContracts(leagueId);
+    }
+  }, [leagueId, loadContracts, lastLeagueId]);
 
   // Update contract in database
   const updateContract = async (playerId: string, contractLength: number | null) => {
@@ -71,7 +98,13 @@ export const usePlayerContracts = (leagueId: string) => {
         return false;
       }
 
-      setContracts(prev => ({ ...prev, [playerId]: contractLength }));
+      const updatedContracts = { ...contracts, [playerId]: contractLength };
+      setContracts(updatedContracts);
+      
+      // Update cache
+      const cacheKey = leagueId;
+      contractsCache.set(cacheKey, { data: updatedContracts, timestamp: Date.now() });
+      
       toast({
         title: "Success",
         description: "Contract length saved successfully",
