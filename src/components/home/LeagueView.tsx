@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { CacheIndicator } from '@/components/ui/cache-indicator';
 import LeagueShareDialog from '@/components/league/LeagueShareDialog';
@@ -29,6 +29,17 @@ const LeagueView: React.FC<LeagueViewProps> = ({
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Store league ID in session storage to prevent excessive API calls on page refresh
+  useEffect(() => {
+    if (leagueData?.league?.league_id) {
+      try {
+        sessionStorage.setItem('lastLeagueId', leagueData.league.league_id);
+      } catch (e) {
+        console.error('Failed to store league ID in session storage:', e);
+      }
+    }
+  }, [leagueData?.league?.league_id]);
 
   return (
     <div>

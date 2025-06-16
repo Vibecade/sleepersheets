@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { memo } from 'react';
 import ScrollableModal from './ScrollableModal';
 import ContractDeadCapCalculator from './ContractDeadCapCalculator';
 
@@ -10,13 +9,15 @@ interface MinimizableContractCalculatorProps {
   players: Record<string, any>;
 }
 
-const MinimizableContractCalculator: React.FC<MinimizableContractCalculatorProps> = ({
+const MinimizableContractCalculator: React.FC<MinimizableContractCalculatorProps> = memo(({
   open,
   onOpenChange,
   leagueId,
   players
 }) => {
-  console.log('MinimizableContractCalculator render - open:', open);
+  if (!open) {
+    return null; // Don't render anything if not open
+  }
   
   return (
     <ScrollableModal
@@ -31,6 +32,8 @@ const MinimizableContractCalculator: React.FC<MinimizableContractCalculatorProps
       />
     </ScrollableModal>
   );
-};
+});
+
+MinimizableContractCalculator.displayName = 'MinimizableContractCalculator';
 
 export default MinimizableContractCalculator;

@@ -14,7 +14,7 @@ interface OwnershipStatus {
 
 // Cache for ownership status to prevent repeated calls
 const ownershipCache = new Map<string, { data: OwnershipStatus; timestamp: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes - increased from 5 minutes
 
 export const useLeagueOwnershipStatus = () => {
   const [loading, setLoading] = useState(false);
@@ -29,7 +29,7 @@ export const useLeagueOwnershipStatus = () => {
     }
 
     const sanitizedLeagueId = validation.sanitizedValue!;
-    const cacheKey = `${sanitizedLeagueId}-${user?.id || 'anonymous'}`;
+    const cacheKey = `ownership-${sanitizedLeagueId}-${user?.id || 'anonymous'}`;
     
     // Check cache first
     const cached = ownershipCache.get(cacheKey);

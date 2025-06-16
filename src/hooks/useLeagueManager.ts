@@ -1,5 +1,4 @@
-
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUrlParams } from '@/hooks/useUrlParams';
 import { useLeagueOwnershipStatus } from '@/hooks/useLeagueOwnershipStatus';
@@ -50,14 +49,29 @@ export const useLeagueManager = () => {
     }
   }, [error, toast]);
 
+  // Memoize the ownership check to prevent unnecessary calls
+  const checkAndSetOwnership = useMemo(() => {
+    return async (leagueId: string) => {
+      if (!leagueId) return;
+      const status = await checkOwnershipStatus(leagueId);
+      setOwnershipStatus(status);
+    };
+  }, [checkOwnershipStatus]);
+
+  // Only check ownership when league ID changes
   useEffect(() => {
     if (leagueData?.league?.league_id) {
-      checkOwnershipStatus(leagueData.league.league_id).then(setOwnershipStatus);
-      setLeagueInUrl(leagueData.league.league_id);
+      checkAndSetOwnership(leagueData.league.league_id);
+      
+      // Only update URL if it's different to prevent navigation spam
+      const currentLeagueInUrl = new URLSearchParams(window.location.search).get('league');
+      if (currentLeagueInUrl !== leagueData.league.league_id) {
+        setLeagueInUrl(leagueData.league.league_id);
+      }
     } else {
       setOwnershipStatus(null);
     }
-  }, [leagueData?.league?.league_id, checkOwnershipStatus, setLeagueInUrl]);
+  }, [leagueData?.league?.league_id, checkAndSetOwnership, setLeagueInUrl]);
 
   const handleRefreshData = useCallback(async () => {
     if (!activeLeagueId) return;
@@ -76,7 +90,12 @@ export const useLeagueManager = () => {
   const handleSelectLeague = useCallback((selectedLeagueId: string) => {
     setLeagueIdInput(selectedLeagueId);
     setActiveLeagueId(selectedLeagueId);
-    setLeagueInUrl(selectedLeagueId);
+    
+    // Only update URL if it's different to prevent navigation spam
+    const currentLeagueInUrl = new URLSearchParams(window.location.search).get('league');
+    if (currentLeagueInUrl !== selectedLeagueId) {
+      setLeagueInUrl(selectedLeagueId);
+    }
   }, [setLeagueInUrl]);
 
   const handleBackToLeagues = useCallback(() => {

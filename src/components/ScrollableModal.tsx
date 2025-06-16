@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Minimize2, Maximize2, X } from 'lucide-react';
@@ -14,7 +13,7 @@ interface ScrollableModalProps {
   maxHeight?: string;
 }
 
-const ScrollableModal: React.FC<ScrollableModalProps> = ({
+const ScrollableModal: React.FC<ScrollableModalProps> = memo(({
   open,
   onOpenChange,
   title,
@@ -23,8 +22,6 @@ const ScrollableModal: React.FC<ScrollableModalProps> = ({
   maxHeight = "80vh"
 }) => {
   const [isMinimized, setIsMinimized] = useState(false);
-
-  console.log('ScrollableModal render - isMinimized:', isMinimized, 'open:', open);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -48,7 +45,6 @@ const ScrollableModal: React.FC<ScrollableModalProps> = ({
               size="sm"
               onClick={(e) => {
                 e.preventDefault();
-                console.log('Minimize button clicked, current state:', isMinimized);
                 setIsMinimized(!isMinimized);
               }}
               className="h-8 w-8 p-0 text-white hover:text-gray-300 hover:bg-white/10 transition-colors"
@@ -84,6 +80,8 @@ const ScrollableModal: React.FC<ScrollableModalProps> = ({
       </DialogContent>
     </Dialog>
   );
-};
+});
+
+ScrollableModal.displayName = 'ScrollableModal';
 
 export default ScrollableModal;

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -13,6 +12,10 @@ interface LeagueOwnership {
   is_active: boolean;
 }
 
+// Cache for owned leagues to prevent repeated calls
+const ownedLeaguesCache = new Map<string, { data: LeagueOwnership[]; timestamp: number }>();
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
 export const useLeagueOwnership = () => {
   const [ownedLeagues, setOwnedLeagues] = useState<LeagueOwnership[]>([]);
   const [loading, setLoading] = useState(false);
@@ -25,7 +28,17 @@ export const useLeagueOwnership = () => {
       return;
     }
 
+    // Check cache first
+    const cacheKey = `owned-leagues-${user.id}`;
+    const cached = ownedLeaguesCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      console.log('Using cached owned leagues data');
+      setOwnedLeagues(cached.data);
+      return;
+    }
+
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('league_ownership')
         .select('*')
@@ -38,8 +51,13 @@ export const useLeagueOwnership = () => {
       }
 
       setOwnedLeagues(data || []);
+      
+      // Cache the result
+      ownedLeaguesCache.set(cacheKey, { data: data || [], timestamp: Date.now() });
     } catch (error) {
       console.error('Error loading owned leagues:', error);
+    } finally {
+      setLoading(false);
     }
   }, [user?.id]);
 
@@ -111,6 +129,12 @@ export const useLeagueOwnership = () => {
 
       // Reload owned leagues after successful claim
       await loadOwnedLeagues();
+      
+      // Clear ownership cache for this league
+      const cacheKey = `ownership-${sanitizedLeagueId}-${user.id}`;
+      if (ownedLeaguesCache.has(cacheKey)) {
+        ownedLeaguesCache.delete(cacheKey);
+      }
 
       toast({
         title: "Success!",

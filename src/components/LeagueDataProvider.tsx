@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useMemo, ReactNode } from 'react';
 
 interface LeagueDataContextType {
@@ -44,6 +43,7 @@ export const LeagueDataProvider: React.FC<LeagueDataProviderProps> = ({ data, ch
     draftPicks = [] 
   } = data;
 
+  // Memoize all derived data to prevent recalculations
   const contextValue = useMemo(() => {
     // Create user map
     const userMap: Record<string, any> = {};

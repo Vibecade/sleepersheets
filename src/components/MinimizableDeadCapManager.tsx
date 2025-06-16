@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { memo } from 'react';
 import ScrollableModal from './ScrollableModal';
 import DeadCapManager from './DeadCapManager';
 
@@ -12,7 +11,7 @@ interface MinimizableDeadCapManagerProps {
   players: Record<string, any>;
 }
 
-const MinimizableDeadCapManager: React.FC<MinimizableDeadCapManagerProps> = ({
+const MinimizableDeadCapManager: React.FC<MinimizableDeadCapManagerProps> = memo(({
   open,
   onOpenChange,
   leagueId,
@@ -20,7 +19,9 @@ const MinimizableDeadCapManager: React.FC<MinimizableDeadCapManagerProps> = ({
   userMap,
   players
 }) => {
-  console.log('MinimizableDeadCapManager render - open:', open);
+  if (!open) {
+    return null; // Don't render anything if not open
+  }
   
   return (
     <ScrollableModal
@@ -37,6 +38,8 @@ const MinimizableDeadCapManager: React.FC<MinimizableDeadCapManagerProps> = ({
       />
     </ScrollableModal>
   );
-};
+});
+
+MinimizableDeadCapManager.displayName = 'MinimizableDeadCapManager';
 
 export default MinimizableDeadCapManager;

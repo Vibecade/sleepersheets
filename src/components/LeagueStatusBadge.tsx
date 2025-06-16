@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLeagueOwnershipStatus } from '@/hooks/useLeagueOwnershipStatus';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
@@ -18,23 +17,41 @@ interface LeagueStatusBadgeProps {
   onOwnershipChanged?: () => void;
 }
 
+// Cache for ownership status to prevent repeated checks
+const statusCache = new Map<string, OwnershipStatus>();
+
 const LeagueStatusBadge: React.FC<LeagueStatusBadgeProps> = ({ leagueId, onOwnershipChanged }) => {
     const { user } = useAuth();
     const { toast } = useToast();
     const { checkOwnershipStatus, loading: checkingStatus } = useLeagueOwnershipStatus();
     const { claimLeague, loading: claiming } = useLeagueOwnership();
     const [status, setStatus] = useState<OwnershipStatus | null>(null);
+    const [lastCheckedLeagueId, setLastCheckedLeagueId] = useState<string>('');
 
     const fetchStatus = useCallback(async () => {
-        if (leagueId) {
-            const newStatus = await checkOwnershipStatus(leagueId);
-            setStatus(newStatus);
+        if (!leagueId || leagueId === lastCheckedLeagueId) return;
+        
+        // Check cache first
+        if (statusCache.has(leagueId)) {
+            console.log('Using cached badge status for:', leagueId);
+            setStatus(statusCache.get(leagueId)!);
+            setLastCheckedLeagueId(leagueId);
+            return;
         }
-    }, [leagueId, checkOwnershipStatus]);
+        
+        const newStatus = await checkOwnershipStatus(leagueId);
+        setStatus(newStatus);
+        setLastCheckedLeagueId(leagueId);
+        
+        // Cache the result
+        statusCache.set(leagueId, newStatus);
+    }, [leagueId, checkOwnershipStatus, lastCheckedLeagueId]);
 
     useEffect(() => {
-        fetchStatus();
-    }, [fetchStatus]);
+        if (leagueId && leagueId !== lastCheckedLeagueId) {
+            fetchStatus();
+        }
+    }, [leagueId, fetchStatus, lastCheckedLeagueId]);
 
     const handleClaim = async () => {
         if (!user) {
@@ -47,6 +64,8 @@ const LeagueStatusBadge: React.FC<LeagueStatusBadgeProps> = ({ leagueId, onOwner
         }
         const result = await claimLeague(leagueId);
         if (result.success) {
+            // Update cache
+            statusCache.set(leagueId, { isOwned: true, ownedByCurrentUser: true });
             onOwnershipChanged?.();
         }
         await fetchStatus();

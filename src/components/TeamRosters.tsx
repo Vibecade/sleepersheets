@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { memo } from 'react';
 import { Card } from '@/components/ui/card';
 import { useTeamRostersManager } from '@/hooks/useTeamRostersManager';
 import MinimizableDeadCapManager from '@/components/MinimizableDeadCapManager';
@@ -14,7 +13,7 @@ interface TeamRostersProps {
   players?: Record<string, any>;
 }
 
-const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {} }) => {
+const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, players = {} }) => {
   const {
     leagueId,
     showSalaryFeatures,
@@ -89,24 +88,30 @@ const TeamRosters: React.FC<TeamRostersProps> = ({ rosters, userMap, players = {
           />
         </Card>
 
-        <MinimizableDeadCapManager
-          open={showDeadCapManager && deadCapEnabled}
-          onOpenChange={setShowDeadCapManager}
-          leagueId={leagueId}
-          rosters={rosters}
-          userMap={userMap}
-          players={players}
-        />
+        {showDeadCapManager && deadCapEnabled && (
+          <MinimizableDeadCapManager
+            open={showDeadCapManager && deadCapEnabled}
+            onOpenChange={setShowDeadCapManager}
+            leagueId={leagueId}
+            rosters={rosters}
+            userMap={userMap}
+            players={players}
+          />
+        )}
 
-        <MinimizableContractCalculator
-          open={showContractCalculator}
-          onOpenChange={setShowContractCalculator}
-          leagueId={leagueId}
-          players={players}
-        />
+        {showContractCalculator && (
+          <MinimizableContractCalculator
+            open={showContractCalculator}
+            onOpenChange={setShowContractCalculator}
+            leagueId={leagueId}
+            players={players}
+          />
+        )}
       </div>
     </ErrorBoundary>
   );
-};
+});
+
+TeamRosters.displayName = 'TeamRosters';
 
 export default TeamRosters;

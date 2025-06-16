@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { memo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -23,7 +22,8 @@ interface DataDashboardProps {
   draftPicks: any[];
 }
 
-const DataDashboard: React.FC<DataDashboardProps> = ({
+// Memoize the entire component to prevent unnecessary re-renders
+const DataDashboard: React.FC<DataDashboardProps> = memo(({
   league,
   rosters,
   userMap,
@@ -43,123 +43,132 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
   const { contracts, updateContract, loading: contractsLoading } = usePlayerContracts(league.league_id);
 
   // Prepare roster data with duplicate removal
-  const rosterData = [];
-  const playerRosterMap = new Map(); // Track players to avoid duplicates
-  
-  rosters.forEach((roster) => {
-    const user = userMap[roster.owner_id];
-    const fantasyTeam = getTeamName(user);
+  const rosterData = React.useMemo(() => {
+    const data = [];
+    const playerRosterMap = new Map(); // Track players to avoid duplicates
+    
+    rosters.forEach((roster) => {
+      const user = userMap[roster.owner_id];
+      const fantasyTeam = getTeamName(user);
 
-    // Priority order: Active > Reserve > Taxi Squad
-    const playerCategories = [
-      { players: roster.players || [], status: 'Active' },
-      { players: roster.reserve || [], status: 'Reserve' },
-      { players: roster.taxi || [], status: 'Taxi Squad' }
-    ];
+      // Priority order: Active > Reserve > Taxi Squad
+      const playerCategories = [
+        { players: roster.players || [], status: 'Active' },
+        { players: roster.reserve || [], status: 'Reserve' },
+        { players: roster.taxi || [], status: 'Taxi Squad' }
+      ];
 
-    playerCategories.forEach(({ players: playerList, status }) => {
-      playerList.forEach((playerId: string) => {
-        // Only add player if not already added (first occurrence wins by priority)
-        if (!playerRosterMap.has(playerId)) {
+      playerCategories.forEach(({ players: playerList, status }) => {
+        playerList.forEach((playerId: string) => {
+          // Only add player if not already added (first occurrence wins by priority)
+          if (!playerRosterMap.has(playerId)) {
+            const player = players[playerId];
+            if (player) {
+              const playerData = {
+                playerId,
+                playerName: formatPlayerName(player),
+                nflTeam: player.team || 'FA',
+                position: player.position || 'Unknown',
+                fantasyTeam,
+                rosterStatus: status
+              };
+              data.push(playerData);
+              playerRosterMap.set(playerId, playerData);
+            }
+          }
+        });
+      });
+    });
+    
+    return data;
+  }, [rosters, userMap, players]);
+
+  // Prepare transaction data
+  const transactionData = React.useMemo(() => {
+    const data = [];
+    
+    transactions.forEach((transaction) => {
+      const week = transaction.leg || transaction.week || 'N/A';
+
+      // Process drops
+      if (transaction.drops) {
+        Object.entries(transaction.drops as Record<string, string>).forEach(([playerId, rosterId]) => {
           const player = players[playerId];
+          const user = rosterUserMap[rosterId];
+          const fantasyTeam = getTeamName(user);
+          
           if (player) {
-            const playerData = {
+            data.push({
               playerId,
+              week,
+              fantasyTeam,
               playerName: formatPlayerName(player),
               nflTeam: player.team || 'FA',
               position: player.position || 'Unknown',
-              fantasyTeam,
-              rosterStatus: status
-            };
-            rosterData.push(playerData);
-            playerRosterMap.set(playerId, playerData);
+              action: 'Drop'
+            });
           }
-        }
-      });
+        });
+      }
+
+      // Process adds
+      if (transaction.adds) {
+        Object.entries(transaction.adds as Record<string, string>).forEach(([playerId, rosterId]) => {
+          const player = players[playerId];
+          const user = rosterUserMap[rosterId];
+          const fantasyTeam = getTeamName(user);
+          
+          if (player) {
+            data.push({
+              playerId,
+              week,
+              fantasyTeam,
+              playerName: formatPlayerName(player),
+              nflTeam: player.team || 'FA',
+              position: player.position || 'Unknown',
+              action: 'Add'
+            });
+          }
+        });
+      }
     });
-  });
-
-  // Prepare transaction data
-  const transactionData = [];
-  transactions.forEach((transaction) => {
-    const week = transaction.leg || transaction.week || 'N/A';
-
-    // Process drops
-    if (transaction.drops) {
-      Object.entries(transaction.drops as Record<string, string>).forEach(([playerId, rosterId]) => {
-        const player = players[playerId];
-        const user = rosterUserMap[rosterId];
-        const fantasyTeam = getTeamName(user);
-        
-        if (player) {
-          transactionData.push({
-            playerId,
-            week,
-            fantasyTeam,
-            playerName: formatPlayerName(player),
-            nflTeam: player.team || 'FA',
-            position: player.position || 'Unknown',
-            action: 'Drop'
-          });
-        }
-      });
-    }
-
-    // Process adds
-    if (transaction.adds) {
-      Object.entries(transaction.adds as Record<string, string>).forEach(([playerId, rosterId]) => {
-        const player = players[playerId];
-        const user = rosterUserMap[rosterId];
-        const fantasyTeam = getTeamName(user);
-        
-        if (player) {
-          transactionData.push({
-            playerId,
-            week,
-            fantasyTeam,
-            playerName: formatPlayerName(player),
-            nflTeam: player.team || 'FA',
-            position: player.position || 'Unknown',
-            action: 'Add'
-          });
-        }
-      });
-    }
-  });
+    
+    return data;
+  }, [transactions, players, rosterUserMap]);
 
   // Prepare draft data
-  const draftData = [];
-  draftPicks.forEach(({ draft, picks }) => {
-    picks.forEach((pick: any) => {
-      const player = players[pick.player_id];
-      const user = rosterUserMap[pick.roster_id];
-      const fantasyTeam = getTeamName(user);
-      
-      draftData.push({
-        playerId: pick.player_id,
-        round: pick.round || 'N/A',
-        pick: pick.pick_no || 'N/A',
-        fantasyTeam,
-        playerName: player ? formatPlayerName(player) : 'Unknown Player',
-        nflTeam: player?.team || 'FA',
-        position: player?.position || 'Unknown',
-        isKeeper: pick.is_keeper ? 'Yes' : 'No'
+  const draftData = React.useMemo(() => {
+    const data = [];
+    
+    draftPicks.forEach(({ draft, picks }) => {
+      picks.forEach((pick: any) => {
+        const player = players[pick.player_id];
+        const user = rosterUserMap[pick.roster_id];
+        const fantasyTeam = getTeamName(user);
+        
+        data.push({
+          playerId: pick.player_id,
+          round: pick.round || 'N/A',
+          pick: pick.pick_no || 'N/A',
+          fantasyTeam,
+          playerName: player ? formatPlayerName(player) : 'Unknown Player',
+          nflTeam: player?.team || 'FA',
+          position: player?.position || 'Unknown',
+          isKeeper: pick.is_keeper ? 'Yes' : 'No'
+        });
       });
     });
-  });
-
-  console.log('Current salaries in DataDashboard:', salaries);
-  console.log('Current contracts in DataDashboard:', contracts);
-  console.log('Salaries loading status:', salariesLoading);
-  console.log('Contracts loading status:', contractsLoading);
+    
+    return data;
+  }, [draftPicks, players, rosterUserMap]);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2">
           <Eye className="w-5 h-5" />
           <span>Data Dashboard</span>
-        </CardTitle>
+        </div>
         <CardDescription>
           Preview all your league data in clean, organized tables before exporting. Click on salary values and contract lengths to edit them. Toggle taxi squad status to apply 25% rookie salary discount.
         </CardDescription>
@@ -451,6 +460,8 @@ const DataDashboard: React.FC<DataDashboardProps> = ({
       </CardContent>
     </Card>
   );
-};
+});
+
+DataDashboard.displayName = 'DataDashboard';
 
 export default DataDashboard;

@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { memo } from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings } from 'lucide-react';
 import TeamRosters from './TeamRosters';
@@ -17,7 +16,8 @@ interface FantasyManagerProps {
   draftPicks: any[];
 }
 
-const FantasyManager: React.FC<FantasyManagerProps> = ({
+// Memoize the entire component to prevent unnecessary re-renders
+const FantasyManager: React.FC<FantasyManagerProps> = memo(({
   rosters,
   userMap,
   rosterUserMap,
@@ -73,6 +73,8 @@ const FantasyManager: React.FC<FantasyManagerProps> = ({
       />
     </div>
   );
-};
+});
+
+FantasyManager.displayName = 'FantasyManager';
 
 export default FantasyManager;
