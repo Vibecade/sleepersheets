@@ -4,6 +4,7 @@ import { Settings } from 'lucide-react';
 import TeamRosters from './TeamRosters';
 import TradeSimulator from './TradeSimulator';
 import DataDashboard from './DataDashboard';
+import PlayerSearch from './PlayerSearch';
 import ProTierUpgrade from './ProTierUpgrade';
 
 interface FantasyManagerProps {
@@ -45,6 +46,14 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
 
       {/* Pro Tier Upgrade - Hidden by default */}
       <ProTierUpgrade hidden={true} />
+
+     {/* Player Search */}
+     <PlayerSearch
+       leagueId={league.league_id}
+       players={players}
+       rosters={rosters}
+       userMap={userMap}
+     />
 
       {/* Team Rosters with all advanced features */}
       <TeamRosters

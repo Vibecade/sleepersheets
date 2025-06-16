@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Users, ArrowUpDown, FileText, Eye } from 'lucide-react';
 import { formatPlayerName } from '@/utils/csvExport';
 import { getTeamName } from '@/utils/leagueDataUtils';
@@ -32,6 +33,10 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
   transactions,
   draftPicks
 }) => {
+  const [rosterFilter, setRosterFilter] = useState('');
+  const [transactionFilter, setTransactionFilter] = useState('');
+  const [draftFilter, setDraftFilter] = useState('');
+
   const { 
     salaries, 
     taxiSquadStatus, 
@@ -162,6 +167,48 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
     return data;
   }, [draftPicks, players, rosterUserMap]);
 
+  // Filter roster data based on search term
+  const filteredRosterData = React.useMemo(() => {
+    if (!rosterFilter) return rosterData;
+    
+    const lowerFilter = rosterFilter.toLowerCase();
+    return rosterData.filter(row => 
+      row.playerName.toLowerCase().includes(lowerFilter) ||
+      row.position.toLowerCase().includes(lowerFilter) ||
+      row.nflTeam.toLowerCase().includes(lowerFilter) ||
+      row.fantasyTeam.toLowerCase().includes(lowerFilter)
+    );
+  }, [rosterData, rosterFilter]);
+
+  // Filter transaction data based on search term
+  const filteredTransactionData = React.useMemo(() => {
+    if (!transactionFilter) return transactionData;
+    
+    const lowerFilter = transactionFilter.toLowerCase();
+    return transactionData.filter(row => 
+      row.playerName.toLowerCase().includes(lowerFilter) ||
+      row.position.toLowerCase().includes(lowerFilter) ||
+      row.nflTeam.toLowerCase().includes(lowerFilter) ||
+      row.fantasyTeam.toLowerCase().includes(lowerFilter) ||
+      row.action.toLowerCase().includes(lowerFilter)
+    );
+  }, [transactionData, transactionFilter]);
+
+  // Filter draft data based on search term
+  const filteredDraftData = React.useMemo(() => {
+    if (!draftFilter) return draftData;
+    
+    const lowerFilter = draftFilter.toLowerCase();
+    return draftData.filter(row => 
+      row.playerName.toLowerCase().includes(lowerFilter) ||
+      row.position.toLowerCase().includes(lowerFilter) ||
+      row.nflTeam.toLowerCase().includes(lowerFilter) ||
+      row.fantasyTeam.toLowerCase().includes(lowerFilter) ||
+      (row.round.toString().includes(lowerFilter)) ||
+      (row.pick.toString().includes(lowerFilter))
+    );
+  }, [draftData, draftFilter]);
+
   return (
     <Card>
       <CardHeader>
@@ -178,19 +225,27 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
           <TabsList className="grid w-full grid-cols-3 glass">
             <TabsTrigger value="rosters" className="flex items-center space-x-2">
               <Users className="w-4 h-4" />
-              <span>Rosters ({rosterData.length})</span>
+             <span>Rosters ({filteredRosterData.length}/{rosterData.length})</span>
             </TabsTrigger>
             <TabsTrigger value="transactions" className="flex items-center space-x-2">
               <ArrowUpDown className="w-4 h-4" />
-              <span>Transactions ({transactionData.length})</span>
+             <span>Transactions ({filteredTransactionData.length}/{transactionData.length})</span>
             </TabsTrigger>
             <TabsTrigger value="draft" className="flex items-center space-x-2">
               <FileText className="w-4 h-4" />
-              <span>Draft ({draftData.length})</span>
+             <span>Draft ({filteredDraftData.length}/{draftData.length})</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="rosters" className="mt-6">
+           <div className="mb-4">
+             <Input
+               placeholder="Search players, positions, teams..."
+               value={rosterFilter}
+               onChange={(e) => setRosterFilter(e.target.value)}
+               className="bg-white/10 border-white/20 text-white"
+             />
+           </div>
             <div className="glass rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
@@ -207,7 +262,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rosterData.map((row, index) => (
+                 {filteredRosterData.map((row, index) => (
                     <TableRow key={index} className="border-white/10 hover:bg-white/5">
                       <TableCell className="text-white font-medium">{row.playerName}</TableCell>
                       <TableCell className="text-gray-300">{row.nflTeam}</TableCell>
@@ -278,6 +333,14 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
           </TabsContent>
 
           <TabsContent value="transactions" className="mt-6">
+           <div className="mb-4">
+             <Input
+               placeholder="Search transactions by player, team, or action..."
+               value={transactionFilter}
+               onChange={(e) => setTransactionFilter(e.target.value)}
+               className="bg-white/10 border-white/20 text-white"
+             />
+           </div>
             <div className="glass rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
@@ -295,7 +358,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {transactionData.map((row, index) => (
+                 {filteredTransactionData.map((row, index) => (
                     <TableRow key={index} className="border-white/10 hover:bg-white/5">
                       <TableCell className="text-white font-medium">{row.week}</TableCell>
                       <TableCell className="text-white">{row.fantasyTeam}</TableCell>
@@ -367,6 +430,14 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
           </TabsContent>
 
           <TabsContent value="draft" className="mt-6">
+           <div className="mb-4">
+             <Input
+               placeholder="Search draft by player, position, round, or pick..."
+               value={draftFilter}
+               onChange={(e) => setDraftFilter(e.target.value)}
+               className="bg-white/10 border-white/20 text-white"
+             />
+           </div>
             <div className="glass rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
@@ -385,7 +456,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {draftData.map((row, index) => (
+                 {filteredDraftData.map((row, index) => (
                     <TableRow key={index} className="border-white/10 hover:bg-white/5">
                       <TableCell className="text-white font-medium">{row.round}</TableCell>
                       <TableCell className="text-white font-medium">{row.pick}</TableCell>
