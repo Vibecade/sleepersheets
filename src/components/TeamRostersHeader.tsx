@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Users, DollarSign, Skull, Calculator, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import SalarySettings from '@/components/SalarySettings';
 import FAABSettings from '@/components/FAABSettings';
+import { useAchievements } from '@/hooks/useAchievements';
 
 interface TeamRostersHeaderProps {
   showSalaryFeatures: boolean;
@@ -60,6 +60,23 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
   canModifyLeague
 }) => {
   const { user } = useAuth();
+  const { trackPerfectCapManagement } = useAchievements(leagueId);
+  
+  // Check if all teams are under the salary cap
+  React.useEffect(() => {
+    if (showSalaryFeatures && rosters && rosters.length > 0) {
+      const allTeamsUnderCap = rosters.every(roster => {
+        const teamSalary = teamSalaries[roster.roster_id] || 0;
+        const teamDeadCap = deadCapEnabled ? (teamDeadCaps[roster.roster_id] || 0) : 0;
+        const totalSalary = teamSalary + teamDeadCap;
+        return totalSalary <= salaryCap;
+      });
+      
+      if (allTeamsUnderCap) {
+        trackPerfectCapManagement(true);
+      }
+    }
+  }, [showSalaryFeatures, rosters, teamSalaries, teamDeadCaps, deadCapEnabled, salaryCap, trackPerfectCapManagement]);
 
   return (
     <CardHeader className="pb-3 sm:pb-4">

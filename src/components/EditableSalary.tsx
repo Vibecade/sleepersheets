@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
+import { useAchievements } from '@/hooks/useAchievements';
 
 interface EditableSalaryProps {
   playerId: string;
@@ -19,6 +20,7 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
 }) => {
   const { user } = useAuth();
   const { canModifyLeague } = useLeagueOwnership();
+  const { trackSalaryUpdate } = useAchievements(leagueId);
   const [value, setValue] = useState<string>('');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -46,6 +48,8 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
       const success = await onSalaryUpdate(playerId, numericValue);
       if (success) {
         setIsEditing(false);
+        // Track salary update for achievements
+        trackSalaryUpdate();
       }
     } catch (error) {
       console.error('Error saving salary:', error);

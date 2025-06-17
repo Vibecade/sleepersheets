@@ -5,6 +5,7 @@ import { Users, Settings, Trophy, Download, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileNav } from '@/components/ui/mobile-nav';
+import { useAchievements } from '@/hooks/useAchievements';
 
 interface PageNavigationProps {
   currentPage: 'overview' | 'manager';
@@ -19,10 +20,14 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
 }) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const leagueId = leagueData?.league?.league_id;
+  const { trackLeagueConnection } = useAchievements(leagueId || '');
 
   const handleExportClick = () => {
     if (leagueData) {
       navigate('/export', { state: { leagueData } });
+      // Track data export for achievements
+      trackLeagueConnection(1);
     } else {
       navigate('/export');
     }
