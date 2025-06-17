@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Trophy, Calendar, BarChart3 } from 'lucide-react';
+import { Users, Trophy, Calendar, Activity } from 'lucide-react';
 import { useMatchups } from '@/hooks/useMatchups';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import FunStatistics from './FunStatistics';
@@ -16,13 +15,15 @@ interface TeamOverviewProps {
   rosters: any[];
   userMap: Record<string, any>;
   players: Record<string, any>;
+  transactions?: any[];
 }
 
 const TeamOverview: React.FC<TeamOverviewProps> = ({
   league,
   rosters,
   userMap,
-  players
+  players,
+  transactions = []
 }) => {
   const [selectedWeek, setSelectedWeek] = useState(league?.settings?.leg || 1);
   const { matchups, loading: matchupsLoading } = useMatchups(league?.league_id, selectedWeek);
@@ -85,7 +86,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
             <span>Standings</span>
           </TabsTrigger>
           <TabsTrigger value="statistics" className="flex items-center space-x-2">
-            <BarChart3 className="w-4 h-4" />
+            <Activity className="w-4 h-4" />
             <span>Fun Stats</span>
           </TabsTrigger>
         </TabsList>
@@ -232,6 +233,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
             rosters={rosters}
             userMap={userMap}
             players={players}
+            transactions={transactions}
           />
         </TabsContent>
       </Tabs>

@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { TrendingUp, TrendingDown, Fire, Snowflake, Trophy, Target, Zap, Star } from 'lucide-react';
+import { TrendingUp, TrendingDown, Star, Users, Trophy, Activity, Zap, Calendar } from 'lucide-react';
 
 interface FunStatisticsProps {
   league: any;
@@ -106,9 +106,9 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
 
   const getActivityIcon = (level: string) => {
     switch (level) {
-      case 'high': return <Fire className="w-4 h-4" />;
+      case 'high': return <Star className="w-4 h-4" />;
       case 'medium': return <Zap className="w-4 h-4" />;
-      default: return <Snowflake className="w-4 h-4" />;
+      default: return <Activity className="w-4 h-4" />;
     }
   };
 
@@ -158,7 +158,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
       <Card>
         <CardHeader>
           <div className="flex items-center space-x-2">
-            <Fire className="w-5 h-5 text-red-500" />
+            <Star className="w-5 h-5 text-red-500" />
             <CardTitle className="text-lg">Hot & Cold Streaks</CardTitle>
           </div>
         </CardHeader>
@@ -166,7 +166,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <h4 className="text-sm font-semibold text-green-400 mb-2 flex items-center space-x-1">
-                <Fire className="w-4 h-4" />
+                <Star className="w-4 h-4" />
                 <span>Hot Teams</span>
               </h4>
               <div className="space-y-2">
@@ -182,7 +182,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
             </div>
             <div>
               <h4 className="text-sm font-semibold text-blue-400 mb-2 flex items-center space-x-1">
-                <Snowflake className="w-4 h-4" />
+                <Activity className="w-4 h-4" />
                 <span>Cold Teams</span>
               </h4>
               <div className="space-y-2">
@@ -204,7 +204,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
       <Card>
         <CardHeader>
           <div className="flex items-center space-x-2">
-            <Target className="w-5 h-5 text-purple-500" />
+            <Users className="w-5 h-5 text-purple-500" />
             <CardTitle className="text-lg">Manager Activity</CardTitle>
           </div>
         </CardHeader>
@@ -239,7 +239,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
       <Card>
         <CardHeader>
           <div className="flex items-center space-x-2">
-            <Star className="w-5 h-5 text-blue-500" />
+            <Calendar className="w-5 h-5 text-blue-500" />
             <CardTitle className="text-lg">League Insights</CardTitle>
           </div>
         </CardHeader>
