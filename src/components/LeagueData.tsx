@@ -86,6 +86,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
                   rosters={rosters}
                   userMap={userMap}
                   players={players}
+                  transactions={transactions}
                 />
               </Suspense>
             </ErrorBoundary>
