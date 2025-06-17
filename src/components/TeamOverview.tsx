@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -5,9 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Trophy, Calendar, Activity } from 'lucide-react';
+import { Users, Trophy, Calendar, Activity, RefreshCw } from 'lucide-react';
 import { useMatchups } from '@/hooks/useMatchups';
 import { getTeamName } from '@/utils/leagueDataUtils';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { SkeletonCard } from '@/components/ui/skeleton-card';
 import FunStatistics from './FunStatistics';
 
 interface TeamOverviewProps {
@@ -55,19 +58,19 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   return (
     <div className="space-y-6">
       {/* League Header */}
-      <Card>
+      <Card className="transition-all duration-300 hover:shadow-lg">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Trophy className="w-6 h-6 text-yellow-500" />
               <div>
-                <CardTitle className="text-2xl">{league?.name}</CardTitle>
-                <p className="text-gray-400">
+                <CardTitle className="text-2xl transition-colors duration-200">{league?.name}</CardTitle>
+                <p className="text-gray-400 transition-colors duration-200">
                   {league?.season} Season • Week {league?.settings?.leg || 1}
                 </p>
               </div>
             </div>
-            <Badge variant="outline" className="text-green-400 border-green-400">
+            <Badge variant="outline" className="text-green-400 border-green-400 transition-all duration-200 hover:bg-green-400/10">
               {rosters.length} Teams
             </Badge>
           </div>
@@ -76,51 +79,58 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="matchups" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="matchups" className="flex items-center space-x-2">
+        <TabsList className="grid w-full grid-cols-3 transition-all duration-200">
+          <TabsTrigger value="matchups" className="flex items-center space-x-2 transition-all duration-200 hover:bg-accent/80">
             <Calendar className="w-4 h-4" />
             <span>Matchups</span>
           </TabsTrigger>
-          <TabsTrigger value="standings" className="flex items-center space-x-2">
+          <TabsTrigger value="standings" className="flex items-center space-x-2 transition-all duration-200 hover:bg-accent/80">
             <Users className="w-4 h-4" />
             <span>Standings</span>
           </TabsTrigger>
-          <TabsTrigger value="statistics" className="flex items-center space-x-2">
+          <TabsTrigger value="statistics" className="flex items-center space-x-2 transition-all duration-200 hover:bg-accent/80">
             <Activity className="w-4 h-4" />
             <span>Fun Stats</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="matchups">
-          <Card>
+        <TabsContent value="matchups" className="animate-fade-in">
+          <Card className="transition-all duration-300 hover:shadow-lg">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-5 h-5" />
                   <CardTitle className="text-lg">Matchups</CardTitle>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Label htmlFor="week-select" className="text-sm">Week:</Label>
-                  <Input
-                    id="week-select"
-                    type="number"
-                    min="1"
-                    max="18"
-                    value={selectedWeek}
-                    onChange={(e) => setSelectedWeek(Number(e.target.value))}
-                    className="w-20 bg-gray-800/50 border-gray-600"
-                  />
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="week-select" className="text-sm">Week:</Label>
+                    <Input
+                      id="week-select"
+                      type="number"
+                      min="1"
+                      max="18"
+                      value={selectedWeek}
+                      onChange={(e) => setSelectedWeek(Number(e.target.value))}
+                      className="w-20 bg-gray-800/50 border-gray-600 transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  {matchupsLoading && <LoadingSpinner size="sm" />}
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               {matchupsLoading ? (
-                <div className="text-center py-8 text-gray-400">
-                  Loading matchups...
+                <div className="space-y-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <SkeletonCard key={i} showHeader={false} lines={2} />
+                  ))}
                 </div>
               ) : Object.keys(groupedMatchups).length === 0 ? (
-                <div className="text-center py-8 text-gray-400">
-                  No matchups found for week {selectedWeek}
+                <div className="text-center py-12 text-gray-400 transition-opacity duration-300">
+                  <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg">No matchups found for week {selectedWeek}</p>
+                  <p className="text-sm">Try selecting a different week</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -133,34 +143,35 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                     const roster2 = getRosterById(team2.roster_id);
                     const user1 = userMap[roster1?.owner_id];
                     const user2 = userMap[roster2?.owner_id];
+                    const team1Winning = team1.points > team2.points;
 
                     return (
-                      <div key={matchupId} className="bg-white/5 rounded-lg p-4 border border-white/10 card-hover">
+                      <div key={matchupId} className="bg-white/5 rounded-lg p-6 border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]">
                         <div className="flex items-center justify-between">
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-yellow-500">
+                          <div className={`flex-1 text-center transition-all duration-300 ${team1Winning ? 'transform scale-105' : ''}`}>
+                            <div className={`font-medium ${team1Winning ? 'text-green-400' : 'text-yellow-500'} transition-colors duration-300`}>
                               {getTeamName(user1)}
                             </div>
-                            <div className="text-sm text-gray-400">
+                            <div className="text-sm text-gray-400 mb-2 transition-colors duration-200">
                               {getTeamRecord(roster1)}
                             </div>
-                            <div className="text-lg font-bold text-yellow-400">
+                            <div className={`text-2xl font-bold transition-all duration-300 ${team1Winning ? 'text-green-300 scale-110' : 'text-yellow-400'}`}>
                               {formatPoints(team1.points)}
                             </div>
                           </div>
                           
-                          <div className="px-4">
-                            <div className="text-center text-gray-400 text-sm">VS</div>
+                          <div className="px-6">
+                            <div className="text-center text-gray-400 text-sm font-medium">VS</div>
                           </div>
                           
-                          <div className="flex-1 text-center">
-                            <div className="font-medium text-yellow-500">
+                          <div className={`flex-1 text-center transition-all duration-300 ${!team1Winning ? 'transform scale-105' : ''}`}>
+                            <div className={`font-medium ${!team1Winning ? 'text-green-400' : 'text-yellow-500'} transition-colors duration-300`}>
                               {getTeamName(user2)}
                             </div>
-                            <div className="text-sm text-gray-400">
+                            <div className="text-sm text-gray-400 mb-2 transition-colors duration-200">
                               {getTeamRecord(roster2)}
                             </div>
-                            <div className="text-lg font-bold text-yellow-400">
+                            <div className={`text-2xl font-bold transition-all duration-300 ${!team1Winning ? 'text-green-300 scale-110' : 'text-yellow-400'}`}>
                               {formatPoints(team2.points)}
                             </div>
                           </div>
@@ -174,8 +185,8 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
           </Card>
         </TabsContent>
 
-        <TabsContent value="standings">
-          <Card>
+        <TabsContent value="standings" className="animate-fade-in">
+          <Card className="transition-all duration-300 hover:shadow-lg">
             <CardHeader>
               <div className="flex items-center space-x-2">
                 <Users className="w-5 h-5" />
@@ -203,19 +214,23 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                     const record = getTeamRecord(roster);
                     
                     return (
-                      <div key={roster.roster_id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10 card-hover">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">
+                      <div key={roster.roster_id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]">
+                        <div className="flex items-center space-x-4">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
+                            index === 0 ? 'bg-yellow-500 text-black scale-110' : 
+                            index === 1 ? 'bg-gray-400 text-black scale-105' :
+                            index === 2 ? 'bg-amber-600 text-white scale-105' : 'bg-gray-700 text-white'
+                          }`}>
                             {index + 1}
                           </div>
                           <div>
-                            <div className="font-medium text-white">{teamName}</div>
-                            <div className="text-sm text-gray-400">{user?.display_name}</div>
+                            <div className="font-medium text-white transition-colors duration-200">{teamName}</div>
+                            <div className="text-sm text-gray-400 transition-colors duration-200">{user?.display_name}</div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-medium text-white">{record}</div>
-                          <div className="text-sm text-gray-400">
+                          <div className="font-medium text-white transition-colors duration-200">{record}</div>
+                          <div className="text-sm text-gray-400 transition-colors duration-200">
                             {roster.settings?.fpts?.toFixed(1) || '0.0'} pts
                           </div>
                         </div>
@@ -227,7 +242,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
           </Card>
         </TabsContent>
 
-        <TabsContent value="statistics">
+        <TabsContent value="statistics" className="animate-fade-in">
           <FunStatistics
             league={league}
             rosters={rosters}
