@@ -2,9 +2,9 @@ import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
 import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
+import { motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
-import { motion } from "framer-motion"
 
 const ToastProvider = ToastPrimitives.Provider
 
@@ -52,9 +52,9 @@ const Toast = React.forwardRef<
       transition={{ duration: 0.3 }}
     >
       <ToastPrimitives.Root
-      ref={ref}
-      className={cn(toastVariants({ variant }), className)}
-      {...props}
+        ref={ref}
+        className={cn(toastVariants({ variant }), className)}
+        {...props}
       />
     </motion.div>
   )
@@ -133,6 +133,3 @@ export {
   ToastClose,
   ToastAction,
 }
-
-
-export { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport }

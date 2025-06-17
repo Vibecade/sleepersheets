@@ -60,24 +60,7 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
   canModifyLeague
 }) => {
   const { user } = useAuth();
-  const { trackPerfectCapManagement } = useAchievements(leagueId);
   
-  // Check if all teams are under the salary cap
-  React.useEffect(() => {
-    if (showSalaryFeatures && rosters && rosters.length > 0) {
-      const allTeamsUnderCap = rosters.every(roster => {
-        const teamSalary = teamSalaries[roster.roster_id] || 0;
-        const teamDeadCap = deadCapEnabled ? (teamDeadCaps[roster.roster_id] || 0) : 0;
-        const totalSalary = teamSalary + teamDeadCap;
-        return totalSalary <= salaryCap;
-      });
-      
-      if (allTeamsUnderCap) {
-        trackPerfectCapManagement(true);
-      }
-    }
-  }, [showSalaryFeatures, rosters, teamSalaries, teamDeadCaps, deadCapEnabled, salaryCap, trackPerfectCapManagement]);
-
   return (
     <CardHeader className="pb-3 sm:pb-4">
       <div className="flex flex-col space-y-3 sm:space-y-2">
