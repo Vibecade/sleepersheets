@@ -1,11 +1,9 @@
-
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Check, X, Edit } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
-import { useAchievements } from '@/hooks/useAchievements';
 
 interface EditableContractLengthProps {
   playerId: string;
@@ -22,7 +20,6 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
 }) => {
   const { user } = useAuth();
   const { canModifyLeague } = useLeagueOwnership();
-  const { trackContractUpdate } = useAchievements(leagueId);
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(currentLength?.toString() || '');
   const [isLoading, setIsLoading] = useState(false);
@@ -38,8 +35,6 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
     
     if (success) {
       setIsEditing(false);
-      // Track contract update for achievements
-      trackContractUpdate();
     }
     setIsLoading(false);
   };

@@ -6,7 +6,6 @@ import TradeSimulator from './TradeSimulator';
 import DataDashboard from './DataDashboard';
 import PlayerSearch from './PlayerSearch';
 import ProTierUpgrade from './ProTierUpgrade';
-import GamificationDashboard from './gamification/GamificationDashboard';
 
 interface FantasyManagerProps {
   rosters: any[];
@@ -47,9 +46,6 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
 
       {/* Pro Tier Upgrade - Hidden by default */}
       <ProTierUpgrade hidden={true} />
-
-     {/* Gamification Dashboard */}
-     <GamificationDashboard leagueId={league.league_id} />
 
      {/* Player Search */}
      <PlayerSearch
