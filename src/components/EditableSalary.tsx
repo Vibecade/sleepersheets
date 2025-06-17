@@ -43,6 +43,8 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
       setIsSaving(false);
       return;
     }
+    )
+    )
 
     try {
       const success = await onSalaryUpdate(playerId, numericValue);
@@ -58,6 +60,7 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
       setIsSaving(false);
     }
   }, [playerId, value, currentSalary, onSalaryUpdate, canModify]);
+  )
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -111,3 +114,5 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
 };
 
 export default React.memo(EditableSalary);
+
+}
