@@ -12,7 +12,6 @@ import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { formatPlayerName } from '@/utils/csvExport';
-import { useAchievements } from '@/hooks/useAchievements';
 
 interface TradeSimulatorProps {
   league: any;
@@ -42,7 +41,6 @@ const TradeSimulator: React.FC<TradeSimulatorProps> = ({
   
   const { salaries } = usePlayerSalaries(league.league_id);
   const { settings } = useLeagueSettings(league.league_id);
-  const { trackTradeSimulation } = useAchievements(league.league_id);
 
   // Use the league's saved salary cap, fallback to 200000 if not set
   const salaryCap = settings?.salary_cap || 200000;
@@ -113,18 +111,10 @@ const TradeSimulator: React.FC<TradeSimulatorProps> = ({
     if (team === 1) {
       if (!team1Players.some(p => p.playerId === selectedPlayer.playerId)) {
         setTeam1Players([...team1Players, selectedPlayer]);
-        // Only track when adding the first player to avoid counting multiple times
-        if (team1Players.length === 0 && team2Players.length > 0) {
-          trackTradeSimulation();
-        }
       }
     } else {
       if (!team2Players.some(p => p.playerId === selectedPlayer.playerId)) {
         setTeam2Players([...team2Players, selectedPlayer]);
-        // Only track when adding the first player to avoid counting multiple times
-        if (team2Players.length === 0 && team1Players.length > 0) {
-          trackTradeSimulation();
-        }
       }
     }
     setSearchTerm('');

@@ -3,7 +3,6 @@ import { useLeagueOwnershipStatus } from '@/hooks/useLeagueOwnershipStatus';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { useAchievements } from '@/hooks/useAchievements';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -26,7 +25,6 @@ const LeagueStatusBadge: React.FC<LeagueStatusBadgeProps> = ({ leagueId, onOwner
     const { toast } = useToast();
     const { checkOwnershipStatus, loading: checkingStatus } = useLeagueOwnershipStatus();
     const { claimLeague, loading: claiming } = useLeagueOwnership();
-    const { trackLeagueOwnership } = useAchievements(leagueId);
     const [status, setStatus] = useState<OwnershipStatus | null>(null);
     const [lastCheckedLeagueId, setLastCheckedLeagueId] = useState<string>('');
 
@@ -69,8 +67,6 @@ const LeagueStatusBadge: React.FC<LeagueStatusBadgeProps> = ({ leagueId, onOwner
             // Update cache
             statusCache.set(leagueId, { isOwned: true, ownedByCurrentUser: true });
             onOwnershipChanged?.();
-            // Track league ownership for achievements
-            trackLeagueOwnership();
         }
         await fetchStatus();
     };

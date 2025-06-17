@@ -6,7 +6,6 @@ import { downloadCSV, formatPlayerName, addExportOptionsToCSV, ExportOptionsData
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
-import { useAchievements } from '@/hooks/useAchievements';
 import ExportButton from './ExportButton';
 
 interface RosterExportProps {
@@ -27,7 +26,6 @@ const RosterExport: React.FC<RosterExportProps> = ({
   const { toast } = useToast();
   const { salaries } = usePlayerSalaries(league.league_id);
   const { deadCapPlayers } = useDeadCapPlayers(league.league_id);
-  const { trackDataExport } = useAchievements(league.league_id);
 
   const exportRostersToCSV = () => {
     console.log('Preparing clean Rosters CSV export with dead cap data...');
@@ -109,9 +107,6 @@ const RosterExport: React.FC<RosterExportProps> = ({
 
     console.log('Final CSV data with dead cap and options:', finalCsvData);
     downloadCSV(finalCsvData, `${league.name}_rosters_export.csv`);
-    
-    // Track data export for achievements
-    trackDataExport();
     
     toast({
       title: "Clean Rosters Export Complete!",

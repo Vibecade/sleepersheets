@@ -4,7 +4,6 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { motion } from "framer-motion"
 
 const ToastProvider = ToastPrimitives.Provider
 
@@ -45,18 +44,11 @@ const Toast = React.forwardRef<
     VariantProps<typeof toastVariants>
 >(({ className, variant, ...props }, ref) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.8 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 20, scale: 0.8 }}
-      transition={{ duration: 0.3 }}
-    >
-      <ToastPrimitives.Root
+    <ToastPrimitives.Root
       ref={ref}
       className={cn(toastVariants({ variant }), className)}
       {...props}
-      />
-    </motion.div>
+    />
   )
 })
 Toast.displayName = ToastPrimitives.Root.displayName
@@ -133,5 +125,3 @@ export {
   ToastClose,
   ToastAction,
 }
-
-export { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport }

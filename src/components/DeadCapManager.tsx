@@ -10,7 +10,6 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Skull, Plus, Trash2, Check } from 'lucide-react';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 import { getTeamName } from '@/utils/leagueDataUtils';
-import { useAchievements } from '@/hooks/useAchievements';
 
 interface DeadCapManagerProps {
   leagueId: string;
@@ -27,7 +26,6 @@ const DeadCapManager: React.FC<DeadCapManagerProps> = ({
 }) => {
   const { deadCapPlayers, addDeadCapPlayer, updateDeadCapPlayer, removeDeadCapPlayer, loading } = useDeadCapPlayers(leagueId);
   
-  const { trackDeadCapAddition } = useAchievements(leagueId);
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState('');
   const [selectedPlayerName, setSelectedPlayerName] = useState('');
@@ -66,9 +64,6 @@ const DeadCapManager: React.FC<DeadCapManagerProps> = ({
     );
 
     if (success) {
-      // Track dead cap addition for achievements
-      trackDeadCapAddition();
-      
       setSelectedPlayerId('');
       setSelectedPlayerName('');
       setSelectedRosterId('');

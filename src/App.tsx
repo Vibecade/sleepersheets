@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { GamificationProvider } from "@/contexts/GamificationContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -45,39 +44,37 @@ const App = () => (
   <EnhancedErrorBoundary level="critical">
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <GamificationProvider>
-          <TooltipProvider>
-            <Toaster />
-            <BrowserRouter>
-              <EnhancedErrorBoundary level="page">
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/auth" element={
-                    <Suspense fallback={<PageSkeleton />}>
-                      <LazyAuth />
-                    </Suspense>
-                  } />
-                  <Route path="/how-to" element={
-                    <Suspense fallback={<PageSkeleton />}>
-                      <LazyHowTo />
-                    </Suspense>
-                  } />
-                  <Route path="/export" element={
-                    <Suspense fallback={<PageSkeleton />}>
-                      <LazyExport />
-                    </Suspense>
-                  } />
-                  <Route path="/privacy" element={<PrivacyPolicy />} />
-                  <Route path="/terms" element={<TermsOfService />} />
-                  <Route path="/cookies" element={<CookiePolicy />} />
-                  <Route path="/about" element={<About />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </EnhancedErrorBoundary>
-            </BrowserRouter>
-          </TooltipProvider>
-        </GamificationProvider>
+        <TooltipProvider>
+          <Toaster />
+          <BrowserRouter>
+            <EnhancedErrorBoundary level="page">
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={
+                  <Suspense fallback={<PageSkeleton />}>
+                    <LazyAuth />
+                  </Suspense>
+                } />
+                <Route path="/how-to" element={
+                  <Suspense fallback={<PageSkeleton />}>
+                    <LazyHowTo />
+                  </Suspense>
+                } />
+                <Route path="/export" element={
+                  <Suspense fallback={<PageSkeleton />}>
+                    <LazyExport />
+                  </Suspense>
+                } />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/cookies" element={<CookiePolicy />} />
+                <Route path="/about" element={<About />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </EnhancedErrorBoundary>
+          </BrowserRouter>
+        </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>
   </EnhancedErrorBoundary>
