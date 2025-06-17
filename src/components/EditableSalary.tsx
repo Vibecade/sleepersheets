@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
@@ -58,7 +59,7 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
     } finally {
       setIsSaving(false);
     }
-  }, [playerId, value, currentSalary, onSalaryUpdate, canModify, trackSalaryUpdate]);
+  }, [playerId, value, currentSalary, onSalaryUpdate, canModify]);
   )
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
@@ -113,4 +114,5 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
 };
 
 export default React.memo(EditableSalary);
+
 }
