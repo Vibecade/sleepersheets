@@ -49,6 +49,8 @@ const Index = React.memo(() => {
           {!leagueData ? (
             <div className="max-w-4xl mx-auto">
               {user ? (
+                <UserDashboard onSelectLeague={handleSelectLeague} />
+              ) : (
                 <Tabs defaultValue="connect" className="space-y-8">
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="connect">Connect League</TabsTrigger>
@@ -80,27 +82,6 @@ const Index = React.memo(() => {
                     <UserDashboard onSelectLeague={handleSelectLeague} />
                   </TabsContent>
                 </Tabs>
-              ) : (
-                <div className="max-w-2xl mx-auto space-y-8">
-                  <LeagueConnectionForm
-                    leagueId={leagueId}
-                    setLeagueId={setLeagueId}
-                    username={username}
-                    setUsername={setUsername}
-                    onLeagueSubmit={handleLeagueSubmit}
-                    onUsernameSubmit={handleUsernameSubmit}
-                    loading={loading}
-                  />
-                  
-                  {loading && (
-                    <div className="mt-6">
-                      <ProgressIndicator
-                        message={'Loading...'}
-                        showPercentage={false}
-                      />
-                    </div>
-                  )}
-                </div>
               )}
             </div>
           ) : (
