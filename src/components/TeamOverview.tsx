@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,12 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Trophy, Calendar, Activity, RefreshCw } from 'lucide-react';
+import { Users, Trophy, Calendar, Activity, RefreshCw, ArrowRightLeft } from 'lucide-react';
 import { useMatchups } from '@/hooks/useMatchups';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import FunStatistics from './FunStatistics';
+import TransactionsList from './TransactionsList';
 
 interface TeamOverviewProps {
   league: any;
@@ -79,7 +79,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="matchups" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 transition-all duration-200">
+        <TabsList className="grid w-full grid-cols-4 transition-all duration-200">
           <TabsTrigger value="matchups" className="flex items-center space-x-2 transition-all duration-200 hover:bg-accent/80">
             <Calendar className="w-4 h-4" />
             <span>Matchups</span>
@@ -87,6 +87,10 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
           <TabsTrigger value="standings" className="flex items-center space-x-2 transition-all duration-200 hover:bg-accent/80">
             <Users className="w-4 h-4" />
             <span>Standings</span>
+          </TabsTrigger>
+          <TabsTrigger value="transactions" className="flex items-center space-x-2 transition-all duration-200 hover:bg-accent/80">
+            <ArrowRightLeft className="w-4 h-4" />
+            <span>Transactions</span>
           </TabsTrigger>
           <TabsTrigger value="statistics" className="flex items-center space-x-2 transition-all duration-200 hover:bg-accent/80">
             <Activity className="w-4 h-4" />
@@ -240,6 +244,15 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="transactions" className="animate-fade-in">
+          <TransactionsList
+            transactions={transactions}
+            userMap={userMap}
+            players={players}
+            league={league}
+          />
         </TabsContent>
 
         <TabsContent value="statistics" className="animate-fade-in">
