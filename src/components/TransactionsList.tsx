@@ -24,17 +24,17 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
   const [selectedWeek, setSelectedWeek] = useState(league?.settings?.leg || 1);
   const [transactionType, setTransactionType] = useState<string>('all');
 
-  const getPlayerName = (playerId: string) => {
+  const getPlayerName = (playerId: string): string => {
     const player = players[playerId];
     return player?.full_name || player?.first_name + ' ' + player?.last_name || 'Unknown Player';
   };
 
-  const getPlayerPosition = (playerId: string) => {
+  const getPlayerPosition = (playerId: string): string => {
     const player = players[playerId];
     return player?.position || 'N/A';
   };
 
-  const getPlayerTeam = (playerId: string) => {
+  const getPlayerTeam = (playerId: string): string => {
     const player = players[playerId];
     return player?.team || 'FA';
   };
@@ -164,10 +164,6 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                         </div>
                         <div className="space-y-1 pl-6">
                           {Object.entries(transaction.adds).map(([playerId, rosterId]) => {
-                            const teamOwner = Object.values(userMap).find(user => 
-                              Object.values(userMap).find(u => u.user_id === user.user_id)
-                            );
-                            
                             return (
                               <div key={playerId} className="flex items-center justify-between text-sm">
                                 <div>
@@ -179,7 +175,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                                   </span>
                                 </div>
                                 <span className="text-green-400 text-xs">
-                                  to roster #{rosterId}
+                                  to roster #{String(rosterId)}
                                 </span>
                               </div>
                             );
@@ -207,7 +203,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                                 </span>
                               </div>
                               <span className="text-red-400 text-xs">
-                                from roster #{rosterId}
+                                from roster #{String(rosterId)}
                               </span>
                             </div>
                           ))}
@@ -226,7 +222,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                       <div className="grid grid-cols-2 gap-2 pl-6">
                         {transaction.draft_picks.map((pick: any, index: number) => (
                           <Badge key={index} variant="outline" className="text-blue-400 border-blue-400 text-xs">
-                            {pick.season} Round {pick.round}
+                            {String(pick.season)} Round {String(pick.round)}
                           </Badge>
                         ))}
                       </div>
@@ -240,7 +236,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                       <div className="pl-6">
                         {Object.entries(transaction.waiver_budget).map(([rosterId, amount]) => (
                           <div key={rosterId} className="text-sm">
-                            <span className="text-purple-400">${amount}</span>
+                            <span className="text-purple-400">${String(amount)}</span>
                             <span className="text-gray-400 ml-2">by roster #{rosterId}</span>
                           </div>
                         ))}
