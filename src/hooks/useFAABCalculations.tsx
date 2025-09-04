@@ -21,13 +21,27 @@ export const useFAABCalculations = ({ rosters, leagueId, transactions = [] }: FA
     const spentByRoster: Record<number, number> = {};
     
     transactions.forEach(transaction => {
-      // Handle waiver bids (settings.waiver_bid)
-      if (transaction.settings?.waiver_bid && transaction.roster_ids?.length > 0) {
+      // Only count FAAB for successful transactions (status: 'complete')
+      if (transaction.status !== 'complete') {
+        return;
+      }
+
+      // Handle waiver bids (settings.waiver_bid) - only if player was actually added
+      if (transaction.settings?.waiver_bid && transaction.roster_ids?.length > 0 && transaction.adds) {
         const rosterId = transaction.roster_ids[0];
-        spentByRoster[rosterId] = (spentByRoster[rosterId] || 0) + transaction.settings.waiver_bid;
+        
+        // Check if any players were actually added to this roster in this transaction
+        const playersAddedToRoster = Object.entries(transaction.adds).some(([playerId, addedToRosterId]) => {
+          return addedToRosterId === rosterId;
+        });
+        
+        // Only count FAAB if players were successfully added
+        if (playersAddedToRoster) {
+          spentByRoster[rosterId] = (spentByRoster[rosterId] || 0) + transaction.settings.waiver_bid;
+        }
       }
       
-      // Handle FAAB transfers (waiver_budget array)
+      // Handle FAAB transfers (waiver_budget array) - only for successful transactions
       if (transaction.waiver_budget && Array.isArray(transaction.waiver_budget)) {
         transaction.waiver_budget.forEach((transfer: any) => {
           if (transfer.sender) {
@@ -43,6 +57,11 @@ export const useFAABCalculations = ({ rosters, leagueId, transactions = [] }: FA
   // Get FAAB cost for a specific player from transactions
   const getPlayerFAABCost = useCallback((playerId: string, rosterId: number) => {
     for (const transaction of transactions) {
+      // Only consider successful, complete transactions
+      if (transaction.status !== 'complete') {
+        continue;
+      }
+      
       if (transaction.adds && transaction.adds[playerId] === rosterId) {
         // Check if this was a waiver pickup with FAAB cost
         if (transaction.settings?.waiver_bid) {
