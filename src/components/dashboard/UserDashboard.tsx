@@ -56,11 +56,11 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onSelectLeague }) => {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Trophy className="w-5 h-5 text-yellow-500" />
-            <span>My Leagues</span>
+            <span>Owned Leagues</span>
             <Badge variant="secondary">{ownedLeagues.length}</Badge>
           </CardTitle>
           <CardDescription>
-            Leagues you own and can modify settings for
+            Leagues you have claimed ownership of in this app
           </CardDescription>
         </CardHeader>
         <CardContent>
