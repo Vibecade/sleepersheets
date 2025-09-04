@@ -58,7 +58,9 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
   };
 
   const filteredTransactions = transactions.filter(transaction => {
-    const weekMatch = !selectedWeek || transaction.week === selectedWeek;
+    // Use 'leg' field from API (which represents week) or fall back to 'week'
+    const transactionWeek = transaction.leg || transaction.week;
+    const weekMatch = !selectedWeek || transactionWeek === selectedWeek;
     const typeMatch = transactionType === 'all' || transaction.type === transactionType;
     return weekMatch && typeMatch;
   });
@@ -131,9 +133,9 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                       >
                         {formatTransactionType(transaction.type)}
                       </Badge>
-                      {transaction.week && (
+                      {(transaction.leg || transaction.week) && (
                         <Badge variant="outline" className="text-gray-400 border-gray-400 text-xs">
-                          Week {transaction.week}
+                          Week {transaction.leg || transaction.week}
                         </Badge>
                       )}
                       <span className="text-sm text-gray-400">
@@ -229,17 +231,34 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                     </div>
                   )}
 
-                  {/* Waiver Budget */}
-                  {transaction.waiver_budget && Object.keys(transaction.waiver_budget).length > 0 && (
+                  {/* FAAB Information */}
+                  {((transaction.waiver_budget && transaction.waiver_budget.length > 0) || 
+                    (transaction.settings && transaction.settings.waiver_bid)) && (
                     <div className="mt-3 pt-3 border-t border-white/10">
-                      <div className="text-sm font-medium text-purple-400 mb-2">FAAB Spent</div>
-                      <div className="pl-6">
-                        {Object.entries(transaction.waiver_budget).map(([rosterId, amount]) => (
-                          <div key={rosterId} className="text-sm">
-                            <span className="text-purple-400">${String(amount)}</span>
-                            <span className="text-gray-400 ml-2">by roster #{rosterId}</span>
+                      <div className="flex items-center space-x-2 text-sm font-medium text-purple-400 mb-2">
+                        <span>💰</span>
+                        <span>FAAB Details</span>
+                      </div>
+                      <div className="pl-6 space-y-2">
+                        {/* Waiver Bid Amount */}
+                        {transaction.settings?.waiver_bid && (
+                          <div className="text-sm">
+                            <span className="text-purple-400 font-medium">${transaction.settings.waiver_bid}</span>
+                            <span className="text-gray-400 ml-2">waiver bid</span>
                           </div>
-                        ))}
+                        )}
+                        
+                        {/* FAAB Transfers */}
+                        {transaction.waiver_budget && transaction.waiver_budget.length > 0 && 
+                          transaction.waiver_budget.map((transfer: any, index: number) => (
+                            <div key={index} className="text-sm">
+                              <span className="text-purple-400 font-medium">${transfer.amount}</span>
+                              <span className="text-gray-400 ml-2">
+                                from roster #{transfer.sender} to roster #{transfer.receiver}
+                              </span>
+                            </div>
+                          ))
+                        }
                       </div>
                     </div>
                   )}
