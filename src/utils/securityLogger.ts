@@ -43,6 +43,32 @@ class SecurityLogger {
     });
   }
 
+  logLeagueOwnershipAccess(userId: string | undefined, leagueId: string, action: string, success: boolean, details?: Record<string, any>) {
+    this.log({
+      userId,
+      action: `ownership_${action}`,
+      resource: `league:${leagueId}`,
+      success,
+      details: {
+        ...details,
+        security_level: 'high_sensitivity'
+      }
+    });
+  }
+
+  logUnauthorizedAccess(userId: string | undefined, resource: string, attemptedAction: string) {
+    this.log({
+      userId,
+      action: `unauthorized_${attemptedAction}`,
+      resource,
+      success: false,
+      details: {
+        security_level: 'security_violation',
+        timestamp: new Date().toISOString()
+      }
+    });
+  }
+
   logAuthAction(userId: string | undefined, action: string, success: boolean, details?: Record<string, any>) {
     this.log({
       userId,
@@ -84,6 +110,14 @@ export const securityLogger = new SecurityLogger();
 // Helper functions for common logging scenarios
 export const logLeagueOwnershipClaim = (userId: string | undefined, leagueId: string, success: boolean) => {
   securityLogger.logLeagueAccess(userId, leagueId, 'claim', success);
+};
+
+export const logLeagueOwnershipAccess = (userId: string | undefined, leagueId: string, action: string, success: boolean, details?: Record<string, any>) => {
+  securityLogger.logLeagueOwnershipAccess(userId, leagueId, action, success, details);
+};
+
+export const logUnauthorizedAccess = (userId: string | undefined, resource: string, attemptedAction: string) => {
+  securityLogger.logUnauthorizedAccess(userId, resource, attemptedAction);
 };
 
 export const logDataAccess = (userId: string | undefined, table: string, operation: 'read' | 'write' | 'delete', success: boolean) => {
