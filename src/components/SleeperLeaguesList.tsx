@@ -38,11 +38,11 @@ const SleeperLeaguesList: React.FC<SleeperLeaguesListProps> = ({ onSelectLeague 
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Trophy className="w-5 h-5 text-purple-500" />
-          <span>Your Sleeper Leagues</span>
-          <Badge variant="secondary">{sleeperLeagues.length}</Badge>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+          <Trophy className="w-5 h-5 text-purple-500 flex-shrink-0" />
+          <span className="truncate">Your Sleeper Leagues</span>
+          <Badge variant="secondary" className="text-xs">{sleeperLeagues.length}</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -57,10 +57,10 @@ const SleeperLeaguesList: React.FC<SleeperLeaguesListProps> = ({ onSelectLeague 
             {sleeperLeagues.map((league) => (
               <div
                 key={league.league_id}
-                className="flex items-center justify-between p-3 border border-gray-700 rounded-lg hover:border-gray-600 transition-colors"
+                className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 sm:p-4 border border-gray-700 rounded-lg hover:border-gray-600 transition-colors"
               >
-                <div className="flex items-center space-x-3 flex-1">
-                  <Avatar className="w-10 h-10">
+                <div className="flex items-center space-x-3 flex-1 min-w-0">
+                  <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
                     {league.avatar ? (
                       <AvatarImage 
                         src={`https://sleepercdn.com/avatars/thumbs/${league.avatar}`} 
@@ -68,44 +68,46 @@ const SleeperLeaguesList: React.FC<SleeperLeaguesListProps> = ({ onSelectLeague 
                       />
                     ) : null}
                     <AvatarFallback>
-                      <Trophy className="w-5 h-5" />
+                      <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2">
-                      <h3 className="font-medium text-white truncate">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+                      <h3 className="font-medium text-white text-sm sm:text-base truncate">
                         {league.name}
                       </h3>
-                      <Badge 
-                        variant="outline" 
-                        className={
-                          league.season === new Date().getFullYear().toString()
-                            ? 'text-green-400 border-green-400'
-                            : 'text-gray-400 border-gray-400'
-                        }
-                      >
-                        {league.season}
-                      </Badge>
-                      <Badge 
-                        variant="outline" 
-                        className={
-                          league.status === 'in_season'
-                            ? 'text-blue-400 border-blue-400'
-                            : league.status === 'complete'
-                            ? 'text-gray-400 border-gray-400'
-                            : 'text-yellow-400 border-yellow-400'
-                        }
-                      >
-                        {league.status.replace('_', ' ')}
-                      </Badge>
+                      <div className="flex items-center gap-1 sm:gap-2">
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${
+                            league.season === new Date().getFullYear().toString()
+                              ? 'text-green-400 border-green-400'
+                              : 'text-gray-400 border-gray-400'
+                          }`}
+                        >
+                          {league.season}
+                        </Badge>
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${
+                            league.status === 'in_season'
+                              ? 'text-blue-400 border-blue-400'
+                              : league.status === 'complete'
+                              ? 'text-gray-400 border-gray-400'
+                              : 'text-yellow-400 border-yellow-400'
+                          }`}
+                        >
+                          {league.status.replace('_', ' ')}
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-4 mt-1 text-sm text-gray-400">
+                    <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-400">
                       <div className="flex items-center space-x-1">
-                        <Users className="w-3 h-3" />
+                        <Users className="w-3 h-3 flex-shrink-0" />
                         <span>{league.total_rosters} teams</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <Calendar className="w-3 h-3" />
+                        <Calendar className="w-3 h-3 flex-shrink-0" />
                         <span>{league.season_type}</span>
                       </div>
                     </div>
@@ -114,10 +116,10 @@ const SleeperLeaguesList: React.FC<SleeperLeaguesListProps> = ({ onSelectLeague 
                 <Button
                   size="sm"
                   onClick={() => onSelectLeague(league.league_id)}
-                  className="flex items-center space-x-1 bg-purple-600 hover:bg-purple-700"
+                  className="flex items-center justify-center space-x-2 bg-purple-600 hover:bg-purple-700 w-full sm:w-auto min-h-[44px] sm:min-h-0"
                 >
-                  <span>Open</span>
-                  <ExternalLink className="w-3 h-3" />
+                  <span className="text-sm">Open</span>
+                  <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
               </div>
             ))}

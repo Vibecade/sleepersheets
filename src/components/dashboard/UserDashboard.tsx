@@ -45,7 +45,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onSelectLeague }) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
       {/* What's New Modal */}
       <WhatsNewModal />
 
@@ -57,47 +57,47 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onSelectLeague }) => {
 
       {/* Owned Leagues */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Trophy className="w-5 h-5 text-yellow-500" />
-            <span>Owned Leagues</span>
-            <Badge variant="secondary">{ownedLeagues.length}</Badge>
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+            <Trophy className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+            <span className="truncate">Owned Leagues</span>
+            <Badge variant="secondary" className="text-xs">{ownedLeagues.length}</Badge>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs sm:text-sm">
             Leagues you have claimed ownership of in this app
           </CardDescription>
         </CardHeader>
         <CardContent>
           {ownedLeagues.length === 0 ? (
-            <div className="text-center py-8 text-gray-400">
-              <Trophy className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>No owned leagues yet</p>
-              <p className="text-sm">Claim a league to start managing it</p>
+            <div className="text-center py-6 sm:py-8 text-gray-400">
+              <Trophy className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 opacity-50" />
+              <p className="text-sm sm:text-base">No owned leagues yet</p>
+              <p className="text-xs sm:text-sm">Claim a league to start managing it</p>
             </div>
           ) : (
             <div className="space-y-3">
               {ownedLeagues.map((league) => (
                 <div
                   key={league.league_id}
-                  className="flex items-center justify-between p-3 border border-gray-700 rounded-lg hover:border-gray-600 transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 sm:p-4 border border-gray-700 rounded-lg hover:border-gray-600 transition-colors"
                 >
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                      <h3 className="font-medium text-white">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+                      <h3 className="font-medium text-white text-sm sm:text-base truncate">
                         {league.leagueData?.name || league.league_id}
                       </h3>
                       {league.leagueData && (
-                        <Badge variant="outline">{league.leagueData.season}</Badge>
+                        <Badge variant="outline" className="text-xs w-fit">{league.leagueData.season}</Badge>
                       )}
                     </div>
-                    <div className="flex items-center space-x-4 mt-1 text-sm text-gray-400">
+                    <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-400">
                       <div className="flex items-center space-x-1">
-                        <Calendar className="w-3 h-3" />
+                        <Calendar className="w-3 h-3 flex-shrink-0" />
                         <span>Claimed {formatDistanceToNow(new Date(league.claimed_at))} ago</span>
                       </div>
                       {league.leagueData && (
                         <div className="flex items-center space-x-1">
-                          <Users className="w-3 h-3" />
+                          <Users className="w-3 h-3 flex-shrink-0" />
                           <span>{league.leagueData.total_rosters} teams</span>
                         </div>
                       )}
@@ -106,10 +106,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onSelectLeague }) => {
                   <Button
                     size="sm"
                     onClick={() => onSelectLeague(league.league_id)}
-                    className="flex items-center space-x-1"
+                    className="flex items-center justify-center space-x-2 w-full sm:w-auto min-h-[44px] sm:min-h-0"
                   >
-                    <span>Open</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <span className="text-sm">Open</span>
+                    <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                 </div>
               ))}
@@ -121,12 +121,12 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onSelectLeague }) => {
       {/* Recent Leagues */}
       {recentLeagues.length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Clock className="w-5 h-5 text-blue-500" />
-              <span>Recent Leagues</span>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
+              <Clock className="w-5 h-5 text-blue-500 flex-shrink-0" />
+              <span className="truncate">Recent Leagues</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs sm:text-sm">
               Quickly access recently viewed leagues
             </CardDescription>
           </CardHeader>
@@ -136,10 +136,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onSelectLeague }) => {
                 <Button
                   key={leagueId}
                   variant="outline"
-                  className="justify-start"
+                  className="justify-start min-h-[44px] text-left"
                   onClick={() => onSelectLeague(leagueId)}
                 >
-                  <span className="font-mono text-sm">{leagueId}</span>
+                  <span className="font-mono text-xs sm:text-sm truncate">{leagueId}</span>
                 </Button>
               ))}
             </div>
