@@ -11,7 +11,7 @@ import { formatDistanceToNow } from 'date-fns';
 import SleeperUsernameForm from '@/components/SleeperUsernameForm';
 import SleeperLeaguesList from '@/components/SleeperLeaguesList';
 import WhatsNewModal from '@/components/WhatsNewModal';
-import { SecurityConfigGuidance } from '@/components/SecurityConfigGuidance';
+
 
 interface UserDashboardProps {
   onSelectLeague: (leagueId: string) => void;
@@ -50,8 +50,6 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onSelectLeague }) => {
       {/* What's New Modal */}
       <WhatsNewModal />
 
-      {/* Security Configuration Guidance */}
-      <SecurityConfigGuidance />
 
       {/* Sleeper Account Configuration */}
       <SleeperUsernameForm />
