@@ -19,6 +19,7 @@ interface TeamOverviewProps {
   userMap: Record<string, any>;
   players: Record<string, any>;
   transactions?: any[];
+  onResyncData?: () => void;
 }
 
 const TeamOverview: React.FC<TeamOverviewProps> = ({
@@ -26,7 +27,8 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   rosters,
   userMap,
   players,
-  transactions = []
+  transactions = [],
+  onResyncData
 }) => {
   const [selectedWeek, setSelectedWeek] = useState(league?.settings?.leg || 1);
   const { matchups, loading: matchupsLoading } = useMatchups(league?.league_id, selectedWeek);
@@ -70,9 +72,22 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                 </p>
               </div>
             </div>
-            <Badge variant="outline" className="text-green-400 border-green-400 transition-all duration-200 hover:bg-green-400/10">
-              {rosters.length} Teams
-            </Badge>
+            <div className="flex items-center space-x-3">
+              {onResyncData && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onResyncData}
+                  className="transition-all duration-200 hover:scale-105"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Re-sync Data
+                </Button>
+              )}
+              <Badge variant="outline" className="text-green-400 border-green-400 transition-all duration-200 hover:bg-green-400/10">
+                {rosters.length} Teams
+              </Badge>
+            </div>
           </div>
         </CardHeader>
       </Card>

@@ -11,6 +11,7 @@ import type { CombinedLeagueData } from '@/utils/leagueApi';
 interface LeagueViewProps {
   leagueData: CombinedLeagueData;
   onRefreshData: () => Promise<void>;
+  onResyncData?: () => Promise<void>;
   onBackToLeagues: () => void;
   onOwnershipChanged: () => Promise<void>;
   ownershipStatus: {
@@ -23,6 +24,7 @@ interface LeagueViewProps {
 const LeagueView: React.FC<LeagueViewProps> = ({
   leagueData,
   onRefreshData,
+  onResyncData,
   onBackToLeagues,
   onOwnershipChanged,
   ownershipStatus,
@@ -78,6 +80,7 @@ const LeagueView: React.FC<LeagueViewProps> = ({
       <LeagueData 
         data={leagueData} 
         onRefreshData={onRefreshData}
+        onResyncData={onResyncData}
         onOwnershipChanged={onOwnershipChanged}
       />
     </div>

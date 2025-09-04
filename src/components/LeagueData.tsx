@@ -21,10 +21,11 @@ interface LeagueDataProps {
     draftPicks?: any[];
   };
   onRefreshData?: () => Promise<void>;
+  onResyncData?: () => Promise<void>;
   onOwnershipChanged?: () => void;
 }
 
-const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwnershipChanged?: () => void; }> = React.memo(({ onRefreshData, onOwnershipChanged }) => {
+const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyncData?: () => Promise<void>; onOwnershipChanged?: () => void; }> = React.memo(({ onRefreshData, onResyncData, onOwnershipChanged }) => {
   const { league, rosters, userMap, rosterUserMap, players, transactions, draftPicks, stats } = useLeagueData();
   const [currentPage, setCurrentPage] = useState<'overview' | 'manager'>('overview');
 
@@ -87,6 +88,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
                   userMap={userMap}
                   players={players}
                   transactions={transactions}
+                  onResyncData={onResyncData}
                 />
               </Suspense>
             </ErrorBoundary>
@@ -117,10 +119,10 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
 
 LeagueDataContent.displayName = 'LeagueDataContent';
 
-const LeagueData: React.FC<LeagueDataProps> = React.memo(({ data, onRefreshData, onOwnershipChanged }) => {
+const LeagueData: React.FC<LeagueDataProps> = React.memo(({ data, onRefreshData, onResyncData, onOwnershipChanged }) => {
   return (
     <LeagueDataProvider data={data}>
-      <LeagueDataContent onRefreshData={onRefreshData} onOwnershipChanged={onOwnershipChanged} />
+      <LeagueDataContent onRefreshData={onRefreshData} onResyncData={onResyncData} onOwnershipChanged={onOwnershipChanged} />
     </LeagueDataProvider>
   );
 });

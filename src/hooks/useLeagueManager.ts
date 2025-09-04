@@ -87,6 +87,32 @@ export const useLeagueManager = () => {
     }
   }, [activeLeagueId, refetch, toast, leagueData?.league.name]);
 
+  const handleResyncLeagueData = useCallback(async () => {
+    if (!activeLeagueId) return;
+    
+    try {
+      // Import apiCache to clear targeted cache entries
+      const { apiCache } = await import('@/utils/apiCache');
+      
+      // Clear all league-specific cache except players (to avoid rate limits)
+      apiCache.clearLeagueDataExceptPlayers(activeLeagueId);
+      
+      // Force a fresh fetch
+      await refetch();
+      
+      toast({
+        title: "Success!",
+        description: `Re-synced league data (excluding players to avoid rate limits)`
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to re-sync league data. Please try again.",
+        variant: "destructive"
+      });
+    }
+  }, [activeLeagueId, refetch, toast]);
+
   const handleSelectLeague = useCallback((selectedLeagueId: string) => {
     setLeagueIdInput(selectedLeagueId);
     setActiveLeagueId(selectedLeagueId);
@@ -128,6 +154,7 @@ export const useLeagueManager = () => {
     handleLeagueSubmit,
     handleUsernameSubmit,
     handleRefreshData,
+    handleResyncLeagueData,
     handleSelectLeague,
     handleBackToLeagues,
     handleOwnershipChanged,

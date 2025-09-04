@@ -29,6 +29,7 @@ const Index = React.memo(() => {
     handleSelectLeague,
     handleBackToLeagues,
     handleRefreshData,
+    handleResyncLeagueData,
     handleOwnershipChanged,
   } = useLeagueManager();
 
@@ -88,6 +89,7 @@ const Index = React.memo(() => {
             <LeagueView
               leagueData={leagueData}
               onRefreshData={handleRefreshData}
+              onResyncData={handleResyncLeagueData}
               onBackToLeagues={handleBackToLeagues}
               onOwnershipChanged={handleOwnershipChanged}
               ownershipStatus={ownershipStatus}

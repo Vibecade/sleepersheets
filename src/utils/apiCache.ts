@@ -56,6 +56,28 @@ class ApiCache {
   delete(key: string): void {
     this.cache.delete(key);
   }
+
+  // Clear specific cache entries by URL pattern
+  clearByPattern(pattern: string): void {
+    const keysToDelete = [];
+    for (const key of this.cache.keys()) {
+      if (key.includes(pattern)) {
+        keysToDelete.push(key);
+      }
+    }
+    keysToDelete.forEach(key => this.cache.delete(key));
+  }
+
+  // Clear all league data except players
+  clearLeagueDataExceptPlayers(leagueId: string): void {
+    const keysToDelete = [];
+    for (const key of this.cache.keys()) {
+      if (key.includes(leagueId) && !key.includes('/players/nfl')) {
+        keysToDelete.push(key);
+      }
+    }
+    keysToDelete.forEach(key => this.cache.delete(key));
+  }
 }
 
 export const apiCache = new ApiCache();
