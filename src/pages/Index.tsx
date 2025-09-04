@@ -36,9 +36,9 @@ const Index = React.memo(() => {
     handleOwnershipChanged,
   } = useLeagueManager();
 
-  // Auto-compact header when user starts interacting with forms
+  // Auto-compact header when user starts interacting with forms or when league is loaded
   useEffect(() => {
-    if ((leagueId.trim() || username.trim()) && !leagueData) {
+    if ((leagueId.trim() || username.trim()) || leagueData) {
       setUserIsInteracting(true);
       setIsHeaderCompact(true);
     } else if (!leagueId.trim() && !username.trim() && !leagueData) {
@@ -59,9 +59,9 @@ const Index = React.memo(() => {
       />
       
       <LeagueHeader 
-        isCompact={isHeaderCompact && !leagueData}
+        isCompact={isHeaderCompact}
         onToggleCompact={handleToggleCompact}
-        canToggle={userIsInteracting && !leagueData}
+        canToggle={userIsInteracting || !!leagueData}
       />
 
       <div className="max-w-6xl mx-auto px-4 py-12">
