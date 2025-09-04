@@ -73,8 +73,27 @@ export const useLeagueOwnershipStatus = () => {
     }
   }, [user?.id]);
 
+  // Function to clear ownership status cache - useful for external cache invalidation
+  const clearOwnershipStatusCache = useCallback((leagueId?: string) => {
+    if (leagueId) {
+      // Clear cache for specific league
+      const cacheKey = `ownership-${leagueId}-${user?.id || 'anonymous'}`;
+      ownershipCache.delete(cacheKey);
+    } else {
+      // Clear all cache entries for this user
+      const keysToDelete: string[] = [];
+      ownershipCache.forEach((_, key) => {
+        if (key.includes(`-${user?.id || 'anonymous'}`)) {
+          keysToDelete.push(key);
+        }
+      });
+      keysToDelete.forEach(key => ownershipCache.delete(key));
+    }
+  }, [user?.id]);
+
   return {
     checkOwnershipStatus,
-    loading
+    loading,
+    clearOwnershipStatusCache
   };
 };
