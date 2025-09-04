@@ -143,6 +143,26 @@ export default {
 				'field-flash': {
 					'0%, 100%': { opacity: '0.1' },
 					'50%': { opacity: '0.3' }
+				},
+				'header-compact': {
+					'0%': {
+						transform: 'translateY(0) scale(1)',
+						height: 'auto'
+					},
+					'100%': {
+						transform: 'translateY(-20px) scale(0.95)',
+						height: 'auto'
+					}
+				},
+				'header-expand': {
+					'0%': {
+						transform: 'translateY(-20px) scale(0.95)',
+						height: 'auto'
+					},
+					'100%': {
+						transform: 'translateY(0) scale(1)',
+						height: 'auto'
+					}
 				}
 			},
 			animation: {
@@ -153,6 +173,8 @@ export default {
 				'helmet-glow': 'helmet-glow 2s ease-in-out infinite alternate',
 				'jersey-pulse': 'jersey-pulse 1.5s ease-in-out infinite',
 				'field-flash': 'field-flash 3s ease-in-out infinite',
+				'header-compact': 'header-compact 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
+				'header-expand': 'header-expand 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards'
 			}
 		}
 	},

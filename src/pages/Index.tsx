@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Footer from '@/components/Footer';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import LeagueHeader from '@/components/home/LeagueHeader';
@@ -16,6 +16,9 @@ import LeagueView from '@/components/home/LeagueView';
 
 const Index = React.memo(() => {
   const { user } = useAuth();
+  const [isHeaderCompact, setIsHeaderCompact] = useState(false);
+  const [userIsInteracting, setUserIsInteracting] = useState(false);
+  
   const {
     leagueId,
     setLeagueId,
@@ -33,6 +36,21 @@ const Index = React.memo(() => {
     handleOwnershipChanged,
   } = useLeagueManager();
 
+  // Auto-compact header when user starts interacting with forms
+  useEffect(() => {
+    if ((leagueId.trim() || username.trim()) && !leagueData) {
+      setUserIsInteracting(true);
+      setIsHeaderCompact(true);
+    } else if (!leagueId.trim() && !username.trim() && !leagueData) {
+      setUserIsInteracting(false);
+      setIsHeaderCompact(false);
+    }
+  }, [leagueId, username, leagueData]);
+
+  const handleToggleCompact = () => {
+    setIsHeaderCompact(!isHeaderCompact);
+  };
+
   return (
     <div className="min-h-screen">
       <PageHead
@@ -40,7 +58,11 @@ const Index = React.memo(() => {
         description="The ultimate salary cap and contract management tool for your fantasy football dynasty league. Track salaries, manage contracts, simulate trades, and export league data."
       />
       
-      <LeagueHeader />
+      <LeagueHeader 
+        isCompact={isHeaderCompact && !leagueData}
+        onToggleCompact={handleToggleCompact}
+        canToggle={userIsInteracting && !leagueData}
+      />
 
       <div className="max-w-6xl mx-auto px-4 py-12">
         <OfflineIndicator />

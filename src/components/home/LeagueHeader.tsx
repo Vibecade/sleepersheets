@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Trophy, Lock } from 'lucide-react';
+import { Trophy, Lock, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -8,17 +8,83 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import UserMenu from '@/components/UserMenu';
 import HeaderNavigation from '@/components/HeaderNavigation';
 
-const LeagueHeader = () => {
+interface LeagueHeaderProps {
+  isCompact?: boolean;
+  onToggleCompact?: () => void;
+  canToggle?: boolean;
+}
+
+const LeagueHeader: React.FC<LeagueHeaderProps> = ({ 
+  isCompact = false, 
+  onToggleCompact,
+  canToggle = false 
+}) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
+  if (isCompact) {
+    return (
+      <div className="text-center py-3 px-4 relative field-pattern animate-header-compact">
+        <HeaderNavigation />
+        
+        {/* Compact Header */}
+        <div className="flex items-center justify-between max-w-6xl mx-auto">
+          <div className="flex items-center space-x-4">
+            <div className="bg-gradient-to-br from-primary to-primary-glow rounded-2xl p-2 shadow-lg">
+              <Trophy className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <h1 className="war-room-title text-xl sm:text-2xl md:text-3xl">
+              SLEEPERSHEETS
+            </h1>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            {canToggle && onToggleCompact && (
+              <Button
+                onClick={onToggleCompact}
+                variant="ghost"
+                size="sm"
+                className="text-primary hover:text-primary-glow"
+              >
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+            )}
+            {user ? (
+              <UserMenu />
+            ) : (
+              <Button 
+                onClick={() => navigate('/auth')}
+                variant="war"
+                size="sm"
+                className="flex items-center space-x-2"
+              >
+                <Lock className="w-4 h-4" />
+                <span className="hidden xs:inline font-tech">Enter War Room</span>
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="text-center py-8 sm:py-12 lg:py-16 px-4 relative field-pattern">
+    <div className="text-center py-8 sm:py-12 lg:py-16 px-4 relative field-pattern animate-header-expand">
       <HeaderNavigation />
       
       {/* Stadium Command Center Header */}
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-4 right-4 z-10 flex items-center space-x-2">
+        {canToggle && onToggleCompact && (
+          <Button
+            onClick={onToggleCompact}
+            variant="ghost"
+            size="sm"
+            className="text-primary hover:text-primary-glow"
+          >
+            <ChevronUp className="w-4 h-4" />
+          </Button>
+        )}
         {user ? (
           <UserMenu />
         ) : (
