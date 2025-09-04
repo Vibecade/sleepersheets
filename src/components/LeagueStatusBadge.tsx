@@ -24,7 +24,7 @@ const LeagueStatusBadge: React.FC<LeagueStatusBadgeProps> = ({ leagueId, onOwner
     const { user } = useAuth();
     const { toast } = useToast();
     const { checkOwnershipStatus, loading: checkingStatus } = useLeagueOwnershipStatus();
-    const { claimLeague, loading: claiming } = useLeagueOwnership();
+    const { claimLeague, loading: claiming, clearOwnedLeaguesCache } = useLeagueOwnership();
     const [status, setStatus] = useState<OwnershipStatus | null>(null);
     const [lastCheckedLeagueId, setLastCheckedLeagueId] = useState<string>('');
 
@@ -64,8 +64,10 @@ const LeagueStatusBadge: React.FC<LeagueStatusBadgeProps> = ({ leagueId, onOwner
         }
         const result = await claimLeague(leagueId);
         if (result.success) {
-            // Update cache
+            // Update badge cache
             statusCache.set(leagueId, { isOwned: true, ownedByCurrentUser: true });
+            // Clear the useLeagueOwnership cache to synchronize ownership state
+            clearOwnedLeaguesCache();
             onOwnershipChanged?.();
         }
         await fetchStatus();

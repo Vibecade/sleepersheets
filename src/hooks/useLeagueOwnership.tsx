@@ -163,11 +163,22 @@ export const useLeagueOwnership = () => {
     }
   }, [user, toast, loadOwnedLeagues]);
 
+  // Function to clear owned leagues cache - useful for external cache invalidation
+  const clearOwnedLeaguesCache = useCallback(() => {
+    if (user?.id) {
+      const cacheKey = `owned-leagues-${user.id}`;
+      ownedLeaguesCache.delete(cacheKey);
+      // Reload the data immediately
+      loadOwnedLeagues();
+    }
+  }, [user?.id, loadOwnedLeagues]);
+
   return {
     ownedLeagues,
     isLeagueOwned,
     canModifyLeague,
     claimLeague,
-    loading
+    loading,
+    clearOwnedLeaguesCache
   };
 };
