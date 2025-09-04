@@ -14,38 +14,56 @@ const LeagueHeader = () => {
   const isMobile = useIsMobile();
 
   return (
-    <div className="text-center py-8 sm:py-12 lg:py-16 px-4 relative">
+    <div className="text-center py-8 sm:py-12 lg:py-16 px-4 relative field-pattern">
       <HeaderNavigation />
       
-      <div className="absolute top-4 right-4">
+      {/* Stadium Command Center Header */}
+      <div className="absolute top-4 right-4 z-10">
         {user ? (
           <UserMenu />
         ) : (
           <Button 
             onClick={() => navigate('/auth')}
-            variant="outline"
+            variant="war"
             size={isMobile ? "sm" : "default"}
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-2 animate-stadium-entrance"
           >
             <Lock className="w-4 h-4" />
-            <span className="hidden xs:inline">Sign In</span>
+            <span className="hidden xs:inline font-tech">Enter War Room</span>
           </Button>
         )}
       </div>
       
-      <div className="max-w-4xl mx-auto">
-        <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
-          <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl p-3 sm:p-4 shadow-2xl">
-            <Trophy className="w-8 h-8 sm:w-10 lg:w-12 sm:h-10 lg:h-12 text-white" />
+      {/* War Room Command Center Display */}
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col items-center justify-center space-y-6 mb-8">
+          {/* NFL Stadium Helmet Display */}
+          <div className="relative">
+            <div className="bg-gradient-to-br from-primary to-primary-glow rounded-3xl p-4 sm:p-6 shadow-lg animate-helmet-glow">
+              <Trophy className="w-12 h-12 sm:w-16 lg:w-20 sm:h-16 lg:h-20 text-primary-foreground" />
+            </div>
+            <div className="absolute -inset-2 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black bg-gradient-to-r from-white via-yellow-100 to-yellow-300 bg-clip-text text-transparent text-center sm:text-left text-glow">
-            SLEEPERSHEETS
-          </h1>
+          
+          {/* War Room Title */}
+          <div className="text-center space-y-2">
+            <h1 className="war-room-title text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl animate-stadium-entrance">
+              SLEEPERSHEETS
+            </h1>
+            <div className="scoreboard-text text-sm sm:text-base text-primary uppercase tracking-widest">
+              Fantasy Football War Room Command Center
+            </div>
+          </div>
         </div>
         
-        <p className="text-lg sm:text-xl lg:text-2xl text-gray-400 mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed px-2">
-          The ultimate salary cap and contract management tool for your fantasy football dynasty league
-        </p>
+        {/* Command Center Description */}
+        <div className="glass-card p-6 sm:p-8 max-w-4xl mx-auto mb-8 animate-stadium-entrance">
+          <p className="text-lg sm:text-xl lg:text-2xl text-foreground/90 leading-relaxed font-sans">
+            <span className="font-headline text-primary">DOMINATE</span> your fantasy football dynasty league with the ultimate salary cap and contract management command center. 
+            <span className="font-headline text-secondary"> STRATEGIZE</span> like a championship front office. 
+            <span className="font-headline text-success"> EXECUTE</span> every move with precision.
+          </p>
+        </div>
 
         {!user && (
           <div className="mb-6 p-3 sm:p-4 bg-amber-400/10 border border-amber-400/20 rounded-lg max-w-2xl mx-auto">
