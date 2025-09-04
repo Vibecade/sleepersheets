@@ -60,6 +60,7 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
         rosters={rosters}
         userMap={userMap}
         players={players}
+        transactions={transactions}
       />
 
       {/* Trade Simulator */}

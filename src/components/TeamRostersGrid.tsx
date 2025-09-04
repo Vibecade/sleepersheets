@@ -11,7 +11,7 @@ interface TeamRostersGridProps {
   teamSalaries: Record<number, number>;
   teamDeadCaps: Record<number, number>;
   salaryCap: number;
-  teamFAAB?: Record<number, number>;
+  teamFAAB?: Record<number, { available: number; spent: number; total: number } | number>;
   showFAAB?: boolean;
   canModifyLeague: boolean;
 }
@@ -35,7 +35,7 @@ const TeamRostersGrid: React.FC<TeamRostersGridProps> = ({
           const user = userMap[roster.owner_id];
           const teamSalary = teamSalaries[roster.roster_id] || 0;
           const teamDeadCap = deadCapEnabled ? (teamDeadCaps[roster.roster_id] || 0) : 0;
-          const faabBudget = teamFAAB[roster.roster_id] || 0;
+          const faabBudget = teamFAAB[roster.roster_id] || { available: 0, spent: 0, total: 0 };
           
           return (
             <TeamRosterCard

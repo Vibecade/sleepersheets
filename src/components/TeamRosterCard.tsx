@@ -14,7 +14,7 @@ interface TeamRosterCardProps {
   teamSalary: number;
   teamDeadCap: number;
   salaryCap: number;
-  teamFAAB?: number;
+  teamFAAB?: { available: number; spent: number; total: number } | number;
   showFAAB?: boolean;
 }
 
@@ -26,7 +26,7 @@ const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
   teamSalary,
   teamDeadCap,
   salaryCap,
-  teamFAAB = 0,
+  teamFAAB = { available: 0, spent: 0, total: 0 },
   showFAAB = false
 }) => {
   const playerCounts = getPlayerCount(roster);

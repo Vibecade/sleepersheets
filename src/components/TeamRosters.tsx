@@ -11,9 +11,10 @@ interface TeamRostersProps {
   rosters: any[];
   userMap: Record<string, any>;
   players?: Record<string, any>;
+  transactions?: any[];
 }
 
-const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, players = {} }) => {
+const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, players = {}, transactions = [] }) => {
   const {
     leagueId,
     showSalaryFeatures,
@@ -42,7 +43,7 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
     faabCap,
     reserveLimit,
     canModify,
-  } = useTeamRostersManager({ rosters });
+  } = useTeamRostersManager({ rosters, transactions });
 
   return (
     <ErrorBoundary>

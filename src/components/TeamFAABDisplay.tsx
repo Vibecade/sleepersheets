@@ -5,7 +5,7 @@ import { Separator } from '@/components/ui/separator';
 import { DollarSign } from 'lucide-react';
 
 interface TeamFAABDisplayProps {
-  teamFAAB: number;
+  teamFAAB: { available: number; spent: number; total: number } | number;
   showFAAB: boolean;
 }
 
@@ -19,6 +19,11 @@ const TeamFAABDisplay: React.FC<TeamFAABDisplayProps> = ({
 
   if (!showFAAB) return null;
 
+  // Handle both old number format and new object format
+  const faabData = typeof teamFAAB === 'number' 
+    ? { available: teamFAAB, spent: 0, total: teamFAAB }
+    : teamFAAB;
+
   return (
     <>
       <Separator className="bg-white/10" />
@@ -29,8 +34,20 @@ const TeamFAABDisplay: React.FC<TeamFAABDisplayProps> = ({
             <span className="text-gray-300 text-xs sm:text-sm">FAAB Budget:</span>
           </div>
           <Badge variant="outline" className="text-blue-400 border-blue-400 text-xs">
-            {formatFAAB(teamFAAB)}
+            {formatFAAB(faabData.available)}
           </Badge>
+        </div>
+        {faabData.spent > 0 && (
+          <div className="flex justify-between items-center">
+            <span className="text-gray-400 text-xs">FAAB Spent:</span>
+            <Badge variant="outline" className="text-red-400 border-red-400 text-xs">
+              {formatFAAB(faabData.spent)}
+            </Badge>
+          </div>
+        )}
+        <div className="flex justify-between items-center">
+          <span className="text-gray-400 text-xs">Total Budget:</span>
+          <span className="text-gray-300 text-xs">{formatFAAB(faabData.total)}</span>
         </div>
         <div className="text-xs text-gray-400">
           Available for free agent acquisitions

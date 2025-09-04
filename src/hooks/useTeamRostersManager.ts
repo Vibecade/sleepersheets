@@ -9,9 +9,10 @@ import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 
 interface UseTeamRostersManagerProps {
   rosters: any[];
+  transactions?: any[];
 }
 
-export const useTeamRostersManager = ({ rosters }: UseTeamRostersManagerProps) => {
+export const useTeamRostersManager = ({ rosters, transactions = [] }: UseTeamRostersManagerProps) => {
   const [showSalaryFeatures, setShowSalaryFeatures] = useState(false);
   const [showDeadCapManager, setShowDeadCapManager] = useState(false);
   const [showFAAB, setShowFAAB] = useState(false);
@@ -49,7 +50,7 @@ export const useTeamRostersManager = ({ rosters }: UseTeamRostersManagerProps) =
     });
   }, [rosters, deadCapPlayers, getEffectiveSalary, salaryCap, salariesLoading, deadCapLoading]);
 
-  const { teamFAAB } = useFAABCalculations({ rosters, leagueId });
+  const { teamFAAB } = useFAABCalculations({ rosters, leagueId, transactions });
 
   // Only show salary features if there are actual salaries
   useEffect(() => {

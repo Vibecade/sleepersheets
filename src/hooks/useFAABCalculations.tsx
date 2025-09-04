@@ -7,19 +7,57 @@ import { useLeagueSettings } from './useLeagueSettings';
 interface FAABCalculationsProps {
   rosters: any[];
   leagueId: string;
+  transactions?: any[];
 }
 
-export const useFAABCalculations = ({ rosters, leagueId }: FAABCalculationsProps) => {
+export const useFAABCalculations = ({ rosters, leagueId, transactions = [] }: FAABCalculationsProps) => {
   const { salaries, getEffectiveSalary } = usePlayerSalaries(leagueId);
   const { settings } = useLeagueSettings(leagueId);
   const { deadCapPlayers } = useDeadCapPlayers(leagueId);
   const { contracts } = usePlayerContracts(leagueId);
 
+  // Calculate FAAB spent per roster from transactions
+  const faabSpentByRoster = useMemo(() => {
+    const spentByRoster: Record<number, number> = {};
+    
+    transactions.forEach(transaction => {
+      // Handle waiver bids (settings.waiver_bid)
+      if (transaction.settings?.waiver_bid && transaction.roster_ids?.length > 0) {
+        const rosterId = transaction.roster_ids[0];
+        spentByRoster[rosterId] = (spentByRoster[rosterId] || 0) + transaction.settings.waiver_bid;
+      }
+      
+      // Handle FAAB transfers (waiver_budget array)
+      if (transaction.waiver_budget && Array.isArray(transaction.waiver_budget)) {
+        transaction.waiver_budget.forEach((transfer: any) => {
+          if (transfer.sender) {
+            spentByRoster[transfer.sender] = (spentByRoster[transfer.sender] || 0) + transfer.amount;
+          }
+        });
+      }
+    });
+    
+    return spentByRoster;
+  }, [transactions]);
+
+  // Get FAAB cost for a specific player from transactions
+  const getPlayerFAABCost = useCallback((playerId: string, rosterId: number) => {
+    for (const transaction of transactions) {
+      if (transaction.adds && transaction.adds[playerId] === rosterId) {
+        // Check if this was a waiver pickup with FAAB cost
+        if (transaction.settings?.waiver_bid) {
+          return transaction.settings.waiver_bid;
+        }
+      }
+    }
+    return 0;
+  }, [transactions]);
+
   const teamFAAB = useMemo(() => {
     if (!rosters.length) return {};
     
-    console.log('Calculating FAAB for teams');
-    const calculations: Record<number, number> = {};
+    console.log('Calculating FAAB for teams with transaction data');
+    const calculations: Record<number, { available: number; spent: number; total: number }> = {};
     const salaryCap = settings?.salary_cap || 200000;
     const faabCap = settings?.faab_cap || 100;
     
@@ -42,14 +80,23 @@ export const useFAABCalculations = ({ rosters, leagueId }: FAABCalculationsProps
       
       const totalWithDeadCap = totalSalary + deadCap;
       
-      // FAAB = min(Salary Cap - Total Salary, FAAB Cap)
-      const availableFaab = Math.max(0, salaryCap - totalWithDeadCap);
-      const faab = Math.min(availableFaab, faabCap);
-      calculations[roster.roster_id] = faab;
+      // Calculate FAAB spent from transactions
+      const faabSpent = faabSpentByRoster[roster.roster_id] || 0;
+      
+      // Available FAAB = min(Salary Cap - Total Salary, FAAB Cap) - FAAB Spent
+      const availableFaabBeforeSpending = Math.max(0, salaryCap - totalWithDeadCap);
+      const maxFaab = Math.min(availableFaabBeforeSpending, faabCap);
+      const availableFaab = Math.max(0, maxFaab - faabSpent);
+      
+      calculations[roster.roster_id] = {
+        available: availableFaab,
+        spent: faabSpent,
+        total: maxFaab
+      };
     });
     
     return calculations;
-  }, [rosters, settings?.salary_cap, settings?.faab_cap, deadCapPlayers, getEffectiveSalary]);
+  }, [rosters, settings?.salary_cap, settings?.faab_cap, deadCapPlayers, getEffectiveSalary, faabSpentByRoster]);
 
   const calculateDeadCap = useCallback((playerId: string, currentYear: number = new Date().getFullYear()) => {
     const contractLength = contracts[playerId];
@@ -87,6 +134,8 @@ export const useFAABCalculations = ({ rosters, leagueId }: FAABCalculationsProps
 
   return {
     teamFAAB,
+    faabSpentByRoster,
+    getPlayerFAABCost,
     calculateDeadCap,
     calculateTotalDeadCapForPlayer
   };
