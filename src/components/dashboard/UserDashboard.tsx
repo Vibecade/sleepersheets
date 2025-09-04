@@ -5,8 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Clock, Users, Calendar, ExternalLink } from 'lucide-react';
 import { useUserLeagues } from '@/hooks/useUserLeagues';
+import { useSleeperUser } from '@/hooks/useSleeperUser';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
+import SleeperUsernameForm from '@/components/SleeperUsernameForm';
+import SleeperLeaguesList from '@/components/SleeperLeaguesList';
 
 interface UserDashboardProps {
   onSelectLeague: (leagueId: string) => void;
@@ -14,6 +17,7 @@ interface UserDashboardProps {
 
 const UserDashboard: React.FC<UserDashboardProps> = ({ onSelectLeague }) => {
   const { ownedLeagues, recentLeagues, loading } = useUserLeagues();
+  const { sleeperUser } = useSleeperUser();
 
   if (loading) {
     return (
@@ -41,6 +45,12 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onSelectLeague }) => {
 
   return (
     <div className="space-y-6">
+      {/* Sleeper Account Configuration */}
+      <SleeperUsernameForm />
+
+      {/* Sleeper Leagues */}
+      {sleeperUser && <SleeperLeaguesList onSelectLeague={onSelectLeague} />}
+
       {/* Owned Leagues */}
       <Card>
         <CardHeader>
