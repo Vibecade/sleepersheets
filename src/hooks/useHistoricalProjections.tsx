@@ -85,7 +85,7 @@ const getGameStatus = (currentPoints: number, currentWeek: number): 'not-played'
 };
 
 export const useHistoricalProjections = (leagueId: string, currentWeek: number, currentMatchups?: Matchup[]) => {
-  const { rosters, draftPicks, players } = useLeagueData();
+  const { rosters, draftPicks, players, league } = useLeagueData();
   const [historicalData, setHistoricalData] = useState<HistoricalMatchup[]>([]);
   const [sleeperProjections, setSleeperProjections] = useState<Record<string, SleeperProjection> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -162,8 +162,9 @@ export const useHistoricalProjections = (leagueId: string, currentWeek: number, 
       }
 
       try {
-        console.log(`Attempting to fetch Sleeper projections for week ${currentWeek}`);
-        const projections = await fetchSleeperProjections(currentWeek);
+        const season = league?.season || '2025';
+        console.log(`Attempting to fetch Sleeper projections for week ${currentWeek}, season ${season}`);
+        const projections = await fetchSleeperProjections(currentWeek, season);
         if (projections) {
           console.log(`Successfully fetched Sleeper projections:`, Object.keys(projections).length, 'players');
           setSleeperProjections(projections);
