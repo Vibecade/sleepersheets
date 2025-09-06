@@ -87,6 +87,7 @@ const getGameStatus = (currentPoints: number, currentWeek: number): 'not-played'
 export const useHistoricalProjections = (leagueId: string, currentWeek: number, currentMatchups?: Matchup[]) => {
   const { rosters, draftPicks, players } = useLeagueData();
   const [historicalData, setHistoricalData] = useState<HistoricalMatchup[]>([]);
+  const [sleeperProjections, setSleeperProjections] = useState<Record<string, SleeperProjection> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -153,10 +154,36 @@ export const useHistoricalProjections = (leagueId: string, currentWeek: number, 
     return projectionMap;
   }, [rosters, players]);
 
+  // Fetch Sleeper projections for current week
+  useEffect(() => {
+    const fetchSleeperProjectionsData = async () => {
+      if (!leagueId || currentWeek < 1) {
+        return;
+      }
+
+      try {
+        console.log(`Attempting to fetch Sleeper projections for week ${currentWeek}`);
+        const projections = await fetchSleeperProjections(currentWeek);
+        if (projections) {
+          console.log(`Successfully fetched Sleeper projections:`, Object.keys(projections).length, 'players');
+          setSleeperProjections(projections);
+        } else {
+          console.log('No Sleeper projections available, will use fallback');
+          setSleeperProjections(null);
+        }
+      } catch (err) {
+        console.error('Error fetching Sleeper projections:', err);
+        setSleeperProjections(null);
+      }
+    };
+
+    fetchSleeperProjectionsData();
+  }, [leagueId, currentWeek]);
+
   // Fetch historical matchup data for weeks 2+
   useEffect(() => {
     const fetchHistoricalData = async () => {
-      if (!leagueId || currentWeek < 2) {
+      if (!leagueId) {
         setLoading(false);
         return;
       }
@@ -165,24 +192,27 @@ export const useHistoricalProjections = (leagueId: string, currentWeek: number, 
         setLoading(true);
         setError(null);
 
-        const weeksToFetch = Math.min(6, currentWeek - 1); // Last 6 weeks or available weeks
-        const historicalPromises: Promise<HistoricalMatchup[]>[] = [];
+        // Only fetch historical data if we're past week 1 and don't have Sleeper projections
+        if (currentWeek >= 2) {
+          const weeksToFetch = Math.min(6, currentWeek - 1); // Last 6 weeks or available weeks
+          const historicalPromises: Promise<HistoricalMatchup[]>[] = [];
 
-        for (let i = 1; i <= weeksToFetch; i++) {
-          const week = currentWeek - i;
-          const promise = cachedFetch<Matchup[]>(
-            `https://api.sleeper.app/v1/league/${leagueId}/matchups/${week}`,
-            {},
-            5 * 60 * 1000 // 5 minutes cache
-          ).then(data => (data || []).map(matchup => ({ ...matchup, week })));
+          for (let i = 1; i <= weeksToFetch; i++) {
+            const week = currentWeek - i;
+            const promise = cachedFetch<Matchup[]>(
+              `https://api.sleeper.app/v1/league/${leagueId}/matchups/${week}`,
+              {},
+              5 * 60 * 1000 // 5 minutes cache
+            ).then(data => (data || []).map(matchup => ({ ...matchup, week })));
+            
+            historicalPromises.push(promise);
+          }
+
+          const historicalResults = await Promise.all(historicalPromises);
+          const flattenedData = historicalResults.flat();
           
-          historicalPromises.push(promise);
+          setHistoricalData(flattenedData);
         }
-
-        const historicalResults = await Promise.all(historicalPromises);
-        const flattenedData = historicalResults.flat();
-        
-        setHistoricalData(flattenedData);
       } catch (err) {
         console.error('Error fetching historical data:', err);
         setError('Failed to fetch historical data');
@@ -277,13 +307,81 @@ export const useHistoricalProjections = (leagueId: string, currentWeek: number, 
     return projectionMap;
   }, [historicalData]);
 
-  // Return appropriate projections based on current week
-  const projections = currentWeek === 1 ? generateWeek1Projections : historicalProjections;
+  // Convert Sleeper projections to our format
+  const sleeperProjectionData = useMemo(() => {
+    if (!sleeperProjections || !rosters || !players) return {};
+    
+    console.log('Converting Sleeper projections to our format');
+    const projectionMap: WeeklyProjections = {};
+    
+    rosters.forEach(roster => {
+      const starters = roster.starters || [];
+      let totalProjection = 0;
+      let projectedPlayers = 0;
+      
+      starters.forEach((playerId: string) => {
+        if (!playerId || playerId === '0') return;
+        
+        const playerProjection = sleeperProjections[playerId];
+        if (playerProjection && typeof playerProjection.pts_ppr === 'number') {
+          totalProjection += playerProjection.pts_ppr;
+          projectedPlayers++;
+        }
+      });
+      
+      if (projectedPlayers > 0) {
+        // Determine game status for confidence adjustment
+        const currentMatchup = currentMatchups?.find(m => m.roster_id === roster.roster_id);
+        const currentPoints = currentMatchup?.points || 0;
+        const gameStatus = getGameStatus(currentPoints, currentWeek);
+        
+        // Higher confidence for Sleeper API projections
+        let confidence = 0.85;
+        if (gameStatus === 'not-played') {
+          confidence = 0.75;
+        } else if (gameStatus === 'in-progress') {
+          confidence = 0.9; // Even higher during games since projections are real-time
+        }
+        
+        projectionMap[roster.roster_id] = {
+          rosterId: roster.roster_id,
+          projectedPoints: Math.round(totalProjection * 10) / 10,
+          confidence: confidence,
+          projectionType: 'sleeper',
+          gameStatus,
+          source: 'sleeper'
+        };
+      }
+    });
+    
+    console.log(`Created Sleeper projections for ${Object.keys(projectionMap).length} teams`);
+    return projectionMap;
+  }, [sleeperProjections, rosters, players, currentMatchups, currentWeek]);
+
+  // Priority system: Sleeper > Historical > Draft-based
+  const projections = useMemo(() => {
+    // Priority 1: Sleeper API projections (when available)
+    if (Object.keys(sleeperProjectionData).length > 0) {
+      console.log('Using Sleeper API projections');
+      return sleeperProjectionData;
+    }
+    
+    // Priority 2: Historical projections (weeks 2+)
+    if (currentWeek >= 2 && Object.keys(historicalProjections).length > 0) {
+      console.log('Using historical projections (fallback from Sleeper)');
+      return historicalProjections;
+    }
+    
+    // Priority 3: Draft-based projections (week 1 or complete fallback)
+    console.log('Using draft-based projections (final fallback)');
+    return generateWeek1Projections;
+  }, [sleeperProjectionData, historicalProjections, generateWeek1Projections, currentWeek]);
 
   return {
     projections,
     loading,
     error,
-    dataPoints: historicalData.length
+    dataPoints: historicalData.length,
+    sleeperProjectionsAvailable: Object.keys(sleeperProjectionData).length > 0
   };
 };
