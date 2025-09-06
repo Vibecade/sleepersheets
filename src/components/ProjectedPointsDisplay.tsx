@@ -25,16 +25,27 @@ export const ProjectedPointsDisplay: React.FC<ProjectedPointsDisplayProps> = ({
     );
   }
 
-  const { projectedPoints, confidence, trendAdjustment, gameStatus } = projection;
+  const { projectedPoints, confidence, trendAdjustment, gameStatus, source } = projection;
   
   // Determine confidence color
-  const getConfidenceColor = (conf: number, gameStatus?: string) => {
+  const getConfidenceColor = (conf: number, gameStatus?: string, source?: string) => {
     // Special styling for game status
     if (gameStatus === 'not-played') {
       return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
     }
     if (gameStatus === 'in-progress') {
       return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+    }
+    if (gameStatus === 'completed') {
+      return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
+    if (gameStatus === 'poor-performance') {
+      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+    }
+    
+    // Sleeper API projections get blue styling
+    if (source === 'sleeper') {
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
     }
     
     // Standard confidence colors
@@ -73,35 +84,51 @@ export const ProjectedPointsDisplay: React.FC<ProjectedPointsDisplayProps> = ({
         
         <Tooltip>
           <TooltipTrigger>
-            <Badge 
+             <Badge 
               variant="outline" 
-              className={`text-xs px-1 py-0 ${getConfidenceColor(confidence, gameStatus)}`}
+              className={`text-xs px-1 py-0 ${getConfidenceColor(confidence, gameStatus, source)}`}
             >
               {gameStatus === 'not-played' ? 'Pending' : 
                gameStatus === 'in-progress' ? 'Live' : 
+               gameStatus === 'completed' ? 'Final' :
+               gameStatus === 'poor-performance' ? 'Poor' :
+               source === 'sleeper' ? 'Sleeper' :
                `${Math.round(confidence * 100)}%`}
             </Badge>
           </TooltipTrigger>
           <TooltipContent side="top" className="max-w-xs">
             <div className="space-y-1 text-xs">
-              <div><strong>Projection Type:</strong> {projection.projectionType === 'draft-based' ? 'Draft-Based' : 'Historical'}</div>
-              {gameStatus && (
+              <div><strong>Source:</strong> {
+                source === 'sleeper' ? 'Sleeper API' :
+                source === 'draft' ? 'Draft-Based' :
+                'Historical Analysis'
+              }</div>
+               {gameStatus && (
                 <div><strong>Game Status:</strong> {
                   gameStatus === 'not-played' ? 'Games not yet played' :
                   gameStatus === 'in-progress' ? 'Games in progress' :
+                  gameStatus === 'completed' ? 'Games completed' :
                   gameStatus === 'poor-performance' ? 'Poor performance this week' :
-                  'Games completed'
+                  'Unknown status'
                 }</div>
               )}
               <div><strong>Confidence:</strong> {Math.round(confidence * 100)}%</div>
-              {projection.projectionType === 'historical' ? (
+              {source === 'historical' && projection.historicalAverage && (
                 <>
-                  <div>Historical Avg: {projection.historicalAverage}</div>
-                  <div>Trend Adjustment: {trendAdjustment > 0 ? '+' : ''}{projection.trendAdjustment}</div>
-                  <div>Opponent Adjustment: {projection.opponentAdjustment > 0 ? '+' : ''}{projection.opponentAdjustment}</div>
+                  <div>Historical Avg: {projection.historicalAverage.toFixed(1)} pts</div>
+                  {trendAdjustment && Math.abs(trendAdjustment) > 0.1 && (
+                    <div>Trend: {trendAdjustment > 0 ? '+' : ''}{trendAdjustment.toFixed(1)} pts</div>
+                  )}
+                  {projection.opponentAdjustment && Math.abs(projection.opponentAdjustment) > 0.1 && (
+                    <div>Opponent Adj: {projection.opponentAdjustment > 0 ? '+' : ''}{projection.opponentAdjustment.toFixed(1)} pts</div>
+                  )}
                 </>
-              ) : (
+              )}
+              {source === 'draft' && (
                 <div>Based on draft position & player baselines</div>
+              )}
+              {source === 'sleeper' && (
+                <div>Official Sleeper projections</div>
               )}
             </div>
           </TooltipContent>

@@ -2,6 +2,16 @@ import { cachedFetch } from '@/utils/apiCache';
 import { rateLimiter } from '@/utils/inputValidation';
 import type { SleeperLeague, SleeperUser, SleeperRoster, SleeperDraft, SleeperTransaction, SleeperPlayer } from '@/types/sleeper';
 
+export interface SleeperProjection {
+  player_id: string;
+  week: number;
+  season: string;
+  pts_half_ppr?: number;
+  pts_ppr?: number;
+  pts_std?: number;
+  [key: string]: any;
+}
+
 export interface CombinedLeagueData {
   league: SleeperLeague;
   rosters: SleeperRoster[];
@@ -113,4 +123,42 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     drafts,
     draftPicks
   };
+};
+
+export const fetchSleeperProjections = async (week: number, season: string = '2024'): Promise<Record<string, SleeperProjection> | null> => {
+  console.log(`Attempting to fetch Sleeper projections for week ${week}, season ${season}`);
+  
+  const clientId = 'projections_fetch';
+  if (!rateLimiter.isAllowed(clientId, 3, 60000)) {
+    throw new Error('Too many projection requests. Please wait a moment before trying again.');
+  }
+
+  // Try different potential projection endpoints
+  const possibleEndpoints = [
+    `https://api.sleeper.app/v1/projections/nfl/regular/${season}/${week}`,
+    `https://api.sleeper.app/v1/projections/nfl/${season}/${week}`,
+    `https://api.sleeper.app/v1/stats/nfl/regular/${season}/${week}?season_type=regular&position=all&order_by=pts_ppr`,
+  ];
+
+  for (const endpoint of possibleEndpoints) {
+    try {
+      console.log(`Trying projection endpoint: ${endpoint}`);
+      const projections = await cachedFetch<Record<string, SleeperProjection>>(
+        endpoint,
+        {},
+        5 * 60 * 1000 // 5 minutes cache for projections
+      );
+      
+      if (projections && Object.keys(projections).length > 0) {
+        console.log(`Successfully fetched projections from: ${endpoint}`);
+        return projections;
+      }
+    } catch (error) {
+      console.log(`Failed to fetch from ${endpoint}:`, error);
+      continue;
+    }
+  }
+
+  console.log('No Sleeper projection endpoints available');
+  return null;
 };

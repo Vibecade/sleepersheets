@@ -2,16 +2,18 @@ import { useState, useEffect, useMemo } from 'react';
 import { useMatchups, type Matchup } from './useMatchups';
 import { cachedFetch } from '@/utils/apiCache';
 import { useLeagueData } from '@/components/LeagueDataProvider';
+import { fetchSleeperProjections, type SleeperProjection } from '@/utils/leagueApi';
 
 export interface ProjectionData {
   rosterId: number;
   projectedPoints: number;
   confidence: number; // 0-1 scale
-  historicalAverage: number;
-  trendAdjustment: number;
-  opponentAdjustment: number;
-  projectionType: 'historical' | 'draft-based';
+  historicalAverage?: number;
+  trendAdjustment?: number;
+  opponentAdjustment?: number;
+  projectionType: 'historical' | 'draft-based' | 'sleeper';
   gameStatus?: 'not-played' | 'in-progress' | 'completed' | 'poor-performance';
+  source: 'sleeper' | 'historical' | 'draft';
 }
 
 export interface WeeklyProjections {
@@ -143,7 +145,8 @@ export const useHistoricalProjections = (leagueId: string, currentWeek: number, 
         trendAdjustment: 0,
         opponentAdjustment: 0,
         projectionType: 'draft-based',
-        gameStatus
+        gameStatus,
+        source: 'draft'
       };
     });
 
@@ -266,7 +269,8 @@ export const useHistoricalProjections = (leagueId: string, currentWeek: number, 
         trendAdjustment: Math.round(trendAdjustment * 10) / 10,
         opponentAdjustment: Math.round(opponentAdjustment * 10) / 10,
         projectionType: 'historical',
-        gameStatus: gameStatus
+        gameStatus: gameStatus,
+        source: 'historical'
       };
     });
 
