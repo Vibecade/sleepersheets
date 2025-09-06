@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, Trophy, Calendar, Activity, RefreshCw, ArrowRightLeft } from 'lucide-react';
 import { useMatchups } from '@/hooks/useMatchups';
+import { useHistoricalProjections } from '@/hooks/useHistoricalProjections';
+import { ProjectedPointsDisplay } from './ProjectedPointsDisplay';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
@@ -31,7 +33,14 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   onResyncData
 }) => {
   const [selectedWeek, setSelectedWeek] = useState(league?.settings?.leg || 1);
-  const { matchups, loading: matchupsLoading } = useMatchups(league?.league_id, selectedWeek);
+  const { matchups, loading: matchupsLoading, getCurrentNFLWeek } = useMatchups(league?.league_id, selectedWeek);
+  
+  // Get projections for current week
+  const currentWeek = getCurrentNFLWeek();
+  const { projections, loading: projectionsLoading } = useHistoricalProjections(
+    league?.league_id || '',
+    currentWeek
+  );
 
   // Group matchups by matchup_id
   const groupedMatchups = matchups.reduce((acc, matchup) => {
@@ -166,34 +175,54 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
 
                     return (
                       <div key={matchupId} className="bg-white/5 rounded-lg p-6 border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]">
-                        <div className="flex items-center justify-between">
-                          <div className={`flex-1 text-center transition-all duration-300 ${team1Winning ? 'transform scale-105' : ''}`}>
-                            <div className={`font-medium ${team1Winning ? 'text-green-400' : 'text-yellow-500'} transition-colors duration-300`}>
-                              {getTeamName(user1)}
-                            </div>
-                            <div className="text-sm text-gray-400 mb-2 transition-colors duration-200">
-                              {getTeamRecord(roster1)}
-                            </div>
-                            <div className={`text-2xl font-bold transition-all duration-300 ${team1Winning ? 'text-green-300 scale-110' : 'text-yellow-400'}`}>
-                              {formatPoints(team1.points)}
-                            </div>
-                          </div>
+                         <div className="flex items-center justify-between">
+                           <div className={`flex-1 text-center transition-all duration-300 ${team1Winning ? 'transform scale-105' : ''}`}>
+                             <div className={`font-medium ${team1Winning ? 'text-green-400' : 'text-yellow-500'} transition-colors duration-300`}>
+                               {getTeamName(user1)}
+                             </div>
+                             <div className="text-sm text-gray-400 mb-2 transition-colors duration-200">
+                               {getTeamRecord(roster1)}
+                             </div>
+                             <div className={`text-2xl font-bold transition-all duration-300 ${team1Winning ? 'text-green-300 scale-110' : 'text-yellow-400'}`}>
+                               {formatPoints(team1.points)}
+                             </div>
+                             {!projectionsLoading && projections[team1.roster_id] && selectedWeek >= currentWeek && (
+                               <div className="mt-2">
+                                 <ProjectedPointsDisplay 
+                                   projection={projections[team1.roster_id]}
+                                   actualPoints={selectedWeek === currentWeek ? team1.points : undefined}
+                                   showActual={selectedWeek === currentWeek}
+                                   size="sm"
+                                 />
+                               </div>
+                             )}
+                           </div>
                           
                           <div className="px-6">
                             <div className="text-center text-gray-400 text-sm font-medium">VS</div>
                           </div>
                           
-                          <div className={`flex-1 text-center transition-all duration-300 ${!team1Winning ? 'transform scale-105' : ''}`}>
-                            <div className={`font-medium ${!team1Winning ? 'text-green-400' : 'text-yellow-500'} transition-colors duration-300`}>
-                              {getTeamName(user2)}
-                            </div>
-                            <div className="text-sm text-gray-400 mb-2 transition-colors duration-200">
-                              {getTeamRecord(roster2)}
-                            </div>
-                            <div className={`text-2xl font-bold transition-all duration-300 ${!team1Winning ? 'text-green-300 scale-110' : 'text-yellow-400'}`}>
-                              {formatPoints(team2.points)}
-                            </div>
-                          </div>
+                           <div className={`flex-1 text-center transition-all duration-300 ${!team1Winning ? 'transform scale-105' : ''}`}>
+                             <div className={`font-medium ${!team1Winning ? 'text-green-400' : 'text-yellow-500'} transition-colors duration-300`}>
+                               {getTeamName(user2)}
+                             </div>
+                             <div className="text-sm text-gray-400 mb-2 transition-colors duration-200">
+                               {getTeamRecord(roster2)}
+                             </div>
+                             <div className={`text-2xl font-bold transition-all duration-300 ${!team1Winning ? 'text-green-300 scale-110' : 'text-yellow-400'}`}>
+                               {formatPoints(team2.points)}
+                             </div>
+                             {!projectionsLoading && projections[team2.roster_id] && selectedWeek >= currentWeek && (
+                               <div className="mt-2">
+                                 <ProjectedPointsDisplay 
+                                   projection={projections[team2.roster_id]}
+                                   actualPoints={selectedWeek === currentWeek ? team2.points : undefined}
+                                   showActual={selectedWeek === currentWeek}
+                                   size="sm"
+                                 />
+                               </div>
+                             )}
+                           </div>
                         </div>
                       </div>
                     );
