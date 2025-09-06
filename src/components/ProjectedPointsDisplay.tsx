@@ -73,11 +73,17 @@ export const ProjectedPointsDisplay: React.FC<ProjectedPointsDisplayProps> = ({
           </TooltipTrigger>
           <TooltipContent side="top" className="max-w-xs">
             <div className="space-y-1 text-xs">
-              <div><strong>Projection Breakdown:</strong></div>
-              <div>Historical Avg: {projection.historicalAverage}</div>
-              <div>Trend Adjustment: {trendAdjustment > 0 ? '+' : ''}{projection.trendAdjustment}</div>
-              <div>Opponent Adjustment: {projection.opponentAdjustment > 0 ? '+' : ''}{projection.opponentAdjustment}</div>
-              <div>Confidence: {Math.round(confidence * 100)}%</div>
+              <div><strong>Projection Type:</strong> {projection.projectionType === 'draft-based' ? 'Draft-Based' : 'Historical'}</div>
+              <div><strong>Confidence:</strong> {Math.round(confidence * 100)}%</div>
+              {projection.projectionType === 'historical' ? (
+                <>
+                  <div>Historical Avg: {projection.historicalAverage}</div>
+                  <div>Trend Adjustment: {trendAdjustment > 0 ? '+' : ''}{projection.trendAdjustment}</div>
+                  <div>Opponent Adjustment: {projection.opponentAdjustment > 0 ? '+' : ''}{projection.opponentAdjustment}</div>
+                </>
+              ) : (
+                <div>Based on draft position & player baselines</div>
+              )}
             </div>
           </TooltipContent>
         </Tooltip>

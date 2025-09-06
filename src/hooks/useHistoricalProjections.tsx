@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useMatchups, type Matchup } from './useMatchups';
 import { cachedFetch } from '@/utils/apiCache';
+import { useLeagueData } from '@/components/LeagueDataProvider';
 
 export interface ProjectionData {
   rosterId: number;
@@ -9,6 +10,7 @@ export interface ProjectionData {
   historicalAverage: number;
   trendAdjustment: number;
   opponentAdjustment: number;
+  projectionType: 'historical' | 'draft-based';
 }
 
 export interface WeeklyProjections {
@@ -19,12 +21,71 @@ interface HistoricalMatchup extends Matchup {
   week: number;
 }
 
+// Week 1 projection baselines by position
+const POSITION_BASELINES = {
+  QB: { base: 20, variance: 5 },
+  RB: { base: 12, variance: 8 },
+  WR: { base: 10, variance: 6 },
+  TE: { base: 8, variance: 4 },
+  K: { base: 8, variance: 3 },
+  DEF: { base: 8, variance: 4 }
+} as const;
+
 export const useHistoricalProjections = (leagueId: string, currentWeek: number) => {
+  const { rosters, draftPicks, players } = useLeagueData();
   const [historicalData, setHistoricalData] = useState<HistoricalMatchup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch historical matchup data for the last 6 weeks
+  // Generate week 1 projections based on draft data
+  const generateWeek1Projections = useMemo(() => {
+    if (!rosters || !players) return {};
+
+    const projectionMap: WeeklyProjections = {};
+
+    rosters.forEach(roster => {
+      const starters = roster.starters || [];
+      let totalProjection = 0;
+      let starterCount = 0;
+
+      // Calculate projection based on starter positions
+      starters.forEach((playerId: string) => {
+        if (!playerId || playerId === '0') return;
+        
+        const player = players[playerId];
+        if (!player) return;
+
+        const position = player.position as keyof typeof POSITION_BASELINES;
+        const baseline = POSITION_BASELINES[position] || POSITION_BASELINES.RB;
+        
+        // Add some randomness for week 1 (-20% to +20% of base)
+        const variance = baseline.base * 0.2;
+        const projection = baseline.base + (Math.random() - 0.5) * variance;
+        
+        totalProjection += Math.max(0, projection);
+        starterCount++;
+      });
+
+      // Fill empty starter slots with average baseline
+      const averageBaseline = 8;
+      const emptySlots = Math.max(0, 9 - starterCount); // Assume 9 starters
+      totalProjection += emptySlots * averageBaseline;
+
+      projectionMap[roster.roster_id] = {
+        rosterId: roster.roster_id,
+        projectedPoints: Math.round(totalProjection * 10) / 10,
+        confidence: 0.6, // Lower confidence for draft-based
+        historicalAverage: totalProjection,
+        trendAdjustment: 0,
+        opponentAdjustment: 0,
+        projectionType: 'draft-based'
+      };
+    });
+
+    return projectionMap;
+  }, [rosters, players]);
+
+  // Fetch historical matchup data for weeks 2+
   useEffect(() => {
     const fetchHistoricalData = async () => {
       if (!leagueId || currentWeek < 2) {
@@ -66,7 +127,7 @@ export const useHistoricalProjections = (leagueId: string, currentWeek: number) 
   }, [leagueId, currentWeek]);
 
   // Calculate projections based on historical data
-  const projections = useMemo(() => {
+  const historicalProjections = useMemo(() => {
     if (historicalData.length === 0) return {};
 
     const projectionMap: WeeklyProjections = {};
@@ -125,11 +186,15 @@ export const useHistoricalProjections = (leagueId: string, currentWeek: number) 
         historicalAverage: Math.round(historicalAverage * 10) / 10,
         trendAdjustment: Math.round(trendAdjustment * 10) / 10,
         opponentAdjustment: Math.round(opponentAdjustment * 10) / 10,
+        projectionType: 'historical'
       };
     });
 
     return projectionMap;
   }, [historicalData]);
+
+  // Return appropriate projections based on current week
+  const projections = currentWeek === 1 ? generateWeek1Projections : historicalProjections;
 
   return {
     projections,
