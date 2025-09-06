@@ -11,6 +11,7 @@ export interface ProjectionData {
   trendAdjustment: number;
   opponentAdjustment: number;
   projectionType: 'historical' | 'draft-based';
+  gameStatus?: 'not-played' | 'in-progress' | 'completed' | 'poor-performance';
 }
 
 export interface WeeklyProjections {
@@ -31,7 +32,57 @@ const POSITION_BASELINES = {
   DEF: { base: 8, variance: 4 }
 } as const;
 
-export const useHistoricalProjections = (leagueId: string, currentWeek: number) => {
+// Helper function to determine game status
+const getGameStatus = (currentPoints: number, currentWeek: number): 'not-played' | 'in-progress' | 'completed' | 'poor-performance' => {
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const hour = now.getHours();
+  
+  // Thursday games start around 8:20 PM ET (20:20)
+  // Sunday games start around 1:00 PM ET (13:00)
+  // Monday games start around 8:15 PM ET (20:15)
+  
+  if (currentPoints === 0) {
+    // Thursday before 8 PM or early in week
+    if (dayOfWeek < 4 || (dayOfWeek === 4 && hour < 20)) {
+      return 'not-played';
+    }
+    // Thursday night games have started, but this team has 0 points
+    if (dayOfWeek === 4 && hour >= 20) {
+      return 'poor-performance'; // Likely their players didn't play Thursday
+    }
+    // Friday/Saturday - wait for Sunday
+    if (dayOfWeek === 5 || dayOfWeek === 6) {
+      return 'not-played';
+    }
+    // Sunday before 1 PM
+    if (dayOfWeek === 0 && hour < 13) {
+      return 'not-played';
+    }
+    // Sunday afternoon/evening or Monday before games
+    if (dayOfWeek === 0 || (dayOfWeek === 1 && hour < 20)) {
+      return 'poor-performance'; // Games have started, 0 points is concerning
+    }
+    // Monday night - if still 0, definitely poor performance
+    if (dayOfWeek === 1 && hour >= 20) {
+      return 'poor-performance';
+    }
+    // Tuesday/Wednesday - week is over
+    return 'poor-performance';
+  }
+  
+  // Has some points
+  if (currentPoints > 0 && currentPoints < 50) {
+    // Check if we're still in the middle of the week
+    if (dayOfWeek === 0 || (dayOfWeek === 1 && hour < 23)) {
+      return 'in-progress';
+    }
+  }
+  
+  return 'completed';
+};
+
+export const useHistoricalProjections = (leagueId: string, currentWeek: number, currentMatchups?: Matchup[]) => {
   const { rosters, draftPicks, players } = useLeagueData();
   const [historicalData, setHistoricalData] = useState<HistoricalMatchup[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,14 +122,28 @@ export const useHistoricalProjections = (leagueId: string, currentWeek: number) 
       const emptySlots = Math.max(0, 9 - starterCount); // Assume 9 starters
       totalProjection += emptySlots * averageBaseline;
 
+      // Determine game status for week 1 confidence adjustment
+      const currentMatchup = currentMatchups?.find(m => m.roster_id === roster.roster_id);
+      const currentPoints = currentMatchup?.points || 0;
+      const gameStatus = getGameStatus(currentPoints, currentWeek);
+      
+      // Adjust confidence based on game status
+      let adjustedConfidence = 0.6; // Base confidence for draft-based
+      if (gameStatus === 'not-played') {
+        adjustedConfidence = 0.4; // Lower confidence when games haven't started
+      } else if (gameStatus === 'in-progress') {
+        adjustedConfidence = 0.5; // Moderate confidence during games
+      }
+
       projectionMap[roster.roster_id] = {
         rosterId: roster.roster_id,
         projectedPoints: Math.round(totalProjection * 10) / 10,
-        confidence: 0.6, // Lower confidence for draft-based
+        confidence: adjustedConfidence,
         historicalAverage: totalProjection,
         trendAdjustment: 0,
         opponentAdjustment: 0,
-        projectionType: 'draft-based'
+        projectionType: 'draft-based',
+        gameStatus
       };
     });
 
@@ -177,7 +242,21 @@ export const useHistoricalProjections = (leagueId: string, currentWeek: number) 
       const standardDeviation = Math.sqrt(variance);
       const consistency = Math.max(0, 1 - (standardDeviation / historicalAverage));
       const dataConfidence = Math.min(1, dataPoints / 6); // More confident with more data
-      const confidence = (consistency * 0.7) + (dataConfidence * 0.3);
+      let baseConfidence = (consistency * 0.7) + (dataConfidence * 0.3);
+      
+      // Adjust confidence based on current week game status
+      const currentMatchup = currentMatchups?.find(m => m.roster_id === rosterId);
+      const currentPoints = currentMatchup?.points || 0;
+      const gameStatus = getGameStatus(currentPoints, currentWeek);
+      
+      let adjustedConfidence = baseConfidence;
+      if (gameStatus === 'not-played') {
+        adjustedConfidence = Math.min(baseConfidence, 0.6); // Cap confidence when games haven't started
+      } else if (gameStatus === 'in-progress') {
+        adjustedConfidence = baseConfidence * 0.8; // Slightly lower during games
+      }
+      
+      const confidence = adjustedConfidence;
 
       projectionMap[rosterId] = {
         rosterId,
@@ -186,7 +265,8 @@ export const useHistoricalProjections = (leagueId: string, currentWeek: number) 
         historicalAverage: Math.round(historicalAverage * 10) / 10,
         trendAdjustment: Math.round(trendAdjustment * 10) / 10,
         opponentAdjustment: Math.round(opponentAdjustment * 10) / 10,
-        projectionType: 'historical'
+        projectionType: 'historical',
+        gameStatus: gameStatus
       };
     });
 

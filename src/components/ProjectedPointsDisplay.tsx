@@ -25,10 +25,19 @@ export const ProjectedPointsDisplay: React.FC<ProjectedPointsDisplayProps> = ({
     );
   }
 
-  const { projectedPoints, confidence, trendAdjustment } = projection;
+  const { projectedPoints, confidence, trendAdjustment, gameStatus } = projection;
   
   // Determine confidence color
-  const getConfidenceColor = (conf: number) => {
+  const getConfidenceColor = (conf: number, gameStatus?: string) => {
+    // Special styling for game status
+    if (gameStatus === 'not-played') {
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+    }
+    if (gameStatus === 'in-progress') {
+      return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+    }
+    
+    // Standard confidence colors
     if (conf >= 0.8) return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
     if (conf >= 0.6) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
     return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
@@ -66,14 +75,24 @@ export const ProjectedPointsDisplay: React.FC<ProjectedPointsDisplayProps> = ({
           <TooltipTrigger>
             <Badge 
               variant="outline" 
-              className={`text-xs px-1 py-0 ${getConfidenceColor(confidence)}`}
+              className={`text-xs px-1 py-0 ${getConfidenceColor(confidence, gameStatus)}`}
             >
-              {Math.round(confidence * 100)}%
+              {gameStatus === 'not-played' ? 'Pending' : 
+               gameStatus === 'in-progress' ? 'Live' : 
+               `${Math.round(confidence * 100)}%`}
             </Badge>
           </TooltipTrigger>
           <TooltipContent side="top" className="max-w-xs">
             <div className="space-y-1 text-xs">
               <div><strong>Projection Type:</strong> {projection.projectionType === 'draft-based' ? 'Draft-Based' : 'Historical'}</div>
+              {gameStatus && (
+                <div><strong>Game Status:</strong> {
+                  gameStatus === 'not-played' ? 'Games not yet played' :
+                  gameStatus === 'in-progress' ? 'Games in progress' :
+                  gameStatus === 'poor-performance' ? 'Poor performance this week' :
+                  'Games completed'
+                }</div>
+              )}
               <div><strong>Confidence:</strong> {Math.round(confidence * 100)}%</div>
               {projection.projectionType === 'historical' ? (
                 <>
