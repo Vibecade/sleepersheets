@@ -98,6 +98,9 @@
     -webkit-color-scheme: dark;
     line-height: 1.6;
     font-weight: 400;
+    /* Better mobile text rendering */
+    font-size: clamp(0.875rem, 2.5vw, 1rem);
+    letter-spacing: -0.01em;
     /* Better mobile scrolling */
     -webkit-overflow-scrolling: touch;
     /* Prevent zoom on input focus for iOS */
@@ -420,19 +423,41 @@
   /* Mobile optimizations */
   @media (max-width: 768px) {
     body {
-      font-size: 1rem;
+      font-size: clamp(0.875rem, 3vw, 1rem);
       /* Prevent background attachment issues on mobile */
       background-attachment: scroll;
     }
     
     h1 {
-      font-size: 1.875rem;
+      font-size: clamp(1.5rem, 5vw, 1.875rem);
       line-height: 1.2;
     }
 
     h2 {
-      font-size: 1.5rem;
+      font-size: clamp(1.25rem, 4vw, 1.5rem);
       line-height: 1.3;
+    }
+
+    h3 {
+      font-size: clamp(1.125rem, 3.5vw, 1.25rem);
+      line-height: 1.4;
+    }
+
+    /* Better text scaling for cards and components */
+    .text-lg {
+      font-size: clamp(1rem, 3.5vw, 1.125rem);
+    }
+
+    .text-xl {
+      font-size: clamp(1.125rem, 4vw, 1.25rem);
+    }
+
+    .text-2xl {
+      font-size: clamp(1.25rem, 5vw, 1.5rem);
+    }
+
+    .text-3xl {
+      font-size: clamp(1.5rem, 6vw, 1.875rem);
     }
 
     .glass, .glass-card {
@@ -472,15 +497,32 @@
   /* Small mobile devices */
   @media (max-width: 480px) {
     body {
-      font-size: 0.95rem;
+      font-size: clamp(0.8rem, 3.5vw, 0.95rem);
     }
 
     h1 {
-      font-size: 1.75rem;
+      font-size: clamp(1.375rem, 6vw, 1.75rem);
     }
 
     h2 {
-      font-size: 1.375rem;
+      font-size: clamp(1.125rem, 5vw, 1.375rem);
+    }
+
+    h3 {
+      font-size: clamp(1rem, 4vw, 1.125rem);
+    }
+
+    /* Even smaller text scaling for very small screens */
+    .text-sm {
+      font-size: clamp(0.75rem, 3vw, 0.875rem);
+    }
+
+    .text-base {
+      font-size: clamp(0.875rem, 3.5vw, 1rem);
+    }
+
+    .text-lg {
+      font-size: clamp(1rem, 4vw, 1.125rem);
     }
 
     /* Even smaller scrollbar for small devices */
