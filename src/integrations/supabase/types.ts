@@ -305,6 +305,33 @@ export type Database = {
         }
         Relationships: []
       }
+      processed_transactions: {
+        Row: {
+          created_at: string
+          id: string
+          league_id: string
+          player_updates: Json | null
+          processed_at: string
+          transaction_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          league_id: string
+          player_updates?: Json | null
+          processed_at?: string
+          transaction_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          league_id?: string
+          player_updates?: Json | null
+          processed_at?: string
+          transaction_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

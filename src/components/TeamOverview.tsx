@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { SkeletonCard } from '@/components/ui/skeleton-card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import TransactionsList from './TransactionsList';
 import FunStatistics from './FunStatistics';
+import { useTransactionProcessor } from '@/hooks/useTransactionProcessor';
 
 interface TeamOverviewProps {
   league: any;
@@ -35,9 +36,17 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
 }) => {
   const [selectedWeek, setSelectedWeek] = useState(league?.settings?.leg || 1);
   const { matchups, loading: matchupsLoading, getCurrentNFLWeek } = useMatchups(league?.league_id, selectedWeek);
+  const { processWaiverTransactions, processing: processingTransactions } = useTransactionProcessor();
   
   // Get projections for current week
   const currentWeek = getCurrentNFLWeek();
+
+  // Process waiver transactions when data loads
+  useEffect(() => {
+    if (league?.league_id && transactions?.length && !processingTransactions) {
+      processWaiverTransactions(league.league_id, transactions);
+    }
+  }, [league?.league_id, transactions, processWaiverTransactions, processingTransactions]);
   const { projections, loading: projectionsLoading } = useHistoricalProjections(
     league?.league_id || '',
     currentWeek
