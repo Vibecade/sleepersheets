@@ -76,6 +76,23 @@ export const usePlayerContracts = (leagueId: string) => {
   // Update contract in database
   const updateContract = async (playerId: string, contractLength: number | null) => {
     try {
+      // Check if player is FAAB acquisition - prevent contract assignment
+      const { data: salaryData } = await supabase
+        .from('player_salaries')
+        .select('acquisition_type')
+        .eq('league_id', leagueId)
+        .eq('player_id', playerId)
+        .single();
+
+      if (salaryData?.acquisition_type === 'faab') {
+        toast({
+          title: "Cannot Set Contract",
+          description: "FAAB players cannot have contracts. FAAB spending is tracked separately from salary cap.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
       console.log('Updating contract for player:', playerId, 'length:', contractLength);
       const { error } = await supabase
         .from('player_contracts')

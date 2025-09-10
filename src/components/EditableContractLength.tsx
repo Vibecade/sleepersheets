@@ -5,27 +5,32 @@ import { Button } from '@/components/ui/button';
 import { Check, X, Edit } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
+import { useFAABCalculations } from '@/hooks/useFAABCalculations';
 
 interface EditableContractLengthProps {
   playerId: string;
   currentLength: number | null;
   onContractUpdate: (playerId: string, contractLength: number | null) => Promise<boolean>;
   leagueId: string;
+  rosterId?: number;
 }
 
 const EditableContractLength: React.FC<EditableContractLengthProps> = ({
   playerId,
   currentLength,
   onContractUpdate,
-  leagueId
+  leagueId,
+  rosterId
 }) => {
   const { user } = useAuth();
   const { canModifyLeague } = useLeagueOwnership();
+  const { isPlayerFAABAcquisition } = useFAABCalculations({ rosters: [], leagueId });
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(currentLength?.toString() || '');
   const [isLoading, setIsLoading] = useState(false);
 
   const canModify = canModifyLeague(leagueId);
+  const isFAABPlayer = rosterId ? isPlayerFAABAcquisition(playerId, rosterId) : false;
 
   const handleSave = async () => {
     if (!canModify) return;
@@ -46,12 +51,20 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
   };
 
   const handleEdit = () => {
-    if (!canModify) return;
+    if (!canModify || isFAABPlayer) return;
     setTempValue(currentLength?.toString() || '');
     setIsEditing(true);
   };
 
   if (!isEditing) {
+    if (isFAABPlayer) {
+      return (
+        <div className="flex items-center space-x-1 px-2 py-1 opacity-75">
+          <span className="text-orange-400 text-sm">FAAB Player</span>
+        </div>
+      );
+    }
+
     return (
       <div 
         className={`flex items-center space-x-1 px-2 py-1 transition-colors rounded ${

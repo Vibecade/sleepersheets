@@ -177,15 +177,12 @@ export const useTransactionProcessor = () => {
           
           if (updates.length === 0) continue;
 
-          // Update salaries and contracts for each player
+          // Update salaries for FAAB players (no contracts for FAAB acquisitions)
           for (const update of updates) {
-            const [salarySuccess, contractSuccess] = await Promise.all([
-              updatePlayerSalary(leagueId, update.playerId, update.salary, 'faab'), // Mark as FAAB acquisition
-              updatePlayerContract(leagueId, update.playerId, 1) // Default 1 year for waivers
-            ]);
+            const salarySuccess = await updatePlayerSalary(leagueId, update.playerId, update.salary, 'faab');
 
-            if (salarySuccess && contractSuccess) {
-              console.log(`Auto-updated FAAB player ${update.playerId}: salary=${update.salary}, contract=1yr, acquisition_type=faab`);
+            if (salarySuccess) {
+              console.log(`Auto-updated FAAB player ${update.playerId}: salary=${update.salary}, acquisition_type=faab (no contract)`);
             }
           }
 
@@ -201,7 +198,7 @@ export const useTransactionProcessor = () => {
       if (processedCount > 0) {
         toast({
           title: "Waiver Updates Applied",
-          description: `Auto-updated ${processedCount} waiver transactions with FAAB costs and 1-year contracts.`,
+          description: `Auto-updated ${processedCount} waiver transactions with FAAB costs (no contracts for FAAB players).`,
         });
       }
 
