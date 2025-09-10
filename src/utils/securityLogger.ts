@@ -107,6 +107,69 @@ class SecurityLogger {
 
 export const securityLogger = new SecurityLogger();
 
+// Enhanced logging methods for league management
+export const logLeagueSwitch = (userId: string | undefined, fromLeagueId: string | null, toLeagueId: string, success: boolean, metadata?: Record<string, any>) => {
+  securityLogger.log({
+    userId,
+    action: 'league_switch',
+    resource: `league:${toLeagueId}`,
+    success,
+    details: {
+      fromLeagueId,
+      toLeagueId,
+      switchTime: new Date().toISOString(),
+      ...metadata
+    }
+  });
+};
+
+export const logLeagueDataSync = (userId: string | undefined, leagueId: string, operation: string, success: boolean, syncDetails?: Record<string, any>) => {
+  securityLogger.log({
+    userId,
+    action: `league_sync_${operation}`,
+    resource: `league:${leagueId}`,
+    success,
+    details: {
+      operation,
+      timestamp: new Date().toISOString(),
+      ...syncDetails
+    }
+  });
+};
+
+export const logRLSViolation = (userId: string | undefined, table: string, operation: string, leagueId: string, details?: Record<string, any>) => {
+  securityLogger.log({
+    userId,
+    action: `rls_violation_${operation}`,
+    resource: `${table}:${leagueId}`,
+    success: false,
+    details: {
+      table,
+      operation,
+      leagueId,
+      violation_type: 'rls_policy_denied',
+      security_level: 'critical',
+      timestamp: new Date().toISOString(),
+      ...details
+    }
+  });
+};
+
+export const logLeagueIntegrityCheck = (leagueId: string, checkType: string, passed: boolean, details?: Record<string, any>) => {
+  securityLogger.log({
+    userId: undefined,
+    action: `integrity_check_${checkType}`,
+    resource: `league:${leagueId}`,
+    success: passed,
+    details: {
+      checkType,
+      passed,
+      timestamp: new Date().toISOString(),
+      ...details
+    }
+  });
+};
+
 // Helper functions for common logging scenarios
 export const logLeagueOwnershipClaim = (userId: string | undefined, leagueId: string, success: boolean) => {
   securityLogger.logLeagueAccess(userId, leagueId, 'claim', success);

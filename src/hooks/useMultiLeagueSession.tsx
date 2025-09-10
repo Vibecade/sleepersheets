@@ -40,6 +40,8 @@ export const useMultiLeagueSession = () => {
 
   // Switch to a league session
   const switchToLeague = useCallback((leagueId: string) => {
+    const previousActiveLeague = activeLeague;
+    
     setSessions(prev => {
       const updated = new Map(prev);
       
@@ -75,7 +77,15 @@ export const useMultiLeagueSession = () => {
     });
     
     setActiveLeague(leagueId);
-  }, []);
+    
+    // Enhanced logging for league switch
+    import('@/utils/securityLogger').then(({ logLeagueSwitch }) => {
+      logLeagueSwitch(undefined, previousActiveLeague, leagueId, true, {
+        sessionCount: sessions.size,
+        switchMethod: 'manual'
+      });
+    });
+  }, [activeLeague, sessions.size]);
 
   // Update session data
   const updateSessionData = useCallback((leagueId: string, data: any) => {
