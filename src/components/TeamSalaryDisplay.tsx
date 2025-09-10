@@ -7,13 +7,15 @@ interface TeamSalaryDisplayProps {
   teamDeadCap: number;
   deadCapEnabled: boolean;
   salaryCap: number;
+  teamFAABSpent?: number;
 }
 
 const TeamSalaryDisplay: React.FC<TeamSalaryDisplayProps> = ({
   teamSalary,
   teamDeadCap,
   deadCapEnabled,
-  salaryCap
+  salaryCap,
+  teamFAABSpent = 0
 }) => {
   const formatSalary = (amount: number) => {
     if (amount >= 1000000) {
@@ -75,6 +77,14 @@ const TeamSalaryDisplay: React.FC<TeamSalaryDisplayProps> = ({
             </span>
           </div>
         )}
+        {teamFAABSpent > 0 && (
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">FAAB Spent:</span>
+            <span className="font-medium text-blue-400">
+              {formatSalary(teamFAABSpent)}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="flex justify-between items-center pt-2 border-t border-border-light">
@@ -83,6 +93,12 @@ const TeamSalaryDisplay: React.FC<TeamSalaryDisplayProps> = ({
           {formatSalary(salaryCap - totalSalary)}
         </span>
       </div>
+      
+      {teamFAABSpent > 0 && (
+        <div className="text-xs text-muted-foreground pt-1">
+          FAAB costs don't count toward salary cap
+        </div>
+      )}
     </div>
   );
 };

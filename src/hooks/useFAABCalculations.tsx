@@ -11,7 +11,7 @@ interface FAABCalculationsProps {
 }
 
 export const useFAABCalculations = ({ rosters, leagueId, transactions = [] }: FAABCalculationsProps) => {
-  const { salaries, getEffectiveSalary } = usePlayerSalaries(leagueId);
+  const { salaries, getEffectiveSalary, getSalaryCapContribution } = usePlayerSalaries(leagueId);
   const { settings } = useLeagueSettings(leagueId);
   const { deadCapPlayers } = useDeadCapPlayers(leagueId);
   const { contracts } = usePlayerContracts(leagueId);
@@ -91,8 +91,8 @@ export const useFAABCalculations = ({ rosters, leagueId, transactions = [] }: FA
       ];
       
       const totalSalary = allPlayerIds.reduce((total, playerId) => {
-        const effectiveSalary = getEffectiveSalary(playerId);
-        return total + effectiveSalary;
+        const salaryCapContribution = getSalaryCapContribution(playerId);
+        return total + salaryCapContribution;
       }, 0);
       
       // Add dead cap to total salary
@@ -130,7 +130,7 @@ export const useFAABCalculations = ({ rosters, leagueId, transactions = [] }: FA
     });
     
     return calculations;
-  }, [rosters, settings?.salary_cap, settings?.faab_cap, deadCapPlayers, getEffectiveSalary, faabSpentByRoster]);
+  }, [rosters, settings?.salary_cap, settings?.faab_cap, deadCapPlayers, getSalaryCapContribution, faabSpentByRoster]);
 
   const calculateDeadCap = useCallback((playerId: string, currentYear: number = new Date().getFullYear()) => {
     const contractLength = contracts[playerId];

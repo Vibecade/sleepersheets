@@ -31,23 +31,23 @@ const TeamFAABDisplay: React.FC<TeamFAABDisplayProps> = ({
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-1">
             <DollarSign className="w-3 h-3 text-blue-400" />
-            <span className="text-gray-300 text-xs sm:text-sm">FAAB Budget:</span>
+            <span className="text-foreground text-sm font-medium">FAAB Budget</span>
           </div>
           <Badge variant="outline" className="text-blue-400 border-blue-400 text-xs">
-            {formatFAAB(faabData.available)}
+            Available: {formatFAAB(faabData.available)}
           </Badge>
         </div>
         {faabData.spent > 0 && (
           <div className="flex justify-between items-center">
-            <span className="text-gray-400 text-xs">FAAB Spent:</span>
-            <Badge variant="outline" className="text-red-400 border-red-400 text-xs">
+            <span className="text-muted-foreground text-xs">FAAB Spent:</span>
+            <Badge variant="outline" className="text-destructive border-destructive text-xs">
               {formatFAAB(faabData.spent)}
             </Badge>
           </div>
         )}
         <div className="flex justify-between items-center">
-          <span className="text-gray-400 text-xs">Total Budget:</span>
-          <span className="text-gray-300 text-xs">{formatFAAB(faabData.total)}</span>
+          <span className="text-muted-foreground text-xs">Total Budget:</span>
+          <span className="text-foreground text-xs font-medium">{formatFAAB(faabData.total)}</span>
         </div>
         <div className="text-xs text-gray-400">
           Available for free agent acquisitions

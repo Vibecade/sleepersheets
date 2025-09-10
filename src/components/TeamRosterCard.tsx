@@ -76,6 +76,7 @@ const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
             teamDeadCap={teamDeadCap}
             deadCapEnabled={deadCapEnabled}
             salaryCap={salaryCap}
+            teamFAABSpent={typeof teamFAAB === 'object' ? teamFAAB.spent : 0}
           />
         )}
 
