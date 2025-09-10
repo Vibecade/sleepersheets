@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      data_integrity_logs: {
+        Row: {
+          created_at: string
+          details: Json | null
+          id: string
+          league_id: string
+          operation_type: string
+          table_name: string
+          user_id: string | null
+          violation_type: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          id?: string
+          league_id: string
+          operation_type: string
+          table_name: string
+          user_id?: string | null
+          violation_type: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          id?: string
+          league_id?: string
+          operation_type?: string
+          table_name?: string
+          user_id?: string | null
+          violation_type?: string
+        }
+        Relationships: []
+      }
       dead_cap_players: {
         Row: {
           created_at: string
@@ -130,6 +163,57 @@ export type Database = {
           start_time?: number | null
           status?: string | null
           type?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      league_metadata: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          last_synced_at: string
+          league_id: string
+          name: string | null
+          roster_positions: Json | null
+          scoring_settings: Json | null
+          season: string | null
+          season_type: string | null
+          sleeper_verified_at: string | null
+          sport: string | null
+          total_rosters: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_synced_at?: string
+          league_id: string
+          name?: string | null
+          roster_positions?: Json | null
+          scoring_settings?: Json | null
+          season?: string | null
+          season_type?: string | null
+          sleeper_verified_at?: string | null
+          sport?: string | null
+          total_rosters?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_synced_at?: string
+          league_id?: string
+          name?: string | null
+          roster_positions?: Json | null
+          scoring_settings?: Json | null
+          season?: string | null
+          season_type?: string | null
+          sleeper_verified_at?: string | null
+          sport?: string | null
+          total_rosters?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -370,7 +454,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      log_integrity_violation: {
+        Args: {
+          details_param?: Json
+          league_id_param: string
+          operation_type_param: string
+          table_name_param: string
+          user_id_param?: string
+          violation_type_param: string
+        }
+        Returns: undefined
+      }
+      validate_league_exists: {
+        Args: { league_id_param: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
