@@ -3,7 +3,8 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings } from 'lucide-react';
 import TeamRosters from './TeamRosters';
 import TradeSimulator from './TradeSimulator';
-import DataDashboard from './DataDashboard';
+import MinimizableDataDashboard from './MinimizableDataDashboard';
+import EnhancedTradeSimulator from './EnhancedTradeSimulator';
 import PlayerSearch from './PlayerSearch';
 import ProTierUpgrade from './ProTierUpgrade';
 import MinimizableFAABContractManager from './MinimizableFAABContractManager';
@@ -70,16 +71,16 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
         transactions={transactions}
       />
 
-      {/* Trade Simulator */}
-      <TradeSimulator
+      {/* Enhanced Trade Simulator */}
+      <EnhancedTradeSimulator
         league={league}
         rosters={rosters}
         userMap={userMap}
         players={players}
       />
 
-      {/* Data Dashboard */}
-      <DataDashboard
+      {/* Minimizable Data Dashboard */}
+      <MinimizableDataDashboard
         league={league}
         rosters={rosters}
         userMap={userMap}
