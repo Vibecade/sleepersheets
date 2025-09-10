@@ -21,19 +21,33 @@ const MinimizableFAABContractManager: React.FC<MinimizableFAABContractManagerPro
 }) => {
   const [isMinimized, setIsMinimized] = useState(true);
 
-  // Quick stats for minimized view
-  const faabTransactions = transactions.filter(t => 
-    t.type === 'waiver' && 
-    t.status === 'complete' && 
-    t.waiver_budget && 
-    Object.keys(t.waiver_budget).length > 0
-  );
+  // Quick stats for minimized view - using same logic as FAABContractManager
+  const faabTransactions = React.useMemo(() => {
+    const faabTxns: Array<{ playerId: string; faabAmount: number }> = [];
+    
+    transactions.forEach(txn => {
+      if (txn.type === 'waiver' && 
+          txn.status === 'complete' && 
+          txn.settings?.waiver_bid && 
+          typeof txn.settings.waiver_bid === 'number' &&
+          txn.adds) {
+        
+        Object.entries(txn.adds).forEach(([playerId, rosterId]) => {
+          if (typeof rosterId === 'number') {
+            faabTxns.push({
+              playerId,
+              faabAmount: txn.settings.waiver_bid
+            });
+          }
+        });
+      }
+    });
+    
+    return faabTxns;
+  }, [transactions]);
 
-  const totalFAABSpent = faabTransactions.reduce((total, transaction) => {
-    return total + Object.values(transaction.waiver_budget).reduce((sum: number, amount: any) => sum + (amount || 0), 0);
-  }, 0);
-
-  const totalFAABPlayers = faabTransactions.length;
+  const totalFAABSpent = faabTransactions.reduce((sum, txn) => sum + txn.faabAmount, 0);
+  const totalFAABPlayers = new Set(faabTransactions.map(txn => txn.playerId)).size;
 
   if (isMinimized) {
     return (
