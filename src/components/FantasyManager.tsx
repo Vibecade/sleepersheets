@@ -6,7 +6,7 @@ import TradeSimulator from './TradeSimulator';
 import DataDashboard from './DataDashboard';
 import PlayerSearch from './PlayerSearch';
 import ProTierUpgrade from './ProTierUpgrade';
-import FAABContractManager from './FAABContractManager';
+import MinimizableFAABContractManager from './MinimizableFAABContractManager';
 
 interface FantasyManagerProps {
   rosters: any[];
@@ -54,7 +54,7 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
       />
 
       {/* FAAB Contract Manager */}
-      <FAABContractManager
+      <MinimizableFAABContractManager
         transactions={transactions}
         players={players}
         userMap={userMap}
