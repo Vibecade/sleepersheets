@@ -12,8 +12,9 @@ import { ProjectedPointsDisplay } from './ProjectedPointsDisplay';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
-import MinimizableTransactionsList from './MinimizableTransactionsList';
-import MinimizableFunStatistics from './MinimizableFunStatistics';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import TransactionsList from './TransactionsList';
+import FunStatistics from './FunStatistics';
 
 interface TeamOverviewProps {
   league: any;
@@ -33,8 +34,6 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   onResyncData
 }) => {
   const [selectedWeek, setSelectedWeek] = useState(league?.settings?.leg || 1);
-  const [transactionsModalOpen, setTransactionsModalOpen] = useState(false);
-  const [statisticsModalOpen, setStatisticsModalOpen] = useState(false);
   const { matchups, loading: matchupsLoading, getCurrentNFLWeek } = useMatchups(league?.league_id, selectedWeek);
   
   // Get projections for current week
@@ -300,18 +299,17 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                 <CardTitle className="text-lg">League Transactions</CardTitle>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-center py-12">
-                <ArrowRightLeft className="w-12 h-12 mx-auto mb-4 opacity-50 text-gray-400" />
-                <p className="text-lg text-gray-300 mb-4">View all league transactions in a dedicated window</p>
-                <Button 
-                  onClick={() => setTransactionsModalOpen(true)}
-                  className="transition-all duration-200 hover:scale-105"
-                >
-                  <ArrowRightLeft className="w-4 h-4 mr-2" />
-                  Open Transactions
-                </Button>
-              </div>
+            <CardContent className="p-0">
+              <ScrollArea className="h-[70vh] w-full">
+                <div className="p-6">
+                  <TransactionsList
+                    transactions={transactions}
+                    userMap={userMap}
+                    players={players}
+                    league={league}
+                  />
+                </div>
+              </ScrollArea>
             </CardContent>
           </Card>
         </TabsContent>
@@ -324,42 +322,23 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                 <CardTitle className="text-lg">League Statistics</CardTitle>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-center py-12">
-                <Activity className="w-12 h-12 mx-auto mb-4 opacity-50 text-gray-400" />
-                <p className="text-lg text-gray-300 mb-4">Explore fun league statistics and insights</p>
-                <Button 
-                  onClick={() => setStatisticsModalOpen(true)}
-                  className="transition-all duration-200 hover:scale-105"
-                >
-                  <Activity className="w-4 h-4 mr-2" />
-                  Open Statistics
-                </Button>
-              </div>
+            <CardContent className="p-0">
+              <ScrollArea className="h-[70vh] w-full">
+                <div className="p-6">
+                  <FunStatistics
+                    league={league}
+                    rosters={rosters}
+                    userMap={userMap}
+                    players={players}
+                    transactions={transactions}
+                  />
+                </div>
+              </ScrollArea>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
-      {/* Modal Components */}
-      <MinimizableTransactionsList
-        open={transactionsModalOpen}
-        onOpenChange={setTransactionsModalOpen}
-        transactions={transactions}
-        userMap={userMap}
-        players={players}
-        league={league}
-      />
-
-      <MinimizableFunStatistics
-        open={statisticsModalOpen}
-        onOpenChange={setStatisticsModalOpen}
-        league={league}
-        rosters={rosters}
-        userMap={userMap}
-        players={players}
-        transactions={transactions}
-      />
     </div>
   );
 };
