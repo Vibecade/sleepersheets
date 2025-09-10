@@ -29,11 +29,17 @@ const Index = React.memo(() => {
     ownershipStatus,
     handleLeagueSubmit,
     handleUsernameSubmit,
+    handleQuickLoadFirstLeague,
+    handleSelectLeagueFromUsername,
+    handleBackToForm,
+    handleRefreshLeagues,
     handleSelectLeague,
     handleBackToLeagues,
     handleRefreshData,
     handleResyncLeagueData,
     handleOwnershipChanged,
+    userLeaguesData,
+    showLeagueSelection,
   } = useLeagueManager();
 
   // Auto-compact header when user starts interacting with forms or when league is loaded
@@ -88,10 +94,16 @@ const Index = React.memo(() => {
                       setUsername={setUsername}
                       onLeagueSubmit={handleLeagueSubmit}
                       onUsernameSubmit={handleUsernameSubmit}
+                      onQuickLoadFirstLeague={handleQuickLoadFirstLeague}
+                      onSelectLeague={handleSelectLeagueFromUsername}
+                      onBackToForm={handleBackToForm}
+                      onRefreshLeagues={handleRefreshLeagues}
                       loading={loading}
+                      userLeaguesData={userLeaguesData}
+                      showLeagueSelection={showLeagueSelection}
                     />
                     
-                    {loading && (
+                    {loading && !showLeagueSelection && (
                       <div className="mt-6 text-center">
                         <div className="text-muted-foreground">Loading...</div>
                       </div>

@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Users as UserGroup, Search as MagnifyingGlass, Loader2 } from 'lucide-react';
+import { Users as UserGroup, Search as MagnifyingGlass, Loader2, ArrowLeft, Zap } from 'lucide-react';
 import { HowToFindLeagueId } from './HowToFindLeagueId';
+import { SleeperAccountCard } from './SleeperAccountCard';
+import { SleeperLeagueGrid } from './SleeperLeagueGrid';
 import { validateAndSanitizeLeagueId, validateAndSanitizeUsername } from '@/utils/enhancedInputValidation';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,7 +19,13 @@ interface LeagueConnectionFormProps {
   setUsername: (value: string) => void;
   onLeagueSubmit: () => Promise<void>;
   onUsernameSubmit: () => Promise<void>;
+  onQuickLoadFirstLeague?: () => Promise<void>;
+  onSelectLeague?: (leagueId: string) => void;
+  onBackToForm?: () => void;
+  onRefreshLeagues?: () => Promise<void>;
   loading: boolean;
+  userLeaguesData?: { user: any; leagues: any[] } | null;
+  showLeagueSelection?: boolean;
 }
 
 const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
@@ -27,7 +35,13 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
   setUsername,
   onLeagueSubmit,
   onUsernameSubmit,
-  loading
+  onQuickLoadFirstLeague,
+  onSelectLeague,
+  onBackToForm,
+  onRefreshLeagues,
+  loading,
+  userLeaguesData,
+  showLeagueSelection = false
 }) => {
   const [leagueIdError, setLeagueIdError] = useState<string>('');
   const [usernameError, setUsernameError] = useState<string>('');
@@ -97,6 +111,63 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
     }
   };
 
+  // Show league selection interface
+  if (showLeagueSelection && userLeaguesData) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onBackToForm}
+            className="flex items-center space-x-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Search</span>
+          </Button>
+        </div>
+
+        <SleeperAccountCard 
+          user={userLeaguesData.user}
+          onRefresh={onRefreshLeagues || (() => {})}
+          onDisconnect={onBackToForm || (() => {})}
+          refreshing={loading}
+        />
+
+        <SleeperLeagueGrid
+          leagues={userLeaguesData.leagues}
+          onSelectLeague={onSelectLeague || (() => {})}
+          loading={loading}
+        />
+
+        {onQuickLoadFirstLeague && (
+          <Card className="border-blue-500/20">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <h4 className="font-medium text-white mb-1">Quick Start</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Load your most recent league automatically
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={onQuickLoadFirstLeague}
+                  disabled={loading}
+                  className="flex items-center space-x-2"
+                >
+                  <Zap className="w-4 h-4" />
+                  <span>Load First League</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
+  // Show connection form
   return (
     <div className="space-y-8">
       <Card className="border-yellow-500/20 shadow-[0_0_50px_-12px] shadow-yellow-500/30">

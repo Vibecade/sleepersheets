@@ -33,7 +33,17 @@ export const useLeagueManager = () => {
     },
   });
 
-  const { handleLeagueSubmit, handleUsernameSubmit, isUsernameLoading } = useLeagueSubmissions({
+  const { 
+    handleLeagueSubmit, 
+    handleUsernameSubmit,
+    handleQuickLoadFirstLeague,
+    handleSelectLeague: handleSelectLeagueFromUsername,
+    handleBackToForm,
+    handleRefreshLeagues,
+    isUsernameLoading,
+    userLeaguesData,
+    showLeagueSelection
+  } = useLeagueSubmissions({
     leagueIdFromInput: leagueIdInput,
     usernameFromInput: username,
     setLeagueId: setActiveLeagueId,
@@ -153,11 +163,17 @@ export const useLeagueManager = () => {
     ownershipStatus,
     handleLeagueSubmit,
     handleUsernameSubmit,
+    handleQuickLoadFirstLeague,
+    handleSelectLeagueFromUsername,
+    handleBackToForm,
+    handleRefreshLeagues,
     handleRefreshData,
     handleResyncLeagueData,
     handleSelectLeague,
     handleBackToLeagues,
     handleOwnershipChanged,
+    userLeaguesData,
+    showLeagueSelection,
     // Keep these for component compatibility, but they are no longer actively managed
     loadingProgress: 0,
     loadingMessage: '',
