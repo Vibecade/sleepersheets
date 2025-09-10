@@ -6,6 +6,7 @@ import TradeSimulator from './TradeSimulator';
 import DataDashboard from './DataDashboard';
 import PlayerSearch from './PlayerSearch';
 import ProTierUpgrade from './ProTierUpgrade';
+import FAABContractManager from './FAABContractManager';
 
 interface FantasyManagerProps {
   rosters: any[];
@@ -47,10 +48,19 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
       {/* Pro Tier Upgrade - Hidden by default */}
       <ProTierUpgrade hidden={true} />
 
-     {/* Player Search */}
-     <PlayerSearch
-       players={players}
-     />
+      {/* Player Search */}
+      <PlayerSearch
+        players={players}
+      />
+
+      {/* FAAB Contract Manager */}
+      <FAABContractManager
+        transactions={transactions}
+        players={players}
+        userMap={userMap}
+        rosters={rosters}
+        leagueId={league.league_id}
+      />
 
       {/* Team Rosters with all advanced features */}
       <TeamRosters

@@ -72,6 +72,11 @@ export const useFAABCalculations = ({ rosters, leagueId, transactions = [] }: FA
     return 0;
   }, [transactions]);
 
+  // Check if a player was acquired via FAAB
+  const isPlayerFAABAcquisition = useCallback((playerId: string, rosterId: number): boolean => {
+    return getPlayerFAABCost(playerId, rosterId) > 0;
+  }, [getPlayerFAABCost]);
+
   const teamFAAB = useMemo(() => {
     if (!rosters.length) return {};
     
@@ -170,6 +175,7 @@ export const useFAABCalculations = ({ rosters, leagueId, transactions = [] }: FA
     teamFAAB,
     faabSpentByRoster,
     getPlayerFAABCost,
+    isPlayerFAABAcquisition,
     calculateDeadCap,
     calculateTotalDeadCapForPlayer
   };
