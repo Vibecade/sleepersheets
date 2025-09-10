@@ -46,23 +46,38 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
       .sort((a, b) => b.powerScore - a.powerScore);
   };
 
-  // Calculate team streaks
+  // Calculate team streaks using real data from roster metadata
   const calculateStreaks = () => {
     return rosters.map(roster => {
       const user = userMap[roster.owner_id];
       const wins = roster.settings?.wins || 0;
       const losses = roster.settings?.losses || 0;
       
-      // Simplified streak calculation (in real app, would need game-by-game data)
-      const streak = Math.floor(Math.random() * 5) + 1;
-      const streakType = Math.random() > 0.5 ? 'win' : 'loss';
+      // Parse real streak data from roster.metadata.streak (e.g., "1L", "3W")
+      const streakData = roster.metadata?.streak || '';
+      let streak = 0;
+      let streakType = 'none';
+      
+      if (streakData) {
+        const match = streakData.match(/^(\d+)([WL])$/);
+        if (match) {
+          streak = parseInt(match[1], 10);
+          streakType = match[2] === 'W' ? 'win' : 'loss';
+        }
+      }
+      
+      // Fallback: if no streak data, use wins/losses for simple calculation
+      if (!streakData && (wins > 0 || losses > 0)) {
+        streak = wins > losses ? wins : losses;
+        streakType = wins > losses ? 'win' : 'loss';
+      }
       
       return {
         teamName: user?.metadata?.team_name || user?.display_name || 'Unknown Team',
         streak,
         streakType,
-        isHot: wins > losses && streak >= 3,
-        isCold: losses > wins && streak >= 3
+        isHot: streakType === 'win' && streak >= 2,
+        isCold: streakType === 'loss' && streak >= 2
       };
     });
   };
