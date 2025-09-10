@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { ArrowRightLeft, Plus, Minus, RefreshCw, Calendar, Users, Search, Filter, X } from 'lucide-react';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import PlayerSearch from './PlayerSearch';
@@ -26,6 +27,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
   const [transactionType, setTransactionType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [hideFailed, setHideFailed] = useState(true);
 
   const getPlayerName = (playerId: string): string => {
     const player = players[playerId];
@@ -67,6 +69,9 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
       const weekMatch = !selectedWeek || transactionWeek === selectedWeek;
       const typeMatch = transactionType === 'all' || transaction.type === transactionType;
       
+      // Failed status filter
+      const statusMatch = !hideFailed || transaction.status !== 'failed';
+      
       // Search filter
       const searchMatch = !searchTerm || (
         // Search in player names
@@ -80,9 +85,29 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
         getTeamName(userMap[transaction.creator]).toLowerCase().includes(searchTerm.toLowerCase())
       );
       
-      return weekMatch && typeMatch && searchMatch;
+      return weekMatch && typeMatch && statusMatch && searchMatch;
     });
-  }, [transactions, selectedWeek, transactionType, searchTerm, userMap, players]);
+  }, [transactions, selectedWeek, transactionType, hideFailed, searchTerm, userMap, players]);
+
+  // Count of hidden failed transactions for display
+  const hiddenFailedCount = useMemo(() => {
+    if (!hideFailed) return 0;
+    return transactions.filter(transaction => {
+      const transactionWeek = transaction.leg || transaction.week;
+      const weekMatch = !selectedWeek || transactionWeek === selectedWeek;
+      const typeMatch = transactionType === 'all' || transaction.type === transactionType;
+      const searchMatch = !searchTerm || (
+        (transaction.adds && Object.keys(transaction.adds).some(playerId => 
+          getPlayerName(playerId).toLowerCase().includes(searchTerm.toLowerCase())
+        )) ||
+        (transaction.drops && Object.keys(transaction.drops).some(playerId => 
+          getPlayerName(playerId).toLowerCase().includes(searchTerm.toLowerCase())
+        )) ||
+        getTeamName(userMap[transaction.creator]).toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      return weekMatch && typeMatch && searchMatch && transaction.status === 'failed';
+    }).length;
+  }, [transactions, selectedWeek, transactionType, searchTerm, userMap, players, hideFailed]);
 
   const sortedTransactions = [...filteredTransactions].sort((a, b) => {
     return new Date(b.created || 0).getTime() - new Date(a.created || 0).getTime();
@@ -99,6 +124,11 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
               <Badge variant="outline" className="text-xs">
                 {sortedTransactions.length} total
               </Badge>
+              {hideFailed && hiddenFailedCount > 0 && (
+                <Badge variant="outline" className="text-xs text-muted-foreground">
+                  {hiddenFailedCount} failed hidden
+                </Badge>
+              )}
             </div>
             <Button
               variant="outline"
@@ -162,6 +192,17 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                 <option value="free_agent">Free Agents</option>
               </select>
             </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="hide-failed"
+                checked={hideFailed}
+                onCheckedChange={setHideFailed}
+                className="data-[state=checked]:bg-primary"
+              />
+              <Label htmlFor="hide-failed" className="text-sm font-medium">
+                Hide Failed Bids
+              </Label>
+            </div>
           </div>
         </div>
       </CardHeader>
@@ -171,7 +212,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
             <ArrowRightLeft className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p className="text-lg font-medium">No transactions found</p>
             <p className="text-sm">Try adjusting your filters or search terms</p>
-            {(searchTerm || transactionType !== 'all' || selectedWeek) && (
+            {(searchTerm || transactionType !== 'all' || selectedWeek || !hideFailed) && (
               <Button
                 variant="outline"
                 size="sm"
@@ -179,6 +220,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                   setSearchTerm('');
                   setTransactionType('all');
                   setSelectedWeek(league?.settings?.leg || 1);
+                  setHideFailed(true);
                 }}
                 className="mt-4"
               >

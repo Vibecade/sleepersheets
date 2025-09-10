@@ -80,40 +80,29 @@ const Index = React.memo(() => {
               {user ? (
                 <UserDashboard onSelectLeague={handleSelectLeague} />
               ) : (
-                <Tabs defaultValue="connect" className="space-y-8">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="connect">Connect League</TabsTrigger>
-                    <TabsTrigger value="dashboard">My Dashboard</TabsTrigger>
-                  </TabsList>
+                <div className="space-y-8">
+                  <LeagueConnectionForm
+                    leagueId={leagueId}
+                    setLeagueId={setLeagueId}
+                    username={username}
+                    setUsername={setUsername}
+                    onLeagueSubmit={handleLeagueSubmit}
+                    onUsernameSubmit={handleUsernameSubmit}
+                    onQuickLoadFirstLeague={handleQuickLoadFirstLeague}
+                    onSelectLeague={handleSelectLeagueFromUsername}
+                    onBackToForm={handleBackToForm}
+                    onRefreshLeagues={handleRefreshLeagues}
+                    loading={loading}
+                    userLeaguesData={userLeaguesData}
+                    showLeagueSelection={showLeagueSelection}
+                  />
                   
-                  <TabsContent value="connect" className="space-y-8">
-                    <LeagueConnectionForm
-                      leagueId={leagueId}
-                      setLeagueId={setLeagueId}
-                      username={username}
-                      setUsername={setUsername}
-                      onLeagueSubmit={handleLeagueSubmit}
-                      onUsernameSubmit={handleUsernameSubmit}
-                      onQuickLoadFirstLeague={handleQuickLoadFirstLeague}
-                      onSelectLeague={handleSelectLeagueFromUsername}
-                      onBackToForm={handleBackToForm}
-                      onRefreshLeagues={handleRefreshLeagues}
-                      loading={loading}
-                      userLeaguesData={userLeaguesData}
-                      showLeagueSelection={showLeagueSelection}
-                    />
-                    
-                    {loading && !showLeagueSelection && (
-                      <div className="mt-6 text-center">
-                        <div className="text-muted-foreground">Loading...</div>
-                      </div>
-                    )}
-                  </TabsContent>
-                  
-                  <TabsContent value="dashboard">
-                    <UserDashboard onSelectLeague={handleSelectLeague} />
-                  </TabsContent>
-                </Tabs>
+                  {loading && !showLeagueSelection && (
+                    <div className="mt-6 text-center">
+                      <div className="text-muted-foreground">Loading...</div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           ) : (
