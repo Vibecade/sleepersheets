@@ -76,15 +76,45 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     playersCacheTimestamp = Date.now();
   }
 
-  // Fetch transactions and drafts with rate limiting
+  // Fetch transactions from multiple weeks to capture all FAAB activity
   await new Promise(resolve => setTimeout(resolve, 500)); // Add delay to avoid rate limiting
   
   const currentWeek = league.settings?.week || 1;
-  const transactions = await cachedFetch<SleeperTransaction[]>(
-    `https://api.sleeper.app/v1/league/${targetLeagueId}/transactions/${currentWeek}`, 
-    {}, 
-    5 * 60 * 1000 // 5 minutes cache
+  const season = league.season || '2024';
+  
+  // Fetch transactions from current week and previous weeks (up to 18 weeks)
+  const weeksToFetch = [];
+  for (let week = Math.max(1, currentWeek - 5); week <= currentWeek; week++) {
+    weeksToFetch.push(week);
+  }
+  
+  console.log(`Fetching transactions for weeks: ${weeksToFetch.join(', ')}`);
+  
+  // Fetch transactions from all weeks in parallel with league-specific cache keys
+  const allTransactions = await Promise.all(
+    weeksToFetch.map(async (week) => {
+      try {
+        return await cachedFetch<SleeperTransaction[]>(
+          `https://api.sleeper.app/v1/league/${targetLeagueId}/transactions/${week}`,
+          {},
+          5 * 60 * 1000, // 5 minutes cache
+          `league-${targetLeagueId}` // League-specific cache prefix
+        );
+      } catch (error) {
+        console.warn(`Failed to fetch transactions for week ${week}:`, error);
+        return [];
+      }
+    })
   );
+  
+  // Flatten and deduplicate transactions
+  const transactionMap = new Map();
+  allTransactions.flat().forEach(transaction => {
+    if (transaction && transaction.transaction_id) {
+      transactionMap.set(transaction.transaction_id, transaction);
+    }
+  });
+  const transactions = Array.from(transactionMap.values());
   
   await new Promise(resolve => setTimeout(resolve, 500)); // Add delay to avoid rate limiting
   

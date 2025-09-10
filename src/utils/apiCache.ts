@@ -82,18 +82,20 @@ class ApiCache {
 
 export const apiCache = new ApiCache();
 
-// Helper function for cached fetch with rate limiting
+// Helper function for cached fetch with rate limiting and league-specific caching
 export const cachedFetch = async <T>(
   url: string, 
   options?: RequestInit,
-  ttl?: number
+  ttl?: number,
+  cachePrefix?: string
 ): Promise<T> => {
-  const cacheKey = `${url}-${JSON.stringify(options)}`;
+  const baseKey = `${url}-${JSON.stringify(options)}`;
+  const cacheKey = cachePrefix ? `${cachePrefix}-${baseKey}` : baseKey;
   
   // Try to get from cache first
   const cached = apiCache.get<T>(cacheKey);
   if (cached) {
-    console.log(`Cache hit for: ${url}`);
+    console.log(`Cache hit for: ${url} (league-specific: ${!!cachePrefix})`);
     return cached;
   }
   
@@ -102,7 +104,7 @@ export const cachedFetch = async <T>(
     throw new Error('Rate limit exceeded. Please wait before making more requests.');
   }
   
-  console.log(`Cache miss for: ${url}`);
+  console.log(`Cache miss for: ${url} (league-specific: ${!!cachePrefix})`);
   const response = await fetch(url, options);
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
@@ -111,4 +113,18 @@ export const cachedFetch = async <T>(
   const data = await response.json();
   apiCache.set(cacheKey, data, ttl);
   return data;
+};
+
+// League-specific cache management
+export const clearLeagueCache = (leagueId: string): void => {
+  apiCache.clearByPattern(`league-${leagueId}`);
+  console.log(`Cleared cache for league: ${leagueId}`);
+};
+
+// Get cache stats for debugging
+export const getCacheStats = () => {
+  return {
+    size: apiCache['cache'].size,
+    requestCounts: Array.from(apiCache['requestCounts'].entries())
+  };
 };
