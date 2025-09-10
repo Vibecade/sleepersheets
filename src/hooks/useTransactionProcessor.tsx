@@ -33,17 +33,24 @@ export const useTransactionProcessor = () => {
     const updates: WaiverUpdate[] = [];
     const waiverBid = transaction.settings.waiver_bid;
     const adds = transaction.adds || {};
+    const rosterIds = transaction.roster_ids || [];
 
-    // Process each added player
-    Object.entries(adds).forEach(([playerId, rosterId]) => {
-      if (typeof rosterId === 'number' && waiverBid[rosterId]) {
-        updates.push({
-          playerId,
-          salary: waiverBid[rosterId],
-          rosterId
-        });
-      }
-    });
+    // waiver_bid is a single number, not an object keyed by roster_id
+    if (typeof waiverBid === 'number' && rosterIds.length > 0) {
+      const rosterId = rosterIds[0]; // The roster making the waiver claim
+
+      // Process each added player
+      Object.keys(adds).forEach((playerId) => {
+        if (adds[playerId] === rosterId) {
+          updates.push({
+            playerId,
+            salary: waiverBid,
+            rosterId
+          });
+          console.log(`Extracted waiver update: Player ${playerId}, FAAB: $${waiverBid}, Roster: ${rosterId}`);
+        }
+      });
+    }
 
     return updates;
   };
@@ -176,12 +183,12 @@ export const useTransactionProcessor = () => {
           // Update salaries and contracts for each player
           for (const update of updates) {
             const [salarySuccess, contractSuccess] = await Promise.all([
-              updatePlayerSalary(leagueId, update.playerId, update.salary),
+              updatePlayerSalary(leagueId, update.playerId, update.salary, 'faab'), // Mark as FAAB acquisition
               updatePlayerContract(leagueId, update.playerId, 1) // Default 1 year for waivers
             ]);
 
             if (salarySuccess && contractSuccess) {
-              console.log(`Auto-updated player ${update.playerId}: salary=${update.salary}, contract=1yr`);
+              console.log(`Auto-updated FAAB player ${update.playerId}: salary=${update.salary}, contract=1yr, acquisition_type=faab`);
             }
           }
 
