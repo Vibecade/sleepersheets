@@ -1,12 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowRightLeft, Plus, Minus, RefreshCw, Calendar, Users } from 'lucide-react';
+import { ArrowRightLeft, Plus, Minus, RefreshCw, Calendar, Users, Search, Filter, X } from 'lucide-react';
 import { getTeamName } from '@/utils/leagueDataUtils';
+import PlayerSearch from './PlayerSearch';
 
 interface TransactionsListProps {
   transactions: any[];
@@ -23,6 +24,8 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
 }) => {
   const [selectedWeek, setSelectedWeek] = useState(league?.settings?.leg || 1);
   const [transactionType, setTransactionType] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
 
   const getPlayerName = (playerId: string): string => {
     const player = players[playerId];
@@ -57,29 +60,84 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
     }
   };
 
-  const filteredTransactions = transactions.filter(transaction => {
-    // Use 'leg' field from API (which represents week) or fall back to 'week'
-    const transactionWeek = transaction.leg || transaction.week;
-    const weekMatch = !selectedWeek || transactionWeek === selectedWeek;
-    const typeMatch = transactionType === 'all' || transaction.type === transactionType;
-    return weekMatch && typeMatch;
-  });
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(transaction => {
+      // Use 'leg' field from API (which represents week) or fall back to 'week'
+      const transactionWeek = transaction.leg || transaction.week;
+      const weekMatch = !selectedWeek || transactionWeek === selectedWeek;
+      const typeMatch = transactionType === 'all' || transaction.type === transactionType;
+      
+      // Search filter
+      const searchMatch = !searchTerm || (
+        // Search in player names
+        (transaction.adds && Object.keys(transaction.adds).some(playerId => 
+          getPlayerName(playerId).toLowerCase().includes(searchTerm.toLowerCase())
+        )) ||
+        (transaction.drops && Object.keys(transaction.drops).some(playerId => 
+          getPlayerName(playerId).toLowerCase().includes(searchTerm.toLowerCase())
+        )) ||
+        // Search in team names
+        getTeamName(userMap[transaction.creator]).toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      
+      return weekMatch && typeMatch && searchMatch;
+    });
+  }, [transactions, selectedWeek, transactionType, searchTerm, userMap, players]);
 
   const sortedTransactions = [...filteredTransactions].sort((a, b) => {
     return new Date(b.created || 0).getTime() - new Date(a.created || 0).getTime();
   });
 
   return (
-    <Card className="transition-all duration-300 hover:shadow-lg">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <ArrowRightLeft className="w-5 h-5 text-blue-500" />
-            <CardTitle className="text-lg">League Transactions</CardTitle>
+    <Card className="glass-card border-border-light transition-all duration-300 hover:shadow-lg">
+      <CardHeader className="pb-4">
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <ArrowRightLeft className="w-5 h-5 text-primary" />
+              <CardTitle className="text-xl font-bold">League Transactions</CardTitle>
+              <Badge variant="outline" className="text-xs">
+                {sortedTransactions.length} total
+              </Badge>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSearch(!showSearch)}
+              className="transition-all duration-200"
+            >
+              <Search className="w-4 h-4 mr-2" />
+              Search
+            </Button>
           </div>
-          <div className="flex items-center space-x-4">
+
+          {/* Search Bar */}
+          {showSearch && (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search players or teams..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-card/50 border-border-light"
+              />
+              {searchTerm && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Filters */}
+          <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center space-x-2">
-              <Label htmlFor="week-filter" className="text-sm">Week:</Label>
+              <Label htmlFor="week-filter" className="text-sm font-medium">Week:</Label>
               <Input
                 id="week-filter"
                 type="number"
@@ -87,18 +145,18 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                 max="18"
                 value={selectedWeek}
                 onChange={(e) => setSelectedWeek(Number(e.target.value))}
-                className="w-20 bg-gray-800/50 border-gray-600"
+                className="w-20 bg-card/50 border-border-light"
               />
             </div>
             <div className="flex items-center space-x-2">
-              <Label htmlFor="type-filter" className="text-sm">Type:</Label>
+              <Label htmlFor="type-filter" className="text-sm font-medium">Type:</Label>
               <select
                 id="type-filter"
                 value={transactionType}
                 onChange={(e) => setTransactionType(e.target.value)}
-                className="px-3 py-1 bg-gray-800/50 border border-gray-600 rounded text-sm"
+                className="px-3 py-1.5 bg-card/50 border border-border-light rounded-md text-sm transition-colors hover:bg-card"
               >
-                <option value="all">All</option>
+                <option value="all">All Types</option>
                 <option value="trade">Trades</option>
                 <option value="waiver">Waivers</option>
                 <option value="free_agent">Free Agents</option>
@@ -109,13 +167,27 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
       </CardHeader>
       <CardContent>
         {sortedTransactions.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
+          <div className="text-center py-12 text-muted-foreground">
             <ArrowRightLeft className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg">No transactions found</p>
-            <p className="text-sm">Try adjusting your filters</p>
+            <p className="text-lg font-medium">No transactions found</p>
+            <p className="text-sm">Try adjusting your filters or search terms</p>
+            {(searchTerm || transactionType !== 'all' || selectedWeek) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm('');
+                  setTransactionType('all');
+                  setSelectedWeek(league?.settings?.leg || 1);
+                }}
+                className="mt-4"
+              >
+                Clear Filters
+              </Button>
+            )}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {sortedTransactions.map((transaction) => {
               const creator = userMap[transaction.creator];
               const creatorName = getTeamName(creator);
@@ -123,7 +195,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
               return (
                 <div
                   key={transaction.transaction_id}
-                  className="bg-white/5 rounded-lg p-4 border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20"
+                  className="bg-card/30 rounded-xl p-4 border border-border-light transition-all duration-300 hover:bg-card/50 hover:border-border hover:shadow-md"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center space-x-3">

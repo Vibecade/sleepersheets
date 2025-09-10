@@ -49,10 +49,7 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
 
      {/* Player Search */}
      <PlayerSearch
-       leagueId={league.league_id}
        players={players}
-       rosters={rosters}
-       userMap={userMap}
      />
 
       {/* Team Rosters with all advanced features */}

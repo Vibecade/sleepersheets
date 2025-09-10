@@ -1,41 +1,106 @@
-
-import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
+import React from 'react';
+import { cn } from '@/lib/utils';
 
 interface ProgressIndicatorProps {
-  message?: string;
-  progress?: number;
-  className?: string;
+  value: number;
+  max: number;
+  label?: string;
   showPercentage?: boolean;
+  showValues?: boolean;
+  variant?: 'default' | 'success' | 'warning' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
 }
 
 const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
-  message = "Loading...",
-  progress,
-  className,
-  showPercentage = false
+  value,
+  max,
+  label,
+  showPercentage = false,
+  showValues = false,
+  variant = 'default',
+  size = 'md',
+  className
 }) => {
+  const percentage = Math.min((value / max) * 100, 100);
+  
+  const getVariantClasses = () => {
+    switch (variant) {
+      case 'success':
+        return 'bg-success/20 border-success/30';
+      case 'warning':
+        return 'bg-yellow-500/20 border-yellow-500/30';
+      case 'danger':
+        return 'bg-destructive/20 border-destructive/30';
+      default:
+        return 'bg-primary/20 border-primary/30';
+    }
+  };
+
+  const getBarClasses = () => {
+    switch (variant) {
+      case 'success':
+        return 'bg-gradient-to-r from-success to-success/80';
+      case 'warning':
+        return 'bg-gradient-to-r from-yellow-500 to-yellow-400';
+      case 'danger':
+        return 'bg-gradient-to-r from-destructive to-destructive/80';
+      default:
+        return 'bg-gradient-to-r from-primary to-primary/80';
+    }
+  };
+
+  const getSizeClasses = () => {
+    switch (size) {
+      case 'sm':
+        return 'h-2';
+      case 'lg':
+        return 'h-3';
+      default:
+        return 'h-2.5';
+    }
+  };
+
   return (
-    <div className={cn("flex items-center space-x-3", className)}>
-      <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-      <div className="flex-1">
-        <p className="text-sm text-gray-300">{message}</p>
-        {progress !== undefined && (
-          <div className="mt-1">
-            <div className="w-full bg-gray-700 rounded-full h-1.5">
-              <div 
-                className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
-                style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
-              />
-            </div>
+    <div className={cn('space-y-2', className)}>
+      {(label || showPercentage || showValues) && (
+        <div className="flex items-center justify-between text-sm">
+          {label && (
+            <span className="text-muted-foreground font-medium">{label}</span>
+          )}
+          <div className="flex items-center gap-2">
+            {showValues && (
+              <span className="text-foreground font-mono text-xs">
+                {value.toLocaleString()} / {max.toLocaleString()}
+              </span>
+            )}
             {showPercentage && (
-              <p className="text-xs text-gray-400 mt-1">{Math.round(progress)}%</p>
+              <span className="text-foreground font-bold text-xs">
+                {percentage.toFixed(1)}%
+              </span>
             )}
           </div>
+        </div>
+      )}
+      
+      <div className={cn(
+        'relative rounded-full border overflow-hidden',
+        getVariantClasses(),
+        getSizeClasses()
+      )}>
+        <div
+          className={cn(
+            'h-full transition-all duration-500 ease-out rounded-full',
+            getBarClasses()
+          )}
+          style={{ width: `${percentage}%` }}
+        />
+        {percentage > 80 && (
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse" />
         )}
       </div>
     </div>
   );
 };
 
-export { ProgressIndicator };
+export default ProgressIndicator;

@@ -8,7 +8,7 @@ import PageHead from '@/components/PageHead';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import UserDashboard from '@/components/dashboard/UserDashboard';
-import { ProgressIndicator } from '@/components/ui/progress-indicator';
+import ProgressIndicator from '@/components/ui/progress-indicator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueManager } from '@/hooks/useLeagueManager';
@@ -92,11 +92,8 @@ const Index = React.memo(() => {
                     />
                     
                     {loading && (
-                      <div className="mt-6">
-                        <ProgressIndicator
-                          message={'Loading...'}
-                          showPercentage={false}
-                        />
+                      <div className="mt-6 text-center">
+                        <div className="text-muted-foreground">Loading...</div>
                       </div>
                     )}
                   </TabsContent>

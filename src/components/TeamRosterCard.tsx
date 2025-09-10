@@ -33,36 +33,40 @@ const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
   const teamName = getTeamName(user);
 
   return (
-    <div className="glass-card rounded-lg p-3 sm:p-4 space-y-3 card-hover">
-      <div className="flex items-center space-x-3">
-        <Avatar className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
+    <div className="glass-card rounded-xl p-4 sm:p-5 space-y-4 card-hover border border-border-light bg-gradient-to-br from-card to-card-light">
+      <div className="flex items-center space-x-4">
+        <Avatar className="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
           <AvatarImage 
             src={user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user.avatar}` : undefined} 
             alt={`${teamName} avatar`}
           />
-          <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-green-600 text-white font-semibold text-sm">
+          <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary text-primary-foreground font-bold text-sm">
             {teamName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-white truncate text-base sm:text-lg leading-tight">{teamName}</h4>
-          <p className="text-sm text-gray-300 truncate mt-0.5">{user?.display_name || 'Unknown Manager'}</p>
+          <h4 className="font-bold text-foreground truncate text-lg sm:text-xl leading-tight">{teamName}</h4>
+          <p className="text-sm text-muted-foreground truncate mt-1">{user?.display_name || 'Unknown Manager'}</p>
         </div>
       </div>
       
-      <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
-            <span className="text-gray-300 text-sm">Record:</span>
-            <Badge variant="outline" className="text-white border-white/20 text-sm w-fit mt-1 sm:mt-0">
-              {roster.settings?.wins || 0}-{roster.settings?.losses || 0}-{roster.settings?.ties || 0}
-            </Badge>
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-accent/30 rounded-lg p-3 border border-border-light">
+            <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Record</span>
+            <div className="mt-1">
+              <Badge variant="outline" className="text-foreground border-border text-sm font-bold">
+                {roster.settings?.wins || 0}-{roster.settings?.losses || 0}-{roster.settings?.ties || 0}
+              </Badge>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
-            <span className="text-gray-300 text-sm">Points:</span>
-            <span className="font-medium text-emerald-400 text-sm sm:text-base mt-1 sm:mt-0">
-              {roster.settings?.fpts?.toFixed(1) || '0.0'}
-            </span>
+          <div className="bg-success/10 rounded-lg p-3 border border-success/20">
+            <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Points</span>
+            <div className="mt-1">
+              <span className="font-bold text-success text-lg">
+                {roster.settings?.fpts?.toFixed(1) || '0.0'}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -82,29 +86,29 @@ const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
           />
         )}
         
-        <Separator className="bg-white/10" />
-        <div className="space-y-2">
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-300">Active:</span>
-              <span className="font-medium text-white">{playerCounts.active}</span>
+        <Separator className="bg-border-light" />
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="bg-accent/20 rounded-lg p-2 flex justify-between items-center">
+              <span className="text-muted-foreground font-medium">Active</span>
+              <span className="font-bold text-foreground">{playerCounts.active}</span>
             </div>
             {playerCounts.taxi > 0 && (
-              <div className="flex justify-between">
-                <span className="text-gray-300">Taxi:</span>
-                <span className="font-medium text-white">{playerCounts.taxi}</span>
+              <div className="bg-accent/20 rounded-lg p-2 flex justify-between items-center">
+                <span className="text-muted-foreground font-medium">Taxi</span>
+                <span className="font-bold text-foreground">{playerCounts.taxi}</span>
               </div>
             )}
           </div>
           {playerCounts.reserve > 0 && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-300">Reserve:</span>
-              <span className="font-medium text-white">{playerCounts.reserve}</span>
+            <div className="bg-accent/20 rounded-lg p-2 flex justify-between items-center text-sm">
+              <span className="text-muted-foreground font-medium">Reserve</span>
+              <span className="font-bold text-foreground">{playerCounts.reserve}</span>
             </div>
           )}
-          <div className="flex justify-between text-sm font-medium border-t border-white/10 pt-2">
-            <span className="text-gray-200">Total:</span>
-            <span className="text-emerald-400 font-semibold">{playerCounts.total}</span>
+          <div className="bg-primary/10 rounded-lg p-3 flex justify-between items-center border border-primary/20">
+            <span className="text-foreground font-bold">Total Players</span>
+            <span className="text-primary font-bold text-lg">{playerCounts.total}</span>
           </div>
         </div>
       </div>

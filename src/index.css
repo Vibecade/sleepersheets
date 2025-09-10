@@ -5,64 +5,76 @@
 
 @layer base {
   :root {
-    /* NFL War Room Command Center Color Palette */
-    --background: 210 25% 8%;
-    --foreground: 45 90% 85%;
+  /* Modern NFL War Room Color Palette */
+    --background: 214 20% 6%;
+    --background-light: 214 18% 8%;
+    --foreground: 45 85% 88%;
     
-    --card: 210 25% 10%;
-    --card-foreground: 45 90% 85%;
+    --card: 214 18% 8%;
+    --card-light: 214 16% 10%;
+    --card-foreground: 45 85% 88%;
     
-    --popover: 210 30% 6%;
-    --popover-foreground: 45 90% 85%;
+    --popover: 214 22% 5%;
+    --popover-foreground: 45 85% 88%;
     
-    /* NFL Gold Primary */
-    --primary: 45 100% 60%;
-    --primary-foreground: 210 25% 8%;
-    --primary-glow: 45 100% 70%;
+    /* Refined Gold Primary */
+    --primary: 45 95% 58%;
+    --primary-foreground: 214 20% 6%;
+    --primary-glow: 45 100% 68%;
+    --primary-muted: 45 60% 35%;
     
-    /* Blood Red Secondary */
-    --secondary: 0 85% 45%;
-    --secondary-foreground: 45 90% 85%;
-    --secondary-glow: 0 85% 55%;
+    /* Sophisticated Red Secondary */
+    --secondary: 358 75% 52%;
+    --secondary-foreground: 45 85% 88%;
+    --secondary-glow: 358 85% 62%;
+    --secondary-muted: 358 40% 35%;
     
-    /* Steel Gray Accent */
-    --accent: 210 15% 25%;
-    --accent-foreground: 45 90% 85%;
+    /* Modern Steel Accent */
+    --accent: 214 12% 22%;
+    --accent-foreground: 45 85% 88%;
+    --accent-light: 214 12% 28%;
     
-    /* Electric Green Success */
-    --success: 120 80% 45%;
-    --success-foreground: 210 25% 8%;
+    /* Professional Green Success */
+    --success: 142 70% 48%;
+    --success-foreground: 214 20% 6%;
+    --success-muted: 142 40% 35%;
     
-    --muted: 210 20% 12%;
-    --muted-foreground: 210 15% 60%;
+    --muted: 214 15% 12%;
+    --muted-foreground: 214 12% 62%;
     
-    --destructive: 0 85% 50%;
-    --destructive-foreground: 45 90% 85%;
+    --destructive: 358 75% 52%;
+    --destructive-foreground: 45 85% 88%;
     
-    --border: 210 15% 18%;
-    --input: 210 15% 18%;
-    --ring: 45 100% 60%;
+    --border: 214 12% 16%;
+    --border-light: 214 12% 20%;
+    --input: 214 12% 16%;
+    --ring: 45 95% 58%;
     
     --radius: 0.75rem;
     
-    /* NFL War Room Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--secondary-glow)));
-    --gradient-field: linear-gradient(180deg, hsl(120 60% 20%), hsl(120 60% 15%));
-    --gradient-stadium: linear-gradient(180deg, hsl(var(--background)), hsl(210 30% 6%));
-    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    /* Refined Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--secondary-glow)) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(142 80% 58%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card-light)) 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+    --gradient-glass-strong: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%);
     
-    /* Stadium Lighting Shadows */
-    --shadow-stadium: 0 20px 40px -10px hsl(var(--primary) / 0.3);
-    --shadow-helmet: 0 10px 30px -5px hsl(var(--secondary) / 0.4);
-    --shadow-field: 0 5px 20px -5px hsl(120 60% 20% / 0.6);
-    --shadow-glass: 0 8px 32px rgba(0,0,0,0.4);
-    --shadow-glow: 0 0 40px rgba(255, 215, 0, 0.4), 0 0 60px rgba(220,20,60,0.2);
+    /* Refined Shadow System */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.1);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.25);
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --shadow-glow: 0 0 20px hsl(var(--primary) / 0.2);
+    --shadow-glow-strong: 0 0 30px hsl(var(--primary) / 0.3), 0 0 60px hsl(var(--primary) / 0.1);
     
-    /* War Room Animations */
-    --transition-stadium: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
-    --transition-scoreboard: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-header: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /* Smooth Transitions */
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 }
 
