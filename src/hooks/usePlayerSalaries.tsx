@@ -9,11 +9,13 @@ interface PlayerSalary {
   player_id: string;
   salary: number | null;
   taxi_squad: boolean;
+  acquisition_type: 'contract' | 'faab' | 'free_agent';
 }
 
 export const usePlayerSalaries = (leagueId: string) => {
   const [salaries, setSalaries] = useState<Record<string, number | null>>({});
   const [taxiSquadStatus, setTaxiSquadStatus] = useState<Record<string, boolean>>({});
+  const [data, setData] = useState<PlayerSalary[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastLeagueId, setLastLeagueId] = useState<string>('');
   const { toast } = useToast();
@@ -31,8 +33,8 @@ export const usePlayerSalaries = (leagueId: string) => {
       
       const { data, error } = await supabase
         .from('player_salaries')
-        .select('player_id, salary, taxi_squad')
-        .eq('league_id', currentLeagueId);
+        .select('player_id, salary, taxi_squad, acquisition_type')
+        .eq('league_id', currentLeagueId) as { data: PlayerSalary[] | null; error: any };
 
       logDataAccess(user?.id, 'player_salaries', 'read', !error);
 
@@ -54,6 +56,7 @@ export const usePlayerSalaries = (leagueId: string) => {
       
       setSalaries(salaryMap);
       setTaxiSquadStatus(taxiMap);
+      setData(data || []);
       setLastLeagueId(currentLeagueId);
     } catch (error) {
       console.error('Error loading salaries:', error);
@@ -92,6 +95,7 @@ export const usePlayerSalaries = (leagueId: string) => {
           player_id: playerId,
           salary: salary,
           taxi_squad: taxiSquadStatus[playerId] || false,
+          acquisition_type: 'contract',
           updated_at: new Date().toISOString()
         }, {
           onConflict: 'league_id,player_id'
@@ -137,6 +141,7 @@ export const usePlayerSalaries = (leagueId: string) => {
           player_id: playerId,
           salary: salaries[playerId],
           taxi_squad: taxiSquad,
+          acquisition_type: 'contract',
           updated_at: new Date().toISOString()
         }, {
           onConflict: 'league_id,player_id'
@@ -183,12 +188,30 @@ export const usePlayerSalaries = (leagueId: string) => {
     return baseSalary;
   }, [salaries, taxiSquadStatus]);
 
+  const getSalaryCapContribution = useCallback((playerId: string): number => {
+    const baseSalary = salaries[playerId] || 0;
+    const isTaxiSquad = taxiSquadStatus[playerId] || false;
+    
+    // FAAB acquisitions don't count toward salary cap
+    const acquisitionType = data?.find(item => item.player_id === playerId)?.acquisition_type || 'contract';
+    if (acquisitionType === 'faab') {
+      return 0;
+    }
+    
+    if (isTaxiSquad && baseSalary > 0) {
+      return Math.max(1, Math.round(baseSalary * 0.25));
+    }
+    
+    return baseSalary;
+  }, [salaries, taxiSquadStatus, data]);
+
   return {
     salaries,
     taxiSquadStatus,
     updateSalary,
     updateTaxiSquadStatus,
     getEffectiveSalary,
+    getSalaryCapContribution,
     loading
   };
 };

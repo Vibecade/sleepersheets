@@ -92,7 +92,8 @@ export const useTransactionProcessor = () => {
   const updatePlayerSalary = async (
     leagueId: string, 
     playerId: string, 
-    salary: number
+    salary: number,
+    acquisitionType: 'contract' | 'faab' | 'free_agent' = 'faab'
   ): Promise<boolean> => {
     try {
       logDataAccess(undefined, 'player_salaries', 'write', true);
@@ -103,6 +104,7 @@ export const useTransactionProcessor = () => {
           league_id: leagueId,
           player_id: playerId,
           salary: salary,
+          acquisition_type: acquisitionType,
           updated_at: new Date().toISOString()
         });
 

@@ -9,14 +9,14 @@ export interface TeamSalaryData {
 interface CalculateOptimizedSalariesProps {
   rosters: any[];
   deadCapPlayers: any[];
-  getEffectiveSalary: (playerId: string) => number;
+  getSalaryCapContribution: (playerId: string) => number;
   salaryCap: number;
 }
 
 export const calculateOptimizedSalaries = ({ 
   rosters, 
   deadCapPlayers,
-  getEffectiveSalary,
+  getSalaryCapContribution,
   salaryCap
 }: CalculateOptimizedSalariesProps): TeamSalaryData => {
   console.log('Recalculating optimized salary data for', rosters.length, 'teams');
@@ -48,7 +48,7 @@ export const calculateOptimizedSalaries = ({
     ];
     
     const activeSalary = allPlayerIds.reduce((total, playerId) => {
-      return total + getEffectiveSalary(playerId);
+      return total + getSalaryCapContribution(playerId);
     }, 0);
 
     teamSalaries[rosterId] = activeSalary;

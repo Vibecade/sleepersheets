@@ -277,6 +277,7 @@ export type Database = {
       }
       player_salaries: {
         Row: {
+          acquisition_type: string | null
           created_at: string
           id: string
           league_id: string
@@ -286,6 +287,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          acquisition_type?: string | null
           created_at?: string
           id?: string
           league_id: string
@@ -295,6 +297,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          acquisition_type?: string | null
           created_at?: string
           id?: string
           league_id?: string

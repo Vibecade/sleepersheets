@@ -24,7 +24,7 @@ export const useTeamRostersManager = ({ rosters, transactions = [] }: UseTeamRos
 
   const leagueId = rosters[0]?.league_id || '';
   
-  const { salaries, getEffectiveSalary, loading: salariesLoading } = usePlayerSalaries(leagueId);
+  const { salaries, getEffectiveSalary, getSalaryCapContribution, loading: salariesLoading } = usePlayerSalaries(leagueId);
   const { deadCapPlayers, loading: deadCapLoading } = useDeadCapPlayers(leagueId);
   const { settings, updateSettings, loading: settingsLoading } = useLeagueSettings(leagueId);
   const { canModifyLeague } = useLeagueOwnership();
@@ -45,10 +45,10 @@ export const useTeamRostersManager = ({ rosters, transactions = [] }: UseTeamRos
     return calculateOptimizedSalaries({
       rosters,
       deadCapPlayers,
-      getEffectiveSalary,
+      getSalaryCapContribution,
       salaryCap,
     });
-  }, [rosters, deadCapPlayers, getEffectiveSalary, salaryCap, salariesLoading, deadCapLoading]);
+  }, [rosters, deadCapPlayers, getSalaryCapContribution, salaryCap, salariesLoading, deadCapLoading]);
 
   const { teamFAAB } = useFAABCalculations({ rosters, leagueId, transactions });
 
