@@ -33,19 +33,16 @@ export const useTransactionProcessor = () => {
     const updates: WaiverUpdate[] = [];
     const waiverBid = transaction.settings.waiver_bid;
     const adds = transaction.adds || {};
-    const rosterIds = transaction.roster_ids || [];
-
-    // waiver_bid is a single number, not an object keyed by roster_id
-    if (typeof waiverBid === 'number' && rosterIds.length > 0) {
-      const rosterId = rosterIds[0]; // The roster making the waiver claim
-
-      // Process each added player
-      Object.keys(adds).forEach((playerId) => {
-        if (adds[playerId] === rosterId) {
+    
+    // waiver_bid is a single number representing the FAAB bid amount
+    if (typeof waiverBid === 'number') {
+      // Process each added player - the value in adds should be the roster_id
+      Object.entries(adds).forEach(([playerId, rosterId]) => {
+        if (typeof rosterId === 'number') {
           updates.push({
             playerId,
             salary: waiverBid,
-            rosterId
+            rosterId: rosterId as number
           });
           console.log(`Extracted waiver update: Player ${playerId}, FAAB: $${waiverBid}, Roster: ${rosterId}`);
         }
