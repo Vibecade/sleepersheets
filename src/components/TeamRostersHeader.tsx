@@ -1,36 +1,17 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, DollarSign, Skull, Calculator, Lock } from 'lucide-react';
+import { Users, Skull, Calculator, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import SalarySettings from '@/components/SalarySettings';
-import FAABSettings from '@/components/FAABSettings';
 
 interface TeamRostersHeaderProps {
   showSalaryFeatures: boolean;
   showDeadCapManager: boolean;
   deadCapEnabled: boolean;
-  onToggleSalaryFeatures: () => void;
   onToggleDeadCapManager: () => void;
-  localSalaryCap: string;
-  setLocalSalaryCap: (value: string) => void;
-  salaryCap: number;
-  onDeadCapEnabledChange: (enabled: boolean) => Promise<void>;
-  settingsLoading: boolean;
-  onSalaryCapSave: () => Promise<void>;
-  showFAAB: boolean;
-  onToggleFAAB: () => void;
   showContractCalculator: boolean;
   onToggleContractCalculator: () => void;
-  // FAAB settings props
-  faabCap: number;
-  reserveLimit: number;
-  localFaabCap: string;
-  localReserveLimit: string;
-  setLocalFaabCap: (value: string) => void;
-  setLocalReserveLimit: (value: string) => void;
-  onFaabSettingsSave: () => Promise<void>;
   canModifyLeague: boolean;
 }
 
@@ -38,25 +19,9 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
   showSalaryFeatures,
   showDeadCapManager,
   deadCapEnabled,
-  onToggleSalaryFeatures,
   onToggleDeadCapManager,
-  localSalaryCap,
-  setLocalSalaryCap,
-  salaryCap,
-  onDeadCapEnabledChange,
-  settingsLoading,
-  onSalaryCapSave,
-  showFAAB,
-  onToggleFAAB,
   showContractCalculator,
   onToggleContractCalculator,
-  faabCap,
-  reserveLimit,
-  localFaabCap,
-  localReserveLimit,
-  setLocalFaabCap,
-  setLocalReserveLimit,
-  onFaabSettingsSave,
   canModifyLeague
 }) => {
   const { user } = useAuth();
@@ -73,7 +38,6 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
                 Team overview and roster sizes
                 {showSalaryFeatures && ' with salary tracking'}
                 {showDeadCapManager && ' and dead cap management'}
-                {showFAAB && ' and FAAB budgets'}
                 {!canModifyLeague && ' (read-only)'}
               </CardDescription>
             </div>
@@ -90,27 +54,7 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
         )}
         
         <div className="flex flex-col xs:flex-row gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onToggleSalaryFeatures}
-            className="flex items-center justify-center space-x-2 min-h-[44px] text-sm"
-          >
-            <DollarSign className="w-4 h-4" />
-            <span>Salary Features</span>
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onToggleFAAB}
-            className="flex items-center justify-center space-x-2 min-h-[44px] text-sm"
-          >
-            <DollarSign className="w-4 h-4" />
-            <span>FAAB Budgets</span>
-          </Button>
-          
-          {deadCapEnabled && (
+          {showSalaryFeatures && deadCapEnabled && (
             <Button
               variant="outline"
               size="sm"
@@ -136,37 +80,6 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
           </Button>
         </div>
       </div>
-
-      {showSalaryFeatures && (
-        <div className="pt-3 sm:pt-4 border-t border-white/10">
-          <SalarySettings
-            localSalaryCap={localSalaryCap}
-            setLocalSalaryCap={setLocalSalaryCap}
-            salaryCap={salaryCap}
-            deadCapEnabled={deadCapEnabled}
-            onDeadCapEnabledChange={onDeadCapEnabledChange}
-            settingsLoading={settingsLoading}
-            onSalaryCapSave={onSalaryCapSave}
-            canModifyLeague={canModifyLeague}
-          />
-        </div>
-      )}
-
-      {showFAAB && (
-        <div className="pt-3 sm:pt-4 border-t border-white/10">
-          <FAABSettings
-            faabCap={faabCap}
-            reserveLimit={reserveLimit}
-            localFaabCap={localFaabCap}
-            localReserveLimit={localReserveLimit}
-            setLocalFaabCap={setLocalFaabCap}
-            setLocalReserveLimit={setLocalReserveLimit}
-            onFaabSettingsSave={onFaabSettingsSave}
-            settingsLoading={settingsLoading}
-            canModifyLeague={canModifyLeague}
-          />
-        </div>
-      )}
     </CardHeader>
   );
 };

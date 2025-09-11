@@ -1,8 +1,9 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { useTeamRostersManager } from '@/hooks/useTeamRostersManager';
 import MinimizableDeadCapManager from '@/components/MinimizableDeadCapManager';
 import MinimizableContractCalculator from '@/components/MinimizableContractCalculator';
+import MinimizableLeagueOptions from '@/components/MinimizableLeagueOptions';
 import TeamRostersHeader from '@/components/TeamRostersHeader';
 import TeamRostersGrid from '@/components/TeamRostersGrid';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -15,6 +16,8 @@ interface TeamRostersProps {
 }
 
 const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, players = {}, transactions = [] }) => {
+  const [showLeagueOptions, setShowLeagueOptions] = useState(false);
+  
   const {
     leagueId,
     showSalaryFeatures,
@@ -48,30 +51,38 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
   return (
     <ErrorBoundary>
       <div className="space-y-4 sm:space-y-6">
+        <MinimizableLeagueOptions
+          open={showLeagueOptions}
+          onOpenChange={setShowLeagueOptions}
+          showSalaryFeatures={showSalaryFeatures}
+          showFAAB={showFAAB}
+          onToggleSalaryFeatures={() => setShowSalaryFeatures(!showSalaryFeatures)}
+          onToggleFAAB={() => setShowFAAB(!showFAAB)}
+          localSalaryCap={localSalaryCap}
+          setLocalSalaryCap={setLocalSalaryCap}
+          salaryCap={salaryCap}
+          deadCapEnabled={deadCapEnabled}
+          onDeadCapEnabledChange={handleDeadCapEnabledChange}
+          settingsLoading={settingsLoading}
+          onSalaryCapSave={handleSalaryCapSave}
+          faabCap={faabCap}
+          reserveLimit={reserveLimit}
+          localFaabCap={localFaabCap}
+          localReserveLimit={localReserveLimit}
+          setLocalFaabCap={setLocalFaabCap}
+          setLocalReserveLimit={setLocalReserveLimit}
+          onFaabSettingsSave={handleFaabSettingsSave}
+          canModifyLeague={canModify}
+        />
+
         <Card>
           <TeamRostersHeader
-            showSalaryFeatures={showSalaryFeatures}
             showDeadCapManager={showDeadCapManager}
             deadCapEnabled={deadCapEnabled}
-            onToggleSalaryFeatures={() => setShowSalaryFeatures(!showSalaryFeatures)}
             onToggleDeadCapManager={() => setShowDeadCapManager(!showDeadCapManager)}
-            localSalaryCap={localSalaryCap}
-            setLocalSalaryCap={setLocalSalaryCap}
-            salaryCap={salaryCap}
-            onDeadCapEnabledChange={handleDeadCapEnabledChange}
-            settingsLoading={settingsLoading}
-            onSalaryCapSave={handleSalaryCapSave}
-            showFAAB={showFAAB}
-            onToggleFAAB={() => setShowFAAB(!showFAAB)}
             showContractCalculator={showContractCalculator}
             onToggleContractCalculator={() => setShowContractCalculator(!showContractCalculator)}
-            faabCap={faabCap}
-            reserveLimit={reserveLimit}
-            localFaabCap={localFaabCap}
-            localReserveLimit={localReserveLimit}
-            setLocalFaabCap={setLocalFaabCap}
-            setLocalReserveLimit={setLocalReserveLimit}
-            onFaabSettingsSave={handleFaabSettingsSave}
+            showSalaryFeatures={showSalaryFeatures}
             canModifyLeague={canModify}
           />
           
