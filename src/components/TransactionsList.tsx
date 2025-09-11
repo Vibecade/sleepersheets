@@ -1,13 +1,14 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowRightLeft, Plus, Minus, RefreshCw, Calendar, Users, Search, Filter, X } from 'lucide-react';
+import { ArrowRightLeft, Plus, Minus, RefreshCw, Calendar, Users, Search, Filter, X, Clock } from 'lucide-react';
 import { getTeamName } from '@/utils/leagueDataUtils';
+import { useNFLWeek } from '@/hooks/useNFLWeek';
 import PlayerSearch from './PlayerSearch';
 
 interface TransactionsListProps {
@@ -23,11 +24,19 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
   players,
   league
 }) => {
-  const [selectedWeek, setSelectedWeek] = useState(league?.settings?.leg || 1);
+  const { currentNFLWeek, displayWeek, loading: weekLoading, refreshWeekData } = useNFLWeek(true);
+  const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [transactionType, setTransactionType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [hideFailed, setHideFailed] = useState(true);
+
+  // Initialize selectedWeek with current NFL week when available
+  useEffect(() => {
+    if (selectedWeek === null && currentNFLWeek) {
+      setSelectedWeek(currentNFLWeek);
+    }
+  }, [currentNFLWeek, selectedWeek]);
 
   const getPlayerName = (playerId: string): string => {
     const player = players[playerId];
@@ -66,7 +75,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
     return transactions.filter(transaction => {
       // Use 'leg' field from API (which represents week) or fall back to 'week'
       const transactionWeek = transaction.leg || transaction.week;
-      const weekMatch = !selectedWeek || transactionWeek === selectedWeek;
+      const weekMatch = selectedWeek === null || transactionWeek === selectedWeek;
       const typeMatch = transactionType === 'all' || transaction.type === transactionType;
       
       // Failed status filter
@@ -94,7 +103,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
     if (!hideFailed) return 0;
     return transactions.filter(transaction => {
       const transactionWeek = transaction.leg || transaction.week;
-      const weekMatch = !selectedWeek || transactionWeek === selectedWeek;
+      const weekMatch = selectedWeek === null || transactionWeek === selectedWeek;
       const typeMatch = transactionType === 'all' || transaction.type === transactionType;
       const searchMatch = !searchTerm || (
         (transaction.adds && Object.keys(transaction.adds).some(playerId => 
@@ -117,29 +126,47 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
     <Card className="glass-card border-border-light transition-all duration-300 hover:shadow-lg">
       <CardHeader className="pb-4">
         <div className="flex flex-col space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <ArrowRightLeft className="w-5 h-5 text-primary" />
-              <CardTitle className="text-xl font-bold">League Transactions</CardTitle>
-              <Badge variant="outline" className="text-xs">
-                {sortedTransactions.length} total
-              </Badge>
-              {hideFailed && hiddenFailedCount > 0 && (
-                <Badge variant="outline" className="text-xs text-muted-foreground">
-                  {hiddenFailedCount} failed hidden
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <ArrowRightLeft className="w-5 h-5 text-primary" />
+                <CardTitle className="text-xl font-bold">League Transactions</CardTitle>
+                <Badge variant="outline" className="text-xs">
+                  {sortedTransactions.length} total
                 </Badge>
-              )}
+                {hideFailed && hiddenFailedCount > 0 && (
+                  <Badge variant="outline" className="text-xs text-muted-foreground">
+                    {hiddenFailedCount} failed hidden
+                  </Badge>
+                )}
+                {selectedWeek === currentNFLWeek && (
+                  <Badge variant="outline" className="text-xs text-primary border-primary">
+                    <Clock className="w-3 h-3 mr-1" />
+                    Current Week
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={refreshWeekData}
+                  disabled={weekLoading}
+                  className="transition-all duration-200"
+                  title="Refresh NFL week data"
+                >
+                  <RefreshCw className={`w-4 h-4 ${weekLoading ? 'animate-spin' : ''}`} />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowSearch(!showSearch)}
+                  className="transition-all duration-200"
+                >
+                  <Search className="w-4 h-4 mr-2" />
+                  Search
+                </Button>
+              </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSearch(!showSearch)}
-              className="transition-all duration-200"
-            >
-              <Search className="w-4 h-4 mr-2" />
-              Search
-            </Button>
-          </div>
 
           {/* Search Bar */}
           {showSearch && (
@@ -168,15 +195,28 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center space-x-2">
               <Label htmlFor="week-filter" className="text-sm font-medium">Week:</Label>
-              <Input
-                id="week-filter"
-                type="number"
-                min="1"
-                max="18"
-                value={selectedWeek}
-                onChange={(e) => setSelectedWeek(Number(e.target.value))}
-                className="w-20 bg-card/50 border-border-light"
-              />
+              <div className="flex items-center space-x-2">
+                <Input
+                  id="week-filter"
+                  type="number"
+                  min="1"
+                  max="18"
+                  value={selectedWeek || ''}
+                  onChange={(e) => setSelectedWeek(e.target.value ? Number(e.target.value) : null)}
+                  placeholder="All"
+                  className="w-20 bg-card/50 border-border-light"
+                />
+                {selectedWeek !== currentNFLWeek && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedWeek(currentNFLWeek)}
+                    className="text-xs px-2 py-1 h-auto text-primary hover:bg-primary/10"
+                  >
+                    Current ({currentNFLWeek})
+                  </Button>
+                )}
+              </div>
             </div>
             <div className="flex items-center space-x-2">
               <Label htmlFor="type-filter" className="text-sm font-medium">Type:</Label>
@@ -219,7 +259,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                 onClick={() => {
                   setSearchTerm('');
                   setTransactionType('all');
-                  setSelectedWeek(league?.settings?.leg || 1);
+                  setSelectedWeek(currentNFLWeek);
                   setHideFailed(true);
                 }}
                 className="mt-4"
