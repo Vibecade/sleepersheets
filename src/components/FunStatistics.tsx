@@ -21,18 +21,38 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
   players,
   transactions = []
 }) => {
-  // Calculate power rankings based on points, wins, and recent performance
+  // Calculate power rankings with meaningful data and real trends
   const calculatePowerRankings = () => {
+    const allPoints = rosters.map(r => r.settings?.fpts || 0);
+    const maxPoints = Math.max(...allPoints);
+    const avgPoints = allPoints.reduce((sum, p) => sum + p, 0) / allPoints.length;
+    
     return rosters
       .map(roster => {
         const user = userMap[roster.owner_id];
         const wins = roster.settings?.wins || 0;
         const losses = roster.settings?.losses || 0;
         const points = roster.settings?.fpts || 0;
-        const winPct = wins + losses > 0 ? wins / (wins + losses) : 0;
+        const gamesPlayed = wins + losses;
+        const winPct = gamesPlayed > 0 ? wins / gamesPlayed : 0;
         
-        // Power score combines win percentage and points
-        const powerScore = (winPct * 0.6) + (points / 2000 * 0.4);
+        // Improved power score: balanced formula with normalized components
+        const normalizedWinPct = winPct; // Already 0-1
+        const normalizedPoints = maxPoints > 0 ? points / maxPoints : 0;
+        const powerScore = (normalizedWinPct * 0.65) + (normalizedPoints * 0.35);
+        
+        // Calculate real trend based on streak data
+        const streakData = roster.metadata?.streak || '';
+        let trend = 'neutral';
+        if (streakData) {
+          const match = streakData.match(/^(\d+)([WL])$/);
+          if (match) {
+            const streakCount = parseInt(match[1], 10);
+            const streakType = match[2];
+            if (streakType === 'W' && streakCount >= 2) trend = 'up';
+            else if (streakType === 'L' && streakCount >= 2) trend = 'down';
+          }
+        }
         
         return {
           rosterId: roster.roster_id,
@@ -42,7 +62,10 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
           wins,
           losses,
           points,
-          trend: Math.random() > 0.5 ? 'up' : 'down' // Simplified trend calculation
+          winPct,
+          pointsVsAvg: points - avgPoints,
+          trend,
+          gamesPlayed
         };
       })
       .sort((a, b) => b.powerScore - a.powerScore);
@@ -142,46 +165,67 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {powerRankings.slice(0, 6).map((team, index) => (
-              <div key={team.rosterId} className="flex items-center justify-between p-4 bg-white/5 rounded-lg transition-all duration-300 hover:bg-white/10 hover:scale-[1.02]">
-                <div className="flex items-center space-x-4">
+          <div className="space-y-4">
+            {powerRankings.slice(0, 8).map((team, index) => (
+              <div key={team.rosterId} className="flex items-center justify-between p-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/70 hover:shadow-lg hover:scale-[1.01]">
+                <div className="flex items-center space-x-4 flex-1">
                   <div className="relative">
-                    <Avatar className={`transition-all duration-300 ${
-                      index === 0 ? 'scale-110 ring-2 ring-yellow-500' : 
-                      index === 1 ? 'scale-105 ring-2 ring-gray-400' :
-                      index === 2 ? 'scale-105 ring-2 ring-amber-600' : ''
+                    <Avatar className={`w-12 h-12 transition-all duration-300 ${
+                      index === 0 ? 'ring-2 ring-yellow-500 ring-offset-2 ring-offset-background' : 
+                      index === 1 ? 'ring-2 ring-slate-400 ring-offset-2 ring-offset-background' :
+                      index === 2 ? 'ring-2 ring-amber-600 ring-offset-2 ring-offset-background' : ''
                     }`}>
                       <AvatarImage 
                         src={team.user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${team.user.avatar}` : undefined}
                         alt={`${team.teamName} avatar`}
                       />
-                      <AvatarFallback className="bg-primary/20 text-primary-foreground">
+                      <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
                         {team.teamName.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
-                      index === 0 ? 'bg-yellow-500 text-black animate-pulse' : 
-                      index === 1 ? 'bg-gray-400 text-black' :
-                      index === 2 ? 'bg-amber-600 text-white' : 'bg-gray-700 text-white'
+                    <div className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 shadow-lg ${
+                      index === 0 ? 'bg-yellow-500 text-black' : 
+                      index === 1 ? 'bg-slate-400 text-white' :
+                      index === 2 ? 'bg-amber-600 text-white' : 'bg-muted text-muted-foreground'
                     }`}>
                       {index + 1}
                     </div>
                   </div>
-                  <div>
-                    <div className="font-medium text-white transition-colors duration-200">{team.teamName}</div>
-                    <div className="text-sm text-gray-400 transition-colors duration-200">
-                      {team.wins}-{team.losses} • {team.points.toFixed(1)} pts
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-foreground text-lg truncate">{team.teamName}</div>
+                    <div className="text-sm text-muted-foreground flex items-center space-x-3">
+                      <span className="font-medium">{team.wins}-{team.losses}</span>
+                      <span>•</span>
+                      <span>{team.points.toFixed(1)} pts</span>
+                      <span>•</span>
+                      <span className={team.pointsVsAvg >= 0 ? 'text-green-400' : 'text-red-400'}>
+                        {team.pointsVsAvg >= 0 ? '+' : ''}{team.pointsVsAvg.toFixed(1)} vs avg
+                      </span>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Progress value={team.powerScore * 100} className="w-20 h-2 transition-all duration-300" />
+                <div className="flex items-center space-x-4">
+                  <div className="text-right">
+                    <div className="text-sm font-semibold text-foreground">
+                      {(team.winPct * 100).toFixed(0)}% Win Rate
+                    </div>
+                    <div className="w-24 h-2 bg-muted rounded-full overflow-hidden mt-1">
+                      <div 
+                        className="h-full bg-gradient-to-r from-emerald-500 to-green-500 transition-all duration-500"
+                        style={{ width: `${team.winPct * 100}%` }}
+                      />
+                    </div>
+                  </div>
                   <div className="transition-transform duration-300 hover:scale-125">
-                    {team.trend === 'up' ? 
-                      <TrendingUp className="w-5 h-5 text-green-400" /> : 
-                      <TrendingDown className="w-5 h-5 text-red-400" />
-                    }
+                    {team.trend === 'up' ? (
+                      <TrendingUp className="w-6 h-6 text-green-400" />
+                    ) : team.trend === 'down' ? (
+                      <TrendingDown className="w-6 h-6 text-red-400" />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-muted-foreground" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -194,64 +238,74 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
       <Card className="transition-all duration-300 hover:shadow-lg">
         <CardHeader>
           <div className="flex items-center space-x-2">
-            <Star className="w-5 h-5 text-red-500" />
-            <CardTitle className="text-lg">Hot & Cold Streaks</CardTitle>
+            <TrendingUp className="w-5 h-5 text-orange-500" />
+            <CardTitle className="text-lg">Team Streaks</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-green-400 mb-3 flex items-center space-x-2">
-                <Star className="w-4 h-4" />
+              <h4 className="text-base font-semibold text-green-400 mb-4 flex items-center space-x-2">
+                <TrendingUp className="w-4 h-4" />
                 <span>Hot Teams</span>
               </h4>
-              <div className="space-y-2">
-                {streaks.filter(team => team.isHot).slice(0, 3).map((team, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-green-500/10 rounded-lg border border-green-500/20 transition-all duration-300 hover:bg-green-500/20 hover:scale-105">
+              <div className="space-y-3">
+                {streaks.filter(team => team.isHot).slice(0, 4).map((team, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/30 backdrop-blur-sm transition-all duration-300 hover:from-green-500/20 hover:to-emerald-500/20 hover:scale-[1.02]">
                     <div className="flex items-center space-x-3">
-                      <Avatar className="w-8 h-8">
+                      <Avatar className="w-10 h-10 ring-2 ring-green-400/50">
                         <AvatarImage 
                           src={team.user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${team.user.avatar}` : undefined}
                           alt={`${team.teamName} avatar`}
                         />
-                        <AvatarFallback className="text-xs bg-green-500/20">
+                        <AvatarFallback className="text-sm bg-green-500/20 text-green-400 font-semibold">
                           {team.teamName.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm text-white font-medium">{team.teamName}</span>
+                      <span className="text-foreground font-medium">{team.teamName}</span>
                     </div>
-                    <Badge variant="outline" className="text-green-400 border-green-400 animate-pulse">
-                      {team.streak}W
+                    <Badge className="bg-green-500/20 text-green-400 border-green-400/50 font-semibold">
+                      {team.streak}W Streak
                     </Badge>
                   </div>
                 ))}
+                {streaks.filter(team => team.isHot).length === 0 && (
+                  <div className="text-center py-6 text-muted-foreground">
+                    No hot streaks yet
+                  </div>
+                )}
               </div>
             </div>
             <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-blue-400 mb-3 flex items-center space-x-2">
-                <Activity className="w-4 h-4" />
+              <h4 className="text-base font-semibold text-red-400 mb-4 flex items-center space-x-2">
+                <TrendingDown className="w-4 h-4" />
                 <span>Cold Teams</span>
               </h4>
-              <div className="space-y-2">
-                {streaks.filter(team => team.isCold).slice(0, 3).map((team, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-blue-500/10 rounded-lg border border-blue-500/20 transition-all duration-300 hover:bg-blue-500/20 hover:scale-105">
+              <div className="space-y-3">
+                {streaks.filter(team => team.isCold).slice(0, 4).map((team, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-red-500/10 to-pink-500/10 rounded-xl border border-red-500/30 backdrop-blur-sm transition-all duration-300 hover:from-red-500/20 hover:to-pink-500/20 hover:scale-[1.02]">
                     <div className="flex items-center space-x-3">
-                      <Avatar className="w-8 h-8">
+                      <Avatar className="w-10 h-10 ring-2 ring-red-400/50">
                         <AvatarImage 
                           src={team.user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${team.user.avatar}` : undefined}
                           alt={`${team.teamName} avatar`}
                         />
-                        <AvatarFallback className="text-xs bg-blue-500/20">
+                        <AvatarFallback className="text-sm bg-red-500/20 text-red-400 font-semibold">
                           {team.teamName.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm text-white font-medium">{team.teamName}</span>
+                      <span className="text-foreground font-medium">{team.teamName}</span>
                     </div>
-                    <Badge variant="outline" className="text-blue-400 border-blue-400">
-                      {team.streak}L
+                    <Badge className="bg-red-500/20 text-red-400 border-red-400/50 font-semibold">
+                      {team.streak}L Streak
                     </Badge>
                   </div>
                 ))}
+                {streaks.filter(team => team.isCold).length === 0 && (
+                  <div className="text-center py-6 text-muted-foreground">
+                    No cold streaks yet
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -267,37 +321,39 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {activity.slice(0, 6).map((manager, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-white/5 rounded-lg transition-all duration-300 hover:bg-white/10 hover:scale-[1.02]">
-                <div className="flex items-center space-x-4">
-                  <Avatar className="transition-all duration-300 hover:scale-110">
+          <div className="space-y-4">
+            {activity.slice(0, 8).map((manager, index) => (
+              <div key={index} className="flex items-center justify-between p-4 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/70 hover:shadow-lg hover:scale-[1.01]">
+                <div className="flex items-center space-x-4 flex-1">
+                  <Avatar className="w-11 h-11 transition-all duration-300 hover:scale-110">
                     <AvatarImage 
                       src={manager.user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${manager.user.avatar}` : undefined}
                       alt={`${manager.teamName} avatar`}
                     />
-                    <AvatarFallback className="bg-primary/20 text-primary-foreground">
+                    <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
                       {manager.teamName.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-foreground truncate">{manager.teamName}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {manager.transactionCount} transaction{manager.transactionCount !== 1 ? 's' : ''} this season
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
                   <div className={`flex items-center space-x-2 transition-all duration-300 ${getActivityColor(manager.activityLevel)}`}>
                     <div className="transition-transform duration-300 hover:scale-125">
                       {getActivityIcon(manager.activityLevel)}
                     </div>
-                  </div>
-                  <div>
-                    <div className="font-medium text-white transition-colors duration-200">{manager.teamName}</div>
-                    <div className="text-sm text-gray-400 transition-colors duration-200">
-                      {manager.transactionCount} transactions
-                    </div>
+                    <Badge 
+                      variant="outline" 
+                      className={`${getActivityColor(manager.activityLevel)} border-current font-semibold`}
+                    >
+                      {manager.activityLevel.toUpperCase()}
+                    </Badge>
                   </div>
                 </div>
-                <Badge 
-                  variant="outline" 
-                  className={`${getActivityColor(manager.activityLevel)} border-current transition-all duration-300 hover:scale-110`}
-                >
-                  {manager.activityLevel.toUpperCase()}
-                </Badge>
               </div>
             ))}
           </div>
@@ -314,29 +370,29 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-white/5 rounded-lg transition-all duration-300 hover:bg-white/10 hover:scale-105">
-              <div className="text-3xl font-bold text-yellow-400 transition-all duration-300">
+            <div className="text-center p-6 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-xl border border-yellow-500/20 transition-all duration-300 hover:from-yellow-500/20 hover:to-orange-500/20 hover:scale-105">
+              <div className="text-3xl font-bold text-yellow-400 mb-2">
                 {Math.max(...rosters.map(r => r.settings?.fpts || 0)).toFixed(1)}
               </div>
-              <div className="text-sm text-gray-400 mt-1">Highest Score</div>
+              <div className="text-sm text-muted-foreground font-medium">Highest Score</div>
             </div>
-            <div className="text-center p-4 bg-white/5 rounded-lg transition-all duration-300 hover:bg-white/10 hover:scale-105">
-              <div className="text-3xl font-bold text-blue-400 transition-all duration-300">
+            <div className="text-center p-6 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-xl border border-blue-500/20 transition-all duration-300 hover:from-blue-500/20 hover:to-cyan-500/20 hover:scale-105">
+              <div className="text-3xl font-bold text-blue-400 mb-2">
                 {transactions.length}
               </div>
-              <div className="text-sm text-gray-400 mt-1">Total Moves</div>
+              <div className="text-sm text-muted-foreground font-medium">Total Moves</div>
             </div>
-            <div className="text-center p-4 bg-white/5 rounded-lg transition-all duration-300 hover:bg-white/10 hover:scale-105">
-              <div className="text-3xl font-bold text-green-400 transition-all duration-300">
+            <div className="text-center p-6 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20 transition-all duration-300 hover:from-green-500/20 hover:to-emerald-500/20 hover:scale-105">
+              <div className="text-3xl font-bold text-green-400 mb-2">
                 {rosters.reduce((sum, r) => sum + (r.settings?.wins || 0), 0)}
               </div>
-              <div className="text-sm text-gray-400 mt-1">Total Wins</div>
+              <div className="text-sm text-muted-foreground font-medium">Total Wins</div>
             </div>
-            <div className="text-center p-4 bg-white/5 rounded-lg transition-all duration-300 hover:bg-white/10 hover:scale-105">
-              <div className="text-3xl font-bold text-purple-400 transition-all duration-300">
+            <div className="text-center p-6 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20 transition-all duration-300 hover:from-purple-500/20 hover:to-pink-500/20 hover:scale-105">
+              <div className="text-3xl font-bold text-purple-400 mb-2">
                 {league?.settings?.leg || 1}
               </div>
-              <div className="text-sm text-gray-400 mt-1">Current Week</div>
+              <div className="text-sm text-muted-foreground font-medium">Current Week</div>
             </div>
           </div>
         </CardContent>
