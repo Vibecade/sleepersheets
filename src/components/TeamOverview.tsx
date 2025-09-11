@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Users, Trophy, Calendar, Activity, RefreshCw, ArrowRightLeft } from 'lucide-react';
 import { useMatchups } from '@/hooks/useMatchups';
 import { useHistoricalProjections } from '@/hooks/useHistoricalProjections';
@@ -184,14 +185,25 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                     const team1Winning = team1.points > team2.points;
 
                     return (
-                      <div key={matchupId} className="bg-white/5 rounded-lg p-4 md:p-6 border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]">
+                       <div key={matchupId} className="bg-white/5 rounded-lg p-4 md:p-6 border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]">
                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0">
                            <div className={`flex-1 text-center transition-all duration-300 ${team1Winning ? 'transform scale-105' : ''} min-w-0`}>
-                             <div className={`font-medium ${team1Winning ? 'text-green-400' : 'text-yellow-500'} transition-colors duration-300 truncate`}>
-                               {getTeamName(user1)}
-                             </div>
-                             <div className="text-sm text-gray-400 mb-2 transition-colors duration-200">
-                               {getTeamRecord(roster1)}
+                             <div className="flex flex-col items-center space-y-2 mb-3">
+                               <Avatar className={`transition-all duration-300 ${team1Winning ? 'scale-110 ring-2 ring-green-400' : ''}`}>
+                                 <AvatarImage 
+                                   src={user1?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user1.avatar}` : undefined}
+                                   alt={`${getTeamName(user1)} avatar`}
+                                 />
+                                 <AvatarFallback className="bg-primary/20 text-primary-foreground">
+                                   {getTeamName(user1).slice(0, 2).toUpperCase()}
+                                 </AvatarFallback>
+                               </Avatar>
+                               <div className={`font-medium ${team1Winning ? 'text-green-400' : 'text-yellow-500'} transition-colors duration-300 truncate`}>
+                                 {getTeamName(user1)}
+                               </div>
+                               <div className="text-sm text-gray-400 transition-colors duration-200">
+                                 {getTeamRecord(roster1)}
+                               </div>
                              </div>
                              <div className={`text-2xl font-bold transition-all duration-300 ${team1Winning ? 'text-green-300 scale-110' : 'text-yellow-400'}`}>
                                {formatPoints(team1.points)}
@@ -213,11 +225,22 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                           </div>
                           
                            <div className={`flex-1 text-center transition-all duration-300 ${!team1Winning ? 'transform scale-105' : ''} min-w-0`}>
-                             <div className={`font-medium ${!team1Winning ? 'text-green-400' : 'text-yellow-500'} transition-colors duration-300 truncate`}>
-                               {getTeamName(user2)}
-                             </div>
-                             <div className="text-sm text-gray-400 mb-2 transition-colors duration-200">
-                               {getTeamRecord(roster2)}
+                             <div className="flex flex-col items-center space-y-2 mb-3">
+                               <Avatar className={`transition-all duration-300 ${!team1Winning ? 'scale-110 ring-2 ring-green-400' : ''}`}>
+                                 <AvatarImage 
+                                   src={user2?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user2.avatar}` : undefined}
+                                   alt={`${getTeamName(user2)} avatar`}
+                                 />
+                                 <AvatarFallback className="bg-primary/20 text-primary-foreground">
+                                   {getTeamName(user2).slice(0, 2).toUpperCase()}
+                                 </AvatarFallback>
+                               </Avatar>
+                               <div className={`font-medium ${!team1Winning ? 'text-green-400' : 'text-yellow-500'} transition-colors duration-300 truncate`}>
+                                 {getTeamName(user2)}
+                               </div>
+                               <div className="text-sm text-gray-400 transition-colors duration-200">
+                                 {getTeamRecord(roster2)}
+                               </div>
                              </div>
                              <div className={`text-2xl font-bold transition-all duration-300 ${!team1Winning ? 'text-green-300 scale-110' : 'text-yellow-400'}`}>
                                {formatPoints(team2.points)}
@@ -274,12 +297,27 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                     return (
                       <div key={roster.roster_id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]">
                         <div className="flex items-center space-x-4">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
-                            index === 0 ? 'bg-yellow-500 text-black scale-110' : 
-                            index === 1 ? 'bg-gray-400 text-black scale-105' :
-                            index === 2 ? 'bg-amber-600 text-white scale-105' : 'bg-gray-700 text-white'
-                          }`}>
-                            {index + 1}
+                          <div className="relative">
+                            <Avatar className={`transition-all duration-300 ${
+                              index === 0 ? 'scale-110 ring-2 ring-yellow-500' : 
+                              index === 1 ? 'scale-105 ring-2 ring-gray-400' :
+                              index === 2 ? 'scale-105 ring-2 ring-amber-600' : ''
+                            }`}>
+                              <AvatarImage 
+                                src={user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user.avatar}` : undefined}
+                                alt={`${teamName} avatar`}
+                              />
+                              <AvatarFallback className="bg-primary/20 text-primary-foreground">
+                                {teamName.slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                              index === 0 ? 'bg-yellow-500 text-black' : 
+                              index === 1 ? 'bg-gray-400 text-black' :
+                              index === 2 ? 'bg-amber-600 text-white' : 'bg-gray-700 text-white'
+                            }`}>
+                              {index + 1}
+                            </div>
                           </div>
                           <div>
                             <div className="font-medium text-white transition-colors duration-200">{teamName}</div>

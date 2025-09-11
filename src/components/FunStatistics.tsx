@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { TrendingUp, TrendingDown, Star, Users, Trophy, Activity, Zap, Calendar } from 'lucide-react';
 
 interface FunStatisticsProps {
@@ -36,6 +37,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
         return {
           rosterId: roster.roster_id,
           teamName: user?.metadata?.team_name || user?.display_name || 'Unknown Team',
+          user,
           powerScore,
           wins,
           losses,
@@ -74,6 +76,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
       
       return {
         teamName: user?.metadata?.team_name || user?.display_name || 'Unknown Team',
+        user,
         streak,
         streakType,
         isHot: streakType === 'win' && streak >= 2,
@@ -100,6 +103,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
         
         return {
           teamName: user?.metadata?.team_name || user?.display_name || 'Unknown Team',
+          user,
           transactionCount: activity,
           activityLevel: activity > 10 ? 'high' : activity > 5 ? 'medium' : 'low'
         };
@@ -142,12 +146,27 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
             {powerRankings.slice(0, 6).map((team, index) => (
               <div key={team.rosterId} className="flex items-center justify-between p-4 bg-white/5 rounded-lg transition-all duration-300 hover:bg-white/10 hover:scale-[1.02]">
                 <div className="flex items-center space-x-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 ${
-                    index === 0 ? 'bg-yellow-500 text-black animate-pulse' : 
-                    index === 1 ? 'bg-gray-400 text-black' :
-                    index === 2 ? 'bg-amber-600 text-white' : 'bg-gray-700 text-white'
-                  }`}>
-                    {index + 1}
+                  <div className="relative">
+                    <Avatar className={`transition-all duration-300 ${
+                      index === 0 ? 'scale-110 ring-2 ring-yellow-500' : 
+                      index === 1 ? 'scale-105 ring-2 ring-gray-400' :
+                      index === 2 ? 'scale-105 ring-2 ring-amber-600' : ''
+                    }`}>
+                      <AvatarImage 
+                        src={team.user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${team.user.avatar}` : undefined}
+                        alt={`${team.teamName} avatar`}
+                      />
+                      <AvatarFallback className="bg-primary/20 text-primary-foreground">
+                        {team.teamName.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                      index === 0 ? 'bg-yellow-500 text-black animate-pulse' : 
+                      index === 1 ? 'bg-gray-400 text-black' :
+                      index === 2 ? 'bg-amber-600 text-white' : 'bg-gray-700 text-white'
+                    }`}>
+                      {index + 1}
+                    </div>
                   </div>
                   <div>
                     <div className="font-medium text-white transition-colors duration-200">{team.teamName}</div>
@@ -189,7 +208,18 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
               <div className="space-y-2">
                 {streaks.filter(team => team.isHot).slice(0, 3).map((team, index) => (
                   <div key={index} className="flex items-center justify-between p-3 bg-green-500/10 rounded-lg border border-green-500/20 transition-all duration-300 hover:bg-green-500/20 hover:scale-105">
-                    <span className="text-sm text-white font-medium">{team.teamName}</span>
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="w-8 h-8">
+                        <AvatarImage 
+                          src={team.user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${team.user.avatar}` : undefined}
+                          alt={`${team.teamName} avatar`}
+                        />
+                        <AvatarFallback className="text-xs bg-green-500/20">
+                          {team.teamName.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm text-white font-medium">{team.teamName}</span>
+                    </div>
                     <Badge variant="outline" className="text-green-400 border-green-400 animate-pulse">
                       {team.streak}W
                     </Badge>
@@ -205,7 +235,18 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
               <div className="space-y-2">
                 {streaks.filter(team => team.isCold).slice(0, 3).map((team, index) => (
                   <div key={index} className="flex items-center justify-between p-3 bg-blue-500/10 rounded-lg border border-blue-500/20 transition-all duration-300 hover:bg-blue-500/20 hover:scale-105">
-                    <span className="text-sm text-white font-medium">{team.teamName}</span>
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="w-8 h-8">
+                        <AvatarImage 
+                          src={team.user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${team.user.avatar}` : undefined}
+                          alt={`${team.teamName} avatar`}
+                        />
+                        <AvatarFallback className="text-xs bg-blue-500/20">
+                          {team.teamName.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm text-white font-medium">{team.teamName}</span>
+                    </div>
                     <Badge variant="outline" className="text-blue-400 border-blue-400">
                       {team.streak}L
                     </Badge>
@@ -230,6 +271,15 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
             {activity.slice(0, 6).map((manager, index) => (
               <div key={index} className="flex items-center justify-between p-4 bg-white/5 rounded-lg transition-all duration-300 hover:bg-white/10 hover:scale-[1.02]">
                 <div className="flex items-center space-x-4">
+                  <Avatar className="transition-all duration-300 hover:scale-110">
+                    <AvatarImage 
+                      src={manager.user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${manager.user.avatar}` : undefined}
+                      alt={`${manager.teamName} avatar`}
+                    />
+                    <AvatarFallback className="bg-primary/20 text-primary-foreground">
+                      {manager.teamName.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className={`flex items-center space-x-2 transition-all duration-300 ${getActivityColor(manager.activityLevel)}`}>
                     <div className="transition-transform duration-300 hover:scale-125">
                       {getActivityIcon(manager.activityLevel)}
