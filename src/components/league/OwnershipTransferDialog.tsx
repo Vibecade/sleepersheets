@@ -49,14 +49,11 @@ const OwnershipTransferDialog: React.FC<OwnershipTransferDialogProps> = ({
 
     setLoading(true);
     try {
-      // First, find the user by email
+      // First, find the user by email using secure function
       const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', newOwnerEmail.trim())
-        .single();
+        .rpc('find_user_by_email', { email_to_find: newOwnerEmail.trim() });
 
-      if (profileError || !profiles) {
+      if (profileError || !profiles || profiles.length === 0) {
         toast({
           title: "User Not Found",
           description: "No user found with that email address",
@@ -68,7 +65,7 @@ const OwnershipTransferDialog: React.FC<OwnershipTransferDialogProps> = ({
       // Update ownership
       const { error: updateError } = await supabase
         .from('league_ownership')
-        .update({ user_id: profiles.id })
+        .update({ user_id: profiles[0].user_id })
         .eq('league_id', leagueId)
         .eq('user_id', user.id)
         .eq('is_active', true);

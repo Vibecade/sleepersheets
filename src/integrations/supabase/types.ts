@@ -454,6 +454,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_user_by_email: {
+        Args: { email_to_find: string }
+        Returns: {
+          user_id: string
+        }[]
+      }
       log_integrity_violation: {
         Args: {
           details_param?: Json
