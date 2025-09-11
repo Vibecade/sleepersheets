@@ -499,6 +499,36 @@
       padding: 0.875rem 1.25rem;
       font-size: 1rem;
     }
+    
+    /* Button mobile optimizations */
+    button {
+      font-size: clamp(0.75rem, 2.5vw, 0.875rem) !important;
+      min-height: 44px;
+      padding-left: 0.5rem !important;
+      padding-right: 0.5rem !important;
+    }
+    
+    button[class*="text-lg"] {
+      font-size: clamp(0.875rem, 3vw, 1rem) !important;
+    }
+    
+    button[class*="text-base"] {
+      font-size: clamp(0.75rem, 2.5vw, 0.875rem) !important;
+    }
+    
+    /* Mobile utility classes */
+    .mobile-btn-compact {
+      padding: 0.25rem 0.5rem !important;
+      font-size: 0.75rem !important;
+      line-height: 1.2 !important;
+    }
+    
+    .mobile-text-wrap {
+      white-space: normal !important;
+      word-break: break-word !important;
+      line-height: 1.2 !important;
+      text-align: center !important;
+    }
 
     /* Improved mobile scrollbar */
     ::-webkit-scrollbar {

@@ -108,7 +108,8 @@ export const SleeperLeagueGrid: React.FC<SleeperLeagueGridProps> = ({
               <Button
                 onClick={() => onSelectLeague(league.league_id)}
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-semibold group-hover:shadow-lg group-hover:shadow-yellow-500/25 transition-all duration-200"
+                size="mobile"
+                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-semibold group-hover:shadow-lg group-hover:shadow-yellow-500/25 transition-all duration-200 mobile-text-wrap"
               >
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />

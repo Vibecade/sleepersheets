@@ -32,18 +32,21 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
     {
       id: 'overview' as const,
       label: 'League Overview',
+      shortLabel: 'Overview',
       icon: Trophy,
       onClick: () => onPageChange('overview'),
     },
     {
       id: 'manager' as const,
       label: 'Fantasy Manager',
+      shortLabel: 'Manager',
       icon: Settings,
       onClick: () => onPageChange('manager'),
     },
     {
       id: 'export' as const,
       label: 'Export & AI',
+      shortLabel: 'Export',
       icon: Download,
       onClick: handleExportClick,
     },
@@ -83,11 +86,12 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
             key={item.id}
             variant={currentPage === item.id ? 'default' : 'ghost'}
             onClick={item.onClick}
-            className="flex items-center justify-center space-x-2 flex-1 h-10"
+            className="flex items-center justify-center gap-1 sm:gap-2 flex-1 h-10 mobile-btn-compact min-w-0"
             size="default"
           >
-            <item.icon className="w-4 h-4" />
-            <span>{item.label}</span>
+            <item.icon className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate block sm:hidden">{item.shortLabel}</span>
+            <span className="truncate hidden sm:block">{item.label}</span>
           </Button>
         ))}
       </div>

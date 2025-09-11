@@ -31,10 +31,11 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         <Button 
           onClick={onClick} 
           disabled={disabled}
-          className={`w-full ${colorClass.replace('text-', 'bg-')} ${hoverColorClass}`}
+          size="mobile"
+          className={`w-full ${colorClass.replace('text-', 'bg-')} ${hoverColorClass} mobile-text-wrap`}
         >
-          <Download className="w-4 h-4 mr-2" />
-          {title}
+          <Download className="w-4 h-4 mr-1 sm:mr-2 flex-shrink-0" />
+          <span className="truncate">{title}</span>
         </Button>
       </div>
     </div>
