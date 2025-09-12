@@ -82,9 +82,21 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   const currentWeek = league.settings?.week || 1;
   const season = league.season || '2024';
   
-  // Fetch transactions from current week and previous weeks (up to 18 weeks)
+  // Import getCurrentNFLWeek to get accurate week information
+  const { getCurrentNFLWeek } = await import('@/utils/nflState');
+  let actualCurrentWeek = currentWeek;
+  
+  try {
+    const weekInfo = await getCurrentNFLWeek(true);
+    actualCurrentWeek = Math.max(currentWeek, weekInfo.currentNFLWeek);
+    console.log(`Using week range up to: ${actualCurrentWeek} (Sleeper: ${currentWeek}, NFL: ${weekInfo.currentNFLWeek})`);
+  } catch (error) {
+    console.warn('Could not get NFL week info, using Sleeper week:', error);
+  }
+  
+  // Fetch transactions from current week and previous weeks (up to actual current week)
   const weeksToFetch = [];
-  for (let week = Math.max(1, currentWeek - 5); week <= currentWeek; week++) {
+  for (let week = Math.max(1, actualCurrentWeek - 5); week <= actualCurrentWeek; week++) {
     weeksToFetch.push(week);
   }
   

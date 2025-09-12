@@ -18,7 +18,7 @@ interface TransactionsListProps {
   league: any;
 }
 
-const TransactionsList: React.FC<TransactionsListProps> = ({
+const TransactionsList: React.FC<TransactionsListProps> = React.memo(({
   transactions,
   userMap,
   players,
@@ -424,6 +424,6 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
       </CardContent>
     </Card>
   );
-};
+});
 
 export default TransactionsList;

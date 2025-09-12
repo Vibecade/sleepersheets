@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,9 +44,13 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   // Get projections for current week
   const currentWeek = currentNFLWeek;
 
-  // Process waiver transactions when data loads
+  // Process waiver transactions when data loads - only once per league per mount
+  const processedLeague = useRef<string | null>(null);
+  
   useEffect(() => {
-    if (league?.league_id && transactions?.length && !processingTransactions) {
+    if (league?.league_id && transactions?.length && !processingTransactions && 
+        processedLeague.current !== league.league_id) {
+      processedLeague.current = league.league_id;
       processWaiverTransactions(league.league_id, transactions);
     }
   }, [league?.league_id, transactions, processWaiverTransactions, processingTransactions]);

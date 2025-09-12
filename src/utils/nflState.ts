@@ -73,7 +73,7 @@ export const getCurrentNFLWeek = async (useTuesdayTransition: boolean = true): P
       const utcHours = now.getUTCHours();
       
       // If it's Tuesday (2) at or after 00:00:01 UTC, advance to next week
-      if (utcDay >= 2 && (utcDay > 2 || utcHours >= 0)) {
+      if (utcDay > 2 || (utcDay === 2 && utcHours >= 0)) {
         currentWeek = Math.min(currentWeek + 1, 18);
         displayWeek = currentWeek;
       }
