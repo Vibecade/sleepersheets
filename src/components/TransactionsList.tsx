@@ -30,22 +30,6 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [hideFailed, setHideFailed] = useState(true);
-  // Compute Tuesday 00:00:01 UTC rollover bounds for the current week
-  const rolloverBounds = useMemo(() => {
-    const now = new Date();
-    const utcDay = now.getUTCDay(); // 0=Sun, 1=Mon, 2=Tue
-    const daysSinceTuesday = (utcDay - 2 + 7) % 7;
-    const base = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate()
-    ));
-    base.setUTCDate(base.getUTCDate() - daysSinceTuesday);
-    base.setUTCHours(0, 0, 1, 0); // 00:00:01 UTC
-    const start = base.getTime();
-    const end = start + 7 * 24 * 60 * 60 * 1000;
-    return { start, end };
-  }, []); // No dependencies - this should be stable based on current time only
 
   // Initialize selectedWeek with current NFL week when available
   useEffect(() => {
@@ -91,22 +75,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
     return transactions.filter(transaction => {
       // Use 'leg' field from API (which represents week) or fall back to 'week'
       const transactionWeek = transaction.leg || transaction.week;
-      const createdAt = Number(transaction.created || 0);
-
-      // Override: if current week is selected, include items created after Tuesday rollover
-      const includeByOverride =
-        selectedWeek !== null &&
-        currentNFLWeek &&
-        selectedWeek === currentNFLWeek &&
-        transactionWeek === currentNFLWeek - 1 &&
-        createdAt >= rolloverBounds.start &&
-        createdAt < rolloverBounds.end;
-
-      const weekMatch =
-        selectedWeek === null ||
-        transactionWeek === selectedWeek ||
-        includeByOverride;
-
+      const weekMatch = selectedWeek === null || transactionWeek === selectedWeek;
       const typeMatch = transactionType === 'all' || transaction.type === transactionType;
       
       // Failed status filter
@@ -127,28 +96,14 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
       
       return weekMatch && typeMatch && statusMatch && searchMatch;
     });
-  }, [transactions, selectedWeek, transactionType, hideFailed, searchTerm, userMap, players, currentNFLWeek, rolloverBounds.start, rolloverBounds.end]);
+  }, [transactions, selectedWeek, transactionType, hideFailed, searchTerm, userMap, players]);
 
   // Count of hidden failed transactions for display
   const hiddenFailedCount = useMemo(() => {
     if (!hideFailed) return 0;
     return transactions.filter(transaction => {
       const transactionWeek = transaction.leg || transaction.week;
-      const createdAt = Number(transaction.created || 0);
-
-      const includeByOverride =
-        selectedWeek !== null &&
-        currentNFLWeek &&
-        selectedWeek === currentNFLWeek &&
-        transactionWeek === currentNFLWeek - 1 &&
-        createdAt >= rolloverBounds.start &&
-        createdAt < rolloverBounds.end;
-
-      const weekMatch =
-        selectedWeek === null ||
-        transactionWeek === selectedWeek ||
-        includeByOverride;
-
+      const weekMatch = selectedWeek === null || transactionWeek === selectedWeek;
       const typeMatch = transactionType === 'all' || transaction.type === transactionType;
       const searchMatch = !searchTerm || (
         (transaction.adds && Object.keys(transaction.adds).some(playerId => 
@@ -161,7 +116,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
       );
       return weekMatch && typeMatch && searchMatch && transaction.status === 'failed';
     }).length;
-  }, [transactions, selectedWeek, transactionType, searchTerm, userMap, players, hideFailed, currentNFLWeek, rolloverBounds.start, rolloverBounds.end]);
+  }, [transactions, selectedWeek, transactionType, searchTerm, userMap, players, hideFailed]);
 
   const sortedTransactions = [...filteredTransactions].sort((a, b) => {
     return new Date(b.created || 0).getTime() - new Date(a.created || 0).getTime();
