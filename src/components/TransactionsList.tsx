@@ -45,7 +45,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
     const start = base.getTime();
     const end = start + 7 * 24 * 60 * 60 * 1000;
     return { start, end };
-  }, [currentNFLWeek]);
+  }, []); // No dependencies - this should be stable based on current time only
 
   // Initialize selectedWeek with current NFL week when available
   useEffect(() => {
