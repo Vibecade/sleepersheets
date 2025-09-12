@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { cachedFetch } from '@/utils/apiCache';
-import { getCurrentNFLWeek } from '@/utils/nflState';
 
 export interface Matchup {
   starters: string[];
@@ -21,6 +20,22 @@ export const useMatchups = (leagueId: string, week: number) => {
   const [error, setError] = useState<string | null>(null);
   const [lastKey, setLastKey] = useState<string>('');
 
+  // Helper function to get current NFL week for projections
+  const getCurrentNFLWeek = () => {
+    // This is a simplified version - in production you'd want to call the NFL state API
+    // For now, we'll estimate based on date (NFL season typically starts in September)
+    const now = new Date();
+    const year = now.getFullYear();
+    const seasonStart = new Date(year, 8, 8); // Approximate season start (September 8th)
+    
+    if (now < seasonStart) {
+      return 1; // Pre-season or early season
+    }
+    
+    const diffTime = now.getTime() - seasonStart.getTime();
+    const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
+    return Math.min(Math.max(diffWeeks + 1, 1), 18); // NFL has 18 weeks max
+  };
 
   const fetchMatchups = useCallback(async (currentLeagueId: string, currentWeek: number) => {
     const cacheKey = `${currentLeagueId}-${currentWeek}`;
@@ -71,13 +86,5 @@ export const useMatchups = (leagueId: string, week: number) => {
     }
   }, [leagueId, week, fetchMatchups, lastKey]);
 
-  return { 
-    matchups, 
-    loading, 
-    error, 
-    getCurrentNFLWeek: async () => {
-      const weekInfo = await getCurrentNFLWeek();
-      return weekInfo.currentNFLWeek;
-    }
-  };
+  return { matchups, loading, error, getCurrentNFLWeek };
 };

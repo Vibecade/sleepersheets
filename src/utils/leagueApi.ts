@@ -81,36 +81,10 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   
   const currentWeek = league.settings?.week || 1;
   const season = league.season || '2024';
-  let actualCurrentWeek = currentWeek;
   
-  // Try to get accurate NFL week with timeout - non-blocking
-  try {
-    console.log(`Base week from Sleeper: ${currentWeek}`);
-    
-    // Create timeout promise
-    const timeoutPromise = new Promise<null>((_, reject) => 
-      setTimeout(() => reject(new Error('NFL week fetch timeout')), 2000)
-    );
-    
-    // Import and call NFL week function with timeout
-    const { getCurrentNFLWeek } = await import('@/utils/nflState');
-    const nflWeekPromise = getCurrentNFLWeek(true);
-    
-    // Race between the actual call and timeout
-    const weekInfo = await Promise.race([nflWeekPromise, timeoutPromise]);
-    
-    if (weekInfo) {
-      actualCurrentWeek = Math.max(currentWeek, weekInfo.currentNFLWeek);
-      console.log(`Enhanced week range: ${actualCurrentWeek} (Sleeper: ${currentWeek}, NFL: ${weekInfo.currentNFLWeek})`);
-    }
-  } catch (error) {
-    console.log(`Using Sleeper week ${currentWeek} (NFL week lookup failed: ${error.message})`);
-    actualCurrentWeek = currentWeek;
-  }
-  
-  // Fetch transactions from current week and previous weeks (up to actual current week)
+  // Fetch transactions from current week and previous weeks (up to 18 weeks)
   const weeksToFetch = [];
-  for (let week = Math.max(1, actualCurrentWeek - 5); week <= actualCurrentWeek; week++) {
+  for (let week = Math.max(1, currentWeek - 5); week <= currentWeek; week++) {
     weeksToFetch.push(week);
   }
   

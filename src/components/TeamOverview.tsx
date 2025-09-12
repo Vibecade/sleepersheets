@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,6 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Users, Trophy, Calendar, Activity, RefreshCw, ArrowRightLeft } from 'lucide-react';
 import { useMatchups } from '@/hooks/useMatchups';
 import { useHistoricalProjections } from '@/hooks/useHistoricalProjections';
-import { useNFLWeek } from '@/hooks/useNFLWeek';
 import { ProjectedPointsDisplay } from './ProjectedPointsDisplay';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
@@ -37,20 +36,15 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   onResyncData
 }) => {
   const [selectedWeek, setSelectedWeek] = useState(league?.settings?.leg || 1);
-  const { matchups, loading: matchupsLoading } = useMatchups(league?.league_id, selectedWeek);
+  const { matchups, loading: matchupsLoading, getCurrentNFLWeek } = useMatchups(league?.league_id, selectedWeek);
   const { processWaiverTransactions, processing: processingTransactions } = useTransactionProcessor();
-  const { currentNFLWeek } = useNFLWeek();
   
   // Get projections for current week
-  const currentWeek = currentNFLWeek;
+  const currentWeek = getCurrentNFLWeek();
 
-  // Process waiver transactions when data loads - only once per league per mount
-  const processedLeague = useRef<string | null>(null);
-  
+  // Process waiver transactions when data loads
   useEffect(() => {
-    if (league?.league_id && transactions?.length && !processingTransactions && 
-        processedLeague.current !== league.league_id) {
-      processedLeague.current = league.league_id;
+    if (league?.league_id && transactions?.length && !processingTransactions) {
       processWaiverTransactions(league.league_id, transactions);
     }
   }, [league?.league_id, transactions, processWaiverTransactions, processingTransactions]);
