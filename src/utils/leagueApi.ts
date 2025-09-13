@@ -29,6 +29,10 @@ const PLAYERS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedLeagueData> => {
   console.log('Fetching league data for ID:', targetLeagueId);
+  
+  // Clear transaction cache for this league to force fresh data
+  const { clearLeagueCache } = await import('@/utils/apiCache');
+  clearLeagueCache(targetLeagueId);
 
   const clientId = 'league_fetch';
   if (!rateLimiter.isAllowed(clientId, 5, 60000)) { // Reduced from 20 to 5 requests per minute
@@ -79,11 +83,15 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   // Fetch transactions from multiple weeks to capture all FAAB activity
   await new Promise(resolve => setTimeout(resolve, 500)); // Add delay to avoid rate limiting
   
-  // Calculate actual current NFL week instead of relying on league settings
-  const getCurrentNFLWeek = () => {
+  // Calculate actual current NFL week using the league's season year
+  const getCurrentNFLWeek = (leagueSeason: string) => {
     const now = new Date();
-    const year = now.getFullYear();
-    const seasonStart = new Date(year, 8, 5); // September 5th, 2024
+    const seasonYear = parseInt(leagueSeason);
+    
+    // Use the league's season year for season start calculation
+    const seasonStart = new Date(seasonYear, 8, 5); // September 5th of the league season
+    
+    console.log(`Transaction fetch - League season: ${seasonYear}, Season start: ${seasonStart.toDateString()}, Current: ${now.toDateString()}`);
     
     if (now < seasonStart) return 1;
     
@@ -94,12 +102,14 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     return Math.min(Math.max(weekNumber, 1), 22);
   };
   
-  const currentNFLWeek = getCurrentNFLWeek();
+  const season = league.season || '2024';
+  const currentNFLWeek = getCurrentNFLWeek(season);
   const leagueWeek = league.settings?.week || 1;
   const effectiveCurrentWeek = Math.max(currentNFLWeek, leagueWeek);
-  const season = league.season || '2024';
   
-  console.log(`NFL Week: ${currentNFLWeek}, League Week: ${leagueWeek}, Using Week: ${effectiveCurrentWeek}`);
+  console.log(`=== TRANSACTION FETCH DEBUG ===`);
+  console.log(`League: ${league.name} (ID: ${targetLeagueId})`);
+  console.log(`Season: ${season}, NFL Week: ${currentNFLWeek}, League Week: ${leagueWeek}, Using Week: ${effectiveCurrentWeek}`);
   
   // Fetch transactions from a broader range to ensure we capture recent activity
   const weeksToFetch = [];
@@ -134,6 +144,23 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     }
   });
   const transactions = Array.from(transactionMap.values());
+  
+  console.log(`=== TRANSACTION RESULTS ===`);
+  console.log(`Total transactions found: ${transactions.length}`);
+  console.log(`Waiver transactions: ${transactions.filter(t => t.type === 'waiver').length}`);
+  console.log(`Complete waiver transactions: ${transactions.filter(t => t.type === 'waiver' && t.status === 'complete').length}`);
+  console.log(`Complete waiver transactions with bids: ${transactions.filter(t => t.type === 'waiver' && t.status === 'complete' && t.settings?.waiver_bid).length}`);
+  
+  // Log recent transactions for debugging
+  const recentTransactions = transactions
+    .filter(t => t.type === 'waiver' && t.status === 'complete')
+    .sort((a, b) => b.created - a.created)
+    .slice(0, 5);
+  
+  console.log('Recent waiver transactions:');
+  recentTransactions.forEach(t => {
+    console.log(`- ${t.transaction_id}: ${new Date(t.created).toISOString()}, Bid: $${t.settings?.waiver_bid || 0}`);
+  });
   
   await new Promise(resolve => setTimeout(resolve, 500)); // Add delay to avoid rate limiting
   

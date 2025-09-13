@@ -161,11 +161,23 @@ export const useTransactionProcessor = () => {
       return 0;
     }
 
+    // Debug authentication status
+    console.log(`=== TRANSACTION PROCESSOR DEBUG ===`);
+    console.log(`League ID: ${leagueId}`);
+    console.log(`User authenticated: ${!!user}`);
+    console.log(`User ID: ${user?.id}`);
+    console.log(`Can modify league: ${canModifyLeague(leagueId)}`);
+    console.log(`Total transactions: ${transactions?.length}`);
+    console.log(`Waiver transactions: ${transactions?.filter(t => t.type === 'waiver').length}`);
+    console.log(`Complete waiver transactions: ${transactions?.filter(t => t.type === 'waiver' && t.status === 'complete').length}`);
+    
     // Check authentication - only proceed if user is logged in and owns the league
     if (!user || !canModifyLeague(leagueId)) {
-      console.log(`Transaction processing skipped for league ${leagueId}: User not authenticated or doesn't own league`);
+      console.log(`❌ Transaction processing skipped for league ${leagueId}: User not authenticated or doesn't own league`);
       return 0;
     }
+    
+    console.log(`✅ User authorized to process transactions for league ${leagueId}`);
 
     // Mark as processed for this session
     processedOnceRef.current.add(leagueId);

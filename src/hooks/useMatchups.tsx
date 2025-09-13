@@ -20,16 +20,19 @@ export const useMatchups = (leagueId: string, week: number) => {
   const [error, setError] = useState<string | null>(null);
   const [lastKey, setLastKey] = useState<string>('');
 
-  // Helper function to get current NFL week for projections
-  const getCurrentNFLWeek = () => {
+  // Helper function to get current NFL week for projections - season aware
+  const getCurrentNFLWeek = (leagueSeason?: string) => {
     const now = new Date();
-    const year = now.getFullYear();
+    const currentYear = now.getFullYear();
+    const seasonYear = leagueSeason ? parseInt(leagueSeason) : currentYear;
     
-    // NFL 2024 season started September 5th (Thursday Night Football)
-    // Week transitions happen on Tuesday after Monday Night Football
-    const seasonStart = new Date(year, 8, 5); // September 5th, 2024
+    // Use the league's season year for season start calculation
+    const seasonStart = new Date(seasonYear, 8, 5); // September 5th of the league season
+    
+    console.log(`NFL Week calculation: League season ${seasonYear}, Season start: ${seasonStart.toDateString()}, Current: ${now.toDateString()}`);
     
     if (now < seasonStart) {
+      console.log('Before season start, returning week 1');
       return 1; // Pre-season
     }
     
@@ -41,8 +44,11 @@ export const useMatchups = (leagueId: string, week: number) => {
     // Add 2 days to account for Tuesday transition
     const weekNumber = Math.floor((diffDays + 2) / 7) + 1;
     
+    const calculatedWeek = Math.min(Math.max(weekNumber, 1), 22);
+    console.log(`NFL Week calculation result: ${calculatedWeek} (based on ${diffDays} days since season start)`);
+    
     // NFL regular season is 18 weeks, playoffs extend further
-    return Math.min(Math.max(weekNumber, 1), 22);
+    return calculatedWeek;
   };
 
   const fetchMatchups = useCallback(async (currentLeagueId: string, currentWeek: number) => {
