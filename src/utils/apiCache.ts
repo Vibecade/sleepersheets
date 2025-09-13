@@ -24,6 +24,12 @@ class ApiCache {
   }
 
   set<T>(key: string, data: T, ttl = this.defaultTTL): void {
+    // Don't cache empty matchups arrays (or cache them very briefly)
+    if (key.includes('/matchups/') && Array.isArray(data) && data.length === 0) {
+      console.log(`⚠️ Not caching empty matchups array for: ${key}`);
+      return; // Don't cache empty matchups
+    }
+    
     // Use longer TTL for matchups data as it's more stable
     const finalTTL = key.includes('/matchups/') ? this.matchupsTTL : ttl;
     this.cache.set(key, {
@@ -113,7 +119,11 @@ export const cachedFetch = async <T>(
       console.log(`🔄 Retrying high priority request in 2 seconds...`);
       await new Promise(resolve => setTimeout(resolve, 2000));
       if (!apiCache['checkRateLimit'](url)) {
-        throw new Error(errorMsg);
+        // Try one more time with longer delay
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        if (!apiCache['checkRateLimit'](url)) {
+          throw new Error(errorMsg);
+        }
       }
     } else {
       throw new Error(errorMsg);

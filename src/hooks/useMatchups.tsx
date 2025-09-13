@@ -10,9 +10,7 @@ export interface Matchup {
   custom_points: number | null;
 }
 
-// Cache for matchups to prevent repeated calls
-const matchupsCache = new Map<string, { data: Matchup[]; timestamp: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+// Removed duplicate cache - using apiCache instead
 
 export const useMatchups = (leagueId: string, week: number) => {
   const [matchups, setMatchups] = useState<Matchup[]>([]);
@@ -63,29 +61,38 @@ export const useMatchups = (leagueId: string, week: number) => {
       setError(null);
       console.log(`Fetching matchups for league ${currentLeagueId}, week ${currentWeek}`);
       
-      // Check cache first
-      const cached = matchupsCache.get(cacheKey);
-      if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-        console.log('Using cached matchups data');
-        setMatchups(cached.data);
-        setLastKey(cacheKey);
-        setLoading(false);
-        return;
-      }
+      // Determine cache TTL based on week (shorter for current week)
+      const currentNFLWeek = getCurrentNFLWeek();
+      const isCurrentWeek = currentWeek === currentNFLWeek;
+      const cacheTTL = isCurrentWeek ? 60 * 1000 : 10 * 60 * 1000; // 1 min for current, 10 min for past
       
       const data = await cachedFetch<Matchup[]>(
         `https://api.sleeper.app/v1/league/${currentLeagueId}/matchups/${currentWeek}`,
         {},
-        10 * 60 * 1000, // 10 minute cache for matchups
+        cacheTTL,
         undefined,
         'high' // High priority for user-facing matchups data
       );
       
-      setMatchups(data || []);
-      setLastKey(cacheKey);
+      // If we get empty data for current week, try again with cache buster
+      if ((!data || data.length === 0) && isCurrentWeek) {
+        console.log('🔄 Empty matchups for current week, retrying with cache buster...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const retryData = await cachedFetch<Matchup[]>(
+          `https://api.sleeper.app/v1/league/${currentLeagueId}/matchups/${currentWeek}?cb=${Date.now()}`,
+          {},
+          30 * 1000, // Very short cache for retry
+          undefined,
+          'high'
+        );
+        
+        setMatchups(retryData || []);
+      } else {
+        setMatchups(data || []);
+      }
       
-      // Cache the result
-      matchupsCache.set(cacheKey, { data: data || [], timestamp: Date.now() });
+      setLastKey(cacheKey);
     } catch (err) {
       console.error('Error fetching matchups:', err);
       setError('Failed to fetch matchups');
