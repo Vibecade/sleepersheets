@@ -79,12 +79,31 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   // Fetch transactions from multiple weeks to capture all FAAB activity
   await new Promise(resolve => setTimeout(resolve, 500)); // Add delay to avoid rate limiting
   
-  const currentWeek = league.settings?.week || 1;
+  // Calculate actual current NFL week instead of relying on league settings
+  const getCurrentNFLWeek = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const seasonStart = new Date(year, 8, 5); // September 5th, 2024
+    
+    if (now < seasonStart) return 1;
+    
+    const diffTime = now.getTime() - seasonStart.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const weekNumber = Math.floor((diffDays + 2) / 7) + 1;
+    
+    return Math.min(Math.max(weekNumber, 1), 22);
+  };
+  
+  const currentNFLWeek = getCurrentNFLWeek();
+  const leagueWeek = league.settings?.week || 1;
+  const effectiveCurrentWeek = Math.max(currentNFLWeek, leagueWeek);
   const season = league.season || '2024';
   
-  // Fetch transactions from current week and previous weeks (up to 18 weeks)
+  console.log(`NFL Week: ${currentNFLWeek}, League Week: ${leagueWeek}, Using Week: ${effectiveCurrentWeek}`);
+  
+  // Fetch transactions from a broader range to ensure we capture recent activity
   const weeksToFetch = [];
-  for (let week = Math.max(1, currentWeek - 5); week <= currentWeek; week++) {
+  for (let week = Math.max(1, effectiveCurrentWeek - 3); week <= effectiveCurrentWeek + 1; week++) {
     weeksToFetch.push(week);
   }
   
@@ -97,7 +116,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
         return await cachedFetch<SleeperTransaction[]>(
           `https://api.sleeper.app/v1/league/${targetLeagueId}/transactions/${week}`,
           {},
-          5 * 60 * 1000, // 5 minutes cache
+          2 * 60 * 1000, // 2 minutes cache for more recent data
           `league-${targetLeagueId}` // League-specific cache prefix
         );
       } catch (error) {

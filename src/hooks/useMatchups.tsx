@@ -22,19 +22,27 @@ export const useMatchups = (leagueId: string, week: number) => {
 
   // Helper function to get current NFL week for projections
   const getCurrentNFLWeek = () => {
-    // This is a simplified version - in production you'd want to call the NFL state API
-    // For now, we'll estimate based on date (NFL season typically starts in September)
     const now = new Date();
     const year = now.getFullYear();
-    const seasonStart = new Date(year, 8, 8); // Approximate season start (September 8th)
+    
+    // NFL 2024 season started September 5th (Thursday Night Football)
+    // Week transitions happen on Tuesday after Monday Night Football
+    const seasonStart = new Date(year, 8, 5); // September 5th, 2024
     
     if (now < seasonStart) {
-      return 1; // Pre-season or early season
+      return 1; // Pre-season
     }
     
+    // Calculate days since season start
     const diffTime = now.getTime() - seasonStart.getTime();
-    const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
-    return Math.min(Math.max(diffWeeks + 1, 1), 18); // NFL has 18 weeks max
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Week transitions on Tuesday (day 2 of the week, where Monday = 1)
+    // Add 2 days to account for Tuesday transition
+    const weekNumber = Math.floor((diffDays + 2) / 7) + 1;
+    
+    // NFL regular season is 18 weeks, playoffs extend further
+    return Math.min(Math.max(weekNumber, 1), 22);
   };
 
   const fetchMatchups = useCallback(async (currentLeagueId: string, currentWeek: number) => {
