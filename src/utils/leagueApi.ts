@@ -127,7 +127,8 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
           `https://api.sleeper.app/v1/league/${targetLeagueId}/transactions/${week}`,
           {},
           2 * 60 * 1000, // 2 minutes cache for more recent data
-          `league-${targetLeagueId}` // League-specific cache prefix
+          `league-${targetLeagueId}`, // League-specific cache prefix
+          'low' // Lower priority for background transaction processing
         );
       } catch (error) {
         console.warn(`Failed to fetch transactions for week ${week}:`, error);

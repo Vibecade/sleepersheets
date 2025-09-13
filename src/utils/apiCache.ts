@@ -7,8 +7,9 @@ interface CacheEntry<T> {
 class ApiCache {
   private cache = new Map<string, CacheEntry<any>>();
   private defaultTTL = 5 * 60 * 1000; // 5 minutes
+  private matchupsTTL = 10 * 60 * 1000; // 10 minutes for matchups (more stable data)
   private requestCounts = new Map<string, { count: number; resetTime: number }>();
-  private maxRequestsPerMinute = 10; // Reduced from unlimited
+  private maxRequestsPerMinute = 35; // Increased for better user experience
 
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
@@ -23,10 +24,12 @@ class ApiCache {
   }
 
   set<T>(key: string, data: T, ttl = this.defaultTTL): void {
+    // Use longer TTL for matchups data as it's more stable
+    const finalTTL = key.includes('/matchups/') ? this.matchupsTTL : ttl;
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
-      expiry: Date.now() + ttl
+      expiry: Date.now() + finalTTL
     });
   }
 
@@ -87,7 +90,8 @@ export const cachedFetch = async <T>(
   url: string, 
   options?: RequestInit,
   ttl?: number,
-  cachePrefix?: string
+  cachePrefix?: string,
+  priority: 'high' | 'normal' | 'low' = 'normal'
 ): Promise<T> => {
   const baseKey = `${url}-${JSON.stringify(options)}`;
   const cacheKey = cachePrefix ? `${cachePrefix}-${baseKey}` : baseKey;
@@ -95,24 +99,43 @@ export const cachedFetch = async <T>(
   // Try to get from cache first
   const cached = apiCache.get<T>(cacheKey);
   if (cached) {
-    console.log(`Cache hit for: ${url} (league-specific: ${!!cachePrefix})`);
+    console.log(`🟢 Cache hit for: ${url} (priority: ${priority}, league-specific: ${!!cachePrefix})`);
     return cached;
   }
   
   // Check rate limit before making request
   if (!apiCache['checkRateLimit'](url)) {
-    throw new Error('Rate limit exceeded. Please wait before making more requests.');
+    const errorMsg = `Rate limit exceeded for ${new URL(url).hostname}. Please wait before making more requests.`;
+    console.warn(`🔴 ${errorMsg}`);
+    
+    // For high priority requests (like matchups), retry after a short delay
+    if (priority === 'high') {
+      console.log(`🔄 Retrying high priority request in 2 seconds...`);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (!apiCache['checkRateLimit'](url)) {
+        throw new Error(errorMsg);
+      }
+    } else {
+      throw new Error(errorMsg);
+    }
   }
   
-  console.log(`Cache miss for: ${url} (league-specific: ${!!cachePrefix})`);
-  const response = await fetch(url, options);
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
+  console.log(`🔵 Cache miss for: ${url} (priority: ${priority}, league-specific: ${!!cachePrefix})`);
   
-  const data = await response.json();
-  apiCache.set(cacheKey, data, ttl);
-  return data;
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    apiCache.set(cacheKey, data, ttl);
+    console.log(`✅ Successfully fetched and cached: ${url}`);
+    return data;
+  } catch (error) {
+    console.error(`❌ Failed to fetch: ${url}`, error);
+    throw error;
+  }
 };
 
 // League-specific cache management

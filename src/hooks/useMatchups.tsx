@@ -76,7 +76,9 @@ export const useMatchups = (leagueId: string, week: number) => {
       const data = await cachedFetch<Matchup[]>(
         `https://api.sleeper.app/v1/league/${currentLeagueId}/matchups/${currentWeek}`,
         {},
-        5 * 60 * 1000 // 5 minutes cache
+        10 * 60 * 1000, // 10 minute cache for matchups
+        undefined,
+        'high' // High priority for user-facing matchups data
       );
       
       setMatchups(data || []);
