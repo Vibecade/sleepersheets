@@ -27,12 +27,18 @@ interface PlayerSearchProps {
   players: Record<string, Player>;
   onPlayerSelect?: (player: Player) => void;
   className?: string;
+  leagueId?: string;
+  salaries?: Record<string, number | null>;
+  contracts?: Record<string, number | null>;
 }
 
 const PlayerSearch: React.FC<PlayerSearchProps> = ({
   players,
   onPlayerSelect,
-  className = ""
+  className = "",
+  leagueId,
+  salaries = {},
+  contracts = {}
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [positionFilter, setPositionFilter] = useState<string>("");
@@ -224,8 +230,8 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
                   onClick={() => handlePlayerSelect(player)}
                   className="flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-accent/50 transition-all duration-200 group"
                 >
-                  <div className="flex items-center gap-3">
-                    <div>
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="flex-1">
                       <p className="font-medium text-foreground group-hover:text-primary transition-colors">
                         {getPlayerName(player)}
                       </p>
@@ -238,6 +244,20 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
                         </Badge>
                         <span>{player.team}</span>
                       </div>
+                      {leagueId && (salaries[player.player_id] !== undefined || contracts[player.player_id] !== undefined) && (
+                        <div className="flex items-center gap-3 mt-1 text-xs">
+                          {salaries[player.player_id] !== undefined && salaries[player.player_id] !== null && (
+                            <span className="text-emerald-400 font-medium">
+                              ${salaries[player.player_id]?.toLocaleString()}
+                            </span>
+                          )}
+                          {contracts[player.player_id] !== undefined && contracts[player.player_id] !== null && (
+                            <span className="text-blue-400 font-medium">
+                              {contracts[player.player_id]}yr contract
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <TrendingUp className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />

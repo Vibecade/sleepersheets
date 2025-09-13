@@ -8,6 +8,8 @@ import EnhancedTradeSimulator from './EnhancedTradeSimulator';
 import PlayerSearch from './PlayerSearch';
 import ProTierUpgrade from './ProTierUpgrade';
 import MinimizableFAABContractManager from './MinimizableFAABContractManager';
+import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
+import { usePlayerContracts } from '@/hooks/usePlayerContracts';
 
 interface FantasyManagerProps {
   rosters: any[];
@@ -29,6 +31,8 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
   transactions,
   draftPicks
 }) => {
+  const { salaries } = usePlayerSalaries(league.league_id);
+  const { contracts } = usePlayerContracts(league.league_id);
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -52,6 +56,9 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
       {/* Player Search */}
       <PlayerSearch
         players={players}
+        leagueId={league.league_id}
+        salaries={salaries}
+        contracts={contracts}
       />
 
       {/* FAAB Contract Manager */}
