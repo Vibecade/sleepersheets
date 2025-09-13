@@ -1,6 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 import { logDataAccess } from '@/utils/securityLogger';
 
 interface WaiverUpdate {
@@ -20,6 +22,9 @@ interface ProcessedTransaction {
 export const useTransactionProcessor = () => {
   const [processing, setProcessing] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { canModifyLeague } = useLeagueOwnership();
+  const processedOnceRef = useRef<Set<string>>(new Set());
 
   const isWaiverTransaction = (transaction: any): boolean => {
     return transaction.type === 'waiver' && 
@@ -150,6 +155,20 @@ export const useTransactionProcessor = () => {
     transactions: any[]
   ): Promise<number> => {
     if (!leagueId || !transactions?.length) return 0;
+
+    // Check if already processed this league in this session
+    if (processedOnceRef.current.has(leagueId)) {
+      return 0;
+    }
+
+    // Check authentication - only proceed if user is logged in and owns the league
+    if (!user || !canModifyLeague(leagueId)) {
+      console.log(`Transaction processing skipped for league ${leagueId}: User not authenticated or doesn't own league`);
+      return 0;
+    }
+
+    // Mark as processed for this session
+    processedOnceRef.current.add(leagueId);
 
     setProcessing(true);
     let processedCount = 0;
