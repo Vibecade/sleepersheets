@@ -208,16 +208,18 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                              <div className={`text-2xl font-bold transition-all duration-300 ${team1Winning ? 'text-green-300 scale-110' : 'text-yellow-400'}`}>
                                {formatPoints(team1.points)}
                              </div>
-                             {!projectionsLoading && projections[team1.roster_id] && selectedWeek >= currentWeek && (
-                               <div className="mt-2">
-                                 <ProjectedPointsDisplay 
-                                   projection={projections[team1.roster_id]}
-                                   actualPoints={selectedWeek === currentWeek ? team1.points : undefined}
-                                   showActual={selectedWeek === currentWeek}
-                                   size="sm"
-                                 />
-                               </div>
-                             )}
+                              {/* Projections hidden - inaccurate compared to Sleeper data
+                              {!projectionsLoading && projections[team1.roster_id] && selectedWeek >= currentWeek && (
+                                <div className="mt-2">
+                                  <ProjectedPointsDisplay 
+                                    projection={projections[team1.roster_id]}
+                                    actualPoints={selectedWeek === currentWeek ? team1.points : undefined}
+                                    showActual={selectedWeek === currentWeek}
+                                    size="sm"
+                                  />
+                                </div>
+                              )}
+                              */}
                            </div>
                           
                           <div className="md:px-6 flex justify-center">
@@ -245,16 +247,18 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                              <div className={`text-2xl font-bold transition-all duration-300 ${!team1Winning ? 'text-green-300 scale-110' : 'text-yellow-400'}`}>
                                {formatPoints(team2.points)}
                              </div>
-                             {!projectionsLoading && projections[team2.roster_id] && selectedWeek >= currentWeek && (
-                               <div className="mt-2">
-                                 <ProjectedPointsDisplay 
-                                   projection={projections[team2.roster_id]}
-                                   actualPoints={selectedWeek === currentWeek ? team2.points : undefined}
-                                   showActual={selectedWeek === currentWeek}
-                                   size="sm"
-                                 />
-                               </div>
-                             )}
+                              {/* Projections hidden - inaccurate compared to Sleeper data
+                              {!projectionsLoading && projections[team2.roster_id] && selectedWeek >= currentWeek && (
+                                <div className="mt-2">
+                                  <ProjectedPointsDisplay 
+                                    projection={projections[team2.roster_id]}
+                                    actualPoints={selectedWeek === currentWeek ? team2.points : undefined}
+                                    showActual={selectedWeek === currentWeek}
+                                    size="sm"
+                                  />
+                                </div>
+                              )}
+                              */}
                            </div>
                         </div>
                       </div>
