@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Users, Trophy, Calendar, Activity, RefreshCw, ArrowRightLeft } from 'lucide-react';
-import { useMatchups } from '@/hooks/useMatchups';
+import { useMatchups, Matchup } from '@/hooks/useMatchups';
+import { useHistoricalMatchups } from '@/hooks/useHistoricalMatchups';
 import { useHistoricalProjections } from '@/hooks/useHistoricalProjections';
 import { ProjectedPointsDisplay } from './ProjectedPointsDisplay';
 import { getTeamName } from '@/utils/leagueDataUtils';
@@ -36,11 +38,13 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   onResyncData
 }) => {
   const [selectedWeek, setSelectedWeek] = useState(league?.settings?.leg || 1);
+  const [showBonusWins, setShowBonusWins] = useState(false);
   const { matchups, loading: matchupsLoading, getCurrentNFLWeek } = useMatchups(league?.league_id, selectedWeek);
   const { processWaiverTransactions, processing: processingTransactions } = useTransactionProcessor();
   
   // Get projections for current week
   const currentWeek = getCurrentNFLWeek();
+  const { historicalMatchups, loading: historicalLoading } = useHistoricalMatchups(league?.league_id || '', currentWeek);
 
   // Process waiver transactions when data loads
   useEffect(() => {
@@ -74,6 +78,50 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
     const wins = roster.settings?.wins || 0;
     const losses = roster.settings?.losses || 0;
     const ties = roster.settings?.ties || 0;
+    return `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
+  };
+
+  // Calculate weekly league averages and bonus wins
+  const { weeklyAverages, teamBonusWins } = useMemo(() => {
+    if (!historicalMatchups.length || !showBonusWins) {
+      return { weeklyAverages: {}, teamBonusWins: {} };
+    }
+
+    // Calculate weekly averages
+    const averages: Record<number, number> = {};
+    historicalMatchups.forEach(({ week, matchups: weekMatchups }) => {
+      if (weekMatchups.length > 0) {
+        const weekTotal = weekMatchups.reduce((sum, matchup) => sum + matchup.points, 0);
+        averages[week] = weekTotal / weekMatchups.length;
+      }
+    });
+
+    // Calculate bonus wins for each team
+    const bonusWins: Record<number, number> = {};
+    rosters.forEach(roster => {
+      let bonus = 0;
+      historicalMatchups.forEach(({ week, matchups: weekMatchups }) => {
+        const weekAverage = averages[week];
+        const rosterMatchup = weekMatchups.find(m => m.roster_id === roster.roster_id);
+        if (rosterMatchup && weekAverage && rosterMatchup.points > weekAverage) {
+          bonus++;
+        }
+      });
+      bonusWins[roster.roster_id] = bonus;
+    });
+
+    return { weeklyAverages: averages, teamBonusWins: bonusWins };
+  }, [historicalMatchups, rosters, showBonusWins]);
+
+  const getTeamRecordWithBonus = (roster: any) => {
+    const wins = roster.settings?.wins || 0;
+    const losses = roster.settings?.losses || 0;
+    const ties = roster.settings?.ties || 0;
+    const bonusWins = teamBonusWins[roster.roster_id] || 0;
+    
+    if (showBonusWins && bonusWins > 0) {
+      return `${wins + bonusWins}-${losses}${ties > 0 ? `-${ties}` : ''} (+${bonusWins})`;
+    }
     return `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
   };
 
@@ -273,30 +321,61 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
         <TabsContent value="standings" className="animate-fade-in">
           <Card className="transition-all duration-300 hover:shadow-lg">
             <CardHeader>
-              <div className="flex items-center space-x-2">
-                <Users className="w-5 h-5" />
-                <CardTitle className="text-lg">League Standings</CardTitle>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Users className="w-5 h-5" />
+                  <CardTitle className="text-lg">League Standings</CardTitle>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="bonus-wins-toggle" className="text-sm font-medium">
+                    Points-Based Bonus Wins
+                  </Label>
+                  <Switch
+                    id="bonus-wins-toggle"
+                    checked={showBonusWins}
+                    onCheckedChange={setShowBonusWins}
+                    disabled={historicalLoading || !historicalMatchups.length}
+                  />
+                </div>
               </div>
+              {showBonusWins && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Teams earn bonus wins for scoring above the weekly league average
+                </p>
+              )}
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {rosters
                   .sort((a, b) => {
-                    const aWins = a.settings?.wins || 0;
-                    const bWins = b.settings?.wins || 0;
+                    let aWins = a.settings?.wins || 0;
+                    let bWins = b.settings?.wins || 0;
                     const aLosses = a.settings?.losses || 0;
                     const bLosses = b.settings?.losses || 0;
                     
-                    // Sort by win percentage
+                    // Add bonus wins if toggle is active
+                    if (showBonusWins) {
+                      aWins += teamBonusWins[a.roster_id] || 0;
+                      bWins += teamBonusWins[b.roster_id] || 0;
+                    }
+                    
+                    // Sort by win percentage (including bonus wins if active)
                     const aWinPct = aWins + aLosses > 0 ? aWins / (aWins + aLosses) : 0;
                     const bWinPct = bWins + bLosses > 0 ? bWins / (bWins + bLosses) : 0;
                     
-                    return bWinPct - aWinPct;
+                    if (aWinPct !== bWinPct) {
+                      return bWinPct - aWinPct;
+                    }
+                    
+                    // Tiebreaker: total points
+                    const aPts = a.settings?.fpts || 0;
+                    const bPts = b.settings?.fpts || 0;
+                    return bPts - aPts;
                   })
                   .map((roster, index) => {
                     const user = userMap[roster.owner_id];
                     const teamName = getTeamName(user);
-                    const record = getTeamRecord(roster);
+                    const record = showBonusWins ? getTeamRecordWithBonus(roster) : getTeamRecord(roster);
                     
                     return (
                       <div key={roster.roster_id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]">
