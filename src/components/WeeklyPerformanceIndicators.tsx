@@ -38,8 +38,9 @@ export const WeeklyPerformanceIndicators: React.FC<WeeklyPerformanceIndicatorsPr
                 />
               </TooltipTrigger>
               <TooltipContent 
-                side="top" 
-                className="bg-card border border-border text-card-foreground"
+                className="bg-card border border-border text-card-foreground max-w-48 z-[60]"
+                collisionPadding={8}
+                sideOffset={5}
               >
                 <div className="text-xs space-y-1">
                   <div className="font-medium">Week {week.week}</div>
