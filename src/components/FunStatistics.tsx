@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { TrendingUp, TrendingDown, Star, Users, Trophy, Activity, Zap, Calendar } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface FunStatisticsProps {
   league: any;
@@ -21,6 +22,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
   players,
   transactions = []
 }) => {
+  const isMobile = useIsMobile();
   // Calculate power rankings with meaningful data and real trends
   const calculatePowerRankings = () => {
     const allPoints = rosters.map(r => r.settings?.fpts || 0);
@@ -204,30 +206,49 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <div className="text-right">
-                    <div className="text-sm font-semibold text-foreground">
-                      {(team.winPct * 100).toFixed(0)}% Win Rate
-                    </div>
-                    <div className="w-24 h-2 bg-muted rounded-full overflow-hidden mt-1">
-                      <div 
-                        className="h-full bg-gradient-to-r from-emerald-500 to-green-500 transition-all duration-500"
-                        style={{ width: `${team.winPct * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="transition-transform duration-300 hover:scale-125">
-                    {team.trend === 'up' ? (
-                      <TrendingUp className="w-6 h-6 text-green-400" />
-                    ) : team.trend === 'down' ? (
-                      <TrendingDown className="w-6 h-6 text-red-400" />
-                    ) : (
-                      <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
-                        <div className="w-2 h-2 rounded-full bg-muted-foreground" />
+                {!isMobile ? (
+                  <div className="flex items-center space-x-4">
+                    <div className="text-right">
+                      <div className="text-sm font-semibold text-foreground">
+                        {(team.winPct * 100).toFixed(0)}% Win Rate
                       </div>
-                    )}
+                      <div className="w-20 h-2 bg-muted rounded-full overflow-hidden mt-1">
+                        <div 
+                          className="h-full bg-gradient-to-r from-emerald-500 to-green-500 transition-all duration-500"
+                          style={{ width: `${team.winPct * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="transition-transform duration-300 hover:scale-125">
+                      {team.trend === 'up' ? (
+                        <TrendingUp className="w-6 h-6 text-green-400" />
+                      ) : team.trend === 'down' ? (
+                        <TrendingDown className="w-6 h-6 text-red-400" />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                          <div className="w-2 h-2 rounded-full bg-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline" className="text-xs font-semibold">
+                      {(team.winPct * 100).toFixed(0)}%
+                    </Badge>
+                    <div className="text-xs">
+                      {team.trend === 'up' ? (
+                        <TrendingUp className="w-4 h-4 text-green-400" />
+                      ) : team.trend === 'down' ? (
+                        <TrendingDown className="w-4 h-4 text-red-400" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center">
+                          <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
