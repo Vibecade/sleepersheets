@@ -7,8 +7,22 @@ export interface WeeklyMatchups {
   matchups: Matchup[];
 }
 
+export interface WeeklyPerformance {
+  week: number;
+  points: number;
+  aboveAverage: boolean;
+  difference: number;
+}
+
+export interface TeamWeeklyData {
+  rosterId: number;
+  weeklyPerformance: WeeklyPerformance[];
+}
+
 export const useHistoricalMatchups = (leagueId: string, currentWeek: number) => {
   const [historicalMatchups, setHistoricalMatchups] = useState<WeeklyMatchups[]>([]);
+  const [teamWeeklyData, setTeamWeeklyData] = useState<TeamWeeklyData[]>([]);
+  const [weeklyAverages, setWeeklyAverages] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,11 +54,49 @@ export const useHistoricalMatchups = (leagueId: string, currentWeek: number) => 
       }
 
       const results = await Promise.all(promises);
-      setHistoricalMatchups(results.filter(result => result.matchups.length > 0));
+      const filteredResults = results.filter(result => result.matchups.length > 0);
+      setHistoricalMatchups(filteredResults);
+      
+      // Calculate weekly averages and team performance data
+      const averages: Record<number, number> = {};
+      const teamData: Record<number, WeeklyPerformance[]> = {};
+      
+      filteredResults.forEach(({ week, matchups: weekMatchups }) => {
+        if (weekMatchups.length > 0) {
+          const weekTotal = weekMatchups.reduce((sum, matchup) => sum + matchup.points, 0);
+          const weekAverage = weekTotal / weekMatchups.length;
+          averages[week] = weekAverage;
+          
+          // Track each team's performance for this week
+          weekMatchups.forEach(matchup => {
+            if (!teamData[matchup.roster_id]) {
+              teamData[matchup.roster_id] = [];
+            }
+            
+            const difference = matchup.points - weekAverage;
+            teamData[matchup.roster_id].push({
+              week,
+              points: matchup.points,
+              aboveAverage: matchup.points > weekAverage,
+              difference
+            });
+          });
+        }
+      });
+      
+      setWeeklyAverages(averages);
+      setTeamWeeklyData(
+        Object.entries(teamData).map(([rosterId, weeklyPerformance]) => ({
+          rosterId: Number(rosterId),
+          weeklyPerformance: weeklyPerformance.sort((a, b) => a.week - b.week)
+        }))
+      );
     } catch (err) {
       console.error('Error fetching historical matchups:', err);
       setError('Failed to fetch historical matchups');
       setHistoricalMatchups([]);
+      setTeamWeeklyData([]);
+      setWeeklyAverages({});
     } finally {
       setLoading(false);
     }
@@ -54,5 +106,5 @@ export const useHistoricalMatchups = (leagueId: string, currentWeek: number) => 
     fetchHistoricalMatchups(leagueId, currentWeek);
   }, [leagueId, currentWeek, fetchHistoricalMatchups]);
 
-  return { historicalMatchups, loading, error };
+  return { historicalMatchups, teamWeeklyData, weeklyAverages, loading, error };
 };

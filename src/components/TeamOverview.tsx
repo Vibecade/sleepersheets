@@ -12,6 +12,7 @@ import { useMatchups, Matchup } from '@/hooks/useMatchups';
 import { useHistoricalMatchups } from '@/hooks/useHistoricalMatchups';
 import { useHistoricalProjections } from '@/hooks/useHistoricalProjections';
 import { ProjectedPointsDisplay } from './ProjectedPointsDisplay';
+import { WeeklyPerformanceIndicators } from './WeeklyPerformanceIndicators';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
@@ -44,7 +45,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   
   // Get projections for current week
   const currentWeek = getCurrentNFLWeek();
-  const { historicalMatchups, loading: historicalLoading } = useHistoricalMatchups(league?.league_id || '', currentWeek);
+  const { historicalMatchups, teamWeeklyData, weeklyAverages, loading: historicalLoading } = useHistoricalMatchups(league?.league_id || '', currentWeek);
 
   // Process waiver transactions when data loads
   useEffect(() => {
@@ -81,37 +82,19 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
     return `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
   };
 
-  // Calculate weekly league averages and bonus wins
-  const { weeklyAverages, teamBonusWins } = useMemo(() => {
-    if (!historicalMatchups.length || !showBonusWins) {
-      return { weeklyAverages: {}, teamBonusWins: {} };
+  // Calculate bonus wins from enhanced weekly data
+  const teamBonusWins = useMemo(() => {
+    if (!teamWeeklyData.length || !showBonusWins) {
+      return {};
     }
-
-    // Calculate weekly averages
-    const averages: Record<number, number> = {};
-    historicalMatchups.forEach(({ week, matchups: weekMatchups }) => {
-      if (weekMatchups.length > 0) {
-        const weekTotal = weekMatchups.reduce((sum, matchup) => sum + matchup.points, 0);
-        averages[week] = weekTotal / weekMatchups.length;
-      }
-    });
-
-    // Calculate bonus wins for each team
+    
     const bonusWins: Record<number, number> = {};
-    rosters.forEach(roster => {
-      let bonus = 0;
-      historicalMatchups.forEach(({ week, matchups: weekMatchups }) => {
-        const weekAverage = averages[week];
-        const rosterMatchup = weekMatchups.find(m => m.roster_id === roster.roster_id);
-        if (rosterMatchup && weekAverage && rosterMatchup.points > weekAverage) {
-          bonus++;
-        }
-      });
-      bonusWins[roster.roster_id] = bonus;
+    teamWeeklyData.forEach(({ rosterId, weeklyPerformance }) => {
+      bonusWins[rosterId] = weeklyPerformance.filter(week => week.aboveAverage).length;
     });
-
-    return { weeklyAverages: averages, teamBonusWins: bonusWins };
-  }, [historicalMatchups, rosters, showBonusWins]);
+    
+    return bonusWins;
+  }, [teamWeeklyData, showBonusWins]);
 
   const getTeamRecordWithBonus = (roster: any) => {
     const wins = roster.settings?.wins || 0;
@@ -406,13 +389,19 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                             <div className="font-medium text-white transition-colors duration-200">{teamName}</div>
                             <div className="text-sm text-gray-400 transition-colors duration-200">{user?.display_name}</div>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-medium text-white transition-colors duration-200">{record}</div>
-                          <div className="text-sm text-gray-400 transition-colors duration-200">
-                            {roster.settings?.fpts?.toFixed(1) || '0.0'} pts
-                          </div>
-                        </div>
+                         </div>
+                         <div className="text-right">
+                           <div className="font-medium text-white transition-colors duration-200">{record}</div>
+                           <div className="text-sm text-gray-400 transition-colors duration-200">
+                             {roster.settings?.fpts?.toFixed(1) || '0.0'} pts
+                           </div>
+                           {showBonusWins && teamWeeklyData.length > 0 && (
+                             <WeeklyPerformanceIndicators
+                               weeklyData={teamWeeklyData.find(team => team.rosterId === roster.roster_id)?.weeklyPerformance || []}
+                               weeklyAverages={weeklyAverages}
+                             />
+                           )}
+                         </div>
                       </div>
                     );
                   })}
