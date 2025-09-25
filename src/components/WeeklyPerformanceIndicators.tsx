@@ -1,5 +1,7 @@
 import React from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileWeeklyPerformance } from './MobileWeeklyPerformance';
 
 export interface WeeklyPerformance {
   week: number;
@@ -11,12 +13,34 @@ export interface WeeklyPerformance {
 interface WeeklyPerformanceIndicatorsProps {
   weeklyData: WeeklyPerformance[];
   weeklyAverages: Record<number, number>;
+  rosterId?: number;
+  isExpanded?: boolean;
+  onToggle?: () => void;
 }
 
 export const WeeklyPerformanceIndicators: React.FC<WeeklyPerformanceIndicatorsProps> = ({
   weeklyData,
   weeklyAverages,
+  rosterId,
+  isExpanded = false,
+  onToggle,
 }) => {
+  const isMobile = useIsMobile();
+
+  // Mobile: Use expandable interface
+  if (isMobile && rosterId && onToggle) {
+    return (
+      <MobileWeeklyPerformance
+        weeklyData={weeklyData}
+        weeklyAverages={weeklyAverages}
+        isExpanded={isExpanded}
+        onToggle={onToggle}
+        rosterId={rosterId}
+      />
+    );
+  }
+
+  // Desktop: Keep existing tooltip behavior
   return (
     <div className="flex gap-1 mt-2 flex-wrap">
       {weeklyData.map(week => {

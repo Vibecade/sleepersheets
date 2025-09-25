@@ -40,6 +40,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
 }) => {
   const [selectedWeek, setSelectedWeek] = useState(league?.settings?.leg || 1);
   const [showBonusWins, setShowBonusWins] = useState(false);
+  const [expandedTeamId, setExpandedTeamId] = useState<number | null>(null);
   const { matchups, loading: matchupsLoading, getCurrentNFLWeek } = useMatchups(league?.league_id, selectedWeek);
   const { processWaiverTransactions, processing: processingTransactions } = useTransactionProcessor();
   
@@ -106,6 +107,10 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
       return `${wins + bonusWins}-${losses}${ties > 0 ? `-${ties}` : ''} (+${bonusWins})`;
     }
     return `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
+  };
+
+  const handleTeamToggle = (rosterId: number) => {
+    setExpandedTeamId(expandedTeamId === rosterId ? null : rosterId);
   };
 
   return (
@@ -395,12 +400,15 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                            <div className="text-sm text-gray-400 transition-colors duration-200">
                              {roster.settings?.fpts?.toFixed(1) || '0.0'} pts
                            </div>
-                           {showBonusWins && teamWeeklyData.length > 0 && (
-                             <WeeklyPerformanceIndicators
-                               weeklyData={teamWeeklyData.find(team => team.rosterId === roster.roster_id)?.weeklyPerformance || []}
-                               weeklyAverages={weeklyAverages}
-                             />
-                           )}
+                            {showBonusWins && teamWeeklyData.length > 0 && (
+                              <WeeklyPerformanceIndicators
+                                weeklyData={teamWeeklyData.find(team => team.rosterId === roster.roster_id)?.weeklyPerformance || []}
+                                weeklyAverages={weeklyAverages}
+                                rosterId={roster.roster_id}
+                                isExpanded={expandedTeamId === roster.roster_id}
+                                onToggle={() => handleTeamToggle(roster.roster_id)}
+                              />
+                            )}
                          </div>
                       </div>
                     );
