@@ -20,6 +20,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import TransactionsList from './TransactionsList';
 import FunStatistics from './FunStatistics';
 import { useTransactionProcessor } from '@/hooks/useTransactionProcessor';
+import { ExpandableMatchupCard } from './ExpandableMatchupCard';
 
 interface TeamOverviewProps {
   league: any;
@@ -218,86 +219,21 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                     const roster2 = getRosterById(team2.roster_id);
                     const user1 = userMap[roster1?.owner_id];
                     const user2 = userMap[roster2?.owner_id];
-                    const team1Winning = team1.points > team2.points;
 
                     return (
-                       <div key={matchupId} className="bg-white/5 rounded-lg p-4 md:p-6 border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]">
-                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0">
-                           <div className={`flex-1 text-center transition-all duration-300 ${team1Winning ? 'transform scale-105' : ''} min-w-0`}>
-                             <div className="flex flex-col items-center space-y-2 mb-3">
-                               <Avatar className={`transition-all duration-300 ${team1Winning ? 'scale-110 ring-2 ring-green-400' : ''}`}>
-                                 <AvatarImage 
-                                   src={user1?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user1.avatar}` : undefined}
-                                   alt={`${getTeamName(user1)} avatar`}
-                                 />
-                                 <AvatarFallback className="bg-primary/20 text-primary-foreground">
-                                   {getTeamName(user1).slice(0, 2).toUpperCase()}
-                                 </AvatarFallback>
-                               </Avatar>
-                               <div className={`font-medium ${team1Winning ? 'text-green-400' : 'text-yellow-500'} transition-colors duration-300 truncate`}>
-                                 {getTeamName(user1)}
-                               </div>
-                               <div className="text-sm text-gray-400 transition-colors duration-200">
-                                 {getTeamRecord(roster1)}
-                               </div>
-                             </div>
-                             <div className={`text-2xl font-bold transition-all duration-300 ${team1Winning ? 'text-green-300 scale-110' : 'text-yellow-400'}`}>
-                               {formatPoints(team1.points)}
-                             </div>
-                              {/* Projections hidden - inaccurate compared to Sleeper data
-                              {!projectionsLoading && projections[team1.roster_id] && selectedWeek >= currentWeek && (
-                                <div className="mt-2">
-                                  <ProjectedPointsDisplay 
-                                    projection={projections[team1.roster_id]}
-                                    actualPoints={selectedWeek === currentWeek ? team1.points : undefined}
-                                    showActual={selectedWeek === currentWeek}
-                                    size="sm"
-                                  />
-                                </div>
-                              )}
-                              */}
-                           </div>
-                          
-                          <div className="md:px-6 flex justify-center">
-                            <div className="text-center text-gray-400 text-sm font-medium bg-white/10 rounded-full px-3 py-1 md:bg-transparent md:px-0 md:py-0">VS</div>
-                          </div>
-                          
-                           <div className={`flex-1 text-center transition-all duration-300 ${!team1Winning ? 'transform scale-105' : ''} min-w-0`}>
-                             <div className="flex flex-col items-center space-y-2 mb-3">
-                               <Avatar className={`transition-all duration-300 ${!team1Winning ? 'scale-110 ring-2 ring-green-400' : ''}`}>
-                                 <AvatarImage 
-                                   src={user2?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user2.avatar}` : undefined}
-                                   alt={`${getTeamName(user2)} avatar`}
-                                 />
-                                 <AvatarFallback className="bg-primary/20 text-primary-foreground">
-                                   {getTeamName(user2).slice(0, 2).toUpperCase()}
-                                 </AvatarFallback>
-                               </Avatar>
-                               <div className={`font-medium ${!team1Winning ? 'text-green-400' : 'text-yellow-500'} transition-colors duration-300 truncate`}>
-                                 {getTeamName(user2)}
-                               </div>
-                               <div className="text-sm text-gray-400 transition-colors duration-200">
-                                 {getTeamRecord(roster2)}
-                               </div>
-                             </div>
-                             <div className={`text-2xl font-bold transition-all duration-300 ${!team1Winning ? 'text-green-300 scale-110' : 'text-yellow-400'}`}>
-                               {formatPoints(team2.points)}
-                             </div>
-                              {/* Projections hidden - inaccurate compared to Sleeper data
-                              {!projectionsLoading && projections[team2.roster_id] && selectedWeek >= currentWeek && (
-                                <div className="mt-2">
-                                  <ProjectedPointsDisplay 
-                                    projection={projections[team2.roster_id]}
-                                    actualPoints={selectedWeek === currentWeek ? team2.points : undefined}
-                                    showActual={selectedWeek === currentWeek}
-                                    size="sm"
-                                  />
-                                </div>
-                              )}
-                              */}
-                           </div>
-                        </div>
-                      </div>
+                      <ExpandableMatchupCard
+                        key={matchupId}
+                        matchupId={matchupId}
+                        team1={team1}
+                        team2={team2}
+                        roster1={roster1}
+                        roster2={roster2}
+                        user1={user1}
+                        user2={user2}
+                        players={players}
+                        formatPoints={formatPoints}
+                        getTeamRecord={getTeamRecord}
+                      />
                     );
                   })}
                 </div>
