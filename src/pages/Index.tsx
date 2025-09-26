@@ -1,26 +1,30 @@
 
-import React, { useState, useEffect } from 'react';
-import Footer from '@/components/Footer';
-import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
-import LeagueHeader from '@/components/home/LeagueHeader';
-import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
-import PageHead from '@/components/PageHead';
-import PWAInstallPrompt from '@/components/PWAInstallPrompt';
-import OfflineIndicator from '@/components/OfflineIndicator';
-import UserDashboard from '@/components/dashboard/UserDashboard';
-import HeroSection from '@/components/landing/HeroSection';
-import FeaturesSection from '@/components/landing/FeaturesSection';
-import HowItWorksSection from '@/components/landing/HowItWorksSection';
-import SocialProofSection from '@/components/landing/SocialProofSection';
-import GetStartedModal from '@/components/landing/GetStartedModal';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueManager } from '@/hooks/useLeagueManager';
-import LeagueView from '@/components/home/LeagueView';
-import AdBanner from '@/components/ads/AdBanner';
+import { DemoProvider, useDemo } from '@/contexts/DemoContext';
+import { PageHead } from '@/components/PageHead';
+import { LeagueHeader } from '@/components/LeagueHeader';
+import { Footer } from '@/components/Footer';
+import { OfflineIndicator } from '@/components/OfflineIndicator';
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
+import { AdBanner } from '@/components/ads/AdBanner';
+import { EnhancedErrorBoundary } from '@/components/EnhancedErrorBoundary';
+import { DemoBanner } from '@/components/DemoBanner';
+import { LeagueData } from '@/components/LeagueData';
+import { LeagueConnectionForm } from '@/components/home/LeagueConnectionForm';
+import { UserDashboard } from '@/components/dashboard/UserDashboard';
+import { HeroSection } from '@/components/landing/HeroSection';
+import { FeaturesSection } from '@/components/landing/FeaturesSection';
+import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
+import { SocialProofSection } from '@/components/landing/SocialProofSection';
+import { GetStartedModal } from '@/components/landing/GetStartedModal';
+import { DEMO_LEAGUE_ID } from '@/utils/demoData';
 import { useNavigate } from 'react-router-dom';
 
-const Index = React.memo(() => {
+const IndexContent = React.memo(() => {
   const { user } = useAuth();
+  const { setDemoMode } = useDemo();
   const navigate = useNavigate();
   const [isHeaderCompact, setIsHeaderCompact] = useState(false);
   const [userIsInteracting, setUserIsInteracting] = useState(false);
@@ -81,8 +85,8 @@ const Index = React.memo(() => {
         navigate('/auth');
         break;
       case 'demo':
-        // Load demo league directly
-        setLeagueId('784462448236060672'); // Demo league ID
+        setDemoMode(true);
+        handleLeagueSubmit(DEMO_LEAGUE_ID);
         setUserIsInteracting(true);
         setIsHeaderCompact(true);
         break;
@@ -101,11 +105,10 @@ const Index = React.memo(() => {
         title="Fantasy Football Salary Cap Management"
         description="The ultimate salary cap and contract management tool for your fantasy football dynasty league. Track salaries, manage contracts, simulate trades, and export league data."
       />
-      
+      <DemoBanner />
       <LeagueHeader 
         isCompact={isHeaderCompact}
-        onToggleCompact={handleToggleCompact}
-        canToggle={userIsInteracting || !!leagueData}
+        onBackClick={leagueData ? handleBackToMarketing : undefined}
       />
 
       <div className="max-w-6xl mx-auto px-4 py-12">
@@ -202,6 +205,15 @@ const Index = React.memo(() => {
   );
 });
 
-Index.displayName = 'Index';
+const Index = React.memo(() => {
+  return (
+    <DemoProvider>
+      <IndexContent />
+    </DemoProvider>
+  );
+});
 
 export default Index;
+
+Index.displayName = 'Index';
+
