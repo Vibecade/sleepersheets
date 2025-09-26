@@ -1,14 +1,15 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Users, Settings, Trophy, Download, BarChart3, Menu } from 'lucide-react';
+import { Users, Settings, Trophy, Download, BarChart3, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileNav } from '@/components/ui/mobile-nav';
+import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 
 interface PageNavigationProps {
-  currentPage: 'overview' | 'manager' | 'analytics';
-  onPageChange: (page: 'overview' | 'manager' | 'analytics') => void;
+  currentPage: 'overview' | 'manager' | 'analytics' | 'commissioner';
+  onPageChange: (page: 'overview' | 'manager' | 'analytics' | 'commissioner') => void;
   leagueData?: any;
 }
 
@@ -19,6 +20,10 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
 }) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { canModifyLeague } = useLeagueOwnership();
+  
+  // Check if user is league owner (can see commissioner tools)
+  const isLeagueOwner = leagueData?.league_id ? canModifyLeague(leagueData.league_id) : false;
 
   const handleExportClick = () => {
     if (leagueData) {
@@ -28,7 +33,7 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
     }
   };
 
-  const navigationItems = [
+  const baseNavigationItems = [
     {
       id: 'overview' as const,
       label: 'League Overview',
@@ -50,13 +55,29 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
       icon: Settings,
       onClick: () => onPageChange('manager'),
     },
-    {
-      id: 'export' as const,
-      label: 'Export & AI',
-      shortLabel: 'Export',
-      icon: Download,
-      onClick: handleExportClick,
-    },
+  ];
+
+  // Add Commissioner tab only for league owners
+  const commissionerItem = isLeagueOwner ? {
+    id: 'commissioner' as const,
+    label: 'Commissioner',
+    shortLabel: 'Commissioner',
+    icon: Shield,
+    onClick: () => onPageChange('commissioner'),
+  } : null;
+
+  const exportItem = {
+    id: 'export' as const,
+    label: 'Export & AI',
+    shortLabel: 'Export',
+    icon: Download,
+    onClick: handleExportClick,
+  };
+
+  const navigationItems = [
+    ...baseNavigationItems,
+    ...(commissionerItem ? [commissionerItem] : []),
+    exportItem
   ];
 
   if (isMobile) {

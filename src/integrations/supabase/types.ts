@@ -46,6 +46,42 @@ export type Database = {
           },
         ]
       }
+      commissioner_actions: {
+        Row: {
+          action_type: string
+          commissioner_id: string
+          created_at: string
+          description: string
+          id: string
+          league_id: string
+          metadata: Json | null
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action_type: string
+          commissioner_id: string
+          created_at?: string
+          description: string
+          id?: string
+          league_id: string
+          metadata?: Json | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action_type?: string
+          commissioner_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          league_id?: string
+          metadata?: Json | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
       data_integrity_logs: {
         Row: {
           created_at: string
@@ -181,6 +217,45 @@ export type Database = {
           metadata?: Json | null
           title?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      league_announcements: {
+        Row: {
+          commissioner_id: string
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          is_pinned: boolean | null
+          league_id: string
+          priority: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          commissioner_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          is_pinned?: boolean | null
+          league_id: string
+          priority?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          commissioner_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          is_pinned?: boolean | null
+          league_id?: string
+          priority?: string | null
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -585,6 +660,42 @@ export type Database = {
           id?: string
           sleeper_username?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      transaction_overrides: {
+        Row: {
+          action: string
+          commissioner_id: string
+          created_at: string
+          id: string
+          league_id: string
+          modified_data: Json | null
+          original_data: Json | null
+          reason: string | null
+          transaction_id: string
+        }
+        Insert: {
+          action: string
+          commissioner_id: string
+          created_at?: string
+          id?: string
+          league_id: string
+          modified_data?: Json | null
+          original_data?: Json | null
+          reason?: string | null
+          transaction_id: string
+        }
+        Update: {
+          action?: string
+          commissioner_id?: string
+          created_at?: string
+          id?: string
+          league_id?: string
+          modified_data?: Json | null
+          original_data?: Json | null
+          reason?: string | null
+          transaction_id?: string
         }
         Relationships: []
       }

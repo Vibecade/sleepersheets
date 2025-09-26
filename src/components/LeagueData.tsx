@@ -10,6 +10,7 @@ import TeamOverviewSkeleton from './skeletons/TeamOverviewSkeleton';
 import PageNavigationSkeleton from './skeletons/PageNavigationSkeleton';
 import LeagueStatusBadge from './LeagueStatusBadge';
 import Analytics from '@/pages/Analytics';
+import Commissioner from '@/pages/Commissioner';
 
 interface LeagueDataProps {
   data: {
@@ -28,10 +29,15 @@ interface LeagueDataProps {
 
 const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyncData?: () => Promise<void>; onOwnershipChanged?: () => void; }> = React.memo(({ onRefreshData, onResyncData, onOwnershipChanged }) => {
   const { league, rosters, userMap, rosterUserMap, players, transactions, draftPicks, stats } = useLeagueData();
-  const [currentPage, setCurrentPage] = useState<'overview' | 'manager' | 'analytics'>('overview');
+  const [currentPage, setCurrentPage] = useState<'overview' | 'manager' | 'analytics' | 'commissioner'>('overview');
 
   // Prepare league data for export navigation
   const leagueDataForExport = React.useMemo(() => ({
+    league_id: league.league_id,
+    name: league.name,
+    season: league.season,
+    sport: league.sport,
+    total_rosters: league.total_rosters,
     league,
     rosters,
     users: Object.values(userMap),
@@ -49,6 +55,8 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
             ? 'League Overview' 
             : currentPage === 'analytics' 
             ? 'League Analytics' 
+            : currentPage === 'commissioner'
+            ? 'Commissioner Dashboard'
             : 'Fantasy Manager'
         }
         description={`Manage your ${league.name} fantasy football league with salary cap tracking, contract management, and trade simulation tools.`}
@@ -84,6 +92,16 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
             </Suspense>
           </ErrorBoundary>
         </div>
+
+        {currentPage === 'commissioner' && (
+          <div className="slide-up" style={{ animationDelay: '0.2s' }}>
+            <ErrorBoundary fallback={<div>Error loading commissioner dashboard</div>}>
+              <Suspense fallback={<div>Loading commissioner dashboard...</div>}>
+                <Commissioner leagueId={league.league_id} leagueData={leagueDataForExport} />
+              </Suspense>
+            </ErrorBoundary>
+          </div>
+        )}
 
         {currentPage === 'overview' && (
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
