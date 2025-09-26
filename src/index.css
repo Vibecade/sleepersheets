@@ -55,6 +55,13 @@
     
     --radius: 0.75rem;
     
+    /* Chart Colors for Analytics */
+    --chart-1: 45 95% 58%;      /* Primary Gold */
+    --chart-2: 142 70% 48%;     /* Success Green */
+    --chart-3: 220 91% 65%;     /* Blue */
+    --chart-4: 283 89% 74%;     /* Purple */
+    --chart-5: 27 96% 61%;      /* Orange */
+    
     /* Refined Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--secondary-glow)) 100%);

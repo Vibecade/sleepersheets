@@ -1,14 +1,14 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Users, Settings, Trophy, Download, Menu } from 'lucide-react';
+import { Users, Settings, Trophy, Download, BarChart3, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileNav } from '@/components/ui/mobile-nav';
 
 interface PageNavigationProps {
-  currentPage: 'overview' | 'manager';
-  onPageChange: (page: 'overview' | 'manager') => void;
+  currentPage: 'overview' | 'manager' | 'analytics';
+  onPageChange: (page: 'overview' | 'manager' | 'analytics') => void;
   leagueData?: any;
 }
 
@@ -35,6 +35,13 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
       shortLabel: 'Overview',
       icon: Trophy,
       onClick: () => onPageChange('overview'),
+    },
+    {
+      id: 'analytics' as const,
+      label: 'Analytics Dashboard',
+      shortLabel: 'Analytics',
+      icon: BarChart3,
+      onClick: () => onPageChange('analytics'),
     },
     {
       id: 'manager' as const,
@@ -80,13 +87,13 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
 
   return (
     <div className="glass-card rounded-xl p-2 mb-6">
-      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         {navigationItems.map((item) => (
           <Button
             key={item.id}
             variant={currentPage === item.id ? 'default' : 'ghost'}
             onClick={item.onClick}
-            className="flex items-center justify-center gap-1 sm:gap-2 flex-1 h-10 mobile-btn-compact min-w-0"
+            className="flex items-center justify-center gap-1 sm:gap-2 h-10 mobile-btn-compact min-w-0"
             size="default"
           >
             <item.icon className="w-4 h-4 flex-shrink-0" />

@@ -9,6 +9,7 @@ import LeagueHeaderSkeleton from './skeletons/LeagueHeaderSkeleton';
 import TeamOverviewSkeleton from './skeletons/TeamOverviewSkeleton';
 import PageNavigationSkeleton from './skeletons/PageNavigationSkeleton';
 import LeagueStatusBadge from './LeagueStatusBadge';
+import Analytics from '@/pages/Analytics';
 
 interface LeagueDataProps {
   data: {
@@ -27,7 +28,7 @@ interface LeagueDataProps {
 
 const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyncData?: () => Promise<void>; onOwnershipChanged?: () => void; }> = React.memo(({ onRefreshData, onResyncData, onOwnershipChanged }) => {
   const { league, rosters, userMap, rosterUserMap, players, transactions, draftPicks, stats } = useLeagueData();
-  const [currentPage, setCurrentPage] = useState<'overview' | 'manager'>('overview');
+  const [currentPage, setCurrentPage] = useState<'overview' | 'manager' | 'analytics'>('overview');
 
   // Prepare league data for export navigation
   const leagueDataForExport = React.useMemo(() => ({
@@ -43,7 +44,13 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
   return (
     <div className="main-container">
       <PageHead
-        title={currentPage === 'overview' ? 'League Overview' : 'Fantasy Manager'}
+        title={
+          currentPage === 'overview' 
+            ? 'League Overview' 
+            : currentPage === 'analytics' 
+            ? 'League Analytics' 
+            : 'Fantasy Manager'
+        }
         description={`Manage your ${league.name} fantasy football league with salary cap tracking, contract management, and trade simulation tools.`}
         leagueName={league.name}
       />
@@ -90,6 +97,16 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
                   transactions={transactions}
                   onResyncData={onResyncData}
                 />
+              </Suspense>
+            </ErrorBoundary>
+          </div>
+        )}
+
+        {currentPage === 'analytics' && (
+          <div className="slide-up" style={{ animationDelay: '0.2s' }}>
+            <ErrorBoundary>
+              <Suspense fallback={<TeamOverviewSkeleton />}>
+                <Analytics />
               </Suspense>
             </ErrorBoundary>
           </div>
