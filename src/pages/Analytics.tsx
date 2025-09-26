@@ -42,15 +42,16 @@ const Analytics: React.FC = () => {
         {/* Key Metrics Cards */}
         <div className="slide-up" style={{ animationDelay: '0.1s' }}>
           <LeagueMetricsCards 
-            league={league}
             rosters={rosters}
-            transactions={transactions}
+            users={users}
             players={players}
+            transactions={transactions}
+            leagueId={league.league_id}
           />
         </div>
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {/* Salary Distribution */}
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
             <SalaryDistributionChart 
@@ -58,6 +59,7 @@ const Analytics: React.FC = () => {
               users={users}
               players={players}
               leagueId={league.league_id}
+              transactions={transactions}
             />
           </div>
 
@@ -84,8 +86,8 @@ const Analytics: React.FC = () => {
               rosters={rosters}
               users={users}
               players={players}
-              transactions={transactions}
               leagueId={league.league_id}
+              transactions={transactions}
             />
           </div>
         </div>

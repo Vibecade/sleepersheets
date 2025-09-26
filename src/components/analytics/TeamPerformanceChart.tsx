@@ -20,7 +20,7 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
   transactions,
   leagueId
 }) => {
-  const { getEffectiveSalary } = usePlayerSalaries(leagueId);
+  const { getSalaryCapContribution } = usePlayerSalaries(leagueId);
 
   // Create user map for easy lookup
   const userMap = React.useMemo(() => {
@@ -30,14 +30,29 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
     }, {} as Record<string, any>);
   }, [users]);
 
+  const formatCurrency = (amount: number) => {
+    if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(1)}M`;
+    } else if (amount >= 1000) {
+      return `$${Math.round(amount / 1000)}K`;
+    }
+    return `$${Math.round(amount)}`;
+  };
+
   const chartData = React.useMemo(() => {
     return rosters.map((roster) => {
       const user = userMap[roster.owner_id];
       const teamName = getTeamName(user);
       
-      // Calculate total salary
-      const totalSalary = (roster.players || []).reduce((sum: number, playerId: string) => {
-        return sum + getEffectiveSalary(playerId);
+      // Calculate total salary using accurate method
+      const allPlayerIds = [
+        ...(roster.players || []),
+        ...(roster.taxi || []),
+        ...(roster.reserve || [])
+      ];
+      
+      const totalSalary = allPlayerIds.reduce((sum, playerId) => {
+        return sum + getSalaryCapContribution(playerId);
       }, 0);
 
       // Count transaction activity for this roster
@@ -60,7 +75,7 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
         totalPlayers
       };
     });
-  }, [rosters, userMap, getEffectiveSalary, transactions]);
+  }, [rosters, userMap, getSalaryCapContribution, transactions]);
 
   const chartConfig = {
     teams: {
@@ -77,26 +92,31 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-80">
+        <ChartContainer config={chartConfig} className="h-64 md:h-80">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart
               data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+              margin={{ 
+                top: 20, 
+                right: window.innerWidth < 768 ? 10 : 30, 
+                left: window.innerWidth < 768 ? 10 : 20, 
+                bottom: window.innerWidth < 768 ? 40 : 60 
+              }}
             >
               <XAxis 
                 type="number"
                 dataKey="totalSalary"
                 name="Total Salary"
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                tickFormatter={formatCurrency}
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
+                fontSize={window.innerWidth < 768 ? 10 : 12}
               />
               <YAxis 
                 type="number"
                 dataKey="transactionActivity"
                 name="Transaction Activity"
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
+                fontSize={window.innerWidth < 768 ? 10 : 12}
               />
               <ChartTooltip 
                 cursor={{ strokeDasharray: '3 3' }}
@@ -104,7 +124,7 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
                   <ChartTooltipContent 
                     formatter={(value, name, props) => {
                       if (name === 'totalSalary') {
-                        return [`$${Number(value).toLocaleString()}`, 'Total Salary'];
+                        return [formatCurrency(Number(value)), 'Total Salary'];
                       }
                       return [value, 'Transactions'];
                     }}
@@ -129,7 +149,7 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
                 fill="hsl(var(--primary))"
                 stroke="hsl(var(--primary-foreground))"
                 strokeWidth={1}
-                r={6}
+                r={window.innerWidth < 768 ? 4 : 6}
               />
             </ScatterChart>
           </ResponsiveContainer>
@@ -167,7 +187,7 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
                   <div>
                     <div className="font-medium">{highestSpender?.fullTeamName}</div>
                     <div className="text-sm text-muted-foreground">
-                      ${highestSpender?.totalSalary.toLocaleString()}
+                      {formatCurrency(highestSpender?.totalSalary)}
                     </div>
                   </div>
                 );

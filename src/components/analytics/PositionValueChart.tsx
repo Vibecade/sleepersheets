@@ -15,18 +15,33 @@ const PositionValueChart: React.FC<PositionValueChartProps> = ({
   players,
   leagueId
 }) => {
-  const { getEffectiveSalary } = usePlayerSalaries(leagueId);
+  const { getSalaryCapContribution } = usePlayerSalaries(leagueId);
+
+  const formatCurrency = (amount: number) => {
+    if (amount >= 1000000) {
+      return `$${(amount / 1000000).toFixed(1)}M`;
+    } else if (amount >= 1000) {
+      return `$${Math.round(amount / 1000)}K`;
+    }
+    return `$${Math.round(amount)}`;
+  };
 
   const positionData = React.useMemo(() => {
     const positionSalaries = new Map<string, number>();
     const positionCounts = new Map<string, number>();
 
     rosters.forEach(roster => {
-      (roster.players || []).forEach((playerId: string) => {
+      const allPlayerIds = [
+        ...(roster.players || []),
+        ...(roster.taxi || []),
+        ...(roster.reserve || [])
+      ];
+      
+      allPlayerIds.forEach((playerId: string) => {
         const player = players[playerId];
         if (player) {
           const position = player.position || 'Unknown';
-          const salary = getEffectiveSalary(playerId);
+          const salary = getSalaryCapContribution(playerId);
           
           positionSalaries.set(position, (positionSalaries.get(position) || 0) + salary);
           positionCounts.set(position, (positionCounts.get(position) || 0) + 1);
@@ -53,7 +68,7 @@ const PositionValueChart: React.FC<PositionValueChartProps> = ({
         fill: colors[position as keyof typeof colors] || 'hsl(var(--muted))'
       }))
       .sort((a, b) => b.totalSalary - a.totalSalary);
-  }, [rosters, players, getEffectiveSalary]);
+  }, [rosters, players, getSalaryCapContribution]);
 
   const totalValue = positionData.reduce((sum, item) => sum + item.totalSalary, 0);
 
@@ -71,7 +86,7 @@ const PositionValueChart: React.FC<PositionValueChartProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-80">
+        <ChartContainer config={chartConfig} className="h-64 md:h-80">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -80,9 +95,9 @@ const PositionValueChart: React.FC<PositionValueChartProps> = ({
                 cy="50%"
                 labelLine={false}
                 label={({ position, value, percent }) => 
-                  percent > 0.05 ? `${position} ${(percent * 100).toFixed(1)}%` : ''
+                  percent > 0.05 && window.innerWidth >= 768 ? `${position} ${(percent * 100).toFixed(1)}%` : ''
                 }
-                outerRadius={80}
+                outerRadius={window.innerWidth < 768 ? 60 : 80}
                 fill="#8884d8"
                 dataKey="totalSalary"
               >
@@ -94,7 +109,7 @@ const PositionValueChart: React.FC<PositionValueChartProps> = ({
                 content={
                   <ChartTooltipContent 
                     formatter={(value, name, props) => [
-                      `$${Number(value).toLocaleString()}`,
+                      formatCurrency(Number(value)),
                       'Total Value'
                     ]}
                     labelFormatter={(label, payload) => {
@@ -104,7 +119,7 @@ const PositionValueChart: React.FC<PositionValueChartProps> = ({
                           <div className="font-semibold">{data.position}</div>
                           <div className="text-sm text-muted-foreground space-y-1">
                             <div>{data.count} players</div>
-                            <div>Avg: ${data.averageSalary.toLocaleString()}</div>
+                            <div>Avg: {formatCurrency(data.averageSalary)}</div>
                             <div>{((data.totalSalary / totalValue) * 100).toFixed(1)}% of total</div>
                           </div>
                         </div>
@@ -125,16 +140,16 @@ const PositionValueChart: React.FC<PositionValueChartProps> = ({
               <div key={index} className="flex justify-between items-center p-2 rounded-lg bg-muted/20">
                 <div className="flex items-center space-x-3">
                   <div 
-                    className="w-3 h-3 rounded-full" 
+                    className="w-3 h-3 rounded-full flex-shrink-0" 
                     style={{ backgroundColor: pos.fill }}
                   />
                   <span className="font-medium">{pos.position}</span>
                   <span className="text-sm text-muted-foreground">({pos.count} players)</span>
                 </div>
                 <div className="text-right">
-                  <div className="font-medium">${pos.totalSalary.toLocaleString()}</div>
+                  <div className="font-medium">{formatCurrency(pos.totalSalary)}</div>
                   <div className="text-xs text-muted-foreground">
-                    Avg: ${pos.averageSalary.toLocaleString()}
+                    Avg: {formatCurrency(pos.averageSalary)}
                   </div>
                 </div>
               </div>
