@@ -1,10 +1,12 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import AdBanner from '@/components/ads/AdBanner';
 
 const Footer = () => {
   return (
     <footer className="mt-16 py-8 border-t border-white/10">
+      <AdBanner position="footer" />
       <div className="max-w-6xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
           <div>

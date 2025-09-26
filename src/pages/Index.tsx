@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueManager } from '@/hooks/useLeagueManager';
 import LeagueView from '@/components/home/LeagueView';
+import AdBanner from '@/components/ads/AdBanner';
 
 const Index = React.memo(() => {
   const { user } = useAuth();
@@ -73,6 +74,8 @@ const Index = React.memo(() => {
       <div className="max-w-6xl mx-auto px-4 py-12">
         <OfflineIndicator />
         <PWAInstallPrompt />
+        
+        <AdBanner position="header" />
         
         <EnhancedErrorBoundary level="page">
           {!leagueData ? (
