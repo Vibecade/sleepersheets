@@ -35,13 +35,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onGetStarted }) => {
         {/* Value Proposition */}
         <div className="max-w-4xl mx-auto mb-12">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl text-foreground font-bold mb-6 leading-tight">
-            <span className="gradient-text">Dominate</span> Your Dynasty League with 
-            <span className="text-secondary"> Professional</span> Salary Cap Management
+            The <span className="gradient-text">Ultimate</span> Dynasty League 
+            <span className="text-secondary">Management Platform</span>
           </h2>
           
           <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-            Transform your fantasy football strategy with the ultimate salary cap and contract management system. 
-            Track every dollar, simulate trades, and make championship-caliber decisions.
+            Stop using spreadsheets. Start winning championships with professional-grade tools 
+            built specifically for dynasty fantasy football leagues.
           </p>
         </div>
 
@@ -72,7 +72,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onGetStarted }) => {
           </Button>
           
           <div className="text-sm text-muted-foreground">
-            ✨ Free forever • No credit card required • 30 seconds to start
+            ✨ Start for Free • No credit card required • 30 seconds to start
           </div>
         </div>
       </div>

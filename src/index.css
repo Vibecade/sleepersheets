@@ -209,7 +209,6 @@
     animation: field-flash 4s ease-in-out infinite;
   }
 
-  /* NFL Team Card Styling */
   .team-card {
     backdrop-filter: blur(20px);
     background: linear-gradient(135deg, 

@@ -52,7 +52,7 @@ const SocialProofSection: React.FC = () => {
   const benefits = [
     "Trusted by 10,000+ dynasty leagues",
     "99.9% uptime reliability",
-    "Free forever for basic features",
+    "Start for Free for basic features",
     "No ads or distracting promotions",
     "Secure data with league ownership protection",
     "Continuous updates and new features"
