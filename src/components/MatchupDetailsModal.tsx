@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { PlayerLineupDisplay } from './PlayerLineupDisplay';
 import { RosterComparison } from './RosterComparison';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MatchupDetailsModalProps {
   isOpen: boolean;
@@ -38,10 +39,15 @@ export const MatchupDetailsModal: React.FC<MatchupDetailsModalProps> = ({
   getTeamRecord
 }) => {
   const team1Winning = team1.points > team2.points;
+  const isMobile = useIsMobile();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className={`${
+        isMobile 
+          ? 'w-full h-full max-w-none max-h-none m-0 rounded-none' 
+          : 'max-w-4xl max-h-[90vh]'
+      } overflow-y-auto`}>
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-center">
             Matchup Details
@@ -49,8 +55,8 @@ export const MatchupDetailsModal: React.FC<MatchupDetailsModalProps> = ({
         </DialogHeader>
 
         {/* Matchup Header */}
-        <div className="flex items-center justify-between py-4 border-b border-border/50">
-          <div className="flex items-center space-x-3">
+        <div className={`${isMobile ? 'flex flex-col gap-4' : 'flex items-center justify-between'} py-4 border-b border-border/50`}>
+          <div className={`flex items-center ${isMobile ? 'justify-center' : ''} space-x-3`}>
             <Avatar className={`${team1Winning ? 'ring-2 ring-primary' : ''}`}>
               <AvatarImage 
                 src={user1?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user1.avatar}` : undefined}
@@ -71,11 +77,13 @@ export const MatchupDetailsModal: React.FC<MatchupDetailsModalProps> = ({
             </Badge>
           </div>
 
-          <div className="text-center px-4">
-            <p className="text-sm text-muted-foreground">VS</p>
-          </div>
+          {!isMobile && (
+            <div className="text-center px-4">
+              <p className="text-sm text-muted-foreground">VS</p>
+            </div>
+          )}
 
-          <div className="flex items-center space-x-3">
+          <div className={`flex items-center ${isMobile ? 'justify-center' : ''} space-x-3`}>
             <Badge variant={!team1Winning ? "default" : "secondary"} className="mr-2">
               {formatPoints(team2.points)}
             </Badge>
@@ -99,13 +107,17 @@ export const MatchupDetailsModal: React.FC<MatchupDetailsModalProps> = ({
 
         {/* Detailed Tabs */}
         <Tabs defaultValue="lineups" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="lineups">Starting Lineups</TabsTrigger>
-            <TabsTrigger value="comparison">Roster Analysis</TabsTrigger>
+          <TabsList className={`grid w-full grid-cols-2 ${isMobile ? 'h-12' : ''}`}>
+            <TabsTrigger value="lineups" className={isMobile ? 'text-sm touch-manipulation' : ''}>
+              {isMobile ? 'Lineups' : 'Starting Lineups'}
+            </TabsTrigger>
+            <TabsTrigger value="comparison" className={isMobile ? 'text-sm touch-manipulation' : ''}>
+              {isMobile ? 'Analysis' : 'Roster Analysis'}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="lineups" className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className={`grid ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2'} gap-6`}>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">

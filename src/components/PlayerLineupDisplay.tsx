@@ -4,6 +4,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { User, Users } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PlayerLineupDisplayProps {
   starters: string[];
@@ -16,6 +17,7 @@ export const PlayerLineupDisplay: React.FC<PlayerLineupDisplayProps> = ({
   bench,
   players
 }) => {
+  const isMobile = useIsMobile();
   const getPlayerInfo = (playerId: string) => {
     const player = players[playerId];
     if (!player) {
@@ -51,10 +53,14 @@ export const PlayerLineupDisplay: React.FC<PlayerLineupDisplayProps> = ({
     const { name, position, team, playerPhotoUrl } = getPlayerInfo(playerId);
 
     return (
-      <Card className={`transition-all duration-200 hover:bg-accent/50 ${isStarter ? 'border-primary/50' : ''}`}>
-        <CardContent className="p-3">
-          <div className="flex items-center space-x-3">
-            <Avatar className="w-10 h-10">
+      <Card className={`transition-all duration-200 touch-manipulation ${
+        isMobile 
+          ? 'active:bg-accent/50 min-h-[60px]' 
+          : 'hover:bg-accent/50'
+      } ${isStarter ? 'border-primary/50' : ''}`}>
+        <CardContent className={isMobile ? 'p-4' : 'p-3'}>
+          <div className={`flex items-center ${isMobile ? 'space-x-4' : 'space-x-3'}`}>
+            <Avatar className={isMobile ? 'w-12 h-12' : 'w-10 h-10'}>
               <AvatarImage 
                 src={playerPhotoUrl || undefined}
                 alt={`${name} photo`}
@@ -67,16 +73,16 @@ export const PlayerLineupDisplay: React.FC<PlayerLineupDisplayProps> = ({
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm truncate">{name}</p>
-              <div className="flex items-center space-x-2 mt-1">
-                <Badge variant="outline" className={`text-xs ${getPositionColor(position)}`}>
+              <p className={`font-medium ${isMobile ? 'text-base' : 'text-sm'} truncate`}>{name}</p>
+              <div className={`flex items-center ${isMobile ? 'space-x-3 mt-2' : 'space-x-2 mt-1'}`}>
+                <Badge variant="outline" className={`${isMobile ? 'text-sm px-3 py-1' : 'text-xs'} ${getPositionColor(position)}`}>
                   {position}
                 </Badge>
-                <span className="text-xs text-muted-foreground">{team}</span>
+                <span className={`${isMobile ? 'text-sm' : 'text-xs'} text-muted-foreground`}>{team}</span>
               </div>
             </div>
             {isStarter && (
-              <User className="w-4 h-4 text-primary" />
+              <User className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'} text-primary`} />
             )}
           </div>
         </CardContent>
@@ -111,7 +117,7 @@ export const PlayerLineupDisplay: React.FC<PlayerLineupDisplayProps> = ({
           <Users className="w-4 h-4 text-muted-foreground" />
           <h4 className="font-semibold text-sm">Bench ({bench.length})</h4>
         </div>
-        <div className="space-y-2 max-h-48 overflow-y-auto">
+        <div className={`space-y-2 ${isMobile ? 'max-h-64' : 'max-h-48'} overflow-y-auto`}>
           {bench.length > 0 ? (
             bench.map((playerId) => (
               <PlayerCard key={playerId} playerId={playerId} isStarter={false} />

@@ -4,6 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { TrendingUp, TrendingDown, Users, Trophy } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Team {
   name: string;
@@ -25,6 +26,7 @@ export const RosterComparison: React.FC<RosterComparisonProps> = ({
   team2,
   players
 }) => {
+  const isMobile = useIsMobile();
   const getPositionBreakdown = (playerIds: string[]) => {
     const positions: Record<string, number> = {};
     playerIds.forEach(playerId => {
@@ -124,7 +126,7 @@ export const RosterComparison: React.FC<RosterComparisonProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-accent/20 rounded-lg">
+          <div className={`${isMobile ? 'flex flex-col gap-4' : 'flex items-center justify-between'} p-4 bg-accent/20 rounded-lg`}>
             <div className="flex items-center space-x-3">
               <Avatar>
                 <AvatarImage 
@@ -156,7 +158,7 @@ export const RosterComparison: React.FC<RosterComparisonProps> = ({
       </Card>
 
       {/* Team Headers */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className={`grid ${isMobile ? 'grid-cols-1 gap-6' : 'grid-cols-2 gap-4'}`}>
         <div className="text-center">
           <Avatar className="mx-auto mb-2">
             <AvatarImage 
@@ -217,7 +219,7 @@ export const RosterComparison: React.FC<RosterComparisonProps> = ({
       </Card>
 
       {/* Position Breakdowns */}
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className={`grid ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2'} gap-4`}>
         <PositionBreakdown positions={team1Stats.positions} teamName={team1.name} />
         <PositionBreakdown positions={team2Stats.positions} teamName={team2.name} />
       </div>

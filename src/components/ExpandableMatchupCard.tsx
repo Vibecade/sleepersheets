@@ -4,6 +4,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { MatchupDetailsModal } from './MatchupDetailsModal';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ExpandableMatchupCardProps {
   matchupId: string;
@@ -32,6 +33,7 @@ export const ExpandableMatchupCard: React.FC<ExpandableMatchupCardProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const isMobile = useIsMobile();
   
   const team1Winning = team1.points > team2.points;
 
@@ -48,12 +50,16 @@ export const ExpandableMatchupCard: React.FC<ExpandableMatchupCardProps> = ({
   return (
     <>
       <Card 
-        className="bg-card/50 border border-border/50 transition-all duration-300 hover:bg-card/80 hover:border-border hover:scale-[1.02] cursor-pointer group"
+        className={`bg-card/50 border border-border/50 transition-all duration-300 cursor-pointer group touch-manipulation ${
+          isMobile 
+            ? 'hover:bg-card/80 active:bg-card active:scale-[0.98]' 
+            : 'hover:bg-card/80 hover:border-border hover:scale-[1.02]'
+        }`}
         onClick={handleCardClick}
       >
-        <CardContent className="p-4 md:p-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0">
-            <div className={`flex-1 text-center transition-all duration-300 ${team1Winning ? 'transform scale-105' : ''} min-w-0`}>
+        <CardContent className={`${isMobile ? 'p-4' : 'p-4 md:p-6'}`}>
+          <div className={`flex ${isMobile ? 'flex-col gap-4' : 'flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0'}`}>
+            <div className={`flex-1 text-center transition-all duration-300 ${team1Winning && !isMobile ? 'transform scale-105' : ''} min-w-0`}>
               <div className="flex flex-col items-center space-y-2 mb-3">
                 <Avatar className={`transition-all duration-300 ${team1Winning ? 'scale-110 ring-2 ring-primary' : ''}`}>
                   <AvatarImage 
@@ -82,7 +88,7 @@ export const ExpandableMatchupCard: React.FC<ExpandableMatchupCardProps> = ({
               </div>
             </div>
            
-            <div className={`flex-1 text-center transition-all duration-300 ${!team1Winning ? 'transform scale-105' : ''} min-w-0`}>
+            <div className={`flex-1 text-center transition-all duration-300 ${!team1Winning && !isMobile ? 'transform scale-105' : ''} min-w-0`}>
               <div className="flex flex-col items-center space-y-2 mb-3">
                 <Avatar className={`transition-all duration-300 ${!team1Winning ? 'scale-110 ring-2 ring-primary' : ''}`}>
                   <AvatarImage 
@@ -110,7 +116,9 @@ export const ExpandableMatchupCard: React.FC<ExpandableMatchupCardProps> = ({
           <div className="flex justify-center mt-4">
             <button
               onClick={handleExpandClick}
-              className="flex items-center space-x-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 group-hover:text-primary"
+              className={`flex items-center space-x-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 group-hover:text-primary touch-manipulation ${
+                isMobile ? 'min-h-[44px] px-4 py-2' : ''
+              }`}
             >
               <span>Click for details</span>
               {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
