@@ -3,22 +3,22 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueManager } from '@/hooks/useLeagueManager';
 import { DemoProvider, useDemo } from '@/contexts/DemoContext';
-import { PageHead } from '@/components/PageHead';
-import { LeagueHeader } from '@/components/LeagueHeader';
-import { Footer } from '@/components/Footer';
-import { OfflineIndicator } from '@/components/OfflineIndicator';
-import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
-import { AdBanner } from '@/components/ads/AdBanner';
-import { EnhancedErrorBoundary } from '@/components/EnhancedErrorBoundary';
+import PageHead from '@/components/PageHead';
+import LeagueHeader from '@/components/home/LeagueHeader';
+import Footer from '@/components/Footer';
+import OfflineIndicator from '@/components/OfflineIndicator';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
+import AdBanner from '@/components/ads/AdBanner';
+import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import { DemoBanner } from '@/components/DemoBanner';
-import { LeagueData } from '@/components/LeagueData';
-import { LeagueConnectionForm } from '@/components/home/LeagueConnectionForm';
-import { UserDashboard } from '@/components/dashboard/UserDashboard';
-import { HeroSection } from '@/components/landing/HeroSection';
-import { FeaturesSection } from '@/components/landing/FeaturesSection';
-import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
-import { SocialProofSection } from '@/components/landing/SocialProofSection';
-import { GetStartedModal } from '@/components/landing/GetStartedModal';
+import LeagueData from '@/components/LeagueData';
+import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
+import UserDashboard from '@/components/dashboard/UserDashboard';
+import HeroSection from '@/components/landing/HeroSection';
+import FeaturesSection from '@/components/landing/FeaturesSection';
+import HowItWorksSection from '@/components/landing/HowItWorksSection';
+import SocialProofSection from '@/components/landing/SocialProofSection';
+import GetStartedModal from '@/components/landing/GetStartedModal';
 import { DEMO_LEAGUE_ID } from '@/utils/demoData';
 import { useNavigate } from 'react-router-dom';
 
@@ -86,7 +86,8 @@ const IndexContent = React.memo(() => {
         break;
       case 'demo':
         setDemoMode(true);
-        handleLeagueSubmit(DEMO_LEAGUE_ID);
+        setLeagueId(DEMO_LEAGUE_ID);
+        handleLeagueSubmit();
         setUserIsInteracting(true);
         setIsHeaderCompact(true);
         break;
@@ -108,7 +109,8 @@ const IndexContent = React.memo(() => {
       <DemoBanner />
       <LeagueHeader 
         isCompact={isHeaderCompact}
-        onBackClick={leagueData ? handleBackToMarketing : undefined}
+        onToggleCompact={handleToggleCompact}
+        canToggle={userIsInteracting || !!leagueData}
       />
 
       <div className="max-w-6xl mx-auto px-4 py-12">
@@ -188,13 +190,11 @@ const IndexContent = React.memo(() => {
               )}
             </>
           ) : (
-            <LeagueView
-              leagueData={leagueData}
+            <LeagueData
+              data={leagueData}
               onRefreshData={handleRefreshData}
               onResyncData={handleResyncLeagueData}
-              onBackToLeagues={handleBackToLeagues}
               onOwnershipChanged={handleOwnershipChanged}
-              ownershipStatus={ownershipStatus}
             />
           )}
         </EnhancedErrorBoundary>
