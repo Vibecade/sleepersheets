@@ -60,7 +60,7 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
                 className="flex items-center space-x-2"
               >
                 <Lock className="w-4 h-4" />
-                <span className="hidden xs:inline font-tech text-xs sm:text-sm">Hit the Field</span>
+                <span className="hidden xs:inline font-tech text-[10px] sm:text-xs">Hit the Field</span>
               </Button>
             )}
           </div>
@@ -95,7 +95,7 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
             className="flex items-center space-x-2 animate-stadium-entrance"
           >
             <Lock className="w-4 h-4" />
-            <span className="hidden xs:inline font-tech text-xs sm:text-sm">Hit the Field</span>
+            <span className="hidden xs:inline font-tech text-[10px] sm:text-xs">Hit the Field</span>
           </Button>
         )}
       </div>
