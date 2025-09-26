@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      comment_reactions: {
+        Row: {
+          comment_id: string | null
+          created_at: string | null
+          id: string
+          reaction_type: string
+          user_id: string | null
+        }
+        Insert: {
+          comment_id?: string | null
+          created_at?: string | null
+          id?: string
+          reaction_type: string
+          user_id?: string | null
+        }
+        Update: {
+          comment_id?: string | null
+          created_at?: string | null
+          id?: string
+          reaction_type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_reactions_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "league_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       data_integrity_logs: {
         Row: {
           created_at: string
@@ -118,6 +150,80 @@ export type Database = {
           round?: number
         }
         Relationships: []
+      }
+      league_activities: {
+        Row: {
+          activity_type: string
+          created_at: string | null
+          description: string | null
+          id: string
+          league_id: string
+          metadata: Json | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          league_id: string
+          metadata?: Json | null
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          league_id?: string
+          metadata?: Json | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      league_comments: {
+        Row: {
+          comment_type: string | null
+          content: string
+          created_at: string | null
+          id: string
+          league_id: string
+          parent_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          comment_type?: string | null
+          content: string
+          created_at?: string | null
+          id?: string
+          league_id: string
+          parent_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          comment_type?: string | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          league_id?: string
+          parent_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "league_comments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       league_drafts: {
         Row: {
@@ -329,6 +435,39 @@ export type Database = {
           updated_at?: string
           waiver_budget?: Json | null
           week?: number | null
+        }
+        Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          created_at: string | null
+          id: string
+          league_activity_notifications: boolean | null
+          push_notifications_enabled: boolean | null
+          trade_deadline_notifications: boolean | null
+          updated_at: string | null
+          user_id: string | null
+          waiver_notifications: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          league_activity_notifications?: boolean | null
+          push_notifications_enabled?: boolean | null
+          trade_deadline_notifications?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+          waiver_notifications?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          league_activity_notifications?: boolean | null
+          push_notifications_enabled?: boolean | null
+          trade_deadline_notifications?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+          waiver_notifications?: boolean | null
         }
         Relationships: []
       }
