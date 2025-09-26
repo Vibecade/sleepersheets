@@ -8,17 +8,24 @@ import PageHead from '@/components/PageHead';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import UserDashboard from '@/components/dashboard/UserDashboard';
-import ProgressIndicator from '@/components/ui/progress-indicator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import HeroSection from '@/components/landing/HeroSection';
+import FeaturesSection from '@/components/landing/FeaturesSection';
+import HowItWorksSection from '@/components/landing/HowItWorksSection';
+import SocialProofSection from '@/components/landing/SocialProofSection';
+import GetStartedModal from '@/components/landing/GetStartedModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueManager } from '@/hooks/useLeagueManager';
 import LeagueView from '@/components/home/LeagueView';
 import AdBanner from '@/components/ads/AdBanner';
+import { useNavigate } from 'react-router-dom';
 
 const Index = React.memo(() => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [isHeaderCompact, setIsHeaderCompact] = useState(false);
   const [userIsInteracting, setUserIsInteracting] = useState(false);
+  const [showGetStartedModal, setShowGetStartedModal] = useState(false);
+  const [showLeagueConnection, setShowLeagueConnection] = useState(false);
   
   const {
     leagueId,
@@ -58,6 +65,36 @@ const Index = React.memo(() => {
     setIsHeaderCompact(!isHeaderCompact);
   };
 
+  const handleGetStarted = () => {
+    setShowGetStartedModal(true);
+  };
+
+  const handleGetStartedOptionSelect = (option: 'league-id' | 'username' | 'auth' | 'demo') => {
+    switch (option) {
+      case 'league-id':
+      case 'username':
+        setShowLeagueConnection(true);
+        setUserIsInteracting(true);
+        setIsHeaderCompact(true);
+        break;
+      case 'auth':
+        navigate('/auth');
+        break;
+      case 'demo':
+        // TODO: Implement demo league functionality
+        setShowLeagueConnection(true);
+        setUserIsInteracting(true);
+        setIsHeaderCompact(true);
+        break;
+    }
+  };
+
+  const handleBackToMarketing = () => {
+    setShowLeagueConnection(false);
+    setUserIsInteracting(false);
+    setIsHeaderCompact(false);
+  };
+
   return (
     <div className="min-h-screen">
       <PageHead
@@ -75,39 +112,78 @@ const Index = React.memo(() => {
         <OfflineIndicator />
         <PWAInstallPrompt />
         
-        <AdBanner position="header" />
-        
         <EnhancedErrorBoundary level="page">
           {!leagueData ? (
-            <div className="max-w-4xl mx-auto">
-              {user ? (
-                <UserDashboard onSelectLeague={handleSelectLeague} />
-              ) : (
-                <div className="space-y-8">
-                  <LeagueConnectionForm
-                    leagueId={leagueId}
-                    setLeagueId={setLeagueId}
-                    username={username}
-                    setUsername={setUsername}
-                    onLeagueSubmit={handleLeagueSubmit}
-                    onUsernameSubmit={handleUsernameSubmit}
-                    onQuickLoadFirstLeague={handleQuickLoadFirstLeague}
-                    onSelectLeague={handleSelectLeagueFromUsername}
-                    onBackToForm={handleBackToForm}
-                    onRefreshLeagues={handleRefreshLeagues}
-                    loading={loading}
-                    userLeaguesData={userLeaguesData}
-                    showLeagueSelection={showLeagueSelection}
-                  />
+            <>
+              {!showLeagueConnection ? (
+                <>
+                  {/* Marketing Landing Page */}
+                  <AdBanner position="header" />
                   
-                  {loading && !showLeagueSelection && (
-                    <div className="mt-6 text-center">
-                      <div className="text-muted-foreground">Loading...</div>
+                  <HeroSection onGetStarted={handleGetStarted} />
+                  
+                  <AdBanner position="between-content" />
+                  
+                  <FeaturesSection />
+                  
+                  <HowItWorksSection />
+                  
+                  <AdBanner position="between-content" />
+                  
+                  <SocialProofSection />
+                  
+                  {/* Get Started Modal */}
+                  <GetStartedModal
+                    isOpen={showGetStartedModal}
+                    onClose={() => setShowGetStartedModal(false)}
+                    onSelectOption={handleGetStartedOptionSelect}
+                  />
+                </>
+              ) : (
+                /* League Connection Interface */
+                <div className="max-w-4xl mx-auto">
+                  <AdBanner position="header" />
+                  
+                  {user ? (
+                    <UserDashboard onSelectLeague={handleSelectLeague} />
+                  ) : (
+                    <div className="space-y-8">
+                      {/* Back to Marketing Button */}
+                      <div className="text-center">
+                        <button
+                          onClick={handleBackToMarketing}
+                          className="text-primary hover:text-primary-glow transition-colors text-sm"
+                        >
+                          ← Back to Home
+                        </button>
+                      </div>
+                      
+                      <LeagueConnectionForm
+                        leagueId={leagueId}
+                        setLeagueId={setLeagueId}
+                        username={username}
+                        setUsername={setUsername}
+                        onLeagueSubmit={handleLeagueSubmit}
+                        onUsernameSubmit={handleUsernameSubmit}
+                        onQuickLoadFirstLeague={handleQuickLoadFirstLeague}
+                        onSelectLeague={handleSelectLeagueFromUsername}
+                        onBackToForm={handleBackToForm}
+                        onRefreshLeagues={handleRefreshLeagues}
+                        loading={loading}
+                        userLeaguesData={userLeaguesData}
+                        showLeagueSelection={showLeagueSelection}
+                      />
+                      
+                      {loading && !showLeagueSelection && (
+                        <div className="mt-6 text-center">
+                          <div className="text-muted-foreground">Loading...</div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               )}
-            </div>
+            </>
           ) : (
             <LeagueView
               leagueData={leagueData}
