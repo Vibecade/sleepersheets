@@ -41,7 +41,7 @@ const FeaturesSection: React.FC = () => {
     {
       icon: BarChart3,
       title: 'Advanced Analytics',
-      description: 'Get insights into salary distribution, team trends, and league patterns. Make data-driven decisions for your dynasty.',
+      description: 'Get insights into salary distribution, team trends, league patterns, and performance vs league averages. Make data-driven decisions.',
       color: 'text-chart-4'
     },
     {
@@ -53,7 +53,7 @@ const FeaturesSection: React.FC = () => {
     {
       icon: Users,
       title: 'Multi-League Management',
-      description: 'Manage multiple dynasty leagues from one dashboard. Switch between leagues seamlessly and track all your teams.',
+      description: 'Manage multiple leagues from one dashboard. Switch between dynasty, keeper, and regular leagues seamlessly.',
       color: 'text-success'
     },
     {
@@ -79,7 +79,7 @@ const FeaturesSection: React.FC = () => {
             Everything You Need to <span className="gradient-text">Dominate</span>
           </h2>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-            Professional-grade tools designed for serious dynasty league managers who want to gain every competitive advantage.
+            Professional-grade tools for dynasty, keeper, and regular league managers who want to gain every competitive advantage.
           </p>
         </div>
 
@@ -108,11 +108,12 @@ const FeaturesSection: React.FC = () => {
         <div className="mt-16 text-center">
           <div className="glass-card p-8 max-w-4xl mx-auto">
             <h3 className="text-2xl font-bold mb-4">
-              Built for <span className="text-primary">Dynasty Champions</span>
+              Built for <span className="text-primary">Fantasy Champions</span>
             </h3>
             <p className="text-lg text-muted-foreground">
-              SleeperSheets was created by dynasty league managers, for dynasty league managers. 
-              Every feature is designed to give you the edge you need to build a championship dynasty.
+              SleeperSheets was created by fantasy managers, for fantasy managers. 
+              Whether you're managing a dynasty empire or tracking regular league performance, 
+              every feature is designed to give you the competitive edge you need.
             </p>
           </div>
         </div>

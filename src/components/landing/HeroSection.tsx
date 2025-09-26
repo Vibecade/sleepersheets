@@ -35,14 +35,25 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onGetStarted }) => {
         {/* Value Proposition */}
         <div className="max-w-4xl mx-auto mb-12">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl text-foreground font-bold mb-6 leading-tight">
-            The <span className="gradient-text">Ultimate</span> Dynasty League 
+            The <span className="gradient-text">Ultimate</span> Fantasy Football 
             <span className="text-secondary">Management Platform</span>
           </h2>
           
-          <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto mb-6">
             Stop using spreadsheets. Start winning championships with professional-grade tools 
-            built specifically for dynasty fantasy football leagues.
+            for dynasty, keeper, and regular fantasy football leagues.
           </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto text-base sm:text-lg">
+            <div className="glass-card p-4 rounded-lg">
+              <div className="font-semibold text-primary mb-2">🏆 Dynasty & Keeper Leagues</div>
+              <div className="text-muted-foreground">Seamless year-to-year transitions with advanced contract tracking and salary cap management</div>
+            </div>
+            <div className="glass-card p-4 rounded-lg">
+              <div className="font-semibold text-secondary mb-2">📊 Regular Leagues</div>
+              <div className="text-muted-foreground">Track performance vs league averages and gain insights with advanced analytics</div>
+            </div>
+          </div>
         </div>
 
         {/* Key Stats */}

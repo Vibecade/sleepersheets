@@ -34,17 +34,17 @@ const SocialProofSection: React.FC = () => {
       rating: 5
     },
     {
-      quote: "As someone who manages 3 different dynasty leagues, SleeperSheets is absolutely essential. The multi-league dashboard and contract management features are game-changers.",
+      quote: "I use SleeperSheets for both my dynasty league and regular redraft leagues. The performance analytics help me see how I'm doing vs league averages, and the export features are perfect for our season recap.",
       author: "Sarah Johnson", 
-      role: "Dynasty Manager",
+      role: "Fantasy Manager",
       league: "Elite Fantasy Football",
       rating: 5
     },
     {
-      quote: "The data export features are incredible for our league. We can generate detailed salary reports for our annual meeting and everything is perfectly organized.",
+      quote: "The data export features are incredible for our keeper league. We can generate detailed reports for our annual meeting and track multi-year performance trends perfectly.",
       author: "David Rodriguez",
       role: "League Treasurer", 
-      league: "Championship Dynasty League",
+      league: "Championship Keeper League",
       rating: 5
     }
   ];
@@ -64,10 +64,10 @@ const SocialProofSection: React.FC = () => {
         {/* Features Section */}
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-            Built for <span className="gradient-text">Dynasty Champions</span>
+            Built for <span className="gradient-text">Fantasy Champions</span>
           </h2>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
-            Professional-grade tools designed for serious dynasty league management.
+            Professional-grade tools for dynasty, keeper, and regular league management with advanced insights.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -93,10 +93,10 @@ const SocialProofSection: React.FC = () => {
         <div className="mb-16">
           <div className="text-center mb-12">
             <h3 className="text-2xl sm:text-3xl font-bold mb-4">
-              What Dynasty Managers Say
+              What Fantasy Managers Say
             </h3>
             <p className="text-lg text-muted-foreground">
-              Real feedback from real dynasty league commissioners and managers
+              Real feedback from dynasty, keeper, and regular league commissioners and managers
             </p>
           </div>
 

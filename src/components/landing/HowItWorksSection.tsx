@@ -20,15 +20,15 @@ const HowItWorksSection: React.FC = () => {
     {
       icon: Settings,
       step: '02', 
-      title: 'Configure Salary Cap',
-      description: 'Set your league\'s salary cap rules, contract lengths, and dead cap settings. Customize everything to match your league\'s unique rules.',
+      title: 'Configure Your League',
+      description: 'Set up salary cap rules, contract lengths, and league settings. For regular leagues, configure performance tracking and analytics preferences.',
       color: 'text-secondary'
     },
     {
       icon: FileText,
       step: '03',
-      title: 'Manage Contracts',
-      description: 'Assign player salaries, track contract lengths, and monitor dead cap implications. Everything updates in real-time as you make changes.',
+      title: 'Track & Analyze',
+      description: 'For dynasty/keeper: manage contracts and salaries. For regular leagues: track performance metrics and compare against league averages.',
       color: 'text-success'
     },
     {
@@ -110,7 +110,7 @@ const HowItWorksSection: React.FC = () => {
               Ready to Get Started?
             </h3>
             <p className="text-lg text-muted-foreground mb-6">
-              Join thousands of dynasty managers who trust SleeperSheets to manage their leagues.
+              Join thousands of fantasy managers who trust SleeperSheets for dynasty, keeper, and regular league management.
             </p>
             <div className="flex items-center justify-center space-x-2 text-sm text-success">
               <span className="w-2 h-2 bg-success rounded-full animate-pulse"></span>
