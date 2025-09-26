@@ -239,26 +239,26 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                   key={transaction.transaction_id}
                   className="bg-card/30 rounded-xl p-4 border border-border-light transition-all duration-300 hover:bg-card/50 hover:border-border hover:shadow-md"
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center space-x-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-3">
+                    <div className="flex items-center space-x-2 sm:space-x-3 flex-wrap gap-y-1 flex-1 min-w-0">
                       <Badge
                         variant="outline"
-                        className={`${getTransactionTypeColor(transaction.type)} text-xs font-medium`}
+                        className={`${getTransactionTypeColor(transaction.type)} text-xs font-medium flex-shrink-0`}
                       >
                         {formatTransactionType(transaction.type)}
                       </Badge>
                       {(transaction.leg || transaction.week) && (
-                        <Badge variant="outline" className="text-gray-400 border-gray-400 text-xs">
+                        <Badge variant="outline" className="text-gray-400 border-gray-400 text-xs flex-shrink-0">
                           Week {transaction.leg || transaction.week}
                         </Badge>
                       )}
-                      <span className="text-sm text-gray-400">
+                      <span className="text-xs sm:text-sm text-gray-400 truncate max-w-[120px] sm:max-w-none">
                         by {creatorName}
                       </span>
                     </div>
                     <Badge
                       variant="outline"
-                      className={`text-xs ${
+                      className={`text-xs flex-shrink-0 ${
                         transaction.status === 'complete'
                           ? 'text-green-400 border-green-400'
                           : transaction.status === 'failed'
@@ -270,7 +270,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                     </Badge>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {/* Adds */}
                     {transaction.adds && Object.keys(transaction.adds).length > 0 && (
                       <div className="space-y-2">
@@ -281,16 +281,16 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                         <div className="space-y-1 pl-6">
                           {Object.entries(transaction.adds).map(([playerId, rosterId]) => {
                             return (
-                              <div key={playerId} className="flex items-center justify-between text-sm">
-                                <div>
-                                  <span className="text-white font-medium">
+                              <div key={playerId} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-sm">
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-white font-medium truncate max-w-[200px] block">
                                     {getPlayerName(playerId)}
                                   </span>
-                                  <span className="text-gray-400 ml-2">
+                                  <span className="text-gray-400 text-xs block sm:inline sm:ml-2">
                                     {getPlayerPosition(playerId)} - {getPlayerTeam(playerId)}
                                   </span>
                                 </div>
-                                <span className="text-green-400 text-xs">
+                                <span className="text-green-400 text-xs flex-shrink-0">
                                   to roster #{String(rosterId)}
                                 </span>
                               </div>
@@ -309,16 +309,16 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                         </div>
                         <div className="space-y-1 pl-6">
                           {Object.entries(transaction.drops).map(([playerId, rosterId]) => (
-                            <div key={playerId} className="flex items-center justify-between text-sm">
-                              <div>
-                                <span className="text-white font-medium">
+                            <div key={playerId} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-sm">
+                              <div className="flex-1 min-w-0">
+                                <span className="text-white font-medium truncate max-w-[200px] block">
                                   {getPlayerName(playerId)}
                                 </span>
-                                <span className="text-gray-400 ml-2">
+                                <span className="text-gray-400 text-xs block sm:inline sm:ml-2">
                                   {getPlayerPosition(playerId)} - {getPlayerTeam(playerId)}
                                 </span>
                               </div>
-                              <span className="text-red-400 text-xs">
+                              <span className="text-red-400 text-xs flex-shrink-0">
                                 from roster #{String(rosterId)}
                               </span>
                             </div>
