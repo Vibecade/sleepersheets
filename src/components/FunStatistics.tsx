@@ -324,8 +324,8 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
               <div className="space-y-3">
                 {streaks.filter(team => team.isHot).slice(0, 4).map((team, index) => (
                   <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/30 backdrop-blur-sm transition-all duration-300 hover:from-green-500/20 hover:to-emerald-500/20 hover:scale-[1.02]">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="w-10 h-10 ring-2 ring-green-400/50">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <Avatar className="w-10 h-10 ring-2 ring-green-400/50 flex-shrink-0">
                         <AvatarImage 
                           src={team.user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${team.user.avatar}` : undefined}
                           alt={`${team.teamName} avatar`}
@@ -334,7 +334,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
                           {team.teamName.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-foreground font-medium">{team.teamName}</span>
+                      <span className="text-foreground font-medium text-sm truncate max-w-[120px]">{team.teamName}</span>
                     </div>
                     <Badge className="bg-green-500/20 text-green-400 border-green-400/50 font-semibold">
                       {team.streak}W Streak
@@ -356,8 +356,8 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
               <div className="space-y-3">
                 {streaks.filter(team => team.isCold).slice(0, 4).map((team, index) => (
                   <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-red-500/10 to-pink-500/10 rounded-xl border border-red-500/30 backdrop-blur-sm transition-all duration-300 hover:from-red-500/20 hover:to-pink-500/20 hover:scale-[1.02]">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="w-10 h-10 ring-2 ring-red-400/50">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <Avatar className="w-10 h-10 ring-2 ring-red-400/50 flex-shrink-0">
                         <AvatarImage 
                           src={team.user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${team.user.avatar}` : undefined}
                           alt={`${team.teamName} avatar`}
@@ -366,7 +366,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
                           {team.teamName.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-foreground font-medium">{team.teamName}</span>
+                      <span className="text-foreground font-medium text-sm truncate max-w-[120px]">{team.teamName}</span>
                     </div>
                     <Badge className="bg-red-500/20 text-red-400 border-red-400/50 font-semibold">
                       {team.streak}L Streak
@@ -396,8 +396,8 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
           <div className="space-y-4">
             {activity.slice(0, 8).map((manager, index) => (
               <div key={index} className="flex items-center justify-between p-4 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/70 hover:shadow-lg hover:scale-[1.01]">
-                <div className="flex items-center space-x-4 flex-1">
-                  <Avatar className="w-11 h-11 transition-all duration-300 hover:scale-110">
+                <div className="flex items-center space-x-4 flex-1 min-w-0 overflow-hidden">
+                  <Avatar className="w-11 h-11 transition-all duration-300 hover:scale-110 flex-shrink-0">
                     <AvatarImage 
                       src={manager.user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${manager.user.avatar}` : undefined}
                       alt={`${manager.teamName} avatar`}
@@ -406,10 +406,10 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
                       {manager.teamName.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-foreground truncate">{manager.teamName}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {manager.transactionCount} transaction{manager.transactionCount !== 1 ? 's' : ''} this season
+                  <div className="flex-1 min-w-0 max-w-[160px]">
+                    <div className="font-semibold text-foreground text-sm truncate">{manager.teamName}</div>
+                    <div className="text-xs text-muted-foreground truncate">
+                      {manager.transactionCount} moves
                     </div>
                   </div>
                 </div>
@@ -441,26 +441,26 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-6 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-xl border border-yellow-500/20 transition-all duration-300 hover:from-yellow-500/20 hover:to-orange-500/20 hover:scale-105">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <div className="text-center p-4 md:p-6 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-xl border border-yellow-500/20 transition-all duration-300 hover:from-yellow-500/20 hover:to-orange-500/20 hover:scale-105">
               <div className="text-3xl font-bold text-yellow-400 mb-2">
                 {Math.max(...rosters.map(r => r.settings?.fpts || 0)).toFixed(1)}
               </div>
               <div className="text-sm text-muted-foreground font-medium">Highest Score</div>
             </div>
-            <div className="text-center p-6 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-xl border border-blue-500/20 transition-all duration-300 hover:from-blue-500/20 hover:to-cyan-500/20 hover:scale-105">
+            <div className="text-center p-4 md:p-6 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-xl border border-blue-500/20 transition-all duration-300 hover:from-blue-500/20 hover:to-cyan-500/20 hover:scale-105">
               <div className="text-3xl font-bold text-blue-400 mb-2">
                 {transactions.length}
               </div>
               <div className="text-sm text-muted-foreground font-medium">Total Moves</div>
             </div>
-            <div className="text-center p-6 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20 transition-all duration-300 hover:from-green-500/20 hover:to-emerald-500/20 hover:scale-105">
+            <div className="text-center p-4 md:p-6 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20 transition-all duration-300 hover:from-green-500/20 hover:to-emerald-500/20 hover:scale-105">
               <div className="text-3xl font-bold text-green-400 mb-2">
                 {rosters.reduce((sum, r) => sum + (r.settings?.wins || 0), 0)}
               </div>
               <div className="text-sm text-muted-foreground font-medium">Total Wins</div>
             </div>
-            <div className="text-center p-6 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20 transition-all duration-300 hover:from-purple-500/20 hover:to-pink-500/20 hover:scale-105">
+            <div className="text-center p-4 md:p-6 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20 transition-all duration-300 hover:from-purple-500/20 hover:to-pink-500/20 hover:scale-105">
               <div className="text-3xl font-bold text-purple-400 mb-2">
                 {league?.settings?.leg || 1}
               </div>
