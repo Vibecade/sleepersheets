@@ -169,83 +169,132 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
         <CardContent>
           <div className="space-y-4">
             {powerRankings.slice(0, 8).map((team, index) => (
-              <div key={team.rosterId} className="flex items-center justify-between p-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/70 hover:shadow-lg hover:scale-[1.01]">
-                <div className="flex items-center space-x-4 flex-1">
-                  <div className="relative">
-                    <Avatar className={`w-12 h-12 transition-all duration-300 ${
-                      index === 0 ? 'ring-2 ring-yellow-500 ring-offset-2 ring-offset-background' : 
-                      index === 1 ? 'ring-2 ring-slate-400 ring-offset-2 ring-offset-background' :
-                      index === 2 ? 'ring-2 ring-amber-600 ring-offset-2 ring-offset-background' : ''
-                    }`}>
-                      <AvatarImage 
-                        src={team.user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${team.user.avatar}` : undefined}
-                        alt={`${team.teamName} avatar`}
-                      />
-                      <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
-                        {team.teamName.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 shadow-lg ${
-                      index === 0 ? 'bg-yellow-500 text-black' : 
-                      index === 1 ? 'bg-slate-400 text-white' :
-                      index === 2 ? 'bg-amber-600 text-white' : 'bg-muted text-muted-foreground'
-                    }`}>
-                      {index + 1}
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-foreground text-lg truncate">{team.teamName}</div>
-                    <div className="text-sm text-muted-foreground flex items-center space-x-3">
-                      <span className="font-medium">{team.wins}-{team.losses}</span>
-                      <span>•</span>
-                      <span>{team.points.toFixed(1)} pts</span>
-                      <span>•</span>
-                      <span className={team.pointsVsAvg >= 0 ? 'text-green-400' : 'text-red-400'}>
-                        {team.pointsVsAvg >= 0 ? '+' : ''}{team.pointsVsAvg.toFixed(1)} vs avg
-                      </span>
-                    </div>
-                  </div>
-                </div>
+              <div key={team.rosterId} className="p-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/70 hover:shadow-lg hover:scale-[1.01]">
                 {!isMobile ? (
-                  <div className="flex items-center space-x-4">
-                    <div className="text-right">
-                      <div className="text-sm font-semibold text-foreground">
-                        {(team.winPct * 100).toFixed(0)}% Win Rate
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4 flex-1">
+                      <div className="relative">
+                        <Avatar className={`w-12 h-12 transition-all duration-300 ${
+                          index === 0 ? 'ring-2 ring-yellow-500 ring-offset-2 ring-offset-background' : 
+                          index === 1 ? 'ring-2 ring-slate-400 ring-offset-2 ring-offset-background' :
+                          index === 2 ? 'ring-2 ring-amber-600 ring-offset-2 ring-offset-background' : ''
+                        }`}>
+                          <AvatarImage 
+                            src={team.user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${team.user.avatar}` : undefined}
+                            alt={`${team.teamName} avatar`}
+                          />
+                          <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
+                            {team.teamName.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 shadow-lg ${
+                          index === 0 ? 'bg-yellow-500 text-black' : 
+                          index === 1 ? 'bg-slate-400 text-white' :
+                          index === 2 ? 'bg-amber-600 text-white' : 'bg-muted text-muted-foreground'
+                        }`}>
+                          {index + 1}
+                        </div>
                       </div>
-                      <div className="w-20 h-2 bg-muted rounded-full overflow-hidden mt-1">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-foreground text-lg truncate">{team.teamName}</div>
+                        <div className="text-sm text-muted-foreground flex items-center space-x-3">
+                          <span className="font-medium">{team.wins}-{team.losses}</span>
+                          <span>•</span>
+                          <span>{team.points.toFixed(1)} pts</span>
+                          <span>•</span>
+                          <span className={team.pointsVsAvg >= 0 ? 'text-green-400' : 'text-red-400'}>
+                            {team.pointsVsAvg >= 0 ? '+' : ''}{team.pointsVsAvg.toFixed(1)} vs avg
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-foreground">
+                          {(team.winPct * 100).toFixed(0)}% Win Rate
+                        </div>
+                        <div className="w-20 h-2 bg-muted rounded-full overflow-hidden mt-1">
+                          <div 
+                            className="h-full bg-gradient-to-r from-emerald-500 to-green-500 transition-all duration-500"
+                            style={{ width: `${team.winPct * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="transition-transform duration-300 hover:scale-125">
+                        {team.trend === 'up' ? (
+                          <TrendingUp className="w-6 h-6 text-green-400" />
+                        ) : team.trend === 'down' ? (
+                          <TrendingDown className="w-6 h-6 text-red-400" />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                            <div className="w-2 h-2 rounded-full bg-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4 flex-1">
+                        <div className="relative">
+                          <Avatar className={`w-12 h-12 transition-all duration-300 ${
+                            index === 0 ? 'ring-2 ring-yellow-500 ring-offset-2 ring-offset-background' : 
+                            index === 1 ? 'ring-2 ring-slate-400 ring-offset-2 ring-offset-background' :
+                            index === 2 ? 'ring-2 ring-amber-600 ring-offset-2 ring-offset-background' : ''
+                          }`}>
+                            <AvatarImage 
+                              src={team.user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${team.user.avatar}` : undefined}
+                              alt={`${team.teamName} avatar`}
+                            />
+                            <AvatarFallback className="bg-muted text-muted-foreground font-semibold">
+                              {team.teamName.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 shadow-lg ${
+                            index === 0 ? 'bg-yellow-500 text-black' : 
+                            index === 1 ? 'bg-slate-400 text-white' :
+                            index === 2 ? 'bg-amber-600 text-white' : 'bg-muted text-muted-foreground'
+                          }`}>
+                            {index + 1}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-foreground text-lg truncate">{team.teamName}</div>
+                          <div className="text-sm text-muted-foreground flex items-center space-x-3">
+                            <span className="font-medium">{team.wins}-{team.losses}</span>
+                            <span>•</span>
+                            <span>{team.points.toFixed(1)} pts</span>
+                            <span>•</span>
+                            <span className={team.pointsVsAvg >= 0 ? 'text-green-400' : 'text-red-400'}>
+                              {team.pointsVsAvg >= 0 ? '+' : ''}{team.pointsVsAvg.toFixed(1)} vs avg
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="transition-transform duration-300 hover:scale-125">
+                        {team.trend === 'up' ? (
+                          <TrendingUp className="w-4 h-4 text-green-400" />
+                        ) : team.trend === 'down' ? (
+                          <TrendingDown className="w-4 h-4 text-red-400" />
+                        ) : (
+                          <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="ml-16">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-muted-foreground">Win Rate</span>
+                        <span className="text-xs font-semibold">{(team.winPct * 100).toFixed(0)}%</span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
                         <div 
                           className="h-full bg-gradient-to-r from-emerald-500 to-green-500 transition-all duration-500"
                           style={{ width: `${team.winPct * 100}%` }}
                         />
                       </div>
-                    </div>
-                    <div className="transition-transform duration-300 hover:scale-125">
-                      {team.trend === 'up' ? (
-                        <TrendingUp className="w-6 h-6 text-green-400" />
-                      ) : team.trend === 'down' ? (
-                        <TrendingDown className="w-6 h-6 text-red-400" />
-                      ) : (
-                        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
-                          <div className="w-2 h-2 rounded-full bg-muted-foreground" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="outline" className="text-xs font-semibold">
-                      {(team.winPct * 100).toFixed(0)}%
-                    </Badge>
-                    <div className="text-xs">
-                      {team.trend === 'up' ? (
-                        <TrendingUp className="w-4 h-4 text-green-400" />
-                      ) : team.trend === 'down' ? (
-                        <TrendingDown className="w-4 h-4 text-red-400" />
-                      ) : (
-                        <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center">
-                          <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
-                        </div>
-                      )}
                     </div>
                   </div>
                 )}
