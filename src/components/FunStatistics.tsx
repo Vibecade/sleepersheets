@@ -259,16 +259,18 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
                             {index + 1}
                           </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-foreground text-lg truncate">{team.teamName}</div>
-                          <div className="text-sm text-muted-foreground flex items-center space-x-3">
-                            <span className="font-medium">{team.wins}-{team.losses}</span>
-                            <span>•</span>
-                            <span>{team.points.toFixed(1)} pts</span>
-                            <span>•</span>
-                            <span className={team.pointsVsAvg >= 0 ? 'text-green-400' : 'text-red-400'}>
-                              {team.pointsVsAvg >= 0 ? '+' : ''}{team.pointsVsAvg.toFixed(1)} vs avg
-                            </span>
+                        <div className="flex-1 min-w-0 max-w-[180px] overflow-hidden">
+                          <div className="font-semibold text-foreground text-base truncate">{team.teamName}</div>
+                          <div className="text-xs text-muted-foreground overflow-hidden">
+                            <div className="flex items-center space-x-2 truncate">
+                              <span className="font-medium">{team.wins}-{team.losses}</span>
+                              <span>•</span>
+                              <span className="truncate">{team.points.toFixed(1)}pts</span>
+                              <span>•</span>
+                              <span className={`truncate ${team.pointsVsAvg >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                {team.pointsVsAvg >= 0 ? '+' : ''}{team.pointsVsAvg.toFixed(1)}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
