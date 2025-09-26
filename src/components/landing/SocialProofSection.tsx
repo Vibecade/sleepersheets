@@ -4,23 +4,23 @@ import { Badge } from '@/components/ui/badge';
 import { Star, Users, Trophy, TrendingUp, Quote } from 'lucide-react';
 
 const SocialProofSection: React.FC = () => {
-  const stats = [
+  const features = [
     {
       icon: Users,
-      value: '10,000+',
-      label: 'Active Leagues',
+      title: 'League Management',
+      description: 'Complete salary cap and roster management',
       color: 'text-primary'
     },
     {
       icon: Trophy,
-      value: '50,000+',
-      label: 'Contracts Managed',
+      title: 'Contract Tracking',
+      description: 'Multi-year contract management with dead cap',
       color: 'text-secondary'
     },
     {
       icon: TrendingUp,
-      value: '1M+',
-      label: 'Trades Simulated',
+      title: 'Trade Simulation',
+      description: 'Advanced trade analyzer with salary impact',
       color: 'text-success'
     }
   ];
@@ -50,39 +50,39 @@ const SocialProofSection: React.FC = () => {
   ];
 
   const benefits = [
-    "Trusted by 10,000+ dynasty leagues",
-    "99.9% uptime reliability",
-    "Start for Free for basic features",
-    "No ads or distracting promotions",
-    "Secure data with league ownership protection",
-    "Continuous updates and new features"
+    "Start for Free with core features",
+    "Secure data with league ownership protection", 
+    "Real-time salary cap tracking",
+    "Advanced contract management",
+    "Comprehensive trade analysis",
+    "Professional export capabilities"
   ];
 
   return (
     <section className="py-16 sm:py-20 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* Stats Section */}
+        {/* Features Section */}
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-            Trusted by <span className="gradient-text">Champions</span>
+            Built for <span className="gradient-text">Dynasty Champions</span>
           </h2>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
-            Join thousands of dynasty managers who rely on SleeperSheets to manage their leagues professionally.
+            Professional-grade tools designed for serious dynasty league management.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {stats.map((stat, index) => (
+            {features.map((feature, index) => (
               <div key={index} className="glass-card p-8 text-center hover-lift">
                 <div className="flex justify-center mb-4">
                   <div className="p-3 rounded-xl bg-background/50">
-                    <stat.icon className={`w-8 h-8 ${stat.color}`} />
+                    <feature.icon className={`w-8 h-8 ${feature.color}`} />
                   </div>
                 </div>
-                <div className="scoreboard-text text-3xl sm:text-4xl font-bold mb-2">
-                  {stat.value}
+                <div className="text-xl font-bold mb-2">
+                  {feature.title}
                 </div>
-                <div className="text-muted-foreground font-medium">
-                  {stat.label}
+                <div className="text-muted-foreground">
+                  {feature.description}
                 </div>
               </div>
             ))}

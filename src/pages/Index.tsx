@@ -81,8 +81,8 @@ const Index = React.memo(() => {
         navigate('/auth');
         break;
       case 'demo':
-        // TODO: Implement demo league functionality
-        setShowLeagueConnection(true);
+        // Load demo league directly
+        setLeagueId('784462448236060672'); // Demo league ID
         setUserIsInteracting(true);
         setIsHeaderCompact(true);
         break;

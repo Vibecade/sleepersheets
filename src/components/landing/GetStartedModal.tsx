@@ -123,30 +123,6 @@ const GetStartedModal: React.FC<GetStartedModalProps> = ({
           ))}
         </div>
 
-        {/* Quick Stats */}
-        <div className="mt-8 grid grid-cols-3 gap-4 pt-6 border-t border-border/50">
-          <div className="text-center">
-            <div className="flex justify-center mb-2">
-              <Users className="w-5 h-5 text-primary" />
-            </div>
-            <div className="font-bold text-lg">10,000+</div>
-            <div className="text-xs text-muted-foreground">Active Leagues</div>
-          </div>
-          <div className="text-center">
-            <div className="flex justify-center mb-2">
-              <Trophy className="w-5 h-5 text-secondary" />
-            </div>
-            <div className="font-bold text-lg">50,000+</div>
-            <div className="text-xs text-muted-foreground">Contracts Managed</div>
-          </div>
-          <div className="text-center">
-            <div className="flex justify-center mb-2">
-              <Target className="w-5 h-5 text-success" />
-            </div>
-            <div className="font-bold text-lg">99.9%</div>
-            <div className="text-xs text-muted-foreground">Uptime</div>
-          </div>
-        </div>
       </DialogContent>
     </Dialog>
   );
