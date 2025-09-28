@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { BarChart3, TrendingUp, PieChart, Activity } from 'lucide-react';
 import { useLeagueData } from '@/components/LeagueDataProvider';
-import SalaryDistributionChart from '@/components/analytics/SalaryDistributionChart';
+import TeamEfficiencyChart from '@/components/analytics/TeamEfficiencyChart';
 import TransactionActivityChart from '@/components/analytics/TransactionActivityChart';
 import PositionValueChart from '@/components/analytics/PositionValueChart';
 import LeagueMetricsCards from '@/components/analytics/LeagueMetricsCards';
@@ -45,11 +45,11 @@ export const AnalyticsAccordion: React.FC = () => {
                   <CardHeader className="flex flex-row items-center space-y-0 pb-4">
                     <div className="flex items-center space-x-2">
                       <PieChart className="w-5 h-5 text-primary" />
-                      <CardTitle className="text-lg">Salary Distribution</CardTitle>
+                      <CardTitle className="text-lg">Team Efficiency Analysis</CardTitle>
                     </div>
                   </CardHeader>
                   <div className="px-6 pb-6">
-                    <SalaryDistributionChart 
+                    <TeamEfficiencyChart 
                       rosters={rosters}
                       users={users}
                       players={players}
