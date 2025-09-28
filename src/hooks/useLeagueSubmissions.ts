@@ -71,8 +71,9 @@ export const useLeagueSubmissions = ({
   const [userLeaguesData, setUserLeaguesData] = useState<UserLeaguesData | null>(null);
   const [showLeagueSelection, setShowLeagueSelection] = useState(false);
 
-  const handleLeagueSubmit = useCallback(async () => {
-    const sanitizedLeagueId = sanitizeInput(leagueIdFromInput);
+  const handleLeagueSubmit = useCallback(async (inputLeagueId?: string) => {
+    const leagueIdValue = inputLeagueId || leagueIdFromInput;
+    const sanitizedLeagueId = sanitizeInput(leagueIdValue);
     const validation = validateLeagueId(sanitizedLeagueId);
     
     if (!validation.isValid) {
@@ -126,12 +127,14 @@ export const useLeagueSubmissions = ({
       }
   });
 
-  const handleUsernameSubmit = async () => {
-      await fetchLeaguesData(usernameFromInput);
+  const handleUsernameSubmit = async (inputUsername?: string) => {
+      const usernameValue = inputUsername || usernameFromInput;
+      await fetchLeaguesData(usernameValue);
   };
 
-  const handleQuickLoadFirstLeague = async () => {
-      await fetchFirstLeague(usernameFromInput);
+  const handleQuickLoadFirstLeague = async (inputUsername?: string) => {
+      const usernameValue = inputUsername || usernameFromInput;
+      await fetchFirstLeague(usernameValue);
   };
 
   const handleSelectLeague = (leagueId: string) => {
@@ -145,9 +148,10 @@ export const useLeagueSubmissions = ({
       setUserLeaguesData(null);
   };
 
-  const handleRefreshLeagues = async () => {
-      if (usernameFromInput) {
-          await fetchLeaguesData(usernameFromInput);
+  const handleRefreshLeagues = async (inputUsername?: string) => {
+      const usernameValue = inputUsername || usernameFromInput;
+      if (usernameValue) {
+          await fetchLeaguesData(usernameValue);
       }
   };
 

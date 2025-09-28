@@ -16,12 +16,12 @@ interface LeagueConnectionFormProps {
   setLeagueId: (value: string) => void;
   username: string;
   setUsername: (value: string) => void;
-  onLeagueSubmit: () => Promise<void>;
-  onUsernameSubmit: () => Promise<void>;
-  onQuickLoadFirstLeague?: () => Promise<void>;
+  onLeagueSubmit: (leagueId?: string) => Promise<void>;
+  onUsernameSubmit: (username?: string) => Promise<void>;
+  onQuickLoadFirstLeague?: (username?: string) => Promise<void>;
   onSelectLeague?: (leagueId: string) => void;
   onBackToForm?: () => void;
-  onRefreshLeagues?: () => Promise<void>;
+  onRefreshLeagues?: (username?: string) => Promise<void>;
   loading: boolean;
   userLeaguesData?: { user: any; leagues: any[] } | null;
   showLeagueSelection?: boolean;
@@ -77,13 +77,10 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
         return;
       }
       
-      // Set league ID and submit
-      if (validation.sanitizedValue && validation.sanitizedValue !== leagueId) {
-        setLeagueId(validation.sanitizedValue);
-      } else {
-        setLeagueId(trimmedInput);
-      }
-      await onLeagueSubmit();
+      // Submit with current input value
+      const leagueIdValue = validation.sanitizedValue || trimmedInput;
+      setLeagueId(leagueIdValue);
+      await onLeagueSubmit(leagueIdValue);
       
     } else if (detection.type === 'username') {
       const validation = validateAndSanitizeUsername(trimmedInput);
@@ -97,13 +94,10 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
         return;
       }
       
-      // Set username and submit
-      if (validation.sanitizedValue && validation.sanitizedValue !== username) {
-        setUsername(validation.sanitizedValue);
-      } else {
-        setUsername(trimmedInput);
-      }
-      await onUsernameSubmit();
+      // Submit with current input value
+      const usernameValue = validation.sanitizedValue || trimmedInput;
+      setUsername(usernameValue);
+      await onUsernameSubmit(usernameValue);
       
     } else {
       setInputError('Please enter a valid League ID (15-20 digits) or Username (3-20 characters)');
@@ -143,7 +137,7 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
 
         <SleeperAccountCard 
           user={userLeaguesData.user}
-          onRefresh={onRefreshLeagues || (() => {})}
+          onRefresh={() => onRefreshLeagues?.(userLeaguesData.user.username)}
           onDisconnect={onBackToForm || (() => {})}
           refreshing={loading}
         />
@@ -166,7 +160,7 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
                 </div>
                 <Button
                   variant="outline"
-                  onClick={onQuickLoadFirstLeague}
+                  onClick={() => onQuickLoadFirstLeague?.(userLeaguesData.user.username)}
                   disabled={loading}
                   className="flex items-center space-x-2"
                 >
