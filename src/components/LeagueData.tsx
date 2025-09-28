@@ -9,8 +9,8 @@ import LeagueHeaderSkeleton from './skeletons/LeagueHeaderSkeleton';
 import TeamOverviewSkeleton from './skeletons/TeamOverviewSkeleton';
 import PageNavigationSkeleton from './skeletons/PageNavigationSkeleton';
 import LeagueStatusBadge from './LeagueStatusBadge';
-import Analytics from '@/pages/Analytics';
-import Commissioner from '@/pages/Commissioner';
+import { CommissionerDashboard } from '@/components/commissioner/CommissionerDashboard';
+import { AnalyticsView } from '@/components/analytics/AnalyticsView';
 
 interface LeagueDataProps {
   data: {
@@ -97,7 +97,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
             <ErrorBoundary fallback={<div>Error loading commissioner dashboard</div>}>
               <Suspense fallback={<div>Loading commissioner dashboard...</div>}>
-                <Commissioner leagueId={league.league_id} leagueData={leagueDataForExport} />
+                <CommissionerDashboard leagueId={league.league_id} leagueData={leagueDataForExport} />
               </Suspense>
             </ErrorBoundary>
           </div>
@@ -124,7 +124,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
             <ErrorBoundary>
               <Suspense fallback={<TeamOverviewSkeleton />}>
-                <Analytics />
+                <AnalyticsView />
               </Suspense>
             </ErrorBoundary>
           </div>
