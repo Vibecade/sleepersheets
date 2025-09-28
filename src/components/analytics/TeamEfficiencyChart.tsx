@@ -7,6 +7,7 @@ import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 import { useHistoricalMatchups } from '@/hooks/useHistoricalMatchups';
+import { useMatchups } from '@/hooks/useMatchups';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -30,11 +31,12 @@ const TeamEfficiencyChart: React.FC<TeamEfficiencyChartProps> = ({
   const { getSalaryCapContribution } = usePlayerSalaries(leagueId);
   const { settings } = useLeagueSettings(leagueId);
   const { deadCapPlayers } = useDeadCapPlayers(leagueId);
+  const { getCurrentNFLWeek } = useMatchups(leagueId, 1);
   const isMobile = useIsMobile();
   const [chartType, setChartType] = useState<ChartType>('costPerWin');
 
-  // Use a reasonable default for current week (mid-season)
-  const currentWeek = 8;
+  // Get actual current NFL week
+  const currentWeek = getCurrentNFLWeek();
   const { historicalMatchups, loading } = useHistoricalMatchups(leagueId, currentWeek);
 
   // Create user map for easy lookup
@@ -251,18 +253,20 @@ const TeamEfficiencyChart: React.FC<TeamEfficiencyChartProps> = ({
           dataKey="totalSalary" 
           domain={['dataMin', 'dataMax']}
           tickFormatter={formatCurrency}
-          fontSize={isMobile ? 10 : 12}
+          fontSize={isMobile ? 14 : 16}
           stroke="hsl(var(--foreground))"
           name="Total Salary"
+          tick={{ fill: 'hsl(var(--foreground))' }}
         />
         <YAxis 
           type="number"
           dataKey={yAxisConfig.dataKey}
           domain={['dataMin', 'dataMax']}
           tickFormatter={chartType === 'efficiency' ? (value) => `${value.toFixed(0)}%` : formatEfficiency}
-          fontSize={isMobile ? 10 : 12}
+          fontSize={isMobile ? 14 : 16}
           stroke="hsl(var(--foreground))"
           name={yAxisConfig.label}
+          tick={{ fill: 'hsl(var(--foreground))' }}
         />
         <ReferenceLine 
           y={avgValue} 
