@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { validateAndSanitizeLeagueId } from '@/utils/enhancedInputValidation';
+import { validateAndSanitizeLeagueId } from '@/utils/inputValidation';
 import { logLeagueOwnershipClaim, logUnauthorizedAccess } from '@/utils/securityLogger';
 
 interface LeagueOwnership {

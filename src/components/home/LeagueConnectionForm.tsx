@@ -9,7 +9,7 @@ import { Users as UserGroup, Search as MagnifyingGlass, Loader2, ArrowLeft, Zap 
 import { HowToFindLeagueId } from './HowToFindLeagueId';
 import { SleeperAccountCard } from './SleeperAccountCard';
 import { SleeperLeagueGrid } from './SleeperLeagueGrid';
-import { validateAndSanitizeLeagueId, validateAndSanitizeUsername } from '@/utils/enhancedInputValidation';
+import { validateAndSanitizeLeagueId, validateAndSanitizeUsername } from '@/utils/inputValidation';
 import { useToast } from '@/hooks/use-toast';
 
 interface LeagueConnectionFormProps {

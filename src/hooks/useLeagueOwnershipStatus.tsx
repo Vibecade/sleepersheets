@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { validateAndSanitizeLeagueId } from '@/utils/enhancedInputValidation';
+import { validateAndSanitizeLeagueId } from '@/utils/inputValidation';
 
 interface OwnershipStatus {
   isOwned: boolean;
