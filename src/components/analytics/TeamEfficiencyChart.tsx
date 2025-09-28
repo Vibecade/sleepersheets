@@ -277,10 +277,6 @@ const TeamEfficiencyChart: React.FC<TeamEfficiencyChartProps> = ({
         <ChartTooltip 
           content={
             <ChartTooltipContent 
-              formatter={(value, name) => [
-                chartType === 'efficiency' ? `${Number(value).toFixed(1)}%` : formatEfficiency(Number(value)),
-                yAxisConfig.label
-              ]}
               labelFormatter={(label, payload) => {
                 const data = payload?.[0]?.payload;
                 return data ? (

@@ -106,11 +106,15 @@ const IndexContent = React.memo(() => {
         description="The ultimate salary cap and contract management tool for your fantasy football dynasty league. Track salaries, manage contracts, simulate trades, and export league data."
       />
       <DemoBanner />
-      <LeagueHeader 
-        isCompact={isHeaderCompact}
-        onToggleCompact={handleToggleCompact}
-        canToggle={userIsInteracting || !!leagueData}
-      />
+      
+      {/* Only show LeagueHeader when user is interacting or league data is loaded */}
+      {(userIsInteracting || leagueData) && (
+        <LeagueHeader 
+          isCompact={isHeaderCompact}
+          onToggleCompact={handleToggleCompact}
+          canToggle={userIsInteracting || !!leagueData}
+        />
+      )}
 
       <div className="max-w-6xl mx-auto px-4 py-12">
         <OfflineIndicator />
