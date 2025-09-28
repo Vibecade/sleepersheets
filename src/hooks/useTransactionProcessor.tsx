@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
-import { logDataAccess } from '@/utils/securityLogger';
+import { securityLogger } from '@/utils/securityLogger';
 
 interface WaiverUpdate {
   playerId: string;
@@ -59,7 +59,7 @@ export const useTransactionProcessor = () => {
 
   const getProcessedTransactions = async (leagueId: string): Promise<Set<string>> => {
     try {
-      logDataAccess(undefined, 'processed_transactions', 'read', true);
+      securityLogger.logDataModification(undefined, 'processed_transactions', 'read', true);
       
       const { data, error } = await supabase
         .from('processed_transactions')
@@ -81,7 +81,7 @@ export const useTransactionProcessor = () => {
     updates: WaiverUpdate[]
   ): Promise<void> => {
     try {
-      logDataAccess(undefined, 'processed_transactions', 'write', true);
+      securityLogger.logDataModification(undefined, 'processed_transactions', 'write', true);
       
       const { error } = await supabase
         .from('processed_transactions')
@@ -105,7 +105,7 @@ export const useTransactionProcessor = () => {
     acquisitionType: 'contract' | 'faab' | 'free_agent' = 'faab'
   ): Promise<boolean> => {
     try {
-      logDataAccess(undefined, 'player_salaries', 'write', true);
+      securityLogger.logDataModification(undefined, 'player_salaries', 'write', true);
       
       const { error } = await supabase
         .from('player_salaries')
@@ -131,7 +131,7 @@ export const useTransactionProcessor = () => {
     contractLength: number = 1
   ): Promise<boolean> => {
     try {
-      logDataAccess(undefined, 'player_contracts', 'write', true);
+      securityLogger.logDataModification(undefined, 'player_contracts', 'write', true);
       
       const { error } = await supabase
         .from('player_contracts')

@@ -29,7 +29,7 @@ const SleeperLeaguesList: React.FC<SleeperLeaguesListProps> = ({ onSelectLeague 
         <CardContent>
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-            <span className="ml-2 text-gray-400">Loading leagues...</span>
+            <span className="ml-2 text-muted-foreground">Loading leagues...</span>
           </div>
         </CardContent>
       </Card>

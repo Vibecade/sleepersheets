@@ -15,7 +15,7 @@ interface LeagueSettings {
 
 // Cache for league settings to prevent repeated calls
 const settingsCache = new Map<string, { data: LeagueSettings | null; timestamp: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes - standardized across hooks
 
 export const useLeagueSettings = (leagueId: string) => {
   const [settings, setSettings] = useState<LeagueSettings | null>(null);

@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { validateSalary } from '@/utils/inputValidation';
-import { logDataAccess } from '@/utils/securityLogger';
+import { securityLogger } from '@/utils/securityLogger';
 
 interface PlayerSalary {
   player_id: string;
@@ -36,7 +36,7 @@ export const usePlayerSalaries = (leagueId: string) => {
         .select('player_id, salary, taxi_squad, acquisition_type')
         .eq('league_id', currentLeagueId) as { data: PlayerSalary[] | null; error: any };
 
-      logDataAccess(user?.id, 'player_salaries', 'read', !error);
+      securityLogger.logDataModification(user?.id, 'player_salaries', 'read', !error);
 
       if (error) {
         console.error('Error loading salaries:', error);
@@ -60,7 +60,7 @@ export const usePlayerSalaries = (leagueId: string) => {
       setLastLeagueId(currentLeagueId);
     } catch (error) {
       console.error('Error loading salaries:', error);
-      logDataAccess(user?.id, 'player_salaries', 'read', false);
+      securityLogger.logDataModification(user?.id, 'player_salaries', 'read', false);
     } finally {
       setLoading(false);
     }
@@ -101,7 +101,7 @@ export const usePlayerSalaries = (leagueId: string) => {
           onConflict: 'league_id,player_id'
         });
 
-      logDataAccess(user?.id, 'player_salaries', 'write', !error);
+      securityLogger.logDataModification(user?.id, 'player_salaries', 'write', !error);
 
       if (error) {
         console.error('Error updating salary:', error);
@@ -121,7 +121,7 @@ export const usePlayerSalaries = (leagueId: string) => {
       return true;
     } catch (error) {
       console.error('Error updating salary:', error);
-      logDataAccess(user?.id, 'player_salaries', 'write', false);
+      securityLogger.logDataModification(user?.id, 'player_salaries', 'write', false);
       toast({
         title: "Error",
         description: "Failed to save salary",
@@ -147,7 +147,7 @@ export const usePlayerSalaries = (leagueId: string) => {
           onConflict: 'league_id,player_id'
         });
 
-      logDataAccess(user?.id, 'player_salaries', 'write', !error);
+      securityLogger.logDataModification(user?.id, 'player_salaries', 'write', !error);
 
       if (error) {
         console.error('Error updating taxi squad status:', error);
@@ -167,7 +167,7 @@ export const usePlayerSalaries = (leagueId: string) => {
       return true;
     } catch (error) {
       console.error('Error updating taxi squad status:', error);
-      logDataAccess(user?.id, 'player_salaries', 'write', false);
+      securityLogger.logDataModification(user?.id, 'player_salaries', 'write', false);
       toast({
         title: "Error",
         description: "Failed to save taxi squad status",

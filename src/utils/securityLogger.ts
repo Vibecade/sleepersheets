@@ -170,23 +170,3 @@ export const logLeagueIntegrityCheck = (leagueId: string, checkType: string, pas
   });
 };
 
-// Helper functions for common logging scenarios
-export const logLeagueOwnershipClaim = (userId: string | undefined, leagueId: string, success: boolean) => {
-  securityLogger.logLeagueAccess(userId, leagueId, 'claim', success);
-};
-
-export const logLeagueOwnershipAccess = (userId: string | undefined, leagueId: string, action: string, success: boolean, details?: Record<string, any>) => {
-  securityLogger.logLeagueOwnershipAccess(userId, leagueId, action, success, details);
-};
-
-export const logUnauthorizedAccess = (userId: string | undefined, resource: string, attemptedAction: string) => {
-  securityLogger.logUnauthorizedAccess(userId, resource, attemptedAction);
-};
-
-export const logDataAccess = (userId: string | undefined, table: string, operation: 'read' | 'write' | 'delete', success: boolean) => {
-  securityLogger.logDataModification(userId, table, operation, success);
-};
-
-export const logAuthenticationAttempt = (userId: string | undefined, method: string, success: boolean) => {
-  securityLogger.logAuthAction(userId, method, success);
-};

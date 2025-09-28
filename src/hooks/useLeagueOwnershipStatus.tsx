@@ -14,7 +14,7 @@ interface OwnershipStatus {
 
 // Cache for ownership status to prevent repeated calls
 const ownershipCache = new Map<string, { data: OwnershipStatus; timestamp: number }>();
-const CACHE_TTL = 30 * 60 * 1000; // 30 minutes - increased from 5 minutes
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes - standardized across hooks
 
 export const useLeagueOwnershipStatus = () => {
   const [loading, setLoading] = useState(false);
