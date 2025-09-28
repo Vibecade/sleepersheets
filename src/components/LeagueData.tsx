@@ -10,7 +10,7 @@ import TeamOverviewSkeleton from './skeletons/TeamOverviewSkeleton';
 import PageNavigationSkeleton from './skeletons/PageNavigationSkeleton';
 import LeagueStatusBadge from './LeagueStatusBadge';
 import { CommissionerDashboard } from '@/components/commissioner/CommissionerDashboard';
-import { AnalyticsView } from '@/components/analytics/AnalyticsView';
+
 
 interface LeagueDataProps {
   data: {
@@ -29,7 +29,7 @@ interface LeagueDataProps {
 
 const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyncData?: () => Promise<void>; onOwnershipChanged?: () => void; }> = React.memo(({ onRefreshData, onResyncData, onOwnershipChanged }) => {
   const { league, rosters, userMap, rosterUserMap, players, transactions, draftPicks, stats } = useLeagueData();
-  const [currentPage, setCurrentPage] = useState<'overview' | 'manager' | 'analytics' | 'commissioner'>('overview');
+  const [currentPage, setCurrentPage] = useState<'overview' | 'manager' | 'commissioner'>('overview');
 
   // Prepare league data for export navigation
   const leagueDataForExport = React.useMemo(() => ({
@@ -53,8 +53,6 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
         title={
           currentPage === 'overview' 
             ? 'League Overview' 
-            : currentPage === 'analytics' 
-            ? 'League Analytics' 
             : currentPage === 'commissioner'
             ? 'Commissioner Dashboard'
             : 'Fantasy Manager'
@@ -115,16 +113,6 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
                   transactions={transactions}
                   onResyncData={onResyncData}
                 />
-              </Suspense>
-            </ErrorBoundary>
-          </div>
-        )}
-
-        {currentPage === 'analytics' && (
-          <div className="slide-up" style={{ animationDelay: '0.2s' }}>
-            <ErrorBoundary>
-              <Suspense fallback={<TeamOverviewSkeleton />}>
-                <AnalyticsView />
               </Suspense>
             </ErrorBoundary>
           </div>

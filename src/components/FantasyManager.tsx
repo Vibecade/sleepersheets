@@ -8,6 +8,7 @@ import EnhancedTradeSimulator from './EnhancedTradeSimulator';
 import PlayerSearch from './PlayerSearch';
 import ProTierUpgrade from './ProTierUpgrade';
 import MinimizableFAABContractManager from './MinimizableFAABContractManager';
+import { AnalyticsAccordion } from './analytics/AnalyticsAccordion';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { usePlayerContracts } from '@/hooks/usePlayerContracts';
 
@@ -96,6 +97,9 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
         transactions={transactions}
         draftPicks={draftPicks}
       />
+
+      {/* Advanced Analytics Accordion */}
+      <AnalyticsAccordion />
     </div>
   );
 });

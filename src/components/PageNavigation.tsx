@@ -8,8 +8,8 @@ import { MobileNav } from '@/components/ui/mobile-nav';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 
 interface PageNavigationProps {
-  currentPage: 'overview' | 'manager' | 'analytics' | 'commissioner';
-  onPageChange: (page: 'overview' | 'manager' | 'analytics' | 'commissioner') => void;
+  currentPage: 'overview' | 'manager' | 'commissioner';
+  onPageChange: (page: 'overview' | 'manager' | 'commissioner') => void;
   leagueData?: any;
 }
 
@@ -40,13 +40,6 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
       shortLabel: 'Overview',
       icon: Trophy,
       onClick: () => onPageChange('overview'),
-    },
-    {
-      id: 'analytics' as const,
-      label: 'Analytics Dashboard',
-      shortLabel: 'Analytics',
-      icon: BarChart3,
-      onClick: () => onPageChange('analytics'),
     },
     {
       id: 'manager' as const,
@@ -108,7 +101,7 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
 
   return (
     <div className="glass-card rounded-xl p-2 mb-6">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
         {navigationItems.map((item) => (
           <Button
             key={item.id}
