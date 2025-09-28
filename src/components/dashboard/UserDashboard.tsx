@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Clock, Users, Calendar, ExternalLink } from 'lucide-react';
+import { Trophy, Clock, Users, Calendar, ExternalLink, Plus, Search } from 'lucide-react';
 import { useUserLeagues } from '@/hooks/useUserLeagues';
 import { useSleeperUser } from '@/hooks/useSleeperUser';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,15 +11,25 @@ import { formatDistanceToNow } from 'date-fns';
 import SleeperUsernameForm from '@/components/SleeperUsernameForm';
 import SleeperLeaguesList from '@/components/SleeperLeaguesList';
 import WhatsNewModal from '@/components/WhatsNewModal';
+import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
 
 
 interface UserDashboardProps {
   onSelectLeague: (leagueId: string) => void;
+  onConnectLeague?: () => void;
+  showConnectionForm?: boolean;
 }
 
-const UserDashboard: React.FC<UserDashboardProps> = ({ onSelectLeague }) => {
+const UserDashboard: React.FC<UserDashboardProps> = ({ 
+  onSelectLeague, 
+  onConnectLeague,
+  showConnectionForm = false 
+}) => {
   const { ownedLeagues, recentLeagues, loading } = useUserLeagues();
   const { sleeperUser } = useSleeperUser();
+  
+  // Check if user has any meaningful data to show
+  const hasData = ownedLeagues.length > 0 || recentLeagues.length > 0 || sleeperUser;
 
   if (loading) {
     return (
@@ -45,11 +55,48 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onSelectLeague }) => {
     );
   }
 
+  // Show connection form if user has no data and showConnectionForm is true
+  if (!hasData && showConnectionForm) {
+    return (
+      <div className="space-y-6">
+        {/* What's New Modal */}
+        <WhatsNewModal />
+        
+        {/* Welcome message for new authenticated users */}
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader className="text-center pb-3">
+            <CardTitle className="flex items-center justify-center space-x-2">
+              <Search className="w-5 h-5 text-primary" />
+              <span>Welcome! Let's Connect Your League</span>
+            </CardTitle>
+            <CardDescription>
+              You're signed in! Now connect to your fantasy football league to start managing salaries and contracts.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+        
+        {/* Sleeper Account Configuration for new users */}
+        <SleeperUsernameForm />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
       {/* What's New Modal */}
       <WhatsNewModal />
 
+      {/* Connect New League Button (always visible) */}
+      <div className="text-center">
+        <Button 
+          variant="outline" 
+          onClick={onConnectLeague}
+          className="flex items-center space-x-2"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Connect New League</span>
+        </Button>
+      </div>
 
       {/* Sleeper Account Configuration */}
       <SleeperUsernameForm />
@@ -71,10 +118,19 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ onSelectLeague }) => {
         </CardHeader>
         <CardContent>
           {ownedLeagues.length === 0 ? (
-            <div className="text-center py-6 sm:py-8 text-gray-400">
+            <div className="text-center py-6 sm:py-8 text-muted-foreground">
               <Trophy className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 opacity-50" />
               <p className="text-sm sm:text-base">No owned leagues yet</p>
-              <p className="text-xs sm:text-sm">Claim a league to start managing it</p>
+              <p className="text-xs sm:text-sm mb-4">Claim a league to start managing it</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onConnectLeague}
+                className="flex items-center space-x-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Connect Your First League</span>
+              </Button>
             </div>
           ) : (
             <div className="space-y-3">

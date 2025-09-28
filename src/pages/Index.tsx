@@ -149,7 +149,35 @@ const IndexContent = React.memo(() => {
                   <AdBanner position="header" />
                   
                   {user ? (
-                    <UserDashboard onSelectLeague={handleSelectLeague} />
+                    <>
+                      {/* Show UserDashboard for users with existing data, otherwise show connection form */}
+                      <UserDashboard 
+                        onSelectLeague={handleSelectLeague} 
+                        onConnectLeague={() => setShowLeagueConnection(true)} 
+                        showConnectionForm={!userLeaguesData && !showLeagueSelection}
+                      />
+                      
+                      {/* Show connection form below dashboard for authenticated users with no data */}
+                      {!userLeaguesData && !showLeagueSelection && (
+                        <div className="mt-8">
+                          <LeagueConnectionForm
+                            leagueId={leagueId}
+                            setLeagueId={setLeagueId}
+                            username={username}
+                            setUsername={setUsername}
+                            onLeagueSubmit={handleLeagueSubmit}
+                            onUsernameSubmit={handleUsernameSubmit}
+                            onQuickLoadFirstLeague={handleQuickLoadFirstLeague}
+                            onSelectLeague={handleSelectLeagueFromUsername}
+                            onBackToForm={handleBackToForm}
+                            onRefreshLeagues={handleRefreshLeagues}
+                            loading={loading}
+                            userLeaguesData={userLeaguesData}
+                            showLeagueSelection={showLeagueSelection}
+                          />
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <div className="space-y-8">
                       {/* Back to Marketing Button */}
