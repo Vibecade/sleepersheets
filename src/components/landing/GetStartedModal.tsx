@@ -21,7 +21,7 @@ import {
 interface GetStartedModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectOption: (option: 'league-id' | 'username' | 'auth' | 'demo') => void;
+  onSelectOption: (option: 'connect' | 'auth' | 'demo') => void;
 }
 
 const GetStartedModal: React.FC<GetStartedModalProps> = ({
@@ -33,20 +33,12 @@ const GetStartedModal: React.FC<GetStartedModalProps> = ({
 
   const options = [
     {
-      id: 'league-id',
+      id: 'connect',
       icon: Link2,
-      title: 'I have a Sleeper League ID',
-      description: 'Connect directly with your league ID for instant access',
+      title: 'Connect Your League',
+      description: 'Enter your League ID or Username to get started instantly',
       color: 'border-primary/20 hover:border-primary/40',
-      badge: 'Fastest Setup'
-    },
-    {
-      id: 'username', 
-      icon: Search,
-      title: 'Find my leagues by username',
-      description: 'Search for all your leagues using your Sleeper username',
-      color: 'border-secondary/20 hover:border-secondary/40',
-      badge: 'Multi-League'
+      badge: 'Smart Detection'
     },
     {
       id: 'auth',
@@ -67,7 +59,7 @@ const GetStartedModal: React.FC<GetStartedModalProps> = ({
   ];
 
   const handleSelectOption = (optionId: string) => {
-    onSelectOption(optionId as 'league-id' | 'username' | 'auth' | 'demo');
+    onSelectOption(optionId as 'connect' | 'auth' | 'demo');
     onClose();
   };
 

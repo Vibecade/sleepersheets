@@ -73,10 +73,9 @@ const IndexContent = React.memo(() => {
     setShowGetStartedModal(true);
   };
 
-  const handleGetStartedOptionSelect = (option: 'league-id' | 'username' | 'auth' | 'demo') => {
+  const handleGetStartedOptionSelect = (option: 'connect' | 'auth' | 'demo') => {
     switch (option) {
-      case 'league-id':
-      case 'username':
+      case 'connect':
         setShowLeagueConnection(true);
         setUserIsInteracting(true);
         setIsHeaderCompact(true);
