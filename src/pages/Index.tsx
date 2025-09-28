@@ -79,6 +79,8 @@ const IndexContent = React.memo(() => {
         setShowLeagueConnection(true);
         setUserIsInteracting(true);
         setIsHeaderCompact(true);
+        // Scroll to top to show the connection form
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         break;
       case 'auth':
         navigate('/auth');
