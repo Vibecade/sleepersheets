@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PositionValueChartProps {
   rosters: any[];
@@ -16,6 +17,7 @@ const PositionValueChart: React.FC<PositionValueChartProps> = ({
   leagueId
 }) => {
   const { getSalaryCapContribution } = usePlayerSalaries(leagueId);
+  const isMobile = useIsMobile();
 
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000) {
@@ -86,8 +88,8 @@ const PositionValueChart: React.FC<PositionValueChartProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-64 md:h-80">
-          <ResponsiveContainer width="100%" height="100%">
+        <ChartContainer config={chartConfig} className={isMobile ? "h-80" : "h-80"}>
+          <ResponsiveContainer width="100%" height="100%" minHeight={320}>
             <PieChart>
               <Pie
                 data={positionData}
@@ -95,9 +97,9 @@ const PositionValueChart: React.FC<PositionValueChartProps> = ({
                 cy="50%"
                 labelLine={false}
                 label={({ position, value, percent }) => 
-                  percent > 0.05 && window.innerWidth >= 768 ? `${position} ${(percent * 100).toFixed(1)}%` : ''
+                  percent > 0.08 && !isMobile ? `${position} ${(percent * 100).toFixed(1)}%` : ''
                 }
-                outerRadius={window.innerWidth < 768 ? 60 : 80}
+                outerRadius={isMobile ? 80 : 100}
                 fill="#8884d8"
                 dataKey="totalSalary"
               >

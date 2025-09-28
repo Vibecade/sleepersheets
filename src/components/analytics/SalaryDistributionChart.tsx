@@ -6,6 +6,7 @@ import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 import { getTeamName } from '@/utils/leagueDataUtils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SalaryDistributionChartProps {
   rosters: any[];
@@ -25,6 +26,7 @@ const SalaryDistributionChart: React.FC<SalaryDistributionChartProps> = ({
   const { getSalaryCapContribution } = usePlayerSalaries(leagueId);
   const { settings } = useLeagueSettings(leagueId);
   const { deadCapPlayers } = useDeadCapPlayers(leagueId);
+  const isMobile = useIsMobile();
 
   // Create user map for easy lookup
   const userMap = React.useMemo(() => {
@@ -74,7 +76,9 @@ const SalaryDistributionChart: React.FC<SalaryDistributionChartProps> = ({
       const taxiPlayers = (roster.taxi || []).length;
 
       return {
-        team: teamName.length > 8 ? `${teamName.substring(0, 8)}...` : teamName,
+        team: isMobile 
+          ? (teamName.length > 6 ? `${teamName.substring(0, 6)}...` : teamName)
+          : (teamName.length > 8 ? `${teamName.substring(0, 8)}...` : teamName),
         fullTeamName: teamName,
         activeSalary,
         deadCap,
@@ -103,30 +107,32 @@ const SalaryDistributionChart: React.FC<SalaryDistributionChartProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-64 md:h-80">
-          <ResponsiveContainer width="100%" height="100%">
+        <ChartContainer config={chartConfig} className={isMobile ? "h-96" : "h-80"}>
+          <ResponsiveContainer width="100%" height="100%" minHeight={isMobile ? 384 : 320}>
             <BarChart 
               data={chartData} 
               margin={{ 
                 top: 20, 
-                right: 10, 
-                left: 10, 
-                bottom: window.innerWidth < 768 ? 40 : 60 
+                right: isMobile ? 15 : 20, 
+                left: isMobile ? 15 : 20, 
+                bottom: isMobile ? 100 : 80 
               }}
             >
               <XAxis 
                 dataKey="team" 
-                angle={window.innerWidth < 768 ? -90 : -45}
+                angle={-90}
                 textAnchor="end"
-                height={window.innerWidth < 768 ? 60 : 80}
-                fontSize={window.innerWidth < 768 ? 10 : 12}
+                height={isMobile ? 90 : 80}
+                fontSize={isMobile ? 12 : 14}
                 stroke="hsl(var(--muted-foreground))"
+                interval={0}
               />
               <YAxis 
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={window.innerWidth < 768 ? 10 : 12}
+                fontSize={isMobile ? 12 : 14}
                 tickFormatter={formatSalary}
                 domain={[0, 'dataMax']}
+                width={isMobile ? 60 : 80}
               />
               <ChartTooltip 
                 content={

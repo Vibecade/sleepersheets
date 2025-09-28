@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { getTeamName } from '@/utils/leagueDataUtils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TransactionActivityChartProps {
   transactions: any[];
@@ -13,6 +14,8 @@ const TransactionActivityChart: React.FC<TransactionActivityChartProps> = ({
   transactions,
   users
 }) => {
+  const isMobile = useIsMobile();
+  
   // Create user map for easy lookup
   const userMap = React.useMemo(() => {
     return users.reduce((acc, user) => {
@@ -74,20 +77,30 @@ const TransactionActivityChart: React.FC<TransactionActivityChartProps> = ({
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Weekly Activity Chart */}
-        <ChartContainer config={chartConfig} className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+        <ChartContainer config={chartConfig} className={isMobile ? "h-80" : "h-64"}>
+          <ResponsiveContainer width="100%" height="100%" minHeight={isMobile ? 320 : 256}>
+            <LineChart 
+              data={chartData} 
+              margin={{ 
+                top: 20, 
+                right: isMobile ? 15 : 30, 
+                left: isMobile ? 15 : 20, 
+                bottom: isMobile ? 80 : 60 
+              }}
+            >
               <XAxis 
                 dataKey="week" 
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
-                angle={-45}
+                fontSize={isMobile ? 12 : 14}
+                angle={-90}
                 textAnchor="end"
-                height={60}
+                height={isMobile ? 70 : 60}
+                interval={0}
               />
               <YAxis 
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
+                fontSize={isMobile ? 12 : 14}
+                width={isMobile ? 50 : 60}
               />
               <ChartTooltip 
                 content={

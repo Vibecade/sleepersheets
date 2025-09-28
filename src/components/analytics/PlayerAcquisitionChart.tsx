@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { Badge } from '@/components/ui/badge';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PlayerAcquisitionChartProps {
   transactions: any[];
@@ -15,6 +16,8 @@ const PlayerAcquisitionChart: React.FC<PlayerAcquisitionChartProps> = ({
   players,
   users
 }) => {
+  const isMobile = useIsMobile();
+  
   const acquisitionData = React.useMemo(() => {
     // Group by week and position
     const weeklyData = new Map<string, Map<string, number>>();
@@ -108,23 +111,30 @@ const PlayerAcquisitionChart: React.FC<PlayerAcquisitionChartProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <ChartContainer config={chartConfig} className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
+        <ChartContainer config={chartConfig} className={isMobile ? "h-96" : "h-80"}>
+          <ResponsiveContainer width="100%" height="100%" minHeight={isMobile ? 384 : 320}>
             <AreaChart
               data={acquisitionData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+              margin={{ 
+                top: 20, 
+                right: isMobile ? 15 : 30, 
+                left: isMobile ? 15 : 20, 
+                bottom: isMobile ? 90 : 70 
+              }}
             >
               <XAxis 
                 dataKey="week"
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
-                angle={-45}
+                fontSize={isMobile ? 12 : 14}
+                angle={-90}
                 textAnchor="end"
-                height={80}
+                height={isMobile ? 80 : 80}
+                interval={0}
               />
               <YAxis 
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={12}
+                fontSize={isMobile ? 12 : 14}
+                width={isMobile ? 50 : 60}
               />
               <ChartTooltip 
                 content={

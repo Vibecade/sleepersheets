@@ -4,6 +4,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { ScatterChart, Scatter, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { getTeamName } from '@/utils/leagueDataUtils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TeamPerformanceChartProps {
   rosters: any[];
@@ -21,6 +22,7 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
   leagueId
 }) => {
   const { getSalaryCapContribution } = usePlayerSalaries(leagueId);
+  const isMobile = useIsMobile();
 
   // Create user map for easy lookup
   const userMap = React.useMemo(() => {
@@ -67,7 +69,9 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
       const efficiencyScore = totalSalary > 0 ? (totalPlayers / totalSalary) * 1000000 : 0; // Normalize to make readable
 
       return {
-        team: teamName.length > 10 ? `${teamName.substring(0, 10)}...` : teamName,
+        team: isMobile 
+          ? (teamName.length > 8 ? `${teamName.substring(0, 8)}...` : teamName)
+          : (teamName.length > 10 ? `${teamName.substring(0, 10)}...` : teamName),
         fullTeamName: teamName,
         totalSalary,
         transactionActivity,
@@ -92,15 +96,15 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-64 md:h-80">
-          <ResponsiveContainer width="100%" height="100%">
+        <ChartContainer config={chartConfig} className={isMobile ? "h-96" : "h-80"}>
+          <ResponsiveContainer width="100%" height="100%" minHeight={isMobile ? 384 : 320}>
             <ScatterChart
               data={chartData}
               margin={{ 
                 top: 20, 
-                right: window.innerWidth < 768 ? 10 : 30, 
-                left: window.innerWidth < 768 ? 10 : 20, 
-                bottom: window.innerWidth < 768 ? 40 : 60 
+                right: isMobile ? 15 : 30, 
+                left: isMobile ? 20 : 30, 
+                bottom: isMobile ? 60 : 40 
               }}
             >
               <XAxis 
@@ -109,14 +113,16 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
                 name="Total Salary"
                 tickFormatter={formatCurrency}
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={window.innerWidth < 768 ? 10 : 12}
+                fontSize={isMobile ? 12 : 14}
+                width={isMobile ? 80 : 100}
               />
               <YAxis 
                 type="number"
                 dataKey="transactionActivity"
                 name="Transaction Activity"
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={window.innerWidth < 768 ? 10 : 12}
+                fontSize={isMobile ? 12 : 14}
+                width={isMobile ? 60 : 80}
               />
               <ChartTooltip 
                 cursor={{ strokeDasharray: '3 3' }}
@@ -149,7 +155,7 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
                 fill="hsl(var(--primary))"
                 stroke="hsl(var(--primary-foreground))"
                 strokeWidth={1}
-                r={window.innerWidth < 768 ? 4 : 6}
+                r={isMobile ? 5 : 7}
               />
             </ScatterChart>
           </ResponsiveContainer>
