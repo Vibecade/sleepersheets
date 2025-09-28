@@ -42,76 +42,86 @@ export const AnalyticsAccordion: React.FC = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
-                  <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                  <CardHeader className="flex flex-row items-center space-y-0 pb-4">
                     <div className="flex items-center space-x-2">
                       <PieChart className="w-5 h-5 text-primary" />
                       <CardTitle className="text-lg">Salary Distribution</CardTitle>
                     </div>
                   </CardHeader>
-                  <SalaryDistributionChart 
-                    rosters={rosters}
-                    users={users}
-                    players={players}
-                    leagueId={leagueId}
-                    transactions={transactions}
-                  />
+                  <div className="px-6 pb-6">
+                    <SalaryDistributionChart 
+                      rosters={rosters}
+                      users={users}
+                      players={players}
+                      leagueId={leagueId}
+                      transactions={transactions}
+                    />
+                  </div>
                 </Card>
 
                 <Card>
-                  <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                  <CardHeader className="flex flex-row items-center space-y-0 pb-4">
                     <div className="flex items-center space-x-2">
                       <Activity className="w-5 h-5 text-primary" />
                       <CardTitle className="text-lg">Transaction Activity</CardTitle>
                     </div>
                   </CardHeader>
-                  <TransactionActivityChart 
-                    transactions={transactions}
-                    users={users}
-                  />
+                  <div className="px-6 pb-6">
+                    <TransactionActivityChart 
+                      transactions={transactions}
+                      users={users}
+                    />
+                  </div>
                 </Card>
 
                 <Card>
-                  <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                  <CardHeader className="flex flex-row items-center space-y-0 pb-4">
                     <div className="flex items-center space-x-2">
                       <BarChart3 className="w-5 h-5 text-primary" />
                       <CardTitle className="text-lg">Position Value Analysis</CardTitle>
                     </div>
                   </CardHeader>
-                  <PositionValueChart 
-                    rosters={rosters}
-                    players={players}
-                    leagueId={leagueId}
-                  />
+                  <div className="px-6 pb-6">
+                    <PositionValueChart 
+                      rosters={rosters}
+                      players={players}
+                      leagueId={leagueId}
+                    />
+                  </div>
                 </Card>
 
                 <Card>
-                  <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                  <CardHeader className="flex flex-row items-center space-y-0 pb-4">
                     <div className="flex items-center space-x-2">
                       <TrendingUp className="w-5 h-5 text-primary" />
                       <CardTitle className="text-lg">Team Performance</CardTitle>
                     </div>
                   </CardHeader>
-                  <TeamPerformanceChart 
-                    rosters={rosters}
-                    users={users}
-                    players={players}
-                    transactions={transactions}
-                    leagueId={leagueId}
-                  />
+                  <div className="px-6 pb-6">
+                    <TeamPerformanceChart 
+                      rosters={rosters}
+                      users={users}
+                      players={players}
+                      transactions={transactions}
+                      leagueId={leagueId}
+                    />
+                  </div>
                 </Card>
 
                 <Card className="lg:col-span-2">
-                  <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                  <CardHeader className="flex flex-row items-center space-y-0 pb-4">
                     <div className="flex items-center space-x-2">
                       <Activity className="w-5 h-5 text-primary" />
                       <CardTitle className="text-lg">Player Acquisition Trends</CardTitle>
                     </div>
                   </CardHeader>
-                  <PlayerAcquisitionChart 
-                    transactions={transactions}
-                    players={players}
-                    users={users}
-                  />
+                  <div className="px-6 pb-6">
+                    <PlayerAcquisitionChart 
+                      transactions={transactions}
+                      players={players}
+                      users={users}
+                    />
+                  </div>
                 </Card>
               </div>
             </div>

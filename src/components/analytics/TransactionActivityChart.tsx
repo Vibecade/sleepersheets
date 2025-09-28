@@ -69,75 +69,67 @@ const TransactionActivityChart: React.FC<TransactionActivityChartProps> = ({
   }, [transactions]);
 
   return (
-    <Card className="glass-card">
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <span>Transaction Activity Timeline</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Weekly Activity Chart */}
-        <ChartContainer config={chartConfig} className={isMobile ? "h-80" : "h-64"}>
-          <ResponsiveContainer width="100%" height="100%" minHeight={isMobile ? 320 : 256}>
-            <LineChart 
-              data={chartData} 
-              margin={{ 
-                top: 20, 
-                right: isMobile ? 15 : 30, 
-                left: isMobile ? 15 : 20, 
-                bottom: isMobile ? 80 : 60 
-              }}
-            >
-              <XAxis 
-                dataKey="week" 
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={isMobile ? 12 : 14}
-                angle={-90}
-                textAnchor="end"
-                height={isMobile ? 70 : 60}
-                interval={0}
-              />
-              <YAxis 
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={isMobile ? 12 : 14}
-                width={isMobile ? 50 : 60}
-              />
-              <ChartTooltip 
-                content={
-                  <ChartTooltipContent 
-                    formatter={(value) => [value, 'Transactions']}
-                  />
-                }
-              />
-              <Line 
-                type="monotone" 
-                dataKey="transactions" 
-                stroke="hsl(var(--chart-1))"
-                strokeWidth={2}
-                dot={{ fill: 'hsl(var(--chart-1))', r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartContainer>
+    <div className="space-y-4">
+      <div className={`w-full ${isMobile ? 'h-[400px]' : 'h-64'} overflow-hidden`}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart 
+            data={chartData} 
+            margin={{ 
+              top: 20, 
+              right: isMobile ? 15 : 30, 
+              left: isMobile ? 15 : 20, 
+              bottom: isMobile ? 100 : 60 
+            }}
+          >
+            <XAxis 
+              dataKey="week" 
+              stroke="hsl(var(--muted-foreground))"
+              fontSize={isMobile ? 11 : 12}
+              angle={-90}
+              textAnchor="end"
+              height={isMobile ? 100 : 60}
+              interval={0}
+            />
+            <YAxis 
+              stroke="hsl(var(--muted-foreground))"
+              fontSize={isMobile ? 11 : 12}
+              width={isMobile ? 50 : 60}
+            />
+            <ChartTooltip 
+              content={
+                <ChartTooltipContent 
+                  formatter={(value) => [value, 'Transactions']}
+                />
+              }
+            />
+            <Line 
+              type="monotone" 
+              dataKey="transactions" 
+              stroke="hsl(var(--chart-1))"
+              strokeWidth={2}
+              dot={{ fill: 'hsl(var(--chart-1))', r: 4 }}
+              activeDot={{ r: 6 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
 
-        {/* Transaction Type Breakdown */}
-        <div>
-          <h4 className="text-sm font-medium mb-3">Transaction Types</h4>
-          <div className="grid grid-cols-2 gap-3">
-            {transactionTypes.map((type, index) => (
-              <div key={index} className="flex justify-between items-center p-2 rounded-lg bg-muted/20">
-                <span className="text-sm">{type.type}</span>
-                <div className="text-right">
-                  <div className="font-medium">{type.count}</div>
-                  <div className="text-xs text-muted-foreground">{type.percentage}%</div>
-                </div>
+      {/* Transaction Type Breakdown */}
+      <div>
+        <h4 className="text-sm font-medium mb-3">Transaction Types</h4>
+        <div className="grid grid-cols-2 gap-3">
+          {transactionTypes.map((type, index) => (
+            <div key={index} className="flex justify-between items-center p-2 rounded-lg bg-muted/20">
+              <span className="text-sm">{type.type}</span>
+              <div className="text-right">
+                <div className="font-medium">{type.count}</div>
+                <div className="text-xs text-muted-foreground">{type.percentage}%</div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

@@ -89,120 +89,113 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
   };
 
   return (
-    <Card className="glass-card">
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <span>Salary vs Activity Analysis</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className={isMobile ? "h-96" : "h-80"}>
-          <ResponsiveContainer width="100%" height="100%" minHeight={isMobile ? 384 : 320}>
-            <ScatterChart
-              data={chartData}
-              margin={{ 
-                top: 20, 
-                right: isMobile ? 15 : 30, 
-                left: isMobile ? 20 : 30, 
-                bottom: isMobile ? 60 : 40 
-              }}
-            >
-              <XAxis 
-                type="number"
-                dataKey="totalSalary"
-                name="Total Salary"
-                tickFormatter={formatCurrency}
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={isMobile ? 12 : 14}
-                width={isMobile ? 80 : 100}
-              />
-              <YAxis 
-                type="number"
-                dataKey="transactionActivity"
-                name="Transaction Activity"
-                stroke="hsl(var(--muted-foreground))"
-                fontSize={isMobile ? 12 : 14}
-                width={isMobile ? 60 : 80}
-              />
-              <ChartTooltip 
-                cursor={{ strokeDasharray: '3 3' }}
-                content={
-                  <ChartTooltipContent 
-                    formatter={(value, name, props) => {
-                      if (name === 'totalSalary') {
-                        return [formatCurrency(Number(value)), 'Total Salary'];
-                      }
-                      return [value, 'Transactions'];
-                    }}
-                    labelFormatter={(label, payload) => {
-                      const data = payload?.[0]?.payload;
-                      return data ? (
-                        <div className="space-y-1">
-                          <div className="font-semibold">{data.fullTeamName}</div>
-                          <div className="text-sm text-muted-foreground space-y-1">
-                            <div>Players: {data.totalPlayers}</div>
-                            <div>Efficiency Score: {data.efficiencyScore.toFixed(2)}</div>
-                          </div>
+    <div className="space-y-4">
+      <div className={`w-full ${isMobile ? 'h-[400px]' : 'h-80'} overflow-hidden`}>
+        <ResponsiveContainer width="100%" height="100%">
+          <ScatterChart
+            data={chartData}
+            margin={{ 
+              top: 20, 
+              right: isMobile ? 15 : 30, 
+              left: isMobile ? 20 : 30, 
+              bottom: isMobile ? 60 : 40 
+            }}
+          >
+            <XAxis 
+              type="number"
+              dataKey="totalSalary"
+              name="Total Salary"
+              tickFormatter={formatCurrency}
+              stroke="hsl(var(--muted-foreground))"
+              fontSize={isMobile ? 11 : 12}
+              width={isMobile ? 80 : 100}
+            />
+            <YAxis 
+              type="number"
+              dataKey="transactionActivity"
+              name="Transaction Activity"
+              stroke="hsl(var(--muted-foreground))"
+              fontSize={isMobile ? 11 : 12}
+              width={isMobile ? 60 : 80}
+            />
+            <ChartTooltip 
+              cursor={{ strokeDasharray: '3 3' }}
+              content={
+                <ChartTooltipContent 
+                  formatter={(value, name, props) => {
+                    if (name === 'totalSalary') {
+                      return [formatCurrency(Number(value)), 'Total Salary'];
+                    }
+                    return [value, 'Transactions'];
+                  }}
+                  labelFormatter={(label, payload) => {
+                    const data = payload?.[0]?.payload;
+                    return data ? (
+                      <div className="space-y-1">
+                        <div className="font-semibold">{data.fullTeamName}</div>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <div>Players: {data.totalPlayers}</div>
+                          <div>Efficiency Score: {data.efficiencyScore.toFixed(2)}</div>
                         </div>
-                      ) : label;
-                    }}
-                  />
-                }
-              />
-              <Scatter 
-                name="Teams" 
-                dataKey="transactionActivity" 
-                fill="hsl(var(--primary))"
-                stroke="hsl(var(--primary-foreground))"
-                strokeWidth={1}
-                r={isMobile ? 5 : 7}
-              />
-            </ScatterChart>
-          </ResponsiveContainer>
-        </ChartContainer>
+                      </div>
+                    ) : label;
+                  }}
+                />
+              }
+            />
+            <Scatter 
+              name="Teams" 
+              dataKey="transactionActivity" 
+              fill="hsl(var(--primary))"
+              stroke="hsl(var(--primary-foreground))"
+              strokeWidth={1}
+              r={isMobile ? 5 : 7}
+            />
+          </ScatterChart>
+        </ResponsiveContainer>
+      </div>
 
-        {/* Analysis Summary */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-3 rounded-lg bg-muted/20">
-            <h4 className="font-medium text-sm mb-2">Most Active Team</h4>
-            <div className="space-y-1">
-              {(() => {
-                const mostActive = chartData.reduce((max, team) => 
-                  team.transactionActivity > max.transactionActivity ? team : max
-                , chartData[0]);
-                return (
-                  <div>
-                    <div className="font-medium">{mostActive?.fullTeamName}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {mostActive?.transactionActivity} transactions
-                    </div>
+      {/* Analysis Summary */}
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-3 rounded-lg bg-muted/20">
+          <h4 className="font-medium text-sm mb-2">Most Active Team</h4>
+          <div className="space-y-1">
+            {(() => {
+              const mostActive = chartData.reduce((max, team) => 
+                team.transactionActivity > max.transactionActivity ? team : max
+              , chartData[0]);
+              return (
+                <div>
+                  <div className="font-medium">{mostActive?.fullTeamName}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {mostActive?.transactionActivity} transactions
                   </div>
-                );
-              })()}
-            </div>
-          </div>
-
-          <div className="p-3 rounded-lg bg-muted/20">
-            <h4 className="font-medium text-sm mb-2">Highest Spender</h4>
-            <div className="space-y-1">
-              {(() => {
-                const highestSpender = chartData.reduce((max, team) => 
-                  team.totalSalary > max.totalSalary ? team : max
-                , chartData[0]);
-                return (
-                  <div>
-                    <div className="font-medium">{highestSpender?.fullTeamName}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {formatCurrency(highestSpender?.totalSalary)}
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
-      </CardContent>
-    </Card>
+
+        <div className="p-3 rounded-lg bg-muted/20">
+          <h4 className="font-medium text-sm mb-2">Highest Spender</h4>
+          <div className="space-y-1">
+            {(() => {
+              const highestSpender = chartData.reduce((max, team) => 
+                team.totalSalary > max.totalSalary ? team : max
+              , chartData[0]);
+              return (
+                <div>
+                  <div className="font-medium">{highestSpender?.fullTeamName}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {formatCurrency(highestSpender?.totalSalary)}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

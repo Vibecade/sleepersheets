@@ -81,85 +81,83 @@ const PositionValueChart: React.FC<PositionValueChartProps> = ({
   };
 
   return (
-    <Card className="glass-card">
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <span>Position Value Distribution</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className={isMobile ? "h-80" : "h-80"}>
-          <ResponsiveContainer width="100%" height="100%" minHeight={320}>
-            <PieChart>
-              <Pie
-                data={positionData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ position, value, percent }) => 
-                  percent > 0.08 && !isMobile ? `${position} ${(percent * 100).toFixed(1)}%` : ''
-                }
-                outerRadius={isMobile ? 80 : 100}
-                fill="#8884d8"
-                dataKey="totalSalary"
-              >
-                {positionData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
-                ))}
-              </Pie>
-              <ChartTooltip 
-                content={
-                  <ChartTooltipContent 
-                    formatter={(value, name, props) => [
-                      formatCurrency(Number(value)),
-                      'Total Value'
-                    ]}
-                    labelFormatter={(label, payload) => {
-                      const data = payload?.[0]?.payload;
-                      return data ? (
-                        <div className="space-y-1">
-                          <div className="font-semibold">{data.position}</div>
-                          <div className="text-sm text-muted-foreground space-y-1">
-                            <div>{data.count} players</div>
-                            <div>Avg: {formatCurrency(data.averageSalary)}</div>
-                            <div>{((data.totalSalary / totalValue) * 100).toFixed(1)}% of total</div>
-                          </div>
+    <div className="space-y-4">
+      <div>
+        <h3 className="text-lg font-semibold mb-1">Position Value Distribution</h3>
+        <p className="text-sm text-muted-foreground">Total salary allocation by position</p>
+      </div>
+      
+      <div className={`w-full ${isMobile ? 'h-[400px]' : 'h-80'}`}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={positionData}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={({ position, value, percent }) => 
+                percent > 0.08 && !isMobile ? `${position} ${(percent * 100).toFixed(1)}%` : ''
+              }
+              outerRadius={isMobile ? 90 : 100}
+              fill="#8884d8"
+              dataKey="totalSalary"
+            >
+              {positionData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill} />
+              ))}
+            </Pie>
+            <ChartTooltip 
+              content={
+                <ChartTooltipContent 
+                  formatter={(value, name, props) => [
+                    formatCurrency(Number(value)),
+                    'Total Value'
+                  ]}
+                  labelFormatter={(label, payload) => {
+                    const data = payload?.[0]?.payload;
+                    return data ? (
+                      <div className="space-y-1">
+                        <div className="font-semibold">{data.position}</div>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <div>{data.count} players</div>
+                          <div>Avg: {formatCurrency(data.averageSalary)}</div>
+                          <div>{((data.totalSalary / totalValue) * 100).toFixed(1)}% of total</div>
                         </div>
-                      ) : label;
-                    }}
-                  />
-                }
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartContainer>
+                      </div>
+                    ) : label;
+                  }}
+                />
+              }
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
 
-        {/* Position Breakdown Table */}
-        <div className="mt-6">
-          <h4 className="text-sm font-medium mb-3">Detailed Breakdown</h4>
-          <div className="space-y-2">
-            {positionData.map((pos, index) => (
-              <div key={index} className="flex justify-between items-center p-2 rounded-lg bg-muted/20">
-                <div className="flex items-center space-x-3">
-                  <div 
-                    className="w-3 h-3 rounded-full flex-shrink-0" 
-                    style={{ backgroundColor: pos.fill }}
-                  />
-                  <span className="font-medium">{pos.position}</span>
-                  <span className="text-sm text-muted-foreground">({pos.count} players)</span>
-                </div>
-                <div className="text-right">
-                  <div className="font-medium">{formatCurrency(pos.totalSalary)}</div>
-                  <div className="text-xs text-muted-foreground">
-                    Avg: {formatCurrency(pos.averageSalary)}
-                  </div>
+      {/* Position Breakdown Table */}
+      <div className="mt-6">
+        <h4 className="text-sm font-medium mb-3">Detailed Breakdown</h4>
+        <div className="space-y-2">
+          {positionData.map((pos, index) => (
+            <div key={index} className="flex justify-between items-center p-2 rounded-lg bg-muted/20">
+              <div className="flex items-center space-x-3">
+                <div 
+                  className="w-3 h-3 rounded-full flex-shrink-0" 
+                  style={{ backgroundColor: pos.fill }}
+                />
+                <span className="font-medium">{pos.position}</span>
+                <span className="text-sm text-muted-foreground">({pos.count} players)</span>
+              </div>
+              <div className="text-right">
+                <div className="font-medium">{formatCurrency(pos.totalSalary)}</div>
+                <div className="text-xs text-muted-foreground">
+                  Avg: {formatCurrency(pos.averageSalary)}
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
