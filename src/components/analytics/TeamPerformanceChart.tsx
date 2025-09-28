@@ -88,72 +88,81 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
     },
   };
 
+  if (!chartData?.length) {
+    return (
+      <div className="flex items-center justify-center h-64 text-muted-foreground">
+        No performance data available
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <div className={`w-full ${isMobile ? 'h-[400px]' : 'h-80'} overflow-hidden`}>
-        <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart
-            data={chartData}
-            margin={{ 
-              top: 20, 
-              right: isMobile ? 15 : 30, 
-              left: isMobile ? 20 : 30, 
-              bottom: isMobile ? 60 : 40 
-            }}
-          >
-            <XAxis 
-              type="number"
-              dataKey="totalSalary"
-              name="Total Salary"
-              tickFormatter={formatCurrency}
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={isMobile ? 11 : 12}
-              width={isMobile ? 80 : 100}
-            />
-            <YAxis 
-              type="number"
-              dataKey="transactionActivity"
-              name="Transaction Activity"
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={isMobile ? 11 : 12}
-              width={isMobile ? 60 : 80}
-            />
-            <ChartTooltip 
-              cursor={{ strokeDasharray: '3 3' }}
-              content={
-                <ChartTooltipContent 
-                  formatter={(value, name, props) => {
-                    if (name === 'totalSalary') {
-                      return [formatCurrency(Number(value)), 'Total Salary'];
-                    }
-                    return [value, 'Transactions'];
-                  }}
-                  labelFormatter={(label, payload) => {
-                    const data = payload?.[0]?.payload;
-                    return data ? (
-                      <div className="space-y-1">
-                        <div className="font-semibold">{data.fullTeamName}</div>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <div>Players: {data.totalPlayers}</div>
-                          <div>Efficiency Score: {data.efficiencyScore.toFixed(2)}</div>
-                        </div>
+      <ChartContainer 
+        config={chartConfig} 
+        className={`w-full ${isMobile ? 'h-[400px]' : 'h-80'} overflow-hidden`}
+      >
+        <ScatterChart
+          data={chartData}
+          margin={{ 
+            top: 20, 
+            right: isMobile ? 15 : 30, 
+            left: isMobile ? 20 : 30, 
+            bottom: isMobile ? 60 : 40 
+          }}
+        >
+          <XAxis 
+            type="number"
+            dataKey="totalSalary"
+            name="Total Salary"
+            tickFormatter={formatCurrency}
+            stroke="hsl(var(--muted-foreground))"
+            fontSize={isMobile ? 11 : 12}
+            width={isMobile ? 80 : 100}
+          />
+          <YAxis 
+            type="number"
+            dataKey="transactionActivity"
+            name="Transaction Activity"
+            stroke="hsl(var(--muted-foreground))"
+            fontSize={isMobile ? 11 : 12}
+            width={isMobile ? 60 : 80}
+          />
+          <ChartTooltip 
+            cursor={{ strokeDasharray: '3 3' }}
+            content={
+              <ChartTooltipContent 
+                formatter={(value, name, props) => {
+                  if (name === 'totalSalary') {
+                    return [formatCurrency(Number(value)), 'Total Salary'];
+                  }
+                  return [value, 'Transactions'];
+                }}
+                labelFormatter={(label, payload) => {
+                  const data = payload?.[0]?.payload;
+                  return data ? (
+                    <div className="space-y-1">
+                      <div className="font-semibold">{data.fullTeamName}</div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div>Players: {data.totalPlayers}</div>
+                        <div>Efficiency Score: {data.efficiencyScore.toFixed(2)}</div>
                       </div>
-                    ) : label;
-                  }}
-                />
-              }
-            />
-            <Scatter 
-              name="Teams" 
-              dataKey="transactionActivity" 
-              fill="hsl(var(--primary))"
-              stroke="hsl(var(--primary-foreground))"
-              strokeWidth={1}
-              r={isMobile ? 5 : 7}
-            />
-          </ScatterChart>
-        </ResponsiveContainer>
-      </div>
+                    </div>
+                  ) : label;
+                }}
+              />
+            }
+          />
+          <Scatter 
+            name="Teams" 
+            dataKey="transactionActivity" 
+            fill="hsl(var(--primary))"
+            stroke="hsl(var(--primary-foreground))"
+            strokeWidth={1}
+            r={isMobile ? 5 : 7}
+          />
+        </ScatterChart>
+      </ChartContainer>
 
       {/* Analysis Summary */}
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">

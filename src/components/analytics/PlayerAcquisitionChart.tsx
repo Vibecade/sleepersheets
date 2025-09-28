@@ -103,55 +103,64 @@ const PlayerAcquisitionChart: React.FC<PlayerAcquisitionChartProps> = ({
       .sort((a, b) => b.total - a.total);
   }, [acquisitionData, positions]);
 
+  if (!acquisitionData?.length) {
+    return (
+      <div className="flex items-center justify-center h-64 text-muted-foreground">
+        No acquisition data available
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <div className={`w-full ${isMobile ? 'h-[400px]' : 'h-80'} overflow-hidden`}>
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={acquisitionData}
-            margin={{ 
-              top: 20, 
-              right: isMobile ? 15 : 30, 
-              left: isMobile ? 15 : 20, 
-              bottom: isMobile ? 120 : 70 
-            }}
-          >
-            <XAxis 
-              dataKey="week"
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={isMobile ? 11 : 12}
-              angle={-90}
-              textAnchor="end"
-              height={isMobile ? 120 : 80}
-              interval={0}
-            />
-            <YAxis 
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={isMobile ? 11 : 12}
-              width={isMobile ? 50 : 60}
-            />
-            <ChartTooltip 
-              content={
-                <ChartTooltipContent 
-                  formatter={(value, name) => [value, name]}
-                  labelFormatter={(label) => `${label}`}
-                />
-              }
-            />
-            {positions.map((position, index) => (
-              <Area
-                key={position}
-                type="monotone"
-                dataKey={position}
-                stackId="1"
-                stroke={positionColors[position as keyof typeof positionColors]}
-                fill={positionColors[position as keyof typeof positionColors]}
-                fillOpacity={0.6}
+      <ChartContainer 
+        config={chartConfig} 
+        className={`w-full ${isMobile ? 'h-[400px]' : 'h-80'} overflow-hidden`}
+      >
+        <AreaChart
+          data={acquisitionData}
+          margin={{ 
+            top: 20, 
+            right: isMobile ? 15 : 30, 
+            left: isMobile ? 15 : 20, 
+            bottom: isMobile ? 120 : 70 
+          }}
+        >
+          <XAxis 
+            dataKey="week"
+            stroke="hsl(var(--muted-foreground))"
+            fontSize={isMobile ? 11 : 12}
+            angle={-90}
+            textAnchor="end"
+            height={isMobile ? 120 : 80}
+            interval={0}
+          />
+          <YAxis 
+            stroke="hsl(var(--muted-foreground))"
+            fontSize={isMobile ? 11 : 12}
+            width={isMobile ? 50 : 60}
+          />
+          <ChartTooltip 
+            content={
+              <ChartTooltipContent 
+                formatter={(value, name) => [value, name]}
+                labelFormatter={(label) => `${label}`}
               />
-            ))}
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+            }
+          />
+          {positions.map((position, index) => (
+            <Area
+              key={position}
+              type="monotone"
+              dataKey={position}
+              stackId="1"
+              stroke={positionColors[position as keyof typeof positionColors]}
+              fill={positionColors[position as keyof typeof positionColors]}
+              fillOpacity={0.6}
+            />
+          ))}
+        </AreaChart>
+      </ChartContainer>
 
       {/* Position Summary */}
       <div>

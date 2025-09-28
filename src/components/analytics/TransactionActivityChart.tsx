@@ -68,51 +68,60 @@ const TransactionActivityChart: React.FC<TransactionActivityChartProps> = ({
     })).sort((a, b) => b.count - a.count);
   }, [transactions]);
 
+  if (!chartData?.length) {
+    return (
+      <div className="flex items-center justify-center h-64 text-muted-foreground">
+        No transaction data available
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <div className={`w-full ${isMobile ? 'h-[400px]' : 'h-64'} overflow-hidden`}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart 
-            data={chartData} 
-            margin={{ 
-              top: 20, 
-              right: isMobile ? 15 : 30, 
-              left: isMobile ? 15 : 20, 
-              bottom: isMobile ? 100 : 60 
-            }}
-          >
-            <XAxis 
-              dataKey="week" 
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={isMobile ? 11 : 12}
-              angle={-90}
-              textAnchor="end"
-              height={isMobile ? 100 : 60}
-              interval={0}
-            />
-            <YAxis 
-              stroke="hsl(var(--muted-foreground))"
-              fontSize={isMobile ? 11 : 12}
-              width={isMobile ? 50 : 60}
-            />
-            <ChartTooltip 
-              content={
-                <ChartTooltipContent 
-                  formatter={(value) => [value, 'Transactions']}
-                />
-              }
-            />
-            <Line 
-              type="monotone" 
-              dataKey="transactions" 
-              stroke="hsl(var(--chart-1))"
-              strokeWidth={2}
-              dot={{ fill: 'hsl(var(--chart-1))', r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      <ChartContainer 
+        config={chartConfig} 
+        className={`w-full ${isMobile ? 'h-[400px]' : 'h-64'} overflow-hidden`}
+      >
+        <LineChart 
+          data={chartData} 
+          margin={{ 
+            top: 20, 
+            right: isMobile ? 15 : 30, 
+            left: isMobile ? 15 : 20, 
+            bottom: isMobile ? 100 : 60 
+          }}
+        >
+          <XAxis 
+            dataKey="week" 
+            stroke="hsl(var(--muted-foreground))"
+            fontSize={isMobile ? 11 : 12}
+            angle={-90}
+            textAnchor="end"
+            height={isMobile ? 100 : 60}
+            interval={0}
+          />
+          <YAxis 
+            stroke="hsl(var(--muted-foreground))"
+            fontSize={isMobile ? 11 : 12}
+            width={isMobile ? 50 : 60}
+          />
+          <ChartTooltip 
+            content={
+              <ChartTooltipContent 
+                formatter={(value) => [value, 'Transactions']}
+              />
+            }
+          />
+          <Line 
+            type="monotone" 
+            dataKey="transactions" 
+            stroke="hsl(var(--chart-1))"
+            strokeWidth={2}
+            dot={{ fill: 'hsl(var(--chart-1))', r: 4 }}
+            activeDot={{ r: 6 }}
+          />
+        </LineChart>
+      </ChartContainer>
 
       {/* Transaction Type Breakdown */}
       <div>

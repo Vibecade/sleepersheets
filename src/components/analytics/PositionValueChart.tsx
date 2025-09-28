@@ -80,6 +80,14 @@ const PositionValueChart: React.FC<PositionValueChartProps> = ({
     },
   };
 
+  if (!positionData?.length) {
+    return (
+      <div className="flex items-center justify-center h-64 text-muted-foreground">
+        No position data available
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div>
@@ -87,51 +95,52 @@ const PositionValueChart: React.FC<PositionValueChartProps> = ({
         <p className="text-sm text-muted-foreground">Total salary allocation by position</p>
       </div>
       
-      <div className={`w-full ${isMobile ? 'h-[400px]' : 'h-80'}`}>
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={positionData}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={({ position, value, percent }) => 
-                percent > 0.08 && !isMobile ? `${position} ${(percent * 100).toFixed(1)}%` : ''
-              }
-              outerRadius={isMobile ? 90 : 100}
-              fill="#8884d8"
-              dataKey="totalSalary"
-            >
-              {positionData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.fill} />
-              ))}
-            </Pie>
-            <ChartTooltip 
-              content={
-                <ChartTooltipContent 
-                  formatter={(value, name, props) => [
-                    formatCurrency(Number(value)),
-                    'Total Value'
-                  ]}
-                  labelFormatter={(label, payload) => {
-                    const data = payload?.[0]?.payload;
-                    return data ? (
-                      <div className="space-y-1">
-                        <div className="font-semibold">{data.position}</div>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <div>{data.count} players</div>
-                          <div>Avg: {formatCurrency(data.averageSalary)}</div>
-                          <div>{((data.totalSalary / totalValue) * 100).toFixed(1)}% of total</div>
-                        </div>
+      <ChartContainer 
+        config={chartConfig} 
+        className={`w-full ${isMobile ? 'h-[400px]' : 'h-80'} overflow-hidden`}
+      >
+        <PieChart>
+          <Pie
+            data={positionData}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            label={({ position, value, percent }) => 
+              percent > 0.08 && !isMobile ? `${position} ${(percent * 100).toFixed(1)}%` : ''
+            }
+            outerRadius={isMobile ? 90 : 100}
+            fill="#8884d8"
+            dataKey="totalSalary"
+          >
+            {positionData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.fill} />
+            ))}
+          </Pie>
+          <ChartTooltip 
+            content={
+              <ChartTooltipContent 
+                formatter={(value, name, props) => [
+                  formatCurrency(Number(value)),
+                  'Total Value'
+                ]}
+                labelFormatter={(label, payload) => {
+                  const data = payload?.[0]?.payload;
+                  return data ? (
+                    <div className="space-y-1">
+                      <div className="font-semibold">{data.position}</div>
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div>{data.count} players</div>
+                        <div>Avg: {formatCurrency(data.averageSalary)}</div>
+                        <div>{((data.totalSalary / totalValue) * 100).toFixed(1)}% of total</div>
                       </div>
-                    ) : label;
-                  }}
-                />
-              }
-            />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
+                    </div>
+                  ) : label;
+                }}
+              />
+            }
+          />
+        </PieChart>
+      </ChartContainer>
 
       {/* Position Breakdown Table */}
       <div className="mt-6">

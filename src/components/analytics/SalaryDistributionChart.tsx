@@ -99,68 +99,77 @@ const SalaryDistributionChart: React.FC<SalaryDistributionChartProps> = ({
     },
   };
 
+  if (!chartData?.length) {
+    return (
+      <div className="flex items-center justify-center h-64 text-muted-foreground">
+        No salary data available
+      </div>
+    );
+  }
+
   return (
-    <div className={`w-full ${isMobile ? 'h-[500px]' : 'h-80'} overflow-hidden`}>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart 
-          data={chartData} 
-          margin={{ 
-            top: 20, 
-            right: isMobile ? 15 : 20, 
-            left: isMobile ? 15 : 20, 
-            bottom: isMobile ? 140 : 80 
-          }}
-        >
-          <XAxis 
-            dataKey="team" 
-            angle={-90}
-            textAnchor="end"
-            height={isMobile ? 140 : 80}
-            fontSize={isMobile ? 11 : 12}
-            stroke="hsl(var(--muted-foreground))"
-            interval={0}
-          />
-          <YAxis 
-            stroke="hsl(var(--muted-foreground))"
-            fontSize={isMobile ? 11 : 12}
-            tickFormatter={formatSalary}
-            domain={[0, 'dataMax']}
-            width={isMobile ? 60 : 80}
-          />
-          <ChartTooltip 
-            content={
-              <ChartTooltipContent 
-                formatter={(value, name, props) => [
-                  formatSalary(Number(value)),
-                  'Total Salary'
-                ]}
-                labelFormatter={(label, payload) => {
-                  const data = payload?.[0]?.payload;
-                  return data ? (
-                    <div className="space-y-1">
-                      <div className="font-semibold">{data.fullTeamName}</div>
-                      <div className="text-sm text-muted-foreground space-y-1">
-                        <div>Active: {formatSalary(data.activeSalary)}</div>
-                        {data.deadCap > 0 && <div>Dead Cap: {formatSalary(data.deadCap)}</div>}
-                        <div>{data.capPercentage.toFixed(1)}% of cap used</div>
-                        <div className="text-xs">
-                          {data.totalPlayers} total players ({data.activePlayers} active, {data.reservePlayers} reserve, {data.taxiPlayers} taxi)
-                        </div>
+    <ChartContainer 
+      config={chartConfig} 
+      className={`w-full ${isMobile ? 'h-[500px]' : 'h-80'} overflow-hidden`}
+    >
+      <BarChart 
+        data={chartData} 
+        margin={{ 
+          top: 20, 
+          right: isMobile ? 15 : 20, 
+          left: isMobile ? 15 : 20, 
+          bottom: isMobile ? 140 : 80 
+        }}
+      >
+        <XAxis 
+          dataKey="team" 
+          angle={-90}
+          textAnchor="end"
+          height={isMobile ? 140 : 80}
+          fontSize={isMobile ? 11 : 12}
+          stroke="hsl(var(--muted-foreground))"
+          interval={0}
+        />
+        <YAxis 
+          stroke="hsl(var(--muted-foreground))"
+          fontSize={isMobile ? 11 : 12}
+          tickFormatter={formatSalary}
+          domain={[0, 'dataMax']}
+          width={isMobile ? 60 : 80}
+        />
+        <ChartTooltip 
+          content={
+            <ChartTooltipContent 
+              formatter={(value, name, props) => [
+                formatSalary(Number(value)),
+                'Total Salary'
+              ]}
+              labelFormatter={(label, payload) => {
+                const data = payload?.[0]?.payload;
+                return data ? (
+                  <div className="space-y-1">
+                    <div className="font-semibold">{data.fullTeamName}</div>
+                    <div className="text-sm text-muted-foreground space-y-1">
+                      <div>Active: {formatSalary(data.activeSalary)}</div>
+                      {data.deadCap > 0 && <div>Dead Cap: {formatSalary(data.deadCap)}</div>}
+                      <div>{data.capPercentage.toFixed(1)}% of cap used</div>
+                      <div className="text-xs">
+                        {data.totalPlayers} total players ({data.activePlayers} active, {data.reservePlayers} reserve, {data.taxiPlayers} taxi)
                       </div>
                     </div>
-                  ) : label;
-                }}
-              />
-            }
-          />
-          <Bar 
-            dataKey="totalSalary" 
-            fill="hsl(var(--primary))"
-            radius={[4, 4, 0, 0]}
-          />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+                  </div>
+                ) : label;
+              }}
+            />
+          }
+        />
+        <Bar 
+          dataKey="totalSalary" 
+          fill="hsl(var(--primary))"
+          radius={[4, 4, 0, 0]}
+        />
+      </BarChart>
+    </ChartContainer>
   );
 };
 
