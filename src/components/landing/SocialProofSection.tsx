@@ -1,35 +1,15 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, Users, Trophy, TrendingUp, Quote } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Star, Quote, Twitter, MessageCircle } from 'lucide-react';
 
 const SocialProofSection: React.FC = () => {
-  const features = [
-    {
-      icon: Users,
-      title: 'League Management',
-      description: 'Complete salary cap and roster management',
-      color: 'text-primary'
-    },
-    {
-      icon: Trophy,
-      title: 'Contract Tracking',
-      description: 'Multi-year contract management with dead cap',
-      color: 'text-secondary'
-    },
-    {
-      icon: TrendingUp,
-      title: 'Trade Simulation',
-      description: 'Advanced trade analyzer with salary impact',
-      color: 'text-success'
-    }
-  ];
-
   const testimonials = [
     {
       quote: "SleeperSheets completely transformed how we manage our 12-team dynasty league. The salary cap tracking is flawless and the trade simulator has saved us countless hours of manual calculations.",
       author: "Mike Chen",
-      role: "League Commissioner",
+      role: "League Commissioner",  
       league: "Dynasty Warriors League",
       rating: 5
     },
@@ -37,7 +17,7 @@ const SocialProofSection: React.FC = () => {
       quote: "I use SleeperSheets for both my dynasty league and regular redraft leagues. The performance analytics help me see how I'm doing vs league averages, and the export features are perfect for our season recap.",
       author: "Sarah Johnson", 
       role: "Fantasy Manager",
-      league: "Elite Fantasy Football",
+      league: "Elite Fantasy Football", 
       rating: 5
     },
     {
@@ -61,31 +41,35 @@ const SocialProofSection: React.FC = () => {
   return (
     <section className="py-16 sm:py-20 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* Features Section */}
+        {/* Community Section */}
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-            Built for <span className="gradient-text">Fantasy Champions</span>
+            Join the <span className="gradient-text">Fantasy Community</span>
           </h2>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
-            Professional-grade tools for dynasty, keeper, and regular league management with advanced insights.
+            Connect with fellow fantasy managers, share strategies, and stay updated on the latest features.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <div key={index} className="glass-card p-8 text-center hover-lift">
-                <div className="flex justify-center mb-4">
-                  <div className="p-3 rounded-xl bg-background/50">
-                    <feature.icon className={`w-8 h-8 ${feature.color}`} />
-                  </div>
-                </div>
-                <div className="text-xl font-bold mb-2">
-                  {feature.title}
-                </div>
-                <div className="text-muted-foreground">
-                  {feature.description}
-                </div>
-              </div>
-            ))}
+          <div className="flex justify-center gap-6">
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="glass-card hover-lift group"
+              onClick={() => {/* Twitter link will be added later */}}
+            >
+              <Twitter className="w-5 h-5 mr-2 group-hover:text-primary transition-colors" />
+              Follow on Twitter
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="glass-card hover-lift group"
+              onClick={() => {/* Discord link will be added later */}}
+            >
+              <MessageCircle className="w-5 h-5 mr-2 group-hover:text-primary transition-colors" />
+              Join Discord
+            </Button>
           </div>
         </div>
 
