@@ -54,12 +54,17 @@ const IndexContent = React.memo(() => {
     showLeagueSelection,
   } = useLeagueManager();
 
-  // Auto-show league connection interface when user signs in
+  // Auto-show league connection interface when user signs in, reset on logout
   useEffect(() => {
     if (user) {
       setShowLeagueConnection(true);
       setUserIsInteracting(true);
       setIsHeaderCompact(true);
+    } else {
+      // Reset state when user logs out
+      setShowLeagueConnection(false);
+      setUserIsInteracting(false);
+      setIsHeaderCompact(false);
     }
   }, [user]);
 

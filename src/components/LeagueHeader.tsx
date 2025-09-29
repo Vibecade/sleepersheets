@@ -72,8 +72,6 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
               
               <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                 <span className="font-medium">Season {league.season}</span>
-                <span className="w-1 h-1 bg-muted-foreground/40 rounded-full"></span>
-                <span>Week {league.settings?.week || 'N/A'}</span>
                 {lastRefreshed && (
                   <>
                     <span className="w-1 h-1 bg-muted-foreground/40 rounded-full"></span>
