@@ -39,6 +39,8 @@ const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
           <AvatarImage 
             src={user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user.avatar}` : undefined} 
             alt={`${teamName} avatar`}
+            loading="lazy"
+            decoding="async"
           />
           <AvatarFallback className="bg-gradient-to-br from-primary/80 to-primary text-primary-foreground font-bold text-sm">
             {teamName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
