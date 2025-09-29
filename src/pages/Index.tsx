@@ -74,6 +74,9 @@ const IndexContent = React.memo(() => {
   };
 
   const handleGetStartedOptionSelect = (option: 'connect' | 'auth' | 'demo') => {
+    // Ensure modal is closed first
+    setShowGetStartedModal(false);
+    
     switch (option) {
       case 'connect':
         setShowLeagueConnection(true);
@@ -84,7 +87,10 @@ const IndexContent = React.memo(() => {
         break;
       case 'auth':
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        navigate('/auth');
+        // Small delay to ensure React processes modal closing before navigation
+        setTimeout(() => {
+          navigate('/auth');
+        }, 100);
         break;
       case 'demo':
         setDemoMode(true);

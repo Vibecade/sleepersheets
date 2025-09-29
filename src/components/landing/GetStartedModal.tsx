@@ -59,8 +59,12 @@ const GetStartedModal: React.FC<GetStartedModalProps> = ({
   ];
 
   const handleSelectOption = (optionId: string) => {
-    onSelectOption(optionId as 'connect' | 'auth' | 'demo');
+    // Close modal first to prevent race conditions
     onClose();
+    // Delay the callback to ensure modal is fully closed before navigation
+    setTimeout(() => {
+      onSelectOption(optionId as 'connect' | 'auth' | 'demo');
+    }, 150);
   };
 
   return (
