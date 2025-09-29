@@ -1,24 +1,44 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import PageHead from '@/components/PageHead';
 
 const TermsOfService = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 p-4">
+    <div className="min-h-screen">
       <PageHead 
         title="Terms of Service"
         description="Terms of Service for SleeperSheets - Rules and guidelines for using our fantasy football salary cap management tool."
         canonicalUrl="https://sleepersheets.com/terms"
       />
       
-      <div className="max-w-4xl mx-auto py-8">
+      {/* Header */}
+      <div className="glass-header border-b border-white/10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 animate-pulse"></div>
+        <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
+          <div className="flex items-center space-x-4">
+            <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl p-4 shadow-2xl">
+              <FileText className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold gradient-text mb-2">Terms of Service</h1>
+              <p className="text-gray-300 text-lg">Rules and guidelines for using SleeperSheets</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 py-12">
         <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold text-center">Terms of Service</CardTitle>
-            <p className="text-gray-400 text-center">Last updated: {new Date().toLocaleDateString()}</p>
-          </CardHeader>
-          <CardContent className="prose prose-invert max-w-none">
+          <CardContent className="prose prose-invert max-w-none pt-6">
             <div className="space-y-6 text-gray-300">
               <section>
                 <h2 className="text-xl font-semibold text-white mb-3">1. Acceptance of Terms</h2>

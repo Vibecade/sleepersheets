@@ -4,11 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Copy, CheckCircle, Sparkles, FileSpreadsheet, Bot } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 const HowTo = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const chatGptPrompt = `I am uploading my Sleeper fantasy football league export files. Please create a formatted, multi-sheet Google Sheets document for me with the following requirements:
 
@@ -71,11 +72,9 @@ const HowTo = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 animate-pulse"></div>
         <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
           <div className="flex items-center space-x-4">
-            <Link to="/">
-              <Button variant="outline" size="icon">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
+            <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
             <div className="bg-gradient-to-br from-emerald-400 via-blue-500 to-purple-600 rounded-2xl p-4 shadow-2xl pulse-glow">
               <Bot className="w-8 h-8 text-white" />
             </div>
@@ -212,12 +211,10 @@ const HowTo = () => {
 
         {/* CTA */}
         <div className="text-center pt-8">
-          <Link to="/">
-            <Button size="lg" className="px-8 py-4 text-lg">
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Start Exporting Your Data
-            </Button>
-          </Link>
+          <Button size="lg" className="px-8 py-4 text-lg" onClick={() => navigate(-1)}>
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Return to League
+          </Button>
         </div>
       </div>
     </div>

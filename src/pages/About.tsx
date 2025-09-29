@@ -3,10 +3,12 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trophy, Users, TrendingUp, Shield, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import PageHead from '@/components/PageHead';
 
 const About = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen">
       <PageHead 
@@ -20,11 +22,9 @@ const About = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 animate-pulse"></div>
         <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
           <div className="flex items-center space-x-4">
-            <Link to="/">
-              <Button variant="outline" size="icon">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
+            <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
             <div className="bg-gradient-to-br from-primary to-primary-glow rounded-2xl p-4 shadow-2xl">
               <Trophy className="w-8 h-8 text-primary-foreground" />
             </div>
