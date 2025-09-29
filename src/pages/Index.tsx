@@ -83,6 +83,7 @@ const IndexContent = React.memo(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         break;
       case 'auth':
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         navigate('/auth');
         break;
       case 'demo':

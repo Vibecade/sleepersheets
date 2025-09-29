@@ -13,8 +13,9 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated and scroll to top on mount
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     if (user) {
       navigate('/');
     }
