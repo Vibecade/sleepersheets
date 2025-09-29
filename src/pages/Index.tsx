@@ -54,6 +54,15 @@ const IndexContent = React.memo(() => {
     showLeagueSelection,
   } = useLeagueManager();
 
+  // Auto-show league connection interface when user signs in
+  useEffect(() => {
+    if (user) {
+      setShowLeagueConnection(true);
+      setUserIsInteracting(true);
+      setIsHeaderCompact(true);
+    }
+  }, [user]);
+
   // Auto-compact header when user starts interacting with forms or when league is loaded
   useEffect(() => {
     if ((leagueId.trim() || username.trim()) || leagueData) {
