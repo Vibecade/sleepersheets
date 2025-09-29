@@ -157,10 +157,13 @@ const IndexContent = React.memo(() => {
                   
                   {user ? (
                     <>
-                      {/* Show UserDashboard for users with existing data, otherwise show connection form */}
+                     {/* Show UserDashboard for users with existing data, otherwise show connection form */}
                       <UserDashboard 
                         onSelectLeague={handleSelectLeague} 
-                        onConnectLeague={() => setShowLeagueConnection(true)} 
+                        onConnectLeague={() => {
+                          setShowLeagueConnection(true);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }} 
                         showConnectionForm={!userLeaguesData && !showLeagueSelection}
                       />
                       

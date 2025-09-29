@@ -34,8 +34,8 @@ export const useLeagueManager = () => {
   });
 
   const { 
-    handleLeagueSubmit, 
-    handleUsernameSubmit,
+    handleLeagueSubmit: originalHandleLeagueSubmit, 
+    handleUsernameSubmit: originalHandleUsernameSubmit,
     handleQuickLoadFirstLeague,
     handleSelectLeague: handleSelectLeagueFromUsername,
     handleBackToForm,
@@ -48,6 +48,17 @@ export const useLeagueManager = () => {
     usernameFromInput: username,
     setLeagueId: setActiveLeagueId,
   });
+
+  // Wrap submission handlers with scroll-to-top
+  const handleLeagueSubmit = useCallback(async (leagueId?: string) => {
+    await originalHandleLeagueSubmit(leagueId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [originalHandleLeagueSubmit]);
+
+  const handleUsernameSubmit = useCallback(async (username?: string) => {
+    await originalHandleUsernameSubmit(username);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [originalHandleUsernameSubmit]);
 
   useEffect(() => {
     if (error) {
@@ -132,6 +143,9 @@ export const useLeagueManager = () => {
     if (currentLeagueInUrl !== selectedLeagueId) {
       setLeagueInUrl(selectedLeagueId);
     }
+    
+    // Scroll to top when switching leagues
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [setLeagueInUrl]);
 
   const handleBackToLeagues = useCallback(() => {

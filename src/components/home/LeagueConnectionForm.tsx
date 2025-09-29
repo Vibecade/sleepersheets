@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -45,6 +45,11 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
   const [smartInput, setSmartInput] = useState<string>('');
   const [inputError, setInputError] = useState<string>('');
   const { toast } = useToast();
+
+  // Scroll to top when component mounts (defensive measure)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   // Detect input type and provide smart hints
   const inputDetection = useMemo(() => {
