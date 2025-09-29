@@ -6,7 +6,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import UserMenu from '@/components/UserMenu';
-import HeaderNavigation from '@/components/HeaderNavigation';
 
 interface LeagueHeaderProps {
   isCompact?: boolean;
@@ -26,7 +25,6 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
   if (isCompact) {
     return (
       <div className="text-center py-3 px-4 relative field-pattern animate-header-compact">
-        <HeaderNavigation />
         
         {/* Compact Header */}
         <div className="flex items-center justify-between max-w-6xl mx-auto">
@@ -71,7 +69,6 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
 
   return (
     <div className="text-center py-8 sm:py-12 lg:py-16 px-4 relative field-pattern animate-header-expand">
-      <HeaderNavigation />
       
       {/* Stadium Command Center Header */}
       <div className="absolute top-4 right-4 z-10 flex items-center space-x-2">

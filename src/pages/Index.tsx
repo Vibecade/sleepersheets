@@ -5,6 +5,7 @@ import { useLeagueManager } from '@/hooks/useLeagueManager';
 import { DemoProvider, useDemo } from '@/contexts/DemoContext';
 import PageHead from '@/components/PageHead';
 import LeagueHeader from '@/components/home/LeagueHeader';
+import HeaderNavigation from '@/components/HeaderNavigation';
 import Footer from '@/components/Footer';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
@@ -129,6 +130,9 @@ const IndexContent = React.memo(() => {
         description="The ultimate salary cap and contract management tool for your fantasy football dynasty league. Track salaries, manage contracts, simulate trades, and export league data."
       />
       <DemoBanner />
+      
+      {/* Show HeaderNavigation only on landing page */}
+      {!leagueData && !userIsInteracting && <HeaderNavigation />}
       
       {/* Only show LeagueHeader when user is interacting or league data is loaded */}
       {(userIsInteracting || leagueData) && (
