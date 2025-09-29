@@ -1,5 +1,5 @@
 // Standardized cache TTL across all hooks  
-const STANDARD_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+const STANDARD_CACHE_TTL = 5 * 60 * 1000; // Reduced to 5 minutes for better performance
 
 interface CacheEntry<T> {
   data: T;
@@ -12,7 +12,7 @@ class ApiCache {
   private defaultTTL = STANDARD_CACHE_TTL;
   private matchupsTTL = STANDARD_CACHE_TTL; // Unified TTL for consistency
   private requestCounts = new Map<string, { count: number; resetTime: number }>();
-  private maxRequestsPerMinute = 35; // Increased for better user experience
+  private maxRequestsPerMinute = 50; // Increased for better user experience and performance
 
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);

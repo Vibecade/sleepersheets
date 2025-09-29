@@ -35,7 +35,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   clearLeagueCache(targetLeagueId);
 
   const clientId = 'league_fetch';
-  if (!rateLimiter.isAllowed(clientId, 5, 60000)) { // Reduced from 20 to 5 requests per minute
+  if (!rateLimiter.isAllowed(clientId, 10, 60000)) { // Optimized to 10 requests per minute for better performance
     throw new Error('Too many requests. Please wait a moment before trying again.');
   }
 
@@ -81,7 +81,6 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   }
 
   // Fetch transactions from multiple weeks to capture all FAAB activity
-  await new Promise(resolve => setTimeout(resolve, 500)); // Add delay to avoid rate limiting
   
   // Calculate actual current NFL week using the league's season year
   const getCurrentNFLWeek = (leagueSeason: string) => {
@@ -111,9 +110,9 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   console.log(`League: ${league.name} (ID: ${targetLeagueId})`);
   console.log(`Season: ${season}, NFL Week: ${currentNFLWeek}, League Week: ${leagueWeek}, Using Week: ${effectiveCurrentWeek}`);
   
-  // Fetch transactions from a broader range to ensure we capture recent activity
+  // Optimize transaction fetching - only fetch current week and previous week for better performance
   const weeksToFetch = [];
-  for (let week = Math.max(1, effectiveCurrentWeek - 3); week <= effectiveCurrentWeek + 1; week++) {
+  for (let week = Math.max(1, effectiveCurrentWeek - 1); week <= effectiveCurrentWeek; week++) {
     weeksToFetch.push(week);
   }
   
@@ -163,7 +162,6 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     console.log(`- ${t.transaction_id}: ${new Date(t.created).toISOString()}, Bid: $${t.settings?.waiver_bid || 0}`);
   });
   
-  await new Promise(resolve => setTimeout(resolve, 500)); // Add delay to avoid rate limiting
   
   const drafts = await cachedFetch<SleeperDraft[]>(
     `https://api.sleeper.app/v1/league/${targetLeagueId}/drafts`, 
@@ -176,7 +174,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   if (drafts.length > 0) {
     // Only fetch picks for the most recent draft to reduce API calls
     const mostRecentDraft = drafts[0];
-    await new Promise(resolve => setTimeout(resolve, 500)); // Add delay to avoid rate limiting
+    
     
     try {
       const picks = await cachedFetch(
