@@ -40,11 +40,10 @@ export const calculateOptimizedSalaries = ({
   rosters.forEach((roster) => {
     const rosterId = roster.roster_id;
 
-    // Calculate active salaries for each team
+    // Calculate active salaries for each team (exclude IR/reserve players)
     const allPlayerIds = [
       ...(roster.players || []),
-      ...(roster.taxi || []),
-      ...(roster.reserve || [])
+      ...(roster.taxi || [])
     ];
     
     const activeSalary = allPlayerIds.reduce((total, playerId) => {

@@ -23,7 +23,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
   players,
   league
 }) => {
-  const [selectedWeek, setSelectedWeek] = useState(league?.settings?.leg || 1);
+  const [selectedWeek, setSelectedWeek] = useState(1);
   const [transactionType, setTransactionType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
@@ -223,7 +223,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                 onClick={() => {
                   setSearchTerm('');
                   setTransactionType('all');
-                  setSelectedWeek(league?.settings?.leg || 1);
+                  setSelectedWeek(1);
                   setHideFailed(true);
                 }}
                 className="mt-4"

@@ -55,8 +55,7 @@ const SalaryDistributionChart: React.FC<SalaryDistributionChartProps> = ({
       // Calculate active salary using the same method as Fantasy Manager
       const allPlayerIds = [
         ...(roster.players || []),
-        ...(roster.taxi || []),
-        ...(roster.reserve || [])
+        ...(roster.taxi || [])
       ];
       
       const activeSalary = allPlayerIds.reduce((total, playerId) => {

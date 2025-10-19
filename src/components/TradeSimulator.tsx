@@ -60,8 +60,7 @@ const TradeSimulator: React.FC<TradeSimulatorProps> = ({
     
     const allPlayerIds = [
       ...(roster.players || []),
-      ...(roster.taxi || []),
-      ...(roster.reserve || [])
+      ...(roster.taxi || [])
     ];
     
     return allPlayerIds.reduce((total, playerId) => {
@@ -86,8 +85,7 @@ const TradeSimulator: React.FC<TradeSimulatorProps> = ({
     rosters.forEach(roster => {
       const allPlayerIds = [
         ...(roster.players || []),
-        ...(roster.taxi || []),
-        ...(roster.reserve || [])
+        ...(roster.taxi || [])
       ];
       
       allPlayerIds.forEach(playerId => {

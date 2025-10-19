@@ -49,8 +49,7 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
       // Calculate total salary using accurate method
       const allPlayerIds = [
         ...(roster.players || []),
-        ...(roster.taxi || []),
-        ...(roster.reserve || [])
+        ...(roster.taxi || [])
       ];
       
       const totalSalary = allPlayerIds.reduce((sum, playerId) => {

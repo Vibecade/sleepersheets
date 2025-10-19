@@ -34,7 +34,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   transactions = [],
   onResyncData
 }) => {
-  const [selectedWeek, setSelectedWeek] = useState(league?.settings?.leg || 1);
+  const [selectedWeek, setSelectedWeek] = useState(1);
   const [showBonusWins, setShowBonusWins] = useState(false);
   const [expandedTeamId, setExpandedTeamId] = useState<number | null>(null);
   const { matchups, loading: matchupsLoading, getCurrentNFLWeek } = useMatchups(league?.league_id, selectedWeek);
@@ -121,7 +121,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
               <div>
                 <CardTitle className="text-2xl transition-colors duration-200">{league?.name}</CardTitle>
                 <p className="text-gray-400 transition-colors duration-200">
-                  {league?.season} Season • Week {league?.settings?.leg || 1}
+                  {league?.season} Season • Week {currentWeek}
                 </p>
               </div>
             </div>

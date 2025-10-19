@@ -74,8 +74,7 @@ const TeamEfficiencyChart: React.FC<TeamEfficiencyChartProps> = ({
       // Calculate total salary
       const allPlayerIds = [
         ...(roster.players || []),
-        ...(roster.taxi || []),
-        ...(roster.reserve || [])
+        ...(roster.taxi || [])
       ];
       
       const activeSalary = allPlayerIds.reduce((total, playerId) => {

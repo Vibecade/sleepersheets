@@ -63,8 +63,7 @@ const LeagueMetricsCards: React.FC<LeagueMetricsCardsProps> = ({
   const totalLeagueSalary = rosters.reduce((total, roster) => {
     const allPlayerIds = [
       ...(roster.players || []),
-      ...(roster.taxi || []),
-      ...(roster.reserve || [])
+      ...(roster.taxi || [])
     ];
     
     const activeSalary = allPlayerIds.reduce((sum, playerId) => {
