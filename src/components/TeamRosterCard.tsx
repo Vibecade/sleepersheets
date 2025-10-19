@@ -66,7 +66,7 @@ const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
             <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Points</span>
             <div className="mt-1">
               <span className="font-bold text-success text-lg">
-                {roster.settings?.fpts?.toFixed(1) || '0.0'}
+                {roster.settings?.fpts?.toFixed(2) || '0.00'}
               </span>
             </div>
           </div>

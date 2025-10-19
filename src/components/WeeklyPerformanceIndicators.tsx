@@ -68,13 +68,13 @@ export const WeeklyPerformanceIndicators: React.FC<WeeklyPerformanceIndicatorsPr
               >
                 <div className="text-xs space-y-1">
                   <div className="font-medium">Week {week.week}</div>
-                  <div>Team: {week.points.toFixed(1)} pts</div>
-                  <div>League Avg: {weekAverage?.toFixed(1)} pts</div>
+                  <div>Team: {week.points.toFixed(2)} pts</div>
+                  <div>League Avg: {weekAverage?.toFixed(2)} pts</div>
                   <div className={`font-medium ${
                     week.aboveAverage ? 'text-green-400' : 'text-red-400'
                   }`}>
                     {week.aboveAverage ? '+' : ''}
-                    {week.difference.toFixed(1)} pts
+                    {week.difference.toFixed(2)} pts
                     {week.aboveAverage ? ' ✓' : ''}
                   </div>
                   {isExceptional && (

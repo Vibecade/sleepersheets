@@ -66,7 +66,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   }, {} as Record<number, typeof matchups>);
 
   const formatPoints = (points: number) => {
-    return points?.toFixed(1) || '0.0';
+    return points?.toFixed(2) || '0.00';
   };
 
   const getRosterById = (rosterId: number) => {

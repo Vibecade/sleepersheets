@@ -129,7 +129,7 @@ const StandingsTab: React.FC<StandingsTabProps> = ({
                   <div className="text-right">
                     <div className="font-medium text-white transition-colors duration-200">{record}</div>
                     <div className="text-sm text-gray-400 transition-colors duration-200">
-                      {roster.settings?.fpts?.toFixed(1) || '0.0'} pts
+                      {roster.settings?.fpts?.toFixed(2) || '0.00'} pts
                     </div>
                     {showBonusWins && teamWeeklyData.length > 0 && (
                       <WeeklyPerformanceIndicators

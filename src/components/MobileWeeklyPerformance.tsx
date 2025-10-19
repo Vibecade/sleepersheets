@@ -91,9 +91,9 @@ export const MobileWeeklyPerformance: React.FC<MobileWeeklyPerformanceProps> = (
                   
                   <div className="flex items-center gap-3 text-right">
                     <div className="space-y-0.5">
-                      <div className="font-medium">{week.points.toFixed(1)} pts</div>
+                      <div className="font-medium">{week.points.toFixed(2)} pts</div>
                       <div className="text-muted-foreground">
-                        Avg: {weekAverage?.toFixed(1)}
+                        Avg: {weekAverage?.toFixed(2)}
                       </div>
                     </div>
                     
@@ -107,7 +107,7 @@ export const MobileWeeklyPerformance: React.FC<MobileWeeklyPerformanceProps> = (
                       )}
                       <span className="font-medium">
                         {week.aboveAverage ? '+' : ''}
-                        {week.difference.toFixed(1)}
+                        {week.difference.toFixed(2)}
                       </span>
                     </div>
                     

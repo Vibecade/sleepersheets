@@ -146,11 +146,11 @@ export const RosterComparison: React.FC<RosterComparisonProps> = ({
               <div className="flex items-center space-x-2">
                 <TrendingUp className="w-4 h-4 text-green-500" />
                 <span className="text-lg font-bold text-primary">
-                  {winner.points.toFixed(1)}
+                  {winner.points.toFixed(2)}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                +{(winner.points - loser.points).toFixed(1)} pts
+                +{(winner.points - loser.points).toFixed(2)} pts
               </p>
             </div>
           </div>
@@ -198,7 +198,7 @@ export const RosterComparison: React.FC<RosterComparisonProps> = ({
             label="Total Fantasy Points"
             team1Value={team1Stats.points}
             team2Value={team2Stats.points}
-            format={(v) => v.toFixed(1)}
+            format={(v) => v.toFixed(2)}
           />
           <StatComparison
             label="Starting Players"

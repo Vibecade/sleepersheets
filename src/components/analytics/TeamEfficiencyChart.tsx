@@ -286,8 +286,8 @@ const TeamEfficiencyChart: React.FC<TeamEfficiencyChartProps> = ({
                       <div>Record: {data.wins}-{data.gamesPlayed - data.wins} ({data.winPercentage.toFixed(1)}%)</div>
                       <div>Cost Per Win: {formatEfficiency(data.costPerWin)}</div>
                       <div>Cost Per Point: {formatEfficiency(data.costPerPoint)}</div>
-                      <div>Avg PPG: {data.avgPointsPerGame.toFixed(1)}</div>
-                      <div>Total Points: {data.totalPoints.toFixed(1)}</div>
+                      <div>Avg PPG: {data.avgPointsPerGame.toFixed(2)}</div>
+                      <div>Total Points: {data.totalPoints.toFixed(2)}</div>
                       <div className="text-xs mt-1">
                         {(() => {
                           const isEfficient = chartType === 'efficiency' 
