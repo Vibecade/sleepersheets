@@ -1,5 +1,6 @@
 import { cachedFetch } from '@/utils/apiCache';
 import { rateLimiter } from '@/utils/inputValidation';
+import { logger } from '@/utils/logger';
 import type { SleeperLeague, SleeperUser, SleeperRoster, SleeperDraft, SleeperTransaction, SleeperPlayer } from '@/types/sleeper';
 
 export interface SleeperProjection {
@@ -28,7 +29,7 @@ let playersCacheTimestamp = 0;
 const PLAYERS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedLeagueData> => {
-  console.log('Fetching league data for ID:', targetLeagueId);
+  logger.debug('Fetching league data for ID:', targetLeagueId);
   
   // Clear transaction cache for this league to force fresh data
   const { clearLeagueCache } = await import('@/utils/apiCache');
@@ -58,7 +59,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     )
   ]);
 
-  console.log('League data retrieved:', { 
+  logger.debug('League data retrieved:', { 
     name: league.name, 
     season: league.season, 
     league_id: league.league_id 
@@ -67,10 +68,10 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   // Use cached players data if available and not expired
   let players: Record<string, SleeperPlayer>;
   if (playersCache && Date.now() - playersCacheTimestamp < PLAYERS_CACHE_TTL) {
-    console.log('Using cached players data');
+    logger.debug('Using cached players data');
     players = playersCache;
   } else {
-    console.log('Fetching fresh players data');
+    logger.debug('Fetching fresh players data');
     players = await cachedFetch<Record<string, SleeperPlayer>>(
       'https://api.sleeper.app/v1/players/nfl', 
       {}, 
@@ -90,7 +91,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     // Use the league's season year for season start calculation
     const seasonStart = new Date(seasonYear, 8, 5); // September 5th of the league season
     
-    console.log(`Transaction fetch - League season: ${seasonYear}, Season start: ${seasonStart.toDateString()}, Current: ${now.toDateString()}`);
+    logger.debug(`Transaction fetch - League season: ${seasonYear}, Season start: ${seasonStart.toDateString()}, Current: ${now.toDateString()}`);
     
     if (now < seasonStart) return 1;
     
@@ -106,9 +107,9 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   const leagueWeek = league.settings?.week || 1;
   const effectiveCurrentWeek = Math.max(currentNFLWeek, leagueWeek);
   
-  console.log(`=== TRANSACTION FETCH DEBUG ===`);
-  console.log(`League: ${league.name} (ID: ${targetLeagueId})`);
-  console.log(`Season: ${season}, NFL Week: ${currentNFLWeek}, League Week: ${leagueWeek}, Using Week: ${effectiveCurrentWeek}`);
+  logger.debug(`=== TRANSACTION FETCH DEBUG ===`);
+  logger.debug(`League: ${league.name} (ID: ${targetLeagueId})`);
+  logger.debug(`Season: ${season}, NFL Week: ${currentNFLWeek}, League Week: ${leagueWeek}, Using Week: ${effectiveCurrentWeek}`);
   
   // Optimize transaction fetching - only fetch current week and previous week for better performance
   const weeksToFetch = [];
@@ -116,7 +117,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     weeksToFetch.push(week);
   }
   
-  console.log(`Fetching transactions for weeks: ${weeksToFetch.join(', ')}`);
+  logger.debug(`Fetching transactions for weeks: ${weeksToFetch.join(', ')}`);
   
   // Fetch transactions from all weeks in parallel with league-specific cache keys
   const allTransactions = await Promise.all(
@@ -130,7 +131,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
           'low' // Lower priority for background transaction processing
         );
       } catch (error) {
-        console.warn(`Failed to fetch transactions for week ${week}:`, error);
+        logger.warn(`Failed to fetch transactions for week ${week}:`, error);
         return [];
       }
     })
@@ -145,11 +146,11 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   });
   const transactions = Array.from(transactionMap.values());
   
-  console.log(`=== TRANSACTION RESULTS ===`);
-  console.log(`Total transactions found: ${transactions.length}`);
-  console.log(`Waiver transactions: ${transactions.filter(t => t.type === 'waiver').length}`);
-  console.log(`Complete waiver transactions: ${transactions.filter(t => t.type === 'waiver' && t.status === 'complete').length}`);
-  console.log(`Complete waiver transactions with bids: ${transactions.filter(t => t.type === 'waiver' && t.status === 'complete' && t.settings?.waiver_bid).length}`);
+  logger.debug(`=== TRANSACTION RESULTS ===`);
+  logger.debug(`Total transactions found: ${transactions.length}`);
+  logger.debug(`Waiver transactions: ${transactions.filter(t => t.type === 'waiver').length}`);
+  logger.debug(`Complete waiver transactions: ${transactions.filter(t => t.type === 'waiver' && t.status === 'complete').length}`);
+  logger.debug(`Complete waiver transactions with bids: ${transactions.filter(t => t.type === 'waiver' && t.status === 'complete' && t.settings?.waiver_bid).length}`);
   
   // Log recent transactions for debugging
   const recentTransactions = transactions
@@ -157,9 +158,9 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     .sort((a, b) => b.created - a.created)
     .slice(0, 5);
   
-  console.log('Recent waiver transactions:');
+  logger.debug('Recent waiver transactions:');
   recentTransactions.forEach(t => {
-    console.log(`- ${t.transaction_id}: ${new Date(t.created).toISOString()}, Bid: $${t.settings?.waiver_bid || 0}`);
+    logger.debug(`- ${t.transaction_id}: ${new Date(t.created).toISOString()}, Bid: $${t.settings?.waiver_bid || 0}`);
   });
   
   
@@ -184,7 +185,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
       );
       draftPicks.push({ draft: mostRecentDraft, picks });
     } catch (error) {
-      console.error(`Error fetching picks for draft ${mostRecentDraft.draft_id}:`, error);
+      logger.error(`Error fetching picks for draft ${mostRecentDraft.draft_id}:`, error);
       draftPicks.push({ draft: mostRecentDraft, picks: [] });
     }
   }
@@ -201,7 +202,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
 };
 
 export const fetchSleeperProjections = async (week: number, season: string = '2024'): Promise<Record<string, SleeperProjection> | null> => {
-  console.log(`Attempting to fetch Sleeper projections for week ${week}, season ${season}`);
+  logger.debug(`Attempting to fetch Sleeper projections for week ${week}, season ${season}`);
   
   const clientId = 'projections_fetch';
   if (!rateLimiter.isAllowed(clientId, 3, 60000)) {
@@ -217,7 +218,7 @@ export const fetchSleeperProjections = async (week: number, season: string = '20
 
   for (const endpoint of possibleEndpoints) {
     try {
-      console.log(`Trying projection endpoint: ${endpoint}`);
+      logger.debug(`Trying projection endpoint: ${endpoint}`);
       const projections = await cachedFetch<Record<string, SleeperProjection>>(
         endpoint,
         {},
@@ -225,15 +226,15 @@ export const fetchSleeperProjections = async (week: number, season: string = '20
       );
       
       if (projections && Object.keys(projections).length > 0) {
-        console.log(`Successfully fetched projections from: ${endpoint}`);
+        logger.debug(`Successfully fetched projections from: ${endpoint}`);
         return projections;
       }
     } catch (error) {
-      console.log(`Failed to fetch from ${endpoint}:`, error);
+      logger.debug(`Failed to fetch from ${endpoint}:`, error);
       continue;
     }
   }
 
-  console.log('No Sleeper projection endpoints available');
+  logger.debug('No Sleeper projection endpoints available');
   return null;
 };
