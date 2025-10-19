@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -34,14 +34,31 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   transactions = [],
   onResyncData
 }) => {
-  const [selectedWeek, setSelectedWeek] = useState(1);
+  // Calculate current NFL week before state initialization
+  const getCurrentNFLWeek = useCallback((leagueSeason?: string) => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const seasonYear = leagueSeason ? parseInt(leagueSeason) : currentYear;
+    const seasonStart = new Date(seasonYear, 8, 5); // September 5th
+    
+    if (now < seasonStart) return 1;
+    
+    const diffTime = now.getTime() - seasonStart.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const weekNumber = Math.floor((diffDays + 2) / 7) + 1;
+    
+    return Math.min(Math.max(weekNumber, 1), 22);
+  }, []);
+
+  const currentWeek = getCurrentNFLWeek(league?.season);
+
+  // Initialize selectedWeek to current NFL week instead of hardcoded 1
+  const [selectedWeek, setSelectedWeek] = useState(currentWeek);
   const [showBonusWins, setShowBonusWins] = useState(false);
   const [expandedTeamId, setExpandedTeamId] = useState<number | null>(null);
-  const { matchups, loading: matchupsLoading, getCurrentNFLWeek } = useMatchups(league?.league_id, selectedWeek);
-  const { processWaiverTransactions, processing: processingTransactions } = useTransactionProcessor();
   
-  // Get projections for current week
-  const currentWeek = getCurrentNFLWeek();
+  const { matchups, loading: matchupsLoading } = useMatchups(league?.league_id, selectedWeek);
+  const { processWaiverTransactions, processing: processingTransactions } = useTransactionProcessor();
   const { historicalMatchups, teamWeeklyData, weeklyAverages, loading: historicalLoading } = useHistoricalMatchups(league?.league_id || '', currentWeek);
 
   // Process waiver transactions when data loads
