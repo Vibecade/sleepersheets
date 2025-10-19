@@ -4,6 +4,7 @@ import { validateLeagueId, sanitizeInput } from '@/utils/inputValidation';
 import { createDemoLeagueData, DEMO_LEAGUE_ID } from '@/utils/demoData';
 import { useDemo } from '@/contexts/DemoContext';
 import { performanceMonitor } from '@/utils/performanceMonitor';
+import { CACHE_TTL, QUERY_CONFIG } from '@/utils/constants';
 import { useCallback } from 'react';
 
 export const useLeagueQuery = (leagueId: string | null) => {
@@ -31,11 +32,11 @@ export const useLeagueQuery = (leagueId: string | null) => {
     queryKey: ['league', sanitizedLeagueId, isDemo ? 'demo' : 'real'],
     queryFn: optimizedQueryFn,
     enabled: isDemo || (!!sanitizedLeagueId && isValid),
-    staleTime: isDemo ? Infinity : 1000 * 60 * 5, // Reduced from 10 to 5 minutes for better performance
-    gcTime: isDemo ? Infinity : 1000 * 60 * 15, // Reduced from 30 to 15 minutes
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: true, // Keep reconnect for better UX
-    retry: isDemo ? false : 2, // Increased retry for better reliability
+    staleTime: isDemo ? Infinity : CACHE_TTL.MEDIUM,
+    gcTime: isDemo ? Infinity : CACHE_TTL.LONG + CACHE_TTL.MEDIUM, // 15 minutes
+    refetchOnWindowFocus: QUERY_CONFIG.REFETCH_ON_WINDOW_FOCUS,
+    refetchOnMount: QUERY_CONFIG.REFETCH_ON_MOUNT,
+    refetchOnReconnect: QUERY_CONFIG.REFETCH_ON_RECONNECT,
+    retry: isDemo ? false : QUERY_CONFIG.RETRY_COUNT,
   });
 };

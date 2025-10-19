@@ -1,5 +1,5 @@
-// Standardized cache TTL across all hooks  
-const STANDARD_CACHE_TTL = 5 * 60 * 1000; // Reduced to 5 minutes for better performance
+import { CACHE_TTL, RATE_LIMITS } from './constants';
+import type { SleeperPlayer } from '@/types/sleeper';
 
 interface CacheEntry<T> {
   data: T;
@@ -7,12 +7,20 @@ interface CacheEntry<T> {
   expiry: number;
 }
 
+interface PlayerCacheEntry {
+  data: Record<string, SleeperPlayer>;
+  timestamp: number;
+}
+
 class ApiCache {
   private cache = new Map<string, CacheEntry<any>>();
-  private defaultTTL = STANDARD_CACHE_TTL;
-  private matchupsTTL = STANDARD_CACHE_TTL; // Unified TTL for consistency
+  private defaultTTL = CACHE_TTL.MEDIUM;
+  private matchupsTTL = CACHE_TTL.MEDIUM;
   private requestCounts = new Map<string, { count: number; resetTime: number }>();
-  private maxRequestsPerMinute = 50; // Increased for better user experience and performance
+  private maxRequestsPerMinute = RATE_LIMITS.MAX_REQUESTS_PER_MINUTE;
+  
+  // Player cache management (moved from module-level in leagueApi.ts)
+  private playersCache: PlayerCacheEntry | null = null;
 
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
@@ -42,7 +50,8 @@ class ApiCache {
     });
   }
 
-  private checkRateLimit(url: string): boolean {
+  // Made public to avoid bracket notation access anti-pattern
+  public checkRateLimit(url: string): boolean {
     const now = Date.now();
     const key = new URL(url).hostname;
     const current = this.requestCounts.get(key);
@@ -90,6 +99,25 @@ class ApiCache {
     }
     keysToDelete.forEach(key => this.cache.delete(key));
   }
+
+  // Player cache management methods
+  public getPlayers(): Record<string, SleeperPlayer> | null {
+    if (!this.playersCache) return null;
+    
+    if (Date.now() - this.playersCache.timestamp > CACHE_TTL.DAILY) {
+      this.playersCache = null;
+      return null;
+    }
+    
+    return this.playersCache.data;
+  }
+
+  public setPlayers(data: Record<string, SleeperPlayer>): void {
+    this.playersCache = {
+      data,
+      timestamp: Date.now()
+    };
+  }
 }
 
 export const apiCache = new ApiCache();
@@ -112,8 +140,8 @@ export const cachedFetch = async <T>(
     return cached;
   }
   
-  // Check rate limit before making request
-  if (!apiCache['checkRateLimit'](url)) {
+  // Check rate limit before making request (now using public method)
+  if (!apiCache.checkRateLimit(url)) {
     const errorMsg = `Rate limit exceeded for ${new URL(url).hostname}. Please wait before making more requests.`;
     console.warn(`🔴 ${errorMsg}`);
     
@@ -121,10 +149,10 @@ export const cachedFetch = async <T>(
     if (priority === 'high') {
       console.log(`🔄 Retrying high priority request in 2 seconds...`);
       await new Promise(resolve => setTimeout(resolve, 2000));
-      if (!apiCache['checkRateLimit'](url)) {
+      if (!apiCache.checkRateLimit(url)) {
         // Try one more time with longer delay
         await new Promise(resolve => setTimeout(resolve, 3000));
-        if (!apiCache['checkRateLimit'](url)) {
+        if (!apiCache.checkRateLimit(url)) {
           throw new Error(errorMsg);
         }
       }

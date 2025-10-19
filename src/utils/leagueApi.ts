@@ -1,6 +1,7 @@
-import { cachedFetch } from '@/utils/apiCache';
+import { cachedFetch, apiCache } from '@/utils/apiCache';
 import { rateLimiter } from '@/utils/inputValidation';
 import { logger } from '@/utils/logger';
+import { CACHE_TTL, RATE_LIMITS, NFL_SEASON } from '@/utils/constants';
 import type { SleeperLeague, SleeperUser, SleeperRoster, SleeperDraft, SleeperTransaction, SleeperPlayer } from '@/types/sleeper';
 
 export interface SleeperProjection {
@@ -23,11 +24,6 @@ export interface CombinedLeagueData {
   draftPicks: { draft: SleeperDraft; picks: any[] }[];
 }
 
-// Cache for player data since it rarely changes
-let playersCache: Record<string, SleeperPlayer> | null = null;
-let playersCacheTimestamp = 0;
-const PLAYERS_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
-
 export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedLeagueData> => {
   logger.debug('Fetching league data for ID:', targetLeagueId);
   
@@ -36,7 +32,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   clearLeagueCache(targetLeagueId);
 
   const clientId = 'league_fetch';
-  if (!rateLimiter.isAllowed(clientId, 10, 60000)) { // Optimized to 10 requests per minute for better performance
+  if (!rateLimiter.isAllowed(clientId, RATE_LIMITS.LEAGUE_FETCH_LIMIT, 60000)) {
     throw new Error('Too many requests. Please wait a moment before trying again.');
   }
 
@@ -45,17 +41,17 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     cachedFetch<SleeperLeague>(
       `https://api.sleeper.app/v1/league/${targetLeagueId}`, 
       {}, 
-      10 * 60 * 1000 // 10 minutes cache
+      CACHE_TTL.LONG
     ),
     cachedFetch<SleeperRoster[]>(
       `https://api.sleeper.app/v1/league/${targetLeagueId}/rosters`, 
       {}, 
-      5 * 60 * 1000 // 5 minutes cache
+      CACHE_TTL.MEDIUM
     ),
     cachedFetch<SleeperUser[]>(
       `https://api.sleeper.app/v1/league/${targetLeagueId}/users`, 
       {}, 
-      10 * 60 * 1000 // 10 minutes cache
+      CACHE_TTL.LONG
     )
   ]);
 
@@ -65,20 +61,21 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     league_id: league.league_id 
   });
 
-  // Use cached players data if available and not expired
+  // Use cached players data from ApiCache
   let players: Record<string, SleeperPlayer>;
-  if (playersCache && Date.now() - playersCacheTimestamp < PLAYERS_CACHE_TTL) {
-    logger.debug('Using cached players data');
-    players = playersCache;
+  const cachedPlayers = apiCache.getPlayers();
+  
+  if (cachedPlayers) {
+    logger.debug('Using cached players data from ApiCache');
+    players = cachedPlayers;
   } else {
     logger.debug('Fetching fresh players data');
     players = await cachedFetch<Record<string, SleeperPlayer>>(
       'https://api.sleeper.app/v1/players/nfl', 
       {}, 
-      24 * 60 * 60 * 1000 // 24 hours cache
+      CACHE_TTL.DAILY
     );
-    playersCache = players;
-    playersCacheTimestamp = Date.now();
+    apiCache.setPlayers(players);
   }
 
   // Fetch transactions from multiple weeks to capture all FAAB activity
@@ -89,7 +86,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     const seasonYear = parseInt(leagueSeason);
     
     // Use the league's season year for season start calculation
-    const seasonStart = new Date(seasonYear, 8, 5); // September 5th of the league season
+    const seasonStart = new Date(seasonYear, NFL_SEASON.SEASON_START_MONTH, NFL_SEASON.SEASON_START_DAY);
     
     logger.debug(`Transaction fetch - League season: ${seasonYear}, Season start: ${seasonStart.toDateString()}, Current: ${now.toDateString()}`);
     
@@ -99,7 +96,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     const weekNumber = Math.floor((diffDays + 2) / 7) + 1;
     
-    return Math.min(Math.max(weekNumber, 1), 22);
+    return Math.min(Math.max(weekNumber, NFL_SEASON.MIN_WEEK), NFL_SEASON.MAX_WEEKS);
   };
   
   const season = league.season || '2024';
@@ -113,7 +110,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   
   // Optimize transaction fetching - only fetch current week and previous week for better performance
   const weeksToFetch = [];
-  for (let week = Math.max(1, effectiveCurrentWeek - 1); week <= effectiveCurrentWeek; week++) {
+  for (let week = Math.max(NFL_SEASON.MIN_WEEK, effectiveCurrentWeek - 1); week <= effectiveCurrentWeek; week++) {
     weeksToFetch.push(week);
   }
   
@@ -126,7 +123,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
         return await cachedFetch<SleeperTransaction[]>(
           `https://api.sleeper.app/v1/league/${targetLeagueId}/transactions/${week}`,
           {},
-          2 * 60 * 1000, // 2 minutes cache for more recent data
+          CACHE_TTL.SHORT,
           `league-${targetLeagueId}`, // League-specific cache prefix
           'low' // Lower priority for background transaction processing
         );
@@ -167,7 +164,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   const drafts = await cachedFetch<SleeperDraft[]>(
     `https://api.sleeper.app/v1/league/${targetLeagueId}/drafts`, 
     {}, 
-    10 * 60 * 1000 // 10 minutes cache
+    CACHE_TTL.LONG
   );
   
   // Fetch draft picks with rate limiting
@@ -181,7 +178,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
       const picks = await cachedFetch(
         `https://api.sleeper.app/v1/draft/${mostRecentDraft.draft_id}/picks`, 
         {}, 
-        10 * 60 * 1000 // 10 minutes cache
+        CACHE_TTL.LONG
       );
       draftPicks.push({ draft: mostRecentDraft, picks });
     } catch (error) {
@@ -205,7 +202,7 @@ export const fetchSleeperProjections = async (week: number, season: string = '20
   logger.debug(`Attempting to fetch Sleeper projections for week ${week}, season ${season}`);
   
   const clientId = 'projections_fetch';
-  if (!rateLimiter.isAllowed(clientId, 3, 60000)) {
+  if (!rateLimiter.isAllowed(clientId, RATE_LIMITS.PROJECTIONS_FETCH_LIMIT, 60000)) {
     throw new Error('Too many projection requests. Please wait a moment before trying again.');
   }
 
@@ -222,7 +219,7 @@ export const fetchSleeperProjections = async (week: number, season: string = '20
       const projections = await cachedFetch<Record<string, SleeperProjection>>(
         endpoint,
         {},
-        5 * 60 * 1000 // 5 minutes cache for projections
+        CACHE_TTL.MEDIUM
       );
       
       if (projections && Object.keys(projections).length > 0) {
