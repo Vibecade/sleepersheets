@@ -8,6 +8,7 @@ import { HowToFindLeagueId } from './HowToFindLeagueId';
 import { SleeperAccountCard } from './SleeperAccountCard';
 import { SleeperLeagueGrid } from './SleeperLeagueGrid';
 import { validateAndSanitizeLeagueId, validateAndSanitizeUsername } from '@/utils/inputValidation';
+import { UnifiedLoading } from '@/components/ui/unified-loading';
 import { detectInputType, getPlaceholderText } from '@/utils/inputDetection';
 import { useToast } from '@/hooks/use-toast';
 
@@ -182,7 +183,15 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
 
   // Show connection form
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 relative">
+      {loading && !showLeagueSelection && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
+          <Card className="p-8 border-primary/20">
+            <UnifiedLoading variant="text" size="lg" />
+          </Card>
+        </div>
+      )}
+      
       <Card className="border-primary/20 shadow-[0_0_50px_-12px] shadow-primary/30">
         <CardHeader className="text-center">
           <CardTitle className="flex items-center justify-center space-x-3">

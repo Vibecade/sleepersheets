@@ -16,6 +16,8 @@ import LeagueData from '@/components/LeagueData';
 import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
 import UserDashboard from '@/components/dashboard/UserDashboard';
 import HeroSection from '@/components/landing/HeroSection';
+import { UnifiedLoading } from '@/components/ui/unified-loading';
+import { Card } from '@/components/ui/card';
 import FeaturesSection from '@/components/landing/FeaturesSection';
 import HowItWorksSection from '@/components/landing/HowItWorksSection';
 import SocialProofSection from '@/components/landing/SocialProofSection';
@@ -241,8 +243,10 @@ const IndexContent = React.memo(() => {
                       />
                       
                       {loading && !showLeagueSelection && (
-                        <div className="mt-6 text-center">
-                          <div className="text-muted-foreground">Loading...</div>
+                        <div className="mt-6">
+                          <Card className="p-8">
+                            <UnifiedLoading variant="text" size="lg" />
+                          </Card>
                         </div>
                       )}
                     </div>

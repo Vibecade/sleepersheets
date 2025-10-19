@@ -19,7 +19,7 @@ const LoadingSpinner = React.forwardRef<HTMLDivElement, LoadingSpinnerProps>(
       <div ref={ref} className={cn("flex items-center justify-center", className)}>
         <div
           className={cn(
-            "animate-spin rounded-full border-2 border-gray-300 border-t-blue-600",
+            "animate-spin rounded-full border-2 border-border border-t-primary",
             sizeClasses[size]
           )}
         />
