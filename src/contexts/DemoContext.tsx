@@ -30,6 +30,8 @@ export const DemoProvider: React.FC<DemoProviderProps> = ({ children }) => {
   );
 };
 
+DemoProvider.displayName = 'DemoProvider';
+
 export const useDemo = () => {
   const context = useContext(DemoContext);
   if (!context) {
@@ -37,3 +39,5 @@ export const useDemo = () => {
   }
   return context;
 };
+
+useDemo.displayName = 'useDemo';

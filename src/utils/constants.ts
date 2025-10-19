@@ -32,3 +32,10 @@ export const QUERY_CONFIG = {
   REFETCH_ON_MOUNT: false,
   REFETCH_ON_RECONNECT: true
 } as const;
+
+// Rate limiting time windows
+export const RATE_LIMIT_WINDOWS = {
+  ONE_MINUTE: 60000,
+  RETRY_DELAY_SHORT: 2000,
+  RETRY_DELAY_LONG: 3000
+} as const;

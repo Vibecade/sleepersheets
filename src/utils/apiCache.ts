@@ -1,4 +1,5 @@
-import { CACHE_TTL, RATE_LIMITS } from './constants';
+import { CACHE_TTL, RATE_LIMITS, RATE_LIMIT_WINDOWS } from './constants';
+import { rateLimiter } from './rateLimiter';
 import type { SleeperPlayer } from '@/types/sleeper';
 
 interface CacheEntry<T> {
@@ -7,20 +8,13 @@ interface CacheEntry<T> {
   expiry: number;
 }
 
-interface PlayerCacheEntry {
-  data: Record<string, SleeperPlayer>;
-  timestamp: number;
-}
-
+/**
+ * Unified API cache for all data including players
+ */
 class ApiCache {
   private cache = new Map<string, CacheEntry<any>>();
   private defaultTTL = CACHE_TTL.MEDIUM;
   private matchupsTTL = CACHE_TTL.MEDIUM;
-  private requestCounts = new Map<string, { count: number; resetTime: number }>();
-  private maxRequestsPerMinute = RATE_LIMITS.MAX_REQUESTS_PER_MINUTE;
-  
-  // Player cache management (moved from module-level in leagueApi.ts)
-  private playersCache: PlayerCacheEntry | null = null;
 
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
@@ -35,10 +29,10 @@ class ApiCache {
   }
 
   set<T>(key: string, data: T, ttl = this.defaultTTL): void {
-    // Don't cache empty matchups arrays (or cache them very briefly)
+    // Don't cache empty matchups arrays
     if (key.includes('/matchups/') && Array.isArray(data) && data.length === 0) {
       console.log(`⚠️ Not caching empty matchups array for: ${key}`);
-      return; // Don't cache empty matchups
+      return;
     }
     
     // Use longer TTL for matchups data as it's more stable
@@ -48,26 +42,6 @@ class ApiCache {
       timestamp: Date.now(),
       expiry: Date.now() + finalTTL
     });
-  }
-
-  // Made public to avoid bracket notation access anti-pattern
-  public checkRateLimit(url: string): boolean {
-    const now = Date.now();
-    const key = new URL(url).hostname;
-    const current = this.requestCounts.get(key);
-    
-    if (!current || now > current.resetTime) {
-      this.requestCounts.set(key, { count: 1, resetTime: now + 60000 });
-      return true;
-    }
-    
-    if (current.count >= this.maxRequestsPerMinute) {
-      console.warn(`Rate limit exceeded for ${key}. Please wait.`);
-      return false;
-    }
-    
-    current.count++;
-    return true;
   }
 
   clear(): void {
@@ -100,23 +74,30 @@ class ApiCache {
     keysToDelete.forEach(key => this.cache.delete(key));
   }
 
-  // Player cache management methods
+  /**
+   * Get players data from cache
+   */
   public getPlayers(): Record<string, SleeperPlayer> | null {
-    if (!this.playersCache) return null;
+    const PLAYERS_CACHE_KEY = 'nfl-players';
+    const entry = this.cache.get(PLAYERS_CACHE_KEY);
     
-    if (Date.now() - this.playersCache.timestamp > CACHE_TTL.DAILY) {
-      this.playersCache = null;
+    if (!entry || Date.now() > entry.expiry) {
       return null;
     }
     
-    return this.playersCache.data;
+    return entry.data;
   }
 
+  /**
+   * Set players data in cache
+   */
   public setPlayers(data: Record<string, SleeperPlayer>): void {
-    this.playersCache = {
+    const PLAYERS_CACHE_KEY = 'nfl-players';
+    this.cache.set(PLAYERS_CACHE_KEY, {
       data,
-      timestamp: Date.now()
-    };
+      timestamp: Date.now(),
+      expiry: Date.now() + CACHE_TTL.DAILY
+    });
   }
 }
 
@@ -140,19 +121,18 @@ export const cachedFetch = async <T>(
     return cached;
   }
   
-  // Check rate limit before making request (now using public method)
-  if (!apiCache.checkRateLimit(url)) {
+  // Check rate limit before making request
+  if (!rateLimiter.checkLimit(url, RATE_LIMITS.MAX_REQUESTS_PER_MINUTE)) {
     const errorMsg = `Rate limit exceeded for ${new URL(url).hostname}. Please wait before making more requests.`;
     console.warn(`🔴 ${errorMsg}`);
     
     // For high priority requests (like matchups), retry after a short delay
     if (priority === 'high') {
-      console.log(`🔄 Retrying high priority request in 2 seconds...`);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      if (!apiCache.checkRateLimit(url)) {
-        // Try one more time with longer delay
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        if (!apiCache.checkRateLimit(url)) {
+      console.log(`🔄 Retrying high priority request in ${RATE_LIMIT_WINDOWS.RETRY_DELAY_SHORT}ms...`);
+      await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_WINDOWS.RETRY_DELAY_SHORT));
+      if (!rateLimiter.checkLimit(url, RATE_LIMITS.MAX_REQUESTS_PER_MINUTE)) {
+        await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_WINDOWS.RETRY_DELAY_LONG));
+        if (!rateLimiter.checkLimit(url, RATE_LIMITS.MAX_REQUESTS_PER_MINUTE)) {
           throw new Error(errorMsg);
         }
       }
@@ -185,10 +165,12 @@ export const clearLeagueCache = (leagueId: string): void => {
   console.log(`Cleared cache for league: ${leagueId}`);
 };
 
-// Get cache stats for debugging
+/**
+ * Get cache stats for debugging
+ */
 export const getCacheStats = () => {
   return {
     size: apiCache['cache'].size,
-    requestCounts: Array.from(apiCache['requestCounts'].entries())
+    rateLimitStats: rateLimiter.getStats()
   };
 };
