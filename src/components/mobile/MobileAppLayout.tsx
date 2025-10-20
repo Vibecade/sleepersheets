@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 interface MobileAppLayoutProps {
   children: React.ReactNode
   bottomNavItems?: BottomNavItem[]
+  activeItem?: string
   showBottomNav?: boolean
   className?: string
 }
@@ -13,6 +14,7 @@ interface MobileAppLayoutProps {
 export function MobileAppLayout({
   children,
   bottomNavItems,
+  activeItem,
   showBottomNav = true,
   className,
 }: MobileAppLayoutProps) {
@@ -66,7 +68,7 @@ export function MobileAppLayout({
             isScrollingDown && "translate-y-full"
           )}
         >
-          <BottomNav items={bottomNavItems} />
+          <BottomNav items={bottomNavItems} activeItem={activeItem} />
         </div>
       )}
     </div>

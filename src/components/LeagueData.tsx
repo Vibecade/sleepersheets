@@ -70,6 +70,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
   return (
     <MobileAppLayout 
       bottomNavItems={bottomNavItems}
+      activeItem={`#${currentPage}`}
       showBottomNav={isMobile}
     >
       <div className="main-container">

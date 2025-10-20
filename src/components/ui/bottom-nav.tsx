@@ -1,5 +1,4 @@
 import * as React from "react"
-import { NavLink } from "react-router-dom"
 import { Trophy, Settings, Calendar, BarChart3, Menu, LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "./badge"
@@ -14,6 +13,7 @@ export interface BottomNavItem {
 
 interface BottomNavProps {
   items?: BottomNavItem[]
+  activeItem?: string
   className?: string
 }
 
@@ -25,7 +25,7 @@ const defaultItems: BottomNavItem[] = [
   { label: "More", href: "/more", icon: Menu },
 ]
 
-export function BottomNav({ items = defaultItems, className }: BottomNavProps) {
+export function BottomNav({ items = defaultItems, activeItem, className }: BottomNavProps) {
   return (
     <nav
       className={cn(
@@ -39,52 +39,47 @@ export function BottomNav({ items = defaultItems, className }: BottomNavProps) {
       <div className="flex items-center justify-around h-16 px-2">
         {items.map((item) => {
           const Icon = item.icon
+          const isActive = activeItem === item.href
+          
           return (
-            <NavLink
+            <button
               key={item.href}
-              to={item.href}
-              onClick={item.onClick}
-              className={({ isActive }) =>
-                cn(
-                  "flex flex-col items-center justify-center flex-1",
-                  "py-1 px-2 rounded-lg",
-                  "transition-all duration-200",
-                  "touch-manipulation min-h-[44px]", // iOS touch target size
-                  isActive
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <div className="relative">
-                    <Icon
-                      className={cn(
-                        "h-5 w-5 transition-all duration-200",
-                        isActive && "scale-110"
-                      )}
-                    />
-                    {item.badge && item.badge > 0 && (
-                      <Badge
-                        variant="destructive"
-                        className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] flex items-center justify-center"
-                      >
-                        {item.badge > 99 ? "99+" : item.badge}
-                      </Badge>
-                    )}
-                  </div>
-                  <span
-                    className={cn(
-                      "text-[10px] mt-0.5 font-medium transition-all duration-200",
-                      isActive && "scale-105"
-                    )}
-                  >
-                    {item.label}
-                  </span>
-                </>
+              onClick={(e) => item.onClick?.(e)}
+              className={cn(
+                "flex flex-col items-center justify-center flex-1",
+                "py-1 px-2 rounded-lg",
+                "transition-all duration-200",
+                "touch-manipulation min-h-[44px]", // iOS touch target size
+                isActive
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
               )}
-            </NavLink>
+            >
+              <div className="relative">
+                <Icon
+                  className={cn(
+                    "h-5 w-5 transition-all duration-200",
+                    isActive && "scale-110"
+                  )}
+                />
+                {item.badge && item.badge > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] flex items-center justify-center"
+                  >
+                    {item.badge > 99 ? "99+" : item.badge}
+                  </Badge>
+                )}
+              </div>
+              <span
+                className={cn(
+                  "text-[10px] mt-0.5 font-medium transition-all duration-200",
+                  isActive && "scale-105"
+                )}
+              >
+                {item.label}
+              </span>
+            </button>
           )
         })}
       </div>
