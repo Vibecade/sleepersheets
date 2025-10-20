@@ -16,21 +16,21 @@ export function useBottomNav({ leagueId, onPageChange }: UseBottomNavOptions = {
 
     return [
       {
-        label: "Manager",
-        href: "#manager",
-        icon: Settings,
-        onClick: (e) => {
-          e?.preventDefault()
-          onPageChange?.("manager")
-        },
-      },
-      {
         label: "Matchups",
         href: "#matchups",
         icon: Calendar,
         onClick: (e) => {
           e?.preventDefault()
           onPageChange?.("matchups")
+        },
+      },
+      {
+        label: "Manager",
+        href: "#manager",
+        icon: Settings,
+        onClick: (e) => {
+          e?.preventDefault()
+          onPageChange?.("manager")
         },
       },
       {
