@@ -48,11 +48,9 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
         setActiveOverviewTab('statistics');
       } else if (page === 'more') {
         setCurrentPage('commissioner');
-      } else if (page === 'overview') {
-        setCurrentPage('overview');
-        setActiveOverviewTab('matchups');
       } else {
         setCurrentPage(page as 'overview' | 'manager' | 'commissioner');
+        setActiveOverviewTab('matchups');
       }
     }
   });
@@ -105,6 +103,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
                   draftPickCount={stats.draftPickCount}
                   draftCount={stats.draftCount}
                   onRefreshData={onRefreshData}
+                  compact={isMobile}
                 />
               </Suspense>
             </ErrorBoundary>

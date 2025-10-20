@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { useLocation } from "react-router-dom"
-import { Trophy, Settings, Calendar, BarChart3, Menu } from "lucide-react"
+import { Settings, Calendar, BarChart3, Menu } from "lucide-react"
 import { BottomNavItem } from "@/components/ui/bottom-nav"
 
 interface UseBottomNavOptions {
@@ -15,15 +15,6 @@ export function useBottomNav({ leagueId, onPageChange }: UseBottomNavOptions = {
     if (!leagueId) return []
 
     return [
-      {
-        label: "Overview",
-        href: "#overview",
-        icon: Trophy,
-        onClick: (e) => {
-          e?.preventDefault()
-          onPageChange?.("overview")
-        },
-      },
       {
         label: "Manager",
         href: "#manager",
