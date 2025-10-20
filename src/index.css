@@ -3,6 +3,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Safe area insets for iOS/Android notches and home indicators */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
 @layer base {
   :root {
   /* Modern NFL War Room Color Palette */

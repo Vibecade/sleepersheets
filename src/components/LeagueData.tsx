@@ -10,6 +10,9 @@ import TeamOverviewSkeleton from './skeletons/TeamOverviewSkeleton';
 import PageNavigationSkeleton from './skeletons/PageNavigationSkeleton';
 import LeagueStatusBadge from './LeagueStatusBadge';
 import { CommissionerDashboard } from '@/components/commissioner/CommissionerDashboard';
+import { MobileAppLayout } from '@/components/mobile/MobileAppLayout';
+import { useBottomNav } from '@/hooks/useBottomNav';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 
 interface LeagueDataProps {
@@ -30,6 +33,23 @@ interface LeagueDataProps {
 const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyncData?: () => Promise<void>; onOwnershipChanged?: () => void; }> = React.memo(({ onRefreshData, onResyncData, onOwnershipChanged }) => {
   const { league, rosters, userMap, rosterUserMap, players, transactions, draftPicks, stats } = useLeagueData();
   const [currentPage, setCurrentPage] = useState<'overview' | 'manager' | 'commissioner'>('overview');
+  const isMobile = useIsMobile();
+  
+  // Mobile bottom navigation
+  const { bottomNavItems } = useBottomNav({
+    leagueId: league.league_id,
+    onPageChange: (page) => {
+      if (page === 'matchups') {
+        setCurrentPage('overview');
+      } else if (page === 'stats') {
+        setCurrentPage('overview');
+      } else if (page === 'more') {
+        setCurrentPage('commissioner');
+      } else {
+        setCurrentPage(page as 'overview' | 'manager' | 'commissioner');
+      }
+    }
+  });
 
   // Prepare league data for export navigation
   const leagueDataForExport = React.useMemo(() => ({
@@ -48,48 +68,55 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
   }), [league, rosters, userMap, players, transactions, draftPicks]);
 
   return (
-    <div className="main-container">
-      <PageHead
-        title={
-          currentPage === 'overview' 
-            ? 'League Overview' 
-            : currentPage === 'commissioner'
-            ? 'Commissioner Dashboard'
-            : 'Fantasy Manager'
-        }
-        description={`Manage your ${league.name} fantasy football league with salary cap tracking, contract management, and trade simulation tools.`}
-        leagueName={league.name}
-      />
-      
-      <div className="space-y-8">
-        <div className="slide-up">
-          <div className="flex justify-end mb-4">
-            <LeagueStatusBadge leagueId={league.league_id} onOwnershipChanged={onOwnershipChanged} />
+    <MobileAppLayout 
+      bottomNavItems={bottomNavItems}
+      showBottomNav={isMobile}
+    >
+      <div className="main-container">
+        <PageHead
+          title={
+            currentPage === 'overview' 
+              ? 'League Overview' 
+              : currentPage === 'commissioner'
+              ? 'Commissioner Dashboard'
+              : 'Fantasy Manager'
+          }
+          description={`Manage your ${league.name} fantasy football league with salary cap tracking, contract management, and trade simulation tools.`}
+          leagueName={league.name}
+        />
+        
+        <div className="space-y-8">
+          <div className="slide-up">
+            <div className="flex justify-end mb-4">
+              <LeagueStatusBadge leagueId={league.league_id} onOwnershipChanged={onOwnershipChanged} />
+            </div>
+            <ErrorBoundary fallback={<LeagueHeaderSkeleton />}>
+              <Suspense fallback={<LeagueHeaderSkeleton />}>
+                <LeagueHeader
+                  league={league}
+                  transactionCount={stats.transactionCount}
+                  draftPickCount={stats.draftPickCount}
+                  draftCount={stats.draftCount}
+                  onRefreshData={onRefreshData}
+                />
+              </Suspense>
+            </ErrorBoundary>
           </div>
-          <ErrorBoundary fallback={<LeagueHeaderSkeleton />}>
-            <Suspense fallback={<LeagueHeaderSkeleton />}>
-              <LeagueHeader
-                league={league}
-                transactionCount={stats.transactionCount}
-                draftPickCount={stats.draftPickCount}
-                draftCount={stats.draftCount}
-                onRefreshData={onRefreshData}
-              />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
 
-        <div className="slide-up" style={{ animationDelay: '0.1s' }}>
-          <ErrorBoundary fallback={<PageNavigationSkeleton />}>
-            <Suspense fallback={<PageNavigationSkeleton />}>
-              <PageNavigation
-                currentPage={currentPage}
-                onPageChange={setCurrentPage}
-                leagueData={leagueDataForExport}
-              />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
+          {/* Hide PageNavigation on mobile, use bottom nav instead */}
+          {!isMobile && (
+            <div className="slide-up" style={{ animationDelay: '0.1s' }}>
+              <ErrorBoundary fallback={<PageNavigationSkeleton />}>
+                <Suspense fallback={<PageNavigationSkeleton />}>
+                  <PageNavigation
+                    currentPage={currentPage}
+                    onPageChange={setCurrentPage}
+                    leagueData={leagueDataForExport}
+                  />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          )}
 
         {currentPage === 'commissioner' && (
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
@@ -135,8 +162,9 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
             </ErrorBoundary>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </MobileAppLayout>
   );
 });
 
