@@ -24,6 +24,7 @@ interface TeamOverviewProps {
   players: Record<string, any>;
   transactions?: any[];
   onResyncData?: () => void;
+  initialTab?: string;
 }
 
 const TeamOverview: React.FC<TeamOverviewProps> = ({
@@ -32,7 +33,8 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   userMap,
   players,
   transactions = [],
-  onResyncData
+  onResyncData,
+  initialTab
 }) => {
   // Calculate current NFL week before state initialization
   const getCurrentNFLWeek = useCallback((leagueSeason?: string) => {
@@ -163,7 +165,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
       </Card>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="matchups" className="space-y-6">
+      <Tabs defaultValue={initialTab || "matchups"} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4 transition-all duration-200">
           <TabsTrigger 
             value="matchups" 

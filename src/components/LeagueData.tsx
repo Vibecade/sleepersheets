@@ -33,6 +33,7 @@ interface LeagueDataProps {
 const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyncData?: () => Promise<void>; onOwnershipChanged?: () => void; }> = React.memo(({ onRefreshData, onResyncData, onOwnershipChanged }) => {
   const { league, rosters, userMap, rosterUserMap, players, transactions, draftPicks, stats } = useLeagueData();
   const [currentPage, setCurrentPage] = useState<'overview' | 'manager' | 'commissioner'>('overview');
+  const [activeOverviewTab, setActiveOverviewTab] = useState<string>('matchups');
   const isMobile = useIsMobile();
   
   // Mobile bottom navigation
@@ -41,10 +42,15 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
     onPageChange: (page) => {
       if (page === 'matchups') {
         setCurrentPage('overview');
+        setActiveOverviewTab('matchups');
       } else if (page === 'stats') {
         setCurrentPage('overview');
+        setActiveOverviewTab('statistics');
       } else if (page === 'more') {
         setCurrentPage('commissioner');
+      } else if (page === 'overview') {
+        setCurrentPage('overview');
+        setActiveOverviewTab('matchups');
       } else {
         setCurrentPage(page as 'overview' | 'manager' | 'commissioner');
       }
@@ -70,7 +76,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
   return (
     <MobileAppLayout 
       bottomNavItems={bottomNavItems}
-      activeItem={`#${currentPage}`}
+      activeItem={currentPage === 'overview' && activeOverviewTab === 'statistics' ? '#stats' : currentPage === 'overview' && activeOverviewTab === 'matchups' ? '#matchups' : `#${currentPage}`}
       showBottomNav={isMobile}
     >
       <div className="main-container">
@@ -140,6 +146,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
                   players={players}
                   transactions={transactions}
                   onResyncData={onResyncData}
+                  initialTab={activeOverviewTab}
                 />
               </Suspense>
             </ErrorBoundary>
