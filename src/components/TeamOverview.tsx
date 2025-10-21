@@ -10,6 +10,7 @@ import { useHistoricalProjections } from '@/hooks/useHistoricalProjections';
 import { useTransactionProcessor } from '@/hooks/useTransactionProcessor';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import ErrorBoundaryWithRetry from './ErrorBoundaryWithRetry';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Lazy load tab components for better code splitting
 const MatchupsTab = lazy(() => import('./tabs/MatchupsTab'));
@@ -36,6 +37,8 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   onResyncData,
   initialTab
 }) => {
+  const isMobile = useIsMobile();
+  
   // Calculate current NFL week before state initialization
   const getCurrentNFLWeek = useCallback((leagueSeason?: string) => {
     const now = new Date();
@@ -131,38 +134,40 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* League Header */}
-      <Card className="transition-all duration-300 hover:shadow-lg">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Trophy className="w-6 h-6 text-yellow-500" />
-              <div>
-                <CardTitle className="text-2xl transition-colors duration-200">{league?.name}</CardTitle>
-                <p className="text-gray-400 transition-colors duration-200">
-                  {league?.season} Season • Week {currentWeek}
-                </p>
+      {/* League Header - Only show on desktop, mobile uses compact header */}
+      {!isMobile && (
+        <Card className="transition-all duration-300 hover:shadow-lg">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <Trophy className="w-6 h-6 text-yellow-500" />
+                <div>
+                  <CardTitle className="text-2xl transition-colors duration-200">{league?.name}</CardTitle>
+                  <p className="text-gray-400 transition-colors duration-200">
+                    {league?.season} Season • Week {currentWeek}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                {onResyncData && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onResyncData}
+                    className="transition-all duration-200 hover:scale-105 touch-manipulation active:scale-95"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Re-sync Data
+                  </Button>
+                )}
+                <Badge variant="outline" className="text-green-400 border-green-400 transition-all duration-200 hover:bg-green-400/10">
+                  {rosters.length} Teams
+                </Badge>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              {onResyncData && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onResyncData}
-                  className="transition-all duration-200 hover:scale-105 touch-manipulation active:scale-95"
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Re-sync Data
-                </Button>
-              )}
-              <Badge variant="outline" className="text-green-400 border-green-400 transition-all duration-200 hover:bg-green-400/10">
-                {rosters.length} Teams
-              </Badge>
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
+          </CardHeader>
+        </Card>
+      )}
 
       {/* Main Content Tabs */}
       <Tabs defaultValue={initialTab || "matchups"} className="space-y-6">

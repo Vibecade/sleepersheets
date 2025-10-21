@@ -19,28 +19,6 @@ export function MobileAppLayout({
   className,
 }: MobileAppLayoutProps) {
   const isMobile = useIsMobile()
-  const [isScrollingDown, setIsScrollingDown] = React.useState(false)
-  const lastScrollY = React.useRef(0)
-
-  // Auto-hide bottom nav on scroll down for more content space
-  React.useEffect(() => {
-    if (!isMobile) return
-
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY
-      
-      if (currentScrollY > lastScrollY.current && currentScrollY > 50) {
-        setIsScrollingDown(true)
-      } else {
-        setIsScrollingDown(false)
-      }
-      
-      lastScrollY.current = currentScrollY
-    }
-
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [isMobile])
 
   // If not mobile, just render children without mobile layout
   if (!isMobile) {
@@ -60,16 +38,9 @@ export function MobileAppLayout({
         {children}
       </main>
 
-      {/* Bottom navigation */}
+      {/* Bottom navigation - Always visible */}
       {showBottomNav && bottomNavItems && (
-        <div
-          className={cn(
-            "transition-transform duration-300",
-            isScrollingDown && "translate-y-full"
-          )}
-        >
-          <BottomNav items={bottomNavItems} activeItem={activeItem} />
-        </div>
+        <BottomNav items={bottomNavItems} activeItem={activeItem} />
       )}
     </div>
   )
