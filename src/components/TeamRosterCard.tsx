@@ -33,9 +33,9 @@ const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
   const teamName = getTeamName(user);
 
   return (
-    <div className="glass-card rounded-xl p-4 sm:p-5 space-y-4 card-hover border border-border-light bg-gradient-to-br from-card to-card-light">
-      <div className="flex items-center space-x-4">
-        <Avatar className="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
+    <div className="glass-card rounded-xl p-4 sm:p-5 lg:p-6 space-y-4 lg:space-y-5 card-hover desktop-card-hover border border-border-light bg-gradient-to-br from-card to-card-light">
+      <div className="flex items-center space-x-4 lg:space-x-5">
+        <Avatar className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 flex-shrink-0 ring-2 ring-primary/20 ring-offset-2 ring-offset-background transition-all duration-200">
           <AvatarImage 
             src={user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user.avatar}` : undefined} 
             alt={`${teamName} avatar`}
@@ -47,8 +47,8 @@ const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <h4 className="font-bold text-foreground truncate text-lg sm:text-xl leading-tight">{teamName}</h4>
-          <p className="text-sm text-muted-foreground truncate mt-1">{user?.display_name || 'Unknown Manager'}</p>
+          <h4 className="font-bold text-foreground truncate text-lg sm:text-xl lg:text-2xl leading-tight">{teamName}</h4>
+          <p className="text-sm lg:text-base text-muted-foreground truncate mt-1">{user?.display_name || 'Unknown Manager'}</p>
         </div>
       </div>
       

@@ -102,21 +102,22 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
 
   return (
     <div className="glass-card rounded-xl p-1.5 lg:p-2 mb-8 shadow-lg border border-border/50">
-      <div className="flex items-center gap-1 lg:gap-2">
+      <div className="flex items-center gap-1 lg:gap-3">
         {navigationItems.map((item) => (
           <Button
             key={item.id}
             variant={currentPage === item.id ? 'default' : 'ghost'}
             onClick={item.onClick}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2 h-11 lg:h-12 transition-all duration-200",
-              "hover:shadow-md hover:-translate-y-0.5",
-              currentPage === item.id && "shadow-lg"
+              "flex-1 flex items-center justify-center gap-2 lg:gap-3 h-11 lg:h-14 transition-all duration-200",
+              "hover:shadow-md hover:-translate-y-0.5 hover-border-glow",
+              "lg:hover:-translate-y-1 lg:hover:shadow-xl",
+              currentPage === item.id && "shadow-lg ring-2 ring-primary/30"
             )}
             size="default"
           >
-            <item.icon className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
-            <span className="hidden sm:inline text-sm lg:text-base font-semibold">{item.label}</span>
+            <item.icon className="w-4 h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 flex-shrink-0" />
+            <span className="hidden sm:inline text-sm lg:text-base xl:text-lg font-semibold">{item.label}</span>
             <span className="sm:hidden text-xs font-semibold">{item.shortLabel}</span>
           </Button>
         ))}

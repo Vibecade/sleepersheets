@@ -747,4 +747,177 @@
   .animate-shake {
     animation: shake 0.3s ease-in-out;
   }
+
+  /* Desktop Optimizations */
+  @media (min-width: 1024px) {
+    /* Enhanced scrollbar for desktop */
+    ::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: hsl(var(--muted) / 0.3);
+      border-radius: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, hsl(var(--primary) / 0.6), hsl(var(--primary-muted) / 0.6));
+      border-radius: 6px;
+      border: 2px solid hsl(var(--background));
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, hsl(var(--primary) / 0.8), hsl(var(--primary-muted) / 0.8));
+    }
+
+    ::-webkit-scrollbar-thumb:active {
+      background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-muted)));
+    }
+
+    ::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+
+    /* Desktop typography scaling */
+    body {
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    h1 {
+      font-size: 3rem;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 2rem;
+      line-height: 1.3;
+      letter-spacing: -0.015em;
+    }
+
+    h3 {
+      font-size: 1.75rem;
+      line-height: 1.4;
+    }
+
+    /* Desktop hover states - only apply on pointer devices */
+    @media (pointer: fine) {
+      .desktop-hover-lift {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .desktop-hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow:
+          0 20px 40px rgba(0, 0, 0, 0.4),
+          0 4px 12px rgba(234, 179, 8, 0.2),
+          0 0 20px rgba(234, 179, 8, 0.15);
+      }
+
+      .hover-glow:hover {
+        box-shadow:
+          0 0 20px hsl(var(--primary) / 0.3),
+          0 0 40px hsl(var(--primary) / 0.15);
+      }
+
+      .hover-scale:hover {
+        transform: scale(1.02);
+      }
+
+      .hover-border-glow:hover {
+        border-color: hsl(var(--primary) / 0.6);
+        box-shadow:
+          inset 0 0 0 1px hsl(var(--primary) / 0.3),
+          0 0 15px hsl(var(--primary) / 0.2);
+      }
+    }
+
+    /* Desktop grid layouts */
+    .desktop-grid-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .desktop-gap-6 {
+      gap: 1.5rem;
+    }
+
+    .desktop-gap-8 {
+      gap: 2rem;
+    }
+
+    /* Desktop card hover */
+    @media (pointer: fine) {
+      .desktop-card-hover {
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .desktop-card-hover:hover {
+        transform: translateY(-4px);
+        box-shadow:
+          0 20px 40px rgba(0, 0, 0, 0.4),
+          0 0 20px rgba(234, 179, 8, 0.15),
+          0 0 8px rgba(234, 179, 8, 0.1);
+        border-color: rgba(234, 179, 8, 0.4);
+      }
+    }
+
+    /* Desktop sidebar utilities */
+    .desktop-sidebar {
+      position: sticky;
+      top: 2rem;
+      max-height: calc(100vh - 4rem);
+      overflow-y: auto;
+    }
+
+    .desktop-grid-dense {
+      gap: 2rem;
+    }
+  }
+
+  /* Extra large desktop */
+  @media (min-width: 1280px) {
+    h1 {
+      font-size: 3.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 2.25rem;
+    }
+
+    h3 {
+      font-size: 1.875rem;
+    }
+
+    body {
+      font-size: 1.125rem;
+      line-height: 1.75;
+    }
+  }
+
+  /* Ultra-wide desktop */
+  @media (min-width: 1536px) {
+    .container-2xl {
+      max-width: 1600px;
+    }
+
+    .desktop-grid-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  /* Enhanced focus states for accessibility */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role="button"]:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 3px;
+    border-radius: 0.375rem;
+  }
 }
