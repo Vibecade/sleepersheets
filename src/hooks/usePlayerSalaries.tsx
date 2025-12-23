@@ -15,7 +15,7 @@ interface PlayerSalary {
 export const usePlayerSalaries = (leagueId: string) => {
   const [salaries, setSalaries] = useState<Record<string, number | null>>({});
   const [taxiSquadStatus, setTaxiSquadStatus] = useState<Record<string, boolean>>({});
-  const [data, setData] = useState<PlayerSalary[]>([]);
+  const [acquisitionTypes, setAcquisitionTypes] = useState<Record<string, 'contract' | 'faab' | 'free_agent'>>({});
   const [loading, setLoading] = useState(true);
   const [lastLeagueId, setLastLeagueId] = useState<string>('');
   const { toast } = useToast();
@@ -46,17 +46,22 @@ export const usePlayerSalaries = (leagueId: string) => {
       console.log('Loaded salary data:', data);
       const salaryMap: Record<string, number | null> = {};
       const taxiMap: Record<string, boolean> = {};
-      
+      const acquisitionMap: Record<string, 'contract' | 'faab' | 'free_agent'> = {};
+
       if (data) {
         data.forEach((item) => {
           salaryMap[item.player_id] = item.salary;
           taxiMap[item.player_id] = item.taxi_squad || false;
+          acquisitionMap[item.player_id] = item.acquisition_type || 'contract';
         });
       }
-      
+
+      console.log(`Loaded ${Object.keys(acquisitionMap).length} players with acquisition types`);
+      console.log(`FAAB players: ${Object.values(acquisitionMap).filter(t => t === 'faab').length}`);
+
       setSalaries(salaryMap);
       setTaxiSquadStatus(taxiMap);
-      setData(data || []);
+      setAcquisitionTypes(acquisitionMap);
       setLastLeagueId(currentLeagueId);
     } catch (error) {
       console.error('Error loading salaries:', error);
@@ -114,6 +119,7 @@ export const usePlayerSalaries = (leagueId: string) => {
       }
 
       setSalaries(prev => ({ ...prev, [playerId]: salary }));
+      setAcquisitionTypes(prev => ({ ...prev, [playerId]: 'contract' }));
       toast({
         title: "Success",
         description: "Salary saved successfully",
@@ -160,6 +166,7 @@ export const usePlayerSalaries = (leagueId: string) => {
       }
 
       setTaxiSquadStatus(prev => ({ ...prev, [playerId]: taxiSquad }));
+      setAcquisitionTypes(prev => ({ ...prev, [playerId]: 'contract' }));
       toast({
         title: "Success",
         description: "Taxi squad status updated successfully",
@@ -191,19 +198,23 @@ export const usePlayerSalaries = (leagueId: string) => {
   const getSalaryCapContribution = useCallback((playerId: string): number => {
     const baseSalary = salaries[playerId] || 0;
     const isTaxiSquad = taxiSquadStatus[playerId] || false;
-    
+    const acquisitionType = acquisitionTypes[playerId] || 'contract';
+
     // FAAB acquisitions don't count toward salary cap
-    const acquisitionType = data?.find(item => item.player_id === playerId)?.acquisition_type || 'contract';
     if (acquisitionType === 'faab') {
+      console.log(`Player ${playerId}: FAAB acquisition, $0 cap hit (salary: $${baseSalary})`);
       return 0;
     }
-    
+
     if (isTaxiSquad && baseSalary > 0) {
-      return Math.max(1, Math.round(baseSalary * 0.25));
+      const discounted = Math.max(1, Math.round(baseSalary * 0.25));
+      console.log(`Player ${playerId}: Taxi squad, $${discounted} cap hit (from $${baseSalary})`);
+      return discounted;
     }
-    
+
+    console.log(`Player ${playerId}: Full cap hit $${baseSalary}`);
     return baseSalary;
-  }, [salaries, taxiSquadStatus, data]);
+  }, [salaries, taxiSquadStatus, acquisitionTypes]);
 
   return {
     salaries,

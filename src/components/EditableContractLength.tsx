@@ -32,6 +32,18 @@ const EditableContractLength: React.FC<EditableContractLengthProps> = ({
   const canModify = canModifyLeague(leagueId);
   const isFAABPlayer = rosterId ? isPlayerFAABAcquisition(playerId, rosterId) : false;
 
+  // Debug logging
+  React.useEffect(() => {
+    if (currentLength !== null && currentLength !== undefined) {
+      console.log(`📋 Contract display for ${playerId}:`, {
+        currentLength,
+        canModify,
+        isFAABPlayer,
+        rosterId
+      });
+    }
+  }, [playerId, currentLength, canModify, isFAABPlayer, rosterId]);
+
   const handleSave = async () => {
     if (!canModify) return;
     
