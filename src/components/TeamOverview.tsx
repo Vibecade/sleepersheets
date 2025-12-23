@@ -133,34 +133,35 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      {/* League Header - Only show on desktop, mobile uses compact header */}
+    <div className="space-y-4 md:space-y-6 lg:space-y-8">
       {!isMobile && (
-        <Card className="transition-all duration-300 hover:shadow-lg">
-          <CardHeader>
+        <Card className="hover-lift border border-border/50">
+          <CardHeader className="pb-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Trophy className="w-6 h-6 text-yellow-500" />
+              <div className="flex items-center space-x-4">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30">
+                  <Trophy className="w-7 h-7 text-yellow-500" />
+                </div>
                 <div>
-                  <CardTitle className="text-2xl transition-colors duration-200">{league?.name}</CardTitle>
-                  <p className="text-gray-400 transition-colors duration-200">
-                    {league?.season} Season • Week {currentWeek}
+                  <CardTitle className="text-2xl lg:text-3xl mb-1">{league?.name}</CardTitle>
+                  <p className="text-muted-foreground text-base">
+                    {league?.season} Season <span className="mx-2">•</span> Week {currentWeek}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center gap-3">
                 {onResyncData && (
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="default"
                     onClick={onResyncData}
-                    className="transition-all duration-200 hover:scale-105 touch-manipulation active:scale-95"
+                    className="hover-border-glow"
                   >
                     <RefreshCw className="w-4 h-4 mr-2" />
                     Re-sync Data
                   </Button>
                 )}
-                <Badge variant="outline" className="text-green-400 border-green-400 transition-all duration-200 hover:bg-green-400/10">
+                <Badge variant="outline" className="text-lg px-4 py-1.5 text-green-400 border-green-400/50 bg-green-400/5 hover:bg-green-400/10 transition-colors">
                   {rosters.length} Teams
                 </Badge>
               </div>
