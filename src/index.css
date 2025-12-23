@@ -706,4 +706,45 @@
     background: linear-gradient(135deg, hsl(var(--card)), hsl(var(--card-light))) padding-box,
                 linear-gradient(135deg, hsl(var(--primary) / 0.5), hsl(var(--primary-glow) / 0.3), hsl(var(--secondary) / 0.2)) border-box;
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .touch-card {
+    @apply transition-all duration-150 ease-out;
+    @apply active:scale-[0.98] active:opacity-90;
+    @apply touch-manipulation;
+  }
+
+  .touch-button {
+    @apply min-h-[44px] min-w-[44px];
+    @apply touch-manipulation;
+    @apply active:scale-95 active:opacity-80;
+    @apply transition-transform duration-100;
+  }
+
+  @keyframes pull-to-refresh {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(0); }
+  }
+
+  .animate-pull-refresh {
+    animation: pull-to-refresh 0.3s ease-out;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+
+  .animate-shake {
+    animation: shake 0.3s ease-in-out;
+  }
 }

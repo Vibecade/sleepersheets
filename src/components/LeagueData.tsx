@@ -57,11 +57,13 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
     checkOwnership();
   }, [user, league?.league_id, checkOwnershipStatus]);
   
-  // Mobile bottom navigation
   const { bottomNavItems } = useBottomNav({
     leagueId: league.league_id,
     onPageChange: (page) => {
-      if (page === 'matchups') {
+      if (page === 'overview') {
+        setCurrentPage('overview');
+        setActiveOverviewTab('standings');
+      } else if (page === 'matchups') {
         setCurrentPage('overview');
         setActiveOverviewTab('matchups');
       } else if (page === 'stats') {
@@ -69,12 +71,24 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
         setActiveOverviewTab('statistics');
       } else if (page === 'more') {
         setCurrentPage('more');
+      } else if (page === 'manager') {
+        setCurrentPage('manager');
       } else {
         setCurrentPage(page as 'overview' | 'manager' | 'commissioner');
-        setActiveOverviewTab('matchups');
       }
     }
   });
+
+  const getActiveNavItem = () => {
+    if (currentPage === 'more') return '#more';
+    if (currentPage === 'manager') return '#manager';
+    if (currentPage === 'overview') {
+      if (activeOverviewTab === 'statistics') return '#stats';
+      if (activeOverviewTab === 'matchups') return '#matchups';
+      return '#overview';
+    }
+    return '#overview';
+  };
 
   // Prepare league data for export navigation
   const leagueDataForExport = React.useMemo(() => ({
@@ -93,9 +107,9 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
   }), [league, rosters, userMap, players, transactions, draftPicks]);
 
   return (
-    <MobileAppLayout 
+    <MobileAppLayout
       bottomNavItems={bottomNavItems}
-      activeItem={currentPage === 'overview' && activeOverviewTab === 'statistics' ? '#stats' : currentPage === 'overview' && activeOverviewTab === 'matchups' ? '#matchups' : `#${currentPage}`}
+      activeItem={getActiveNavItem()}
       showBottomNav={isMobile}
     >
       <div className="main-container">

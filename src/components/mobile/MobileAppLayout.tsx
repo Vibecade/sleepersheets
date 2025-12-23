@@ -20,26 +20,24 @@ export function MobileAppLayout({
 }: MobileAppLayoutProps) {
   const isMobile = useIsMobile()
 
-  // If not mobile, just render children without mobile layout
   if (!isMobile) {
     return <>{children}</>
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Main content area with bottom padding for nav */}
+    <div className="min-h-screen min-h-[100dvh] flex flex-col bg-background">
       <main
         className={cn(
-          "flex-1",
-          showBottomNav && "pb-20", // Space for bottom nav
+          "flex-1 overflow-x-hidden",
+          showBottomNav && "pb-[72px]",
           className
         )}
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {children}
       </main>
 
-      {/* Bottom navigation - Always visible */}
-      {showBottomNav && bottomNavItems && (
+      {showBottomNav && bottomNavItems && bottomNavItems.length > 0 && (
         <BottomNav items={bottomNavItems} activeItem={activeItem} />
       )}
     </div>

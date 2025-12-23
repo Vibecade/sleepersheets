@@ -169,36 +169,35 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
         </Card>
       )}
 
-      {/* Main Content Tabs */}
-      <Tabs defaultValue={initialTab || "matchups"} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 transition-all duration-200">
-          <TabsTrigger 
-            value="matchups" 
-            className="flex items-center space-x-2 transition-all duration-200 hover:bg-accent/80 touch-manipulation active:scale-95"
+      <Tabs defaultValue={initialTab || "matchups"} className="space-y-4 md:space-y-6">
+        <TabsList className="flex w-full gap-1">
+          <TabsTrigger
+            value="matchups"
+            className="flex-1 flex items-center justify-center gap-1.5 md:gap-2"
           >
-            <Calendar className="w-4 h-4" />
-            <span>Matchups</span>
+            <Calendar className="w-4 h-4 shrink-0" />
+            <span className="hidden xs:inline text-xs md:text-sm">Matchups</span>
           </TabsTrigger>
-          <TabsTrigger 
-            value="standings" 
-            className="flex items-center space-x-2 transition-all duration-200 hover:bg-accent/80 touch-manipulation active:scale-95"
+          <TabsTrigger
+            value="standings"
+            className="flex-1 flex items-center justify-center gap-1.5 md:gap-2"
           >
-            <Users className="w-4 h-4" />
-            <span>Standings</span>
+            <Users className="w-4 h-4 shrink-0" />
+            <span className="hidden xs:inline text-xs md:text-sm">Standings</span>
           </TabsTrigger>
-          <TabsTrigger 
-            value="transactions" 
-            className="flex items-center space-x-2 transition-all duration-200 hover:bg-accent/80 touch-manipulation active:scale-95"
+          <TabsTrigger
+            value="transactions"
+            className="flex-1 flex items-center justify-center gap-1.5 md:gap-2"
           >
-            <ArrowRightLeft className="w-4 h-4" />
-            <span>Transactions</span>
+            <ArrowRightLeft className="w-4 h-4 shrink-0" />
+            <span className="hidden xs:inline text-xs md:text-sm">Moves</span>
           </TabsTrigger>
-          <TabsTrigger 
-            value="statistics" 
-            className="flex items-center space-x-2 transition-all duration-200 hover:bg-accent/80 touch-manipulation active:scale-95"
+          <TabsTrigger
+            value="statistics"
+            className="flex-1 flex items-center justify-center gap-1.5 md:gap-2"
           >
-            <Activity className="w-4 h-4" />
-            <span>Fun Stats</span>
+            <Activity className="w-4 h-4 shrink-0" />
+            <span className="hidden xs:inline text-xs md:text-sm">Stats</span>
           </TabsTrigger>
         </TabsList>
 
