@@ -135,6 +135,8 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
             userMap={userMap}
             players={players}
             salaries={salaries}
+            salaryCap={salaryCap}
+            teamSalaries={teamSalaries}
           />
         )}
       </div>

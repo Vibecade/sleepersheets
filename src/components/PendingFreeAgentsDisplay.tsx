@@ -13,6 +13,8 @@ interface PendingFreeAgentsDisplayProps {
   rosters: any[];
   players: Record<string, any>;
   leagueTotals: { totalPlayers: number; totalExpiringValue: number };
+  salaryCap: number;
+  teamSalaries: Record<number, number>;
 }
 
 const formatSalary = (amount: number) => {
@@ -184,7 +186,9 @@ const PendingFreeAgentsDisplay: React.FC<PendingFreeAgentsDisplayProps> = ({
   userMap,
   rosters,
   players,
-  leagueTotals
+  leagueTotals,
+  salaryCap,
+  teamSalaries
 }) => {
   const sortedTeams = useMemo(() => {
     return Object.values(teamSummaries)
@@ -264,8 +268,8 @@ const PendingFreeAgentsDisplay: React.FC<PendingFreeAgentsDisplayProps> = ({
               summary={summary}
               user={user}
               players={players}
-              teamSalary={0}
-              salaryCap={200000}
+              teamSalary={teamSalaries[summary.rosterId] || 0}
+              salaryCap={salaryCap}
             />
           );
         })}
