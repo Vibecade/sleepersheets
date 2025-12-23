@@ -17,6 +17,7 @@ export const useTeamRostersManager = ({ rosters, transactions = [] }: UseTeamRos
   const [showDeadCapManager, setShowDeadCapManager] = useState(false);
   const [showFAAB, setShowFAAB] = useState(false);
   const [showContractCalculator, setShowContractCalculator] = useState(false);
+  const [showPendingFreeAgents, setShowPendingFreeAgents] = useState(false);
   const [localSalaryCap, setLocalSalaryCap] = useState<string>('');
   const [localFaabCap, setLocalFaabCap] = useState<string>('');
   const [localReserveLimit, setLocalReserveLimit] = useState<string>('');
@@ -204,6 +205,8 @@ export const useTeamRostersManager = ({ rosters, transactions = [] }: UseTeamRos
     setShowFAAB,
     showContractCalculator,
     setShowContractCalculator,
+    showPendingFreeAgents,
+    setShowPendingFreeAgents,
     localSalaryCap,
     setLocalSalaryCap,
     localFaabCap,

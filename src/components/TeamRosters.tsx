@@ -4,6 +4,7 @@ import { useTeamRostersManager } from '@/hooks/useTeamRostersManager';
 import MinimizableDeadCapManager from '@/components/MinimizableDeadCapManager';
 import MinimizableContractCalculator from '@/components/MinimizableContractCalculator';
 import MinimizableLeagueOptions from '@/components/MinimizableLeagueOptions';
+import MinimizablePendingFreeAgents from '@/components/MinimizablePendingFreeAgents';
 import TeamRostersHeader from '@/components/TeamRostersHeader';
 import TeamRostersGrid from '@/components/TeamRostersGrid';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -28,6 +29,8 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
     setShowFAAB,
     showContractCalculator,
     setShowContractCalculator,
+    showPendingFreeAgents,
+    setShowPendingFreeAgents,
     localSalaryCap,
     setLocalSalaryCap,
     localFaabCap,
@@ -82,6 +85,8 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
             onToggleDeadCapManager={() => setShowDeadCapManager(!showDeadCapManager)}
             showContractCalculator={showContractCalculator}
             onToggleContractCalculator={() => setShowContractCalculator(!showContractCalculator)}
+            showPendingFreeAgents={showPendingFreeAgents}
+            onTogglePendingFreeAgents={() => setShowPendingFreeAgents(!showPendingFreeAgents)}
             showSalaryFeatures={showSalaryFeatures}
             canModifyLeague={canModify}
           />
@@ -116,6 +121,17 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
             open={showContractCalculator}
             onOpenChange={setShowContractCalculator}
             leagueId={leagueId}
+            players={players}
+          />
+        )}
+
+        {showPendingFreeAgents && showSalaryFeatures && (
+          <MinimizablePendingFreeAgents
+            open={showPendingFreeAgents}
+            onOpenChange={setShowPendingFreeAgents}
+            leagueId={leagueId}
+            rosters={rosters}
+            userMap={userMap}
             players={players}
           />
         )}
