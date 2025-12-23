@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { usePlayerContracts } from '@/hooks/usePlayerContracts';
-import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 
 export interface PendingFreeAgent {
   playerId: string;
@@ -20,14 +19,14 @@ export interface TeamFreeAgentSummary {
 interface UsePendingFreeAgentsProps {
   rosters: any[];
   leagueId: string;
+  salaries: Record<string, number | null>;
 }
 
-export const usePendingFreeAgents = ({ rosters, leagueId }: UsePendingFreeAgentsProps) => {
+export const usePendingFreeAgents = ({ rosters, leagueId, salaries }: UsePendingFreeAgentsProps) => {
   const { contracts, loading: contractsLoading } = usePlayerContracts(leagueId);
-  const { salaries, loading: salariesLoading } = usePlayerSalaries(leagueId);
 
   const { pendingFreeAgents, teamSummaries, leagueTotals } = useMemo(() => {
-    if (!rosters.length || contractsLoading || salariesLoading) {
+    if (!rosters.length || contractsLoading) {
       return {
         pendingFreeAgents: [] as PendingFreeAgent[],
         teamSummaries: {} as Record<number, TeamFreeAgentSummary>,
@@ -96,12 +95,12 @@ export const usePendingFreeAgents = ({ rosters, leagueId }: UsePendingFreeAgents
     };
 
     return { pendingFreeAgents: allPendingFreeAgents, teamSummaries: summaries, leagueTotals };
-  }, [rosters, contracts, salaries, contractsLoading, salariesLoading]);
+  }, [rosters, contracts, salaries, contractsLoading]);
 
   return {
     pendingFreeAgents,
     teamSummaries,
     leagueTotals,
-    loading: contractsLoading || salariesLoading
+    loading: contractsLoading
   };
 };

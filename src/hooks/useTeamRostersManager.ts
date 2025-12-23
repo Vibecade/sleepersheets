@@ -225,5 +225,6 @@ export const useTeamRostersManager = ({ rosters, transactions = [] }: UseTeamRos
     faabCap,
     reserveLimit,
     canModify,
+    salaries,
   };
 };

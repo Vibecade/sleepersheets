@@ -49,6 +49,7 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
     faabCap,
     reserveLimit,
     canModify,
+    salaries,
   } = useTeamRostersManager({ rosters, transactions });
 
   return (
@@ -133,6 +134,7 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
             rosters={rosters}
             userMap={userMap}
             players={players}
+            salaries={salaries}
           />
         )}
       </div>

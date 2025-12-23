@@ -10,6 +10,7 @@ interface MinimizablePendingFreeAgentsProps {
   rosters: any[];
   userMap: Record<string, any>;
   players: Record<string, any>;
+  salaries: Record<string, number | null>;
 }
 
 const MinimizablePendingFreeAgents: React.FC<MinimizablePendingFreeAgentsProps> = memo(({
@@ -18,9 +19,10 @@ const MinimizablePendingFreeAgents: React.FC<MinimizablePendingFreeAgentsProps> 
   leagueId,
   rosters,
   userMap,
-  players
+  players,
+  salaries
 }) => {
-  const { teamSummaries, leagueTotals, loading } = usePendingFreeAgents({ rosters, leagueId });
+  const { teamSummaries, leagueTotals, loading } = usePendingFreeAgents({ rosters, leagueId, salaries });
 
   if (!open) {
     return null;
