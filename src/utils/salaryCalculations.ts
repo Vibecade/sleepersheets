@@ -58,14 +58,15 @@ export const calculateOptimizedSalaries = ({
     // Get pre-calculated dead cap
     const deadCap = deadCapsByRoster[rosterId] || 0;
     teamDeadCaps[rosterId] = deadCap;
-    
-    // Calculate totals and cap status
+
+    // Calculate totals (dead cap doesn't count toward salary cap)
     const total = activeSalary + deadCap;
     totalSalaries[rosterId] = total;
 
     console.log(`Team ${rosterId} Total: $${total} (Active: $${activeSalary} + Dead Cap: $${deadCap})`);
 
-    const percentage = (total / salaryCap) * 100;
+    // Cap percentage based only on active salary (dead cap excluded)
+    const percentage = (activeSalary / salaryCap) * 100;
     let status: 'over' | 'near' | 'under' = 'under';
 
     if (percentage > 100) status = 'over';
