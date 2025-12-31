@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@400;500;600;700;900&family=Oswald:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -96,6 +96,16 @@
     --transition-normal: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-slow: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
     --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Sidebar Variables */
+    --sidebar-background: 214 18% 8%;
+    --sidebar-foreground: 45 85% 88%;
+    --sidebar-primary: 45 95% 58%;
+    --sidebar-primary-foreground: 214 20% 6%;
+    --sidebar-accent: 214 12% 22%;
+    --sidebar-accent-foreground: 45 85% 88%;
+    --sidebar-border: 214 12% 16%;
+    --sidebar-ring: 45 95% 58%;
   }
 }
 
@@ -618,18 +628,6 @@
       text-align: center !important;
     }
 
-    /* Improved mobile scrollbar */
-    ::-webkit-scrollbar {
-      width: 4px;
-    }
-  }
-
-  /* Small mobile devices */
-  @media (max-width: 480px) {
-    body {
-      font-size: clamp(0.8rem, 3.5vw, 0.95rem);
-    }
-
     .fade-in, .slide-up {
       animation-duration: 0.4s;
     }
@@ -642,7 +640,7 @@
       font-size: clamp(1rem, 4vw, 1.125rem);
     }
 
-    /* Even smaller text scaling for very small screens */
+    /* Text scaling for small screens */
     .text-sm {
       font-size: clamp(0.75rem, 3vw, 0.875rem);
     }
@@ -655,7 +653,7 @@
       font-size: clamp(1rem, 4vw, 1.125rem);
     }
 
-    /* Even smaller scrollbar for small devices */
+    /* Mobile scrollbar */
     ::-webkit-scrollbar {
       width: 3px;
     }

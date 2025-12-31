@@ -7,7 +7,7 @@ import MinimizableLeagueOptions from '@/components/MinimizableLeagueOptions';
 import MinimizablePendingFreeAgents from '@/components/MinimizablePendingFreeAgents';
 import TeamRostersHeader from '@/components/TeamRostersHeader';
 import TeamRostersGrid from '@/components/TeamRostersGrid';
-import ErrorBoundary from '@/components/ErrorBoundary';
+import ErrorBoundaryWithRetry from '@/components/ErrorBoundaryWithRetry';
 
 interface TeamRostersProps {
   rosters: any[];
@@ -53,7 +53,7 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
   } = useTeamRostersManager({ rosters, transactions });
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundaryWithRetry fallbackMessage="Failed to load team rosters">
       <div className="space-y-4 sm:space-y-6">
         <MinimizableLeagueOptions
           open={showLeagueOptions}
@@ -140,7 +140,7 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
           />
         )}
       </div>
-    </ErrorBoundary>
+    </ErrorBoundaryWithRetry>
   );
 });
 
