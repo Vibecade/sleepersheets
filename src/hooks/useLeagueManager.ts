@@ -6,6 +6,7 @@ import { useLeagueSubmissions } from './useLeagueSubmissions';
 import { useUrlLeagueLoader } from './useUrlLeagueLoader';
 import { useLeagueQuery } from './useLeagueQuery';
 import { useQueryClient } from '@tanstack/react-query';
+import { useUserLeagues } from './useUserLeagues';
 
 export const useLeagueManager = () => {
   const [activeLeagueId, setActiveLeagueId] = useState('');
@@ -13,6 +14,7 @@ export const useLeagueManager = () => {
   const [username, setUsername] = useState('');
   
   const { data: leagueData, isLoading, error, refetch } = useLeagueQuery(activeLeagueId);
+  const { addRecentLeague, recentLeagues } = useUserLeagues();
 
   const [ownershipStatus, setOwnershipStatus] = useState<{
     isOwned: boolean;
@@ -84,6 +86,14 @@ export const useLeagueManager = () => {
     if (leagueData?.league?.league_id) {
       checkAndSetOwnership(leagueData.league.league_id);
       
+      // Track this league in recent leagues
+      addRecentLeague({
+        leagueId: leagueData.league.league_id,
+        name: leagueData.league.name,
+        season: leagueData.league.season,
+        totalRosters: leagueData.league.total_rosters
+      });
+      
       // Only update URL if it's different to prevent navigation spam
       const currentLeagueInUrl = new URLSearchParams(window.location.search).get('league');
       if (currentLeagueInUrl !== leagueData.league.league_id) {
@@ -92,7 +102,7 @@ export const useLeagueManager = () => {
     } else {
       setOwnershipStatus(null);
     }
-  }, [leagueData?.league?.league_id, checkAndSetOwnership, setLeagueInUrl]);
+  }, [leagueData?.league?.league_id, checkAndSetOwnership, setLeagueInUrl, addRecentLeague, leagueData?.league?.name, leagueData?.league?.season, leagueData?.league?.total_rosters]);
 
   const handleRefreshData = useCallback(async () => {
     if (!activeLeagueId) return;
@@ -188,6 +198,7 @@ export const useLeagueManager = () => {
     handleOwnershipChanged,
     userLeaguesData,
     showLeagueSelection,
+    recentLeagues,
     // Keep these for component compatibility, but they are no longer actively managed
     loadingProgress: 0,
     loadingMessage: '',

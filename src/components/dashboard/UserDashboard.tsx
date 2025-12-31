@@ -190,14 +190,15 @@ const UserDashboard: React.FC<UserDashboardProps> = ({
           </CardHeader>
           <CardContent>
             <div className="grid gap-2">
-              {recentLeagues.map((leagueId) => (
+              {recentLeagues.map((league) => (
                 <Button
-                  key={leagueId}
+                  key={league.leagueId}
                   variant="outline"
-                  className="justify-start min-h-[44px] text-left"
-                  onClick={() => onSelectLeague(leagueId)}
+                  className="justify-between min-h-[44px] text-left"
+                  onClick={() => onSelectLeague(league.leagueId)}
                 >
-                  <span className="font-mono text-xs sm:text-sm truncate">{leagueId}</span>
+                  <span className="font-medium text-sm truncate">{league.name}</span>
+                  <span className="text-xs text-muted-foreground ml-2">{league.season}</span>
                 </Button>
               ))}
             </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueManager } from '@/hooks/useLeagueManager';
@@ -21,6 +20,7 @@ import FeaturesSection from '@/components/landing/FeaturesSection';
 import HowItWorksSection from '@/components/landing/HowItWorksSection';
 import SocialProofSection from '@/components/landing/SocialProofSection';
 import GetStartedModal from '@/components/landing/GetStartedModal';
+import ReturningUserPrompt from '@/components/landing/ReturningUserPrompt';
 import { DEMO_LEAGUE_ID } from '@/utils/demoData';
 import { useNavigate } from 'react-router-dom';
 
@@ -54,6 +54,7 @@ const IndexContent = React.memo(() => {
     handleOwnershipChanged,
     userLeaguesData,
     showLeagueSelection,
+    recentLeagues,
   } = useLeagueManager();
 
   // Auto-show league connection interface when user signs in, reset on logout
@@ -153,6 +154,19 @@ const IndexContent = React.memo(() => {
             <>
               {!showLeagueConnection ? (
                 <>
+                  {/* Quick access for returning users */}
+                  {recentLeagues.length > 0 && (
+                    <ReturningUserPrompt
+                      recentLeagues={recentLeagues}
+                      onSelectLeague={handleSelectLeague}
+                      onConnectNew={() => {
+                        setShowLeagueConnection(true);
+                        setUserIsInteracting(true);
+                        setIsHeaderCompact(true);
+                      }}
+                    />
+                  )}
+                  
                   {/* Marketing Landing Page */}
                   <HeroSection onGetStarted={handleGetStarted} />
                   
