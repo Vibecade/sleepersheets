@@ -10,8 +10,8 @@ const CORE_CACHE_FILES = [
   '/',
   '/offline.html',
   '/football.svg',
-  '/src/main.tsx',
-  '/src/index.css'
+  '/manifest.json',
+  '/favicon.ico'
 ];
 
 // API endpoints to cache with different strategies
@@ -62,7 +62,17 @@ const limitCacheSize = async (cacheName, maxSize) => {
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(CORE_CACHE_FILES))
+      .then((cache) => {
+        // Cache files individually to prevent one failure from breaking all
+        return Promise.allSettled(
+          CORE_CACHE_FILES.map(file => 
+            cache.add(file).catch(err => {
+              console.warn('Failed to cache:', file, err);
+              return null;
+            })
+          )
+        );
+      })
       .then(() => self.skipWaiting())
   );
 });
