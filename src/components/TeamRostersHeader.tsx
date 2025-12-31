@@ -83,17 +83,15 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
             <span>Contract Calculator</span>
           </Button>
 
-          {showSalaryFeatures && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onTogglePendingFreeAgents}
-              className="flex items-center justify-center space-x-2 min-h-[44px] text-sm"
-            >
-              <Calendar className="w-4 h-4" />
-              <span>Free Agents</span>
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onTogglePendingFreeAgents}
+            className="flex items-center justify-center space-x-2 min-h-[44px] text-sm"
+          >
+            <Calendar className="w-4 h-4" />
+            <span>Free Agents</span>
+          </Button>
         </div>
       </div>
     </CardHeader>

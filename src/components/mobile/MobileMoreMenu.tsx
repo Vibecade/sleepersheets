@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Download, Info, HelpCircle, FileText } from 'lucide-react';
+import { Shield, Download, Info, HelpCircle, FileText, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import MinimizablePendingFreeAgents from '@/components/MinimizablePendingFreeAgents';
 
 interface MobileMoreMenuProps {
   leagueId: string;
@@ -18,10 +19,48 @@ export const MobileMoreMenu: React.FC<MobileMoreMenuProps> = ({
   onNavigateToCommissioner,
 }) => {
   const navigate = useNavigate();
+  const [showFreeAgents, setShowFreeAgents] = useState(false);
 
   return (
     <div className="space-y-4 pb-20">
       <h2 className="text-2xl font-bold text-foreground">More Options</h2>
+
+      {/* Free Agents / Expiring Contracts */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-muted-foreground" />
+            <CardTitle>Free Agents</CardTitle>
+          </div>
+          <CardDescription>
+            View players with expiring contracts
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button 
+            onClick={() => setShowFreeAgents(true)}
+            variant="outline"
+            className="w-full"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            View Expiring Contracts
+          </Button>
+        </CardContent>
+      </Card>
+
+      {showFreeAgents && (
+        <MinimizablePendingFreeAgents
+          open={showFreeAgents}
+          onOpenChange={setShowFreeAgents}
+          leagueId={leagueId}
+          rosters={leagueData?.rosters || []}
+          userMap={leagueData?.userMap || {}}
+          players={leagueData?.players || {}}
+          salaries={leagueData?.salaries || {}}
+          salaryCap={leagueData?.salaryCap || 500}
+          teamSalaries={leagueData?.teamSalaries || {}}
+        />
+      )}
 
       {/* Commissioner Dashboard - Only show if user is commissioner */}
       {isCommissioner && (
