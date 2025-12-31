@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { downloadCSV, formatPlayerName, addExportOptionsToCSV, ExportOptionsData, getPlayerFranchiseValue } from '@/utils/csvExport';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
+import { usePlayerContracts } from '@/hooks/usePlayerContracts';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 import ExportButton from './ExportButton';
 
@@ -25,27 +25,34 @@ const RosterExport: React.FC<RosterExportProps> = ({
 }) => {
   const { toast } = useToast();
   const { salaries } = usePlayerSalaries(league.league_id);
+  const { contracts } = usePlayerContracts(league.league_id);
   const { deadCapPlayers } = useDeadCapPlayers(league.league_id);
 
   const exportRostersToCSV = () => {
-    console.log('Preparing clean Rosters CSV export with dead cap data...');
-    console.log('Current salaries for export:', salaries);
-    console.log('Current dead cap players for export:', deadCapPlayers);
-    console.log('Export options:', exportOptions);
+    console.log('Preparing enhanced Rosters CSV export...');
     
-    const csvData = [];
-    const headers = ['Player Name', 'NFL Team', 'Position', 'Fantasy Team', 'Roster Status', 'Fantasy Salary', 'Franchise Value'];
+    const csvData: string[][] = [];
+    const headers = [
+      'Player Name',
+      'NFL Team',
+      'Position',
+      'Fantasy Team',
+      'Roster Status',
+      'Fantasy Salary',
+      'Contract Years',
+      'Acquisition Type',
+      'Franchise Value'
+    ];
     
     csvData.push(headers);
 
-    const playerRosterMap = new Map(); // Track players to avoid duplicates
+    const playerRosterMap = new Map();
 
     // Add active roster players
     rosters.forEach((roster) => {
       const user = userMap[roster.owner_id];
       const fantasyTeam = getTeamName(user);
 
-      // Priority order: Active > Reserve > Taxi Squad
       const playerCategories = [
         { players: roster.players || [], status: 'Active' },
         { players: roster.reserve || [], status: 'Reserve' },
@@ -54,13 +61,12 @@ const RosterExport: React.FC<RosterExportProps> = ({
 
       playerCategories.forEach(({ players: playerList, status }) => {
         playerList.forEach((playerId: string) => {
-          // Only add player if not already added (first occurrence wins by priority)
           if (!playerRosterMap.has(playerId)) {
             const player = players[playerId];
             if (player) {
               const salary = salaries[playerId];
+              const contractYears = contracts[playerId];
               const franchiseValue = getPlayerFranchiseValue(player);
-              console.log(`Player ${formatPlayerName(player)} (${playerId}) salary:`, salary);
               
               csvData.push([
                 formatPlayerName(player),
@@ -69,6 +75,8 @@ const RosterExport: React.FC<RosterExportProps> = ({
                 fantasyTeam,
                 status,
                 salary ? `$${salary.toLocaleString()}` : '',
+                contractYears ? `${contractYears} year${contractYears > 1 ? 's' : ''}` : '',
+                'Contract',
                 franchiseValue
               ]);
               
@@ -95,6 +103,8 @@ const RosterExport: React.FC<RosterExportProps> = ({
           fantasyTeam,
           'Dead Cap',
           deadCapPlayer.salary ? `$${deadCapPlayer.salary.toLocaleString()}` : '',
+          '',
+          'Dead Cap',
           franchiseValue
         ]);
       }
@@ -105,12 +115,11 @@ const RosterExport: React.FC<RosterExportProps> = ({
       ? addExportOptionsToCSV(csvData, exportOptions, league.name)
       : csvData;
 
-    console.log('Final CSV data with dead cap and options:', finalCsvData);
     downloadCSV(finalCsvData, `${league.name}_rosters_export.csv`);
     
     toast({
-      title: "Clean Rosters Export Complete!",
-      description: "Your league roster data has been downloaded as CSV with clean formatting, fantasy salaries, franchise values, and dead cap data"
+      title: "Rosters Export Complete!",
+      description: "Player data with salaries, contracts, and franchise values downloaded"
     });
   };
 
@@ -119,7 +128,7 @@ const RosterExport: React.FC<RosterExportProps> = ({
       onClick={exportRostersToCSV}
       icon={Users}
       title="Export Rosters"
-      description="Normalized player data with clean headers, fantasy salaries, franchise values, and dead cap data"
+      description="Players with salaries, contract years, and franchise values"
       colorClass="text-green-600"
       hoverColorClass="hover:bg-green-700"
     />

@@ -1,10 +1,14 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 import RosterExport from './exports/RosterExport';
 import TransactionsExport from './exports/TransactionsExport';
 import DraftExport from './exports/DraftExport';
+import StandingsExport from './exports/StandingsExport';
+import LeagueSettingsExport from './exports/LeagueSettingsExport';
+import MatchupsExport from './exports/MatchupsExport';
+import ExportAll from './exports/ExportAll';
 import ExportInfo from './exports/ExportInfo';
 import ExportOptions, { ExportOptionsData } from './exports/ExportOptions';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
@@ -42,7 +46,6 @@ const ExportActions: React.FC<ExportActionsProps> = ({
   });
 
   const refreshSalaries = async () => {
-    // Force a page reload to refresh all salary data including dead cap
     window.location.reload();
   };
 
@@ -57,7 +60,7 @@ const ExportActions: React.FC<ExportActionsProps> = ({
       <CardHeader className="pb-3 sm:pb-4">
         <CardTitle className="text-lg sm:text-xl">Export Center</CardTitle>
         <CardDescription className="text-sm">
-          Download your league data and configure export options
+          Download comprehensive league data for analysis, archiving, or AI processing
         </CardDescription>
       </CardHeader>
       <CardContent className="p-3 sm:p-6">
@@ -71,36 +74,83 @@ const ExportActions: React.FC<ExportActionsProps> = ({
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="exports" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-              <div className="flex justify-center">
-                <RosterExport 
-                  league={league}
-                  rosters={rosters}
-                  userMap={userMap}
-                  players={players}
-                  exportOptions={exportOptions}
-                />
+          <TabsContent value="exports" className="space-y-6 mt-4 sm:mt-6">
+            {/* Quick Export All */}
+            <div className="mb-6">
+              <ExportAll
+                league={league}
+                rosters={rosters}
+                userMap={userMap}
+                rosterUserMap={rosterUserMap}
+                players={players}
+                transactions={transactions}
+                draftPicks={draftPicks}
+                exportOptions={exportOptions}
+              />
+            </div>
+            
+            <Separator />
+            
+            {/* Core Data Section */}
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">Core Data</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                <div className="flex justify-center">
+                  <RosterExport 
+                    league={league}
+                    rosters={rosters}
+                    userMap={userMap}
+                    players={players}
+                    exportOptions={exportOptions}
+                  />
+                </div>
+                <div className="flex justify-center">
+                  <StandingsExport
+                    league={league}
+                    rosters={rosters}
+                    userMap={userMap}
+                    exportOptions={exportOptions}
+                  />
+                </div>
+                <div className="flex justify-center">
+                  <MatchupsExport
+                    league={league}
+                    rosters={rosters}
+                    userMap={userMap}
+                    exportOptions={exportOptions}
+                  />
+                </div>
               </div>
-              
-              <div className="flex justify-center">
-                <TransactionsExport 
-                  league={league}
-                  transactions={transactions}
-                  rosterUserMap={rosterUserMap}
-                  players={players}
-                  exportOptions={exportOptions}
-                />
-              </div>
-              
-              <div className="flex justify-center sm:col-span-2 lg:col-span-1">
-                <DraftExport 
-                  league={league}
-                  draftPicks={draftPicks}
-                  rosterUserMap={rosterUserMap}
-                  players={players}
-                  exportOptions={exportOptions}
-                />
+            </div>
+            
+            {/* Activity Section */}
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">Activity & History</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                <div className="flex justify-center">
+                  <TransactionsExport 
+                    league={league}
+                    transactions={transactions}
+                    rosterUserMap={rosterUserMap}
+                    players={players}
+                    exportOptions={exportOptions}
+                  />
+                </div>
+                <div className="flex justify-center">
+                  <DraftExport 
+                    league={league}
+                    draftPicks={draftPicks}
+                    rosterUserMap={rosterUserMap}
+                    players={players}
+                    exportOptions={exportOptions}
+                  />
+                </div>
+                <div className="flex justify-center">
+                  <LeagueSettingsExport
+                    league={league}
+                    exportOptions={exportOptions}
+                  />
+                </div>
               </div>
             </div>
 
