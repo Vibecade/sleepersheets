@@ -1,6 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { usePWA } from './usePWA';
+import { logger } from '@/utils/logger';
 
 interface OfflineData {
   timestamp: number;
@@ -31,7 +31,7 @@ export const useOfflineSync = (leagueId?: string) => {
         ) : data;
         setPendingSync(filtered);
       } catch (error) {
-        console.error('Error loading pending sync data:', error);
+        logger.error('Error loading pending sync data:', error);
         localStorage.removeItem(syncKey);
       }
     }
@@ -79,12 +79,12 @@ export const useOfflineSync = (leagueId?: string) => {
       const failed: OfflineData[] = [];
       for (const item of sortedItems) {
         try {
-          console.log('Syncing offline data:', item);
+          logger.debug('Syncing offline data:', item);
           // Here you would implement the actual sync logic based on type
           // For now, we'll simulate the sync
           await new Promise(resolve => setTimeout(resolve, 100));
         } catch (error) {
-          console.error('Failed to sync item:', error);
+          logger.error('Failed to sync item:', error);
           failed.push(item);
         }
       }
@@ -105,7 +105,7 @@ export const useOfflineSync = (leagueId?: string) => {
       const lastSyncKey = leagueId ? `sleepersheets-last-sync-${leagueId}` : 'sleepersheets-last-sync';
       localStorage.setItem(lastSyncKey, now.toString());
     } catch (error) {
-      console.error('Error syncing offline data:', error);
+      logger.error('Error syncing offline data:', error);
     } finally {
       setSyncInProgress(false);
     }

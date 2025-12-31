@@ -9,7 +9,6 @@ import HeaderNavigation from '@/components/HeaderNavigation';
 import Footer from '@/components/Footer';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
-import AdBanner from '@/components/ads/AdBanner';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import { DemoBanner } from '@/components/DemoBanner';
 import LeagueData from '@/components/LeagueData';
@@ -155,17 +154,11 @@ const IndexContent = React.memo(() => {
               {!showLeagueConnection ? (
                 <>
                   {/* Marketing Landing Page */}
-                  <AdBanner position="header" />
-                  
                   <HeroSection onGetStarted={handleGetStarted} />
-                  
-                  <AdBanner position="between-content" />
                   
                   <FeaturesSection />
                   
                   <HowItWorksSection />
-                  
-                  <AdBanner position="between-content" />
                   
                   <SocialProofSection />
                   
@@ -179,7 +172,6 @@ const IndexContent = React.memo(() => {
               ) : (
                 /* League Connection Interface */
                 <div className="max-w-4xl mx-auto">
-                  <AdBanner position="header" />
                   
                   {user ? (
                     <>

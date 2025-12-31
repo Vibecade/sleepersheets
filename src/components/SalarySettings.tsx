@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -6,6 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Settings, Skull, Save, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
 interface SalarySettingsProps {
   localSalaryCap: string;
@@ -88,7 +88,7 @@ const SalarySettings: React.FC<SalarySettingsProps> = ({
                 type="number"
                 value={localSalaryCap}
                 onChange={(e) => {
-                  console.log('Salary cap input changed to:', e.target.value);
+                  logger.debug('Salary cap input changed to:', e.target.value);
                   setLocalSalaryCap(e.target.value);
                 }}
                 className="flex-1 xs:w-32 h-10 bg-white/10 border-white/20 text-white text-base"

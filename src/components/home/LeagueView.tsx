@@ -7,7 +7,6 @@ import LeagueData from '@/components/LeagueData';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import type { CombinedLeagueData } from '@/utils/leagueApi';
-import AdBanner from '@/components/ads/AdBanner';
 
 interface LeagueViewProps {
   leagueData: CombinedLeagueData;
@@ -80,10 +79,8 @@ const LeagueView: React.FC<LeagueViewProps> = ({
           )}
         </div>
       </div>
-
-      <AdBanner position="between-content" />
       
-      <LeagueData 
+      <LeagueData
         data={leagueData} 
         onRefreshData={onRefreshData}
         onResyncData={onResyncData}

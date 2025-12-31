@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 // Resource preloader for critical resources
 export class ResourcePreloader {
   private static instance: ResourcePreloader;
@@ -68,7 +70,7 @@ export class ResourcePreloader {
     this.prefetchPage('/auth');
     this.prefetchPage('/export');
     
-    console.log('🚀 Critical resources preloaded for better performance');
+    logger.info('🚀 Critical resources preloaded for better performance');
   }
 
   // Preload resources on hover (for navigation)

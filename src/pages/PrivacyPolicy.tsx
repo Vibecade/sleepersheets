@@ -86,7 +86,6 @@ const PrivacyPolicy = () => {
                   <li>Maintain your login session</li>
                   <li>Remember your preferences</li>
                   <li>Analyze site usage and performance</li>
-                  <li>Provide targeted advertising through Google AdSense</li>
                 </ul>
                 <p>You can control cookie settings through your browser preferences.</p>
               </section>
@@ -97,7 +96,6 @@ const PrivacyPolicy = () => {
                 <ul className="list-disc pl-6 space-y-2">
                   <li><strong>Sleeper API:</strong> To fetch your fantasy league data</li>
                   <li><strong>Supabase:</strong> For authentication and data storage</li>
-                  <li><strong>Google AdSense:</strong> For displaying advertisements</li>
                 </ul>
                 <p>These services have their own privacy policies that govern their use of your information.</p>
               </section>

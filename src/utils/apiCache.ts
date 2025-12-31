@@ -1,6 +1,7 @@
 import { CACHE_TTL, RATE_LIMITS, RATE_LIMIT_WINDOWS } from './constants';
 import { rateLimiter } from './rateLimiter';
 import type { SleeperPlayer } from '@/types/sleeper';
+import { logger } from './logger';
 
 interface CacheEntry<T> {
   data: T;
@@ -31,7 +32,7 @@ class ApiCache {
   set<T>(key: string, data: T, ttl = this.defaultTTL): void {
     // Don't cache empty matchups arrays
     if (key.includes('/matchups/') && Array.isArray(data) && data.length === 0) {
-      console.log(`⚠️ Not caching empty matchups array for: ${key}`);
+      logger.debug(`⚠️ Not caching empty matchups array for: ${key}`);
       return;
     }
     
@@ -117,18 +118,18 @@ export const cachedFetch = async <T>(
   // Try to get from cache first
   const cached = apiCache.get<T>(cacheKey);
   if (cached) {
-    console.log(`🟢 Cache hit for: ${url} (priority: ${priority}, league-specific: ${!!cachePrefix})`);
+    logger.debug(`🟢 Cache hit for: ${url} (priority: ${priority}, league-specific: ${!!cachePrefix})`);
     return cached;
   }
   
   // Check rate limit before making request
   if (!rateLimiter.checkLimit(url, RATE_LIMITS.MAX_REQUESTS_PER_MINUTE)) {
     const errorMsg = `Rate limit exceeded for ${new URL(url).hostname}. Please wait before making more requests.`;
-    console.warn(`🔴 ${errorMsg}`);
+    logger.warn(`🔴 ${errorMsg}`);
     
     // For high priority requests (like matchups), retry after a short delay
     if (priority === 'high') {
-      console.log(`🔄 Retrying high priority request in ${RATE_LIMIT_WINDOWS.RETRY_DELAY_SHORT}ms...`);
+      logger.debug(`🔄 Retrying high priority request in ${RATE_LIMIT_WINDOWS.RETRY_DELAY_SHORT}ms...`);
       await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_WINDOWS.RETRY_DELAY_SHORT));
       if (!rateLimiter.checkLimit(url, RATE_LIMITS.MAX_REQUESTS_PER_MINUTE)) {
         await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_WINDOWS.RETRY_DELAY_LONG));
@@ -141,7 +142,7 @@ export const cachedFetch = async <T>(
     }
   }
   
-  console.log(`🔵 Cache miss for: ${url} (priority: ${priority}, league-specific: ${!!cachePrefix})`);
+  logger.debug(`🔵 Cache miss for: ${url} (priority: ${priority}, league-specific: ${!!cachePrefix})`);
   
   try {
     const response = await fetch(url, options);
@@ -151,10 +152,10 @@ export const cachedFetch = async <T>(
     
     const data = await response.json();
     apiCache.set(cacheKey, data, ttl);
-    console.log(`✅ Successfully fetched and cached: ${url}`);
+    logger.debug(`✅ Successfully fetched and cached: ${url}`);
     return data;
   } catch (error) {
-    console.error(`❌ Failed to fetch: ${url}`, error);
+    logger.error(`❌ Failed to fetch: ${url}`, error);
     throw error;
   }
 };
@@ -162,7 +163,7 @@ export const cachedFetch = async <T>(
 // League-specific cache management
 export const clearLeagueCache = (leagueId: string): void => {
   apiCache.clearByPattern(`league-${leagueId}`);
-  console.log(`Cleared cache for league: ${leagueId}`);
+  logger.debug(`Cleared cache for league: ${leagueId}`);
 };
 
 /**
