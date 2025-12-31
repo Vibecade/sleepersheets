@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AdUnitProps {
@@ -22,16 +22,24 @@ const AdUnit: React.FC<AdUnitProps> = ({
 }) => {
   const adRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const [isAdSenseAvailable, setIsAdSenseAvailable] = useState(false);
 
   useEffect(() => {
     try {
-      if (typeof window !== 'undefined' && window.adsbygoogle) {
+      if (typeof window !== 'undefined' && window.adsbygoogle && Array.isArray(window.adsbygoogle)) {
+        setIsAdSenseAvailable(true);
         window.adsbygoogle.push({});
       }
     } catch (error) {
       console.error('AdSense error:', error);
+      setIsAdSenseAvailable(false);
     }
   }, []);
+
+  // Don't render anything if AdSense isn't configured
+  if (!isAdSenseAvailable) {
+    return null;
+  }
 
   const getAdSize = () => {
     if (!responsive) return {};
