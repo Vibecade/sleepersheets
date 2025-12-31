@@ -2,7 +2,6 @@ import React, { memo } from 'react';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings } from 'lucide-react';
 import TeamRosters from './TeamRosters';
-import TradeSimulator from './TradeSimulator';
 import MinimizableDataDashboard from './MinimizableDataDashboard';
 import EnhancedTradeSimulator from './EnhancedTradeSimulator';
 import PlayerSearch from './PlayerSearch';

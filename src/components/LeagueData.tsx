@@ -2,7 +2,7 @@ import React, { useState, Suspense, useEffect } from 'react';
 import LeagueHeader from './LeagueHeader';
 import { LazyTeamOverview, LazyFantasyManager } from './LazyComponents';
 import PageNavigation from './PageNavigation';
-import ErrorBoundary from './ErrorBoundary';
+import ErrorBoundaryWithRetry from './ErrorBoundaryWithRetry';
 import PageHead from './PageHead';
 import { LeagueDataProvider, useLeagueData } from './LeagueDataProvider';
 import LeagueHeaderSkeleton from './skeletons/LeagueHeaderSkeleton';
@@ -130,7 +130,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
             <div className="flex justify-end mb-4">
               <LeagueStatusBadge leagueId={league.league_id} onOwnershipChanged={onOwnershipChanged} />
             </div>
-            <ErrorBoundary fallback={<LeagueHeaderSkeleton />}>
+            <ErrorBoundaryWithRetry fallbackMessage="Failed to load league header">
               <Suspense fallback={<LeagueHeaderSkeleton />}>
                 <LeagueHeader
                   league={league}
@@ -141,13 +141,13 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
                   compact={isMobile}
                 />
               </Suspense>
-            </ErrorBoundary>
+            </ErrorBoundaryWithRetry>
           </div>
 
           {/* Hide PageNavigation on mobile, use bottom nav instead */}
           {!isMobile && (
             <div className="slide-up" style={{ animationDelay: '0.1s' }}>
-              <ErrorBoundary fallback={<PageNavigationSkeleton />}>
+              <ErrorBoundaryWithRetry fallbackMessage="Failed to load navigation">
                 <Suspense fallback={<PageNavigationSkeleton />}>
                   <PageNavigation
                     currentPage={currentPage === 'more' ? 'overview' : currentPage}
@@ -155,18 +155,18 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
                     leagueData={leagueDataForExport}
                   />
                 </Suspense>
-              </ErrorBoundary>
+              </ErrorBoundaryWithRetry>
             </div>
           )}
 
         {currentPage === 'commissioner' && (
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
             {isOwner ? (
-              <ErrorBoundary fallback={<div>Error loading commissioner dashboard</div>}>
+              <ErrorBoundaryWithRetry fallbackMessage="Error loading commissioner dashboard">
                 <Suspense fallback={<div>Loading commissioner dashboard...</div>}>
                   <CommissionerDashboard leagueId={league.league_id} leagueData={leagueDataForExport} />
                 </Suspense>
-              </ErrorBoundary>
+              </ErrorBoundaryWithRetry>
             ) : (
               <Card>
                 <CardHeader>
@@ -187,7 +187,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
 
         {currentPage === 'more' && (
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
-            <ErrorBoundary fallback={<div>Error loading menu</div>}>
+            <ErrorBoundaryWithRetry fallbackMessage="Error loading menu">
               <Suspense fallback={<div>Loading...</div>}>
                 <MobileMoreMenu
                   leagueId={league.league_id}
@@ -196,13 +196,13 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
                   onNavigateToCommissioner={() => setCurrentPage('commissioner')}
                 />
               </Suspense>
-            </ErrorBoundary>
+            </ErrorBoundaryWithRetry>
           </div>
         )}
 
         {currentPage === 'overview' && (
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
-            <ErrorBoundary fallback={<TeamOverviewSkeleton />}>
+            <ErrorBoundaryWithRetry fallbackMessage="Failed to load team overview">
               <Suspense fallback={<TeamOverviewSkeleton />}>
                 <LazyTeamOverview
                   league={league}
@@ -214,13 +214,13 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
                   initialTab={activeOverviewTab}
                 />
               </Suspense>
-            </ErrorBoundary>
+            </ErrorBoundaryWithRetry>
           </div>
         )}
 
         {currentPage === 'manager' && (
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
-            <ErrorBoundary>
+            <ErrorBoundaryWithRetry fallbackMessage="Failed to load fantasy manager">
               <Suspense fallback={<TeamOverviewSkeleton />}>
                 <LazyFantasyManager
                   league={league}
@@ -232,7 +232,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
                   draftPicks={draftPicks}
                 />
               </Suspense>
-            </ErrorBoundary>
+            </ErrorBoundaryWithRetry>
           </div>
         )}
         </div>
