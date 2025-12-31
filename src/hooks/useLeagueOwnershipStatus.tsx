@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { validateAndSanitizeLeagueId } from '@/utils/inputValidation';
+import { logger } from '@/utils/logger';
 
 interface OwnershipStatus {
   isOwned: boolean;
@@ -34,7 +35,7 @@ export const useLeagueOwnershipStatus = () => {
     // Check cache first
     const cached = ownershipCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      console.log('Using cached ownership status for:', sanitizedLeagueId);
+      logger.debug('Using cached ownership status for:', sanitizedLeagueId);
       return cached.data;
     }
 
@@ -48,7 +49,7 @@ export const useLeagueOwnershipStatus = () => {
         .maybeSingle();
 
       if (error) {
-        console.error('Database error checking ownership status:', error);
+        logger.error('Database error checking ownership status:', error);
         return { isOwned: false, ownedByCurrentUser: false };
       }
 
@@ -66,7 +67,7 @@ export const useLeagueOwnershipStatus = () => {
       
       return result;
     } catch (error) {
-      console.error('Error checking ownership status:', error);
+      logger.error('Error checking ownership status:', error);
       return { isOwned: false, ownedByCurrentUser: false };
     } finally {
       setLoading(false);

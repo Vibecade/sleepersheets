@@ -72,21 +72,12 @@ const CookiePolicy = () => {
                   <li><strong>Error tracking:</strong> To identify and fix technical issues</li>
                   <li><strong>Feature usage:</strong> To understand which features are most popular</li>
                 </ul>
-
-                <h3 className="text-lg font-medium text-white mt-4 mb-2">Advertising Cookies</h3>
-                <p>These cookies are used for advertising purposes:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>Google AdSense:</strong> To display relevant advertisements</li>
-                  <li><strong>Ad personalization:</strong> To show ads based on your interests</li>
-                  <li><strong>Ad performance:</strong> To measure ad effectiveness</li>
-                </ul>
               </section>
 
               <section>
                 <h2 className="text-xl font-semibold text-white mb-3">Third-Party Cookies</h2>
                 <p>We use services from third parties that may set their own cookies:</p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>Google AdSense:</strong> For displaying advertisements</li>
                   <li><strong>Supabase:</strong> For authentication and data storage</li>
                   <li><strong>Sleeper API:</strong> For fetching fantasy league data</li>
                 </ul>
@@ -105,13 +96,6 @@ const CookiePolicy = () => {
                   <li>Clear cookies when you close your browser</li>
                 </ul>
 
-                <h3 className="text-lg font-medium text-white mt-4 mb-2">Advertising Opt-Out</h3>
-                <p>You can opt out of personalized advertising by:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Visiting <a href="https://www.google.com/settings/ads" className="text-blue-400 hover:text-blue-300">Google Ads Settings</a></li>
-                  <li>Using the <a href="https://optout.aboutads.info/" className="text-blue-400 hover:text-blue-300">Digital Advertising Alliance opt-out tool</a></li>
-                  <li>Enabling "Do Not Track" in your browser</li>
-                </ul>
               </section>
 
               <section>
@@ -121,7 +105,6 @@ const CookiePolicy = () => {
                   <li><strong>Essential cookies:</strong> The site may not function properly</li>
                   <li><strong>Functional cookies:</strong> You may lose saved preferences</li>
                   <li><strong>Analytics cookies:</strong> We won't be able to improve the site based on usage data</li>
-                  <li><strong>Advertising cookies:</strong> You may see less relevant ads</li>
                 </ul>
               </section>
 
