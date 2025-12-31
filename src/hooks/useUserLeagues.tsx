@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,9 +14,19 @@ interface UserLeague {
   };
 }
 
+export interface RecentLeague {
+  leagueId: string;
+  name: string;
+  season: string;
+  totalRosters: number;
+  lastAccessed: string;
+}
+
+const RECENT_LEAGUES_KEY = 'recentLeaguesV2';
+
 export const useUserLeagues = () => {
   const [ownedLeagues, setOwnedLeagues] = useState<UserLeague[]>([]);
-  const [recentLeagues, setRecentLeagues] = useState<string[]>([]);
+  const [recentLeagues, setRecentLeagues] = useState<RecentLeague[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
@@ -92,22 +101,33 @@ export const useUserLeagues = () => {
 
   // Load recent leagues from localStorage (only once)
   useEffect(() => {
-    const stored = localStorage.getItem('recentLeagues');
+    const stored = localStorage.getItem(RECENT_LEAGUES_KEY);
     if (stored) {
       try {
-        setRecentLeagues(JSON.parse(stored));
+        const parsed = JSON.parse(stored) as RecentLeague[];
+        // Validate the structure
+        if (Array.isArray(parsed) && parsed.every(l => l.leagueId && l.name)) {
+          setRecentLeagues(parsed);
+        }
       } catch (error) {
         console.error('Error parsing recent leagues:', error);
-        localStorage.removeItem('recentLeagues'); // Clean up corrupted data
+        localStorage.removeItem(RECENT_LEAGUES_KEY);
       }
     }
   }, []); // Empty dependency array - only run once
 
-  const addRecentLeague = useCallback((leagueId: string) => {
+  const addRecentLeague = useCallback((league: { leagueId: string; name: string; season: string; totalRosters: number }) => {
+    const newEntry: RecentLeague = {
+      ...league,
+      lastAccessed: new Date().toISOString()
+    };
+
     setRecentLeagues(prev => {
-      const updated = [leagueId, ...prev.filter(id => id !== leagueId)].slice(0, 5);
+      // Remove existing entry for this league and add new one at the front
+      const filtered = prev.filter(l => l.leagueId !== league.leagueId);
+      const updated = [newEntry, ...filtered].slice(0, 5);
       try {
-        localStorage.setItem('recentLeagues', JSON.stringify(updated));
+        localStorage.setItem(RECENT_LEAGUES_KEY, JSON.stringify(updated));
       } catch (error) {
         console.error('Error saving recent leagues:', error);
       }
@@ -118,7 +138,7 @@ export const useUserLeagues = () => {
   const clearRecentLeagues = useCallback(() => {
     setRecentLeagues([]);
     try {
-      localStorage.removeItem('recentLeagues');
+      localStorage.removeItem(RECENT_LEAGUES_KEY);
     } catch (error) {
       console.error('Error clearing recent leagues:', error);
     }
