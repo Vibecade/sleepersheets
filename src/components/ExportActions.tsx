@@ -85,7 +85,6 @@ const ExportActions: React.FC<ExportActionsProps> = ({
                 players={players}
                 transactions={transactions}
                 draftPicks={draftPicks}
-                exportOptions={exportOptions}
               />
             </div>
             
