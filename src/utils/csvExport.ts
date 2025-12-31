@@ -1,5 +1,7 @@
-
 export const downloadCSV = (csvData: string[][], filename: string) => {
+  // Sanitize filename
+  const safeFilename = sanitizeFilename(filename);
+  
   // Convert to CSV string with proper escaping
   const csvContent = csvData.map(row => 
     row.map(field => {
@@ -17,7 +19,7 @@ export const downloadCSV = (csvData: string[][], filename: string) => {
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
   link.setAttribute('href', url);
-  link.setAttribute('download', filename);
+  link.setAttribute('download', safeFilename);
   link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();
@@ -47,6 +49,31 @@ export const getDataTimestamp = (): string => {
     second: '2-digit',
     timeZoneName: 'short'
   });
+};
+
+export const formatDate = (timestamp: number): string => {
+  if (!timestamp) return 'N/A';
+  // Sleeper timestamps are in milliseconds
+  const date = new Date(timestamp);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+
+export const formatCurrency = (amount: number | null | undefined): string => {
+  if (amount === null || amount === undefined) return '';
+  return `$${amount.toLocaleString()}`;
+};
+
+export const sanitizeFilename = (filename: string): string => {
+  // Remove or replace invalid filename characters
+  return filename
+    .replace(/[<>:"/\\|?*]/g, '_')
+    .replace(/\s+/g, '_')
+    .replace(/_+/g, '_')
+    .trim();
 };
 
 export interface ExportOptionsData {
