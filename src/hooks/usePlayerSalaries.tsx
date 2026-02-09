@@ -30,7 +30,7 @@ export const usePlayerSalaries = (leagueId: string) => {
     try {
       console.log('Loading salaries for league:', currentLeagueId);
       setLoading(true);
-      
+
       const { data, error } = await supabase
         .from('player_salaries')
         .select('player_id, salary, taxi_squad, acquisition_type')
@@ -55,9 +55,6 @@ export const usePlayerSalaries = (leagueId: string) => {
           acquisitionMap[item.player_id] = item.acquisition_type || 'contract';
         });
       }
-
-      console.log(`Loaded ${Object.keys(acquisitionMap).length} players with acquisition types`);
-      console.log(`FAAB players: ${Object.values(acquisitionMap).filter(t => t === 'faab').length}`);
 
       setSalaries(salaryMap);
       setTaxiSquadStatus(taxiMap);
@@ -212,7 +209,6 @@ export const usePlayerSalaries = (leagueId: string) => {
       return discounted;
     }
 
-    console.log(`Player ${playerId}: Full cap hit $${baseSalary}`);
     return baseSalary;
   }, [salaries, taxiSquadStatus, acquisitionTypes]);
 
