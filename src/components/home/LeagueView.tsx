@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { CacheIndicator } from '@/components/ui/cache-indicator';
 import LeagueShareDialog from '@/components/league/LeagueShareDialog';
@@ -31,6 +31,7 @@ const LeagueView: React.FC<LeagueViewProps> = ({
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [showTransferDialog, setShowTransferDialog] = useState(false);
 
   // Store league ID in session storage to prevent excessive API calls on page refresh
   useEffect(() => {
@@ -63,9 +64,11 @@ const LeagueView: React.FC<LeagueViewProps> = ({
           
           {user && ownershipStatus?.ownedByCurrentUser && (
             <OwnershipTransferDialog
+              isOpen={showTransferDialog}
+              onClose={() => setShowTransferDialog(false)}
               leagueId={leagueData.league.league_id}
-              leagueName={leagueData.league.name}
               onTransferComplete={() => {
+                setShowTransferDialog(false);
                 toast({
                   title: "Ownership Transferred",
                   description: "You no longer own this league"
@@ -76,8 +79,8 @@ const LeagueView: React.FC<LeagueViewProps> = ({
           )}
         </div>
       </div>
-
-      <LeagueData 
+      
+      <LeagueData
         data={leagueData} 
         onRefreshData={onRefreshData}
         onResyncData={onResyncData}

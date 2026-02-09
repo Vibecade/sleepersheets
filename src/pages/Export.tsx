@@ -5,53 +5,71 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Copy, CheckCircle, Sparkles, FileSpreadsheet, Bot, Download } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { LeagueDataProvider } from '@/components/LeagueDataProvider';
 import ExportActions from '@/components/ExportActions';
 
 const Export = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const location = useLocation();
   const leagueData = location.state?.leagueData;
 
-  const chatGptPrompt = `I am uploading my Sleeper fantasy football league export files. Please create a formatted, multi-sheet Google Sheets document for me with the following requirements:
+  const chatGptPrompt = `I am uploading my Sleeper fantasy football league export files. Please analyze and create a comprehensive Google Sheets document with the following structure:
 
-1. **Team Sheets:**  
-   - Create a separate sheet for each team, using the roster export.  
-   - Columns: Player Name, Position, NFL Team, Fantasy Salary (if present), and any other relevant info.
-   - At the top of each team sheet, display the sum of all player salaries as "Team Total Salary".
+## EXPORTED FILES INCLUDED:
+- **Rosters**: All players with fantasy salaries, contract years, and franchise values
+- **Standings**: Team rankings with W/L records, win %, points for/against
+- **Matchups**: Weekly game results with scores and margins
+- **Transactions**: Full season add/drop/trade history with FAAB bids
+- **Draft**: Complete draft history with keeper designations and pick order
+- **Settings**: Scoring rules, roster limits, salary cap configuration
 
-2. **Main Sheet:**  
-   - Add a "Main" summary sheet with:
-     - Each team's name
-     - Total team salary (from their tab)
-     - Number of players per team
-     - *Any included league-wide information (see below) should also appear on this sheet or be clearly referenced.*
+## REQUESTED OUTPUT:
 
-3. **Additional League Information:**  
-   - If the exports include **League Rules**, **FAAB Information**, or **Draft Order**, display these as follows:
-     - Create a separate sheet for each (named "League Rules", "FAAB", and "Draft Order" as appropriate).
-     - On the "Main" summary sheet, also include a brief section at the top with key highlights or a link/reference to these sheets.
+### 1. Team Sheets (one per team):
+- Player roster with position, NFL team, salary, contract years
+- Team total salary at top
+- Roster breakdown by position
 
-4. **Transactions Sheet:**  
-   - If a transactions export is provided, add a "Transactions" sheet listing:
-     - Date
-     - Player
-     - Type (draft, waiver, trade, drop)
-     - Teams involved
+### 2. Main Summary Sheet:
+- All teams ranked by standings
+- Total salary per team
+- Salary cap space remaining
+- Points for/against totals
 
-5. **Formatting:**  
-   - Use bold headers, alternate row shading, and auto-size columns.
-   - Ensure all salaries are formatted as numbers (remove any "$" or extra symbols).
-   - Clearly label each section/sheet for ease of navigation.
+### 3. Transactions Sheet:
+- Full season transaction log
+- FAAB spending summary per team
+- Trade history with draft picks
 
-6. **Output:**  
-   - Provide me with a downloadable multi-sheet Excel or Google Sheets file, ready for import.
+### 4. Matchups Sheet:
+- Week-by-week results
+- Head-to-head records
+- Highest/lowest scores
 
-[Attach my Sleeper CSV export files below]
+### 5. Draft Sheet:
+- Complete draft board
+- Keeper list
+- Draft position analysis
 
+### 6. League Info Sheet:
+- Scoring settings
+- Roster requirements
+- Playoff format
+- Any custom rules from exports
+
+## FORMATTING:
+- Bold headers, alternate row shading
+- Format salaries as currency
+- Calculate salary cap space automatically
+- Add conditional formatting for wins/losses
+- Create charts for key metrics (salary distribution, standings)
+
+[Attach CSV export files below]
 `;
+
 
   const copyToClipboard = async () => {
     try {
@@ -76,11 +94,9 @@ const Export = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 animate-pulse"></div>
         <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
           <div className="flex items-center space-x-4">
-            <Link to="/">
-              <Button variant="outline" size="icon">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
+            <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
             <div className="bg-gradient-to-br from-emerald-400 via-blue-500 to-purple-600 rounded-2xl p-4 shadow-2xl pulse-glow">
               <Download className="w-8 h-8 text-white" />
             </div>
@@ -138,12 +154,10 @@ const Export = () => {
                     <p className="text-gray-400 mb-4">
                       Export functionality is available after loading league data on the main page.
                     </p>
-                    <Link to="/">
-                      <Button>
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Load League Data
-                      </Button>
-                    </Link>
+                    <Button onClick={() => navigate(-1)}>
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      Return to Home
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

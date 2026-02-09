@@ -6,7 +6,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import UserMenu from '@/components/UserMenu';
-import HeaderNavigation from '@/components/HeaderNavigation';
 
 interface LeagueHeaderProps {
   isCompact?: boolean;
@@ -26,7 +25,6 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
   if (isCompact) {
     return (
       <div className="text-center py-3 px-4 relative field-pattern animate-header-compact">
-        <HeaderNavigation />
         
         {/* Compact Header */}
         <div className="flex items-center justify-between max-w-6xl mx-auto">
@@ -60,7 +58,7 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
                 className="flex items-center space-x-2"
               >
                 <Lock className="w-4 h-4" />
-                <span className="hidden xs:inline font-tech">Enter War Room</span>
+                <span className="hidden xs:inline font-tech text-[10px] sm:text-xs">Hit the Field</span>
               </Button>
             )}
           </div>
@@ -71,7 +69,6 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
 
   return (
     <div className="text-center py-8 sm:py-12 lg:py-16 px-4 relative field-pattern animate-header-expand">
-      <HeaderNavigation />
       
       {/* Stadium Command Center Header */}
       <div className="absolute top-4 right-4 z-10 flex items-center space-x-2">
@@ -95,7 +92,7 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
             className="flex items-center space-x-2 animate-stadium-entrance"
           >
             <Lock className="w-4 h-4" />
-            <span className="hidden xs:inline font-tech">Enter War Room</span>
+            <span className="hidden xs:inline font-tech text-[10px] sm:text-xs">Hit the Field</span>
           </Button>
         )}
       </div>
@@ -122,13 +119,14 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
           </div>
         </div>
         
-        {/* Command Center Description */}
-        <div className="glass-card p-6 sm:p-8 max-w-4xl mx-auto mb-8 animate-stadium-entrance">
-          <p className="text-lg sm:text-xl lg:text-2xl text-foreground/90 leading-relaxed font-sans">
-            <span className="font-headline text-primary">DOMINATE</span> your fantasy football dynasty league with the ultimate salary cap and contract management command center. 
-            <span className="font-headline text-secondary"> STRATEGIZE</span> like a championship front office. 
-            <span className="font-headline text-success"> EXECUTE</span> every move with precision.
-          </p>
+        {/* Command Center Status */}
+        <div className="glass-card p-4 sm:p-6 max-w-3xl mx-auto mb-6 animate-stadium-entrance">
+          <div className="text-center">
+            <p className="text-base sm:text-lg text-foreground/80 leading-relaxed">
+              <span className="font-headline text-primary">COMMAND CENTER</span> Status: 
+              <span className="font-headline text-success ml-2">OPERATIONAL</span>
+            </p>
+          </div>
         </div>
 
         {!user && (
@@ -143,22 +141,14 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
           </div>
         )}
 
-        <div className="flex flex-wrap justify-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-400 px-2 mt-8">
-          <div className="flex items-center space-x-2 backdrop-blur-sm bg-white/5 p-2 px-3 rounded-full">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-            <span>Real-time salary tracking</span>
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 text-xs text-gray-400 px-2 mt-6">
+          <div className="flex items-center space-x-1.5 backdrop-blur-sm bg-white/5 p-1.5 px-2.5 rounded-full">
+            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+            <span>System Online</span>
           </div>
-          <div className="flex items-center space-x-2 backdrop-blur-sm bg-white/5 p-2 px-3 rounded-full">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-            <span>Contract management</span>
-          </div>
-          <div className="flex items-center space-x-2 backdrop-blur-sm bg-white/5 p-2 px-3 rounded-full">
-            <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-            <span>Trade simulation</span>
-          </div>
-          <div className="flex items-center space-x-2 backdrop-blur-sm bg-white/5 p-2 px-3 rounded-full">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" style={{animationDelay: '0.6s'}}></div>
-            <span>Protected league ownership</span>
+          <div className="flex items-center space-x-1.5 backdrop-blur-sm bg-white/5 p-1.5 px-2.5 rounded-full">
+            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.3s'}}></div>
+            <span>Data Synced</span>
           </div>
         </div>
       </div>

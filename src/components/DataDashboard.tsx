@@ -12,6 +12,7 @@ import { usePlayerContracts } from '@/hooks/usePlayerContracts';
 import EditableSalary from '@/components/EditableSalary';
 import EditableContractLength from '@/components/EditableContractLength';
 import TaxiSquadToggle from '@/components/TaxiSquadToggle';
+import { LoadingText } from '@/components/ui/loading-states';
 
 interface DataDashboardProps {
   league: any;
@@ -282,7 +283,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
                       </TableCell>
                       <TableCell>
                         {salariesLoading ? (
-                          <div className="text-gray-400 text-xs">Loading...</div>
+                          <LoadingText size="sm" />
                         ) : (
                           <EditableSalary
                             playerId={row.playerId}
@@ -294,7 +295,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
                       </TableCell>
                       <TableCell>
                         {salariesLoading ? (
-                          <div className="text-gray-400 text-xs">Loading...</div>
+                          <LoadingText size="sm" />
                         ) : (
                           <div className="text-emerald-400 font-medium">
                             ${getEffectiveSalary(row.playerId).toLocaleString()}
@@ -303,7 +304,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
                       </TableCell>
                       <TableCell>
                         {contractsLoading ? (
-                          <div className="text-gray-400 text-xs">Loading...</div>
+                          <LoadingText size="sm" />
                         ) : (
                           <EditableContractLength
                             playerId={row.playerId}
@@ -315,7 +316,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
                       </TableCell>
                       <TableCell>
                         {salariesLoading ? (
-                          <div className="text-gray-400 text-xs">Loading...</div>
+                          <LoadingText size="sm" />
                         ) : (
                           <TaxiSquadToggle
                             playerId={row.playerId}
@@ -379,7 +380,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
                       </TableCell>
                       <TableCell>
                         {salariesLoading ? (
-                          <div className="text-gray-400 text-xs">Loading...</div>
+                          <LoadingText size="sm" />
                         ) : (
                           <EditableSalary
                             playerId={row.playerId}
@@ -391,7 +392,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
                       </TableCell>
                       <TableCell>
                         {salariesLoading ? (
-                          <div className="text-gray-400 text-xs">Loading...</div>
+                          <LoadingText size="sm" />
                         ) : (
                           <div className="text-emerald-400 font-medium">
                             ${getEffectiveSalary(row.playerId).toLocaleString()}
@@ -400,7 +401,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
                       </TableCell>
                       <TableCell>
                         {contractsLoading ? (
-                          <div className="text-gray-400 text-xs">Loading...</div>
+                          <LoadingText size="sm" />
                         ) : (
                           <EditableContractLength
                             playerId={row.playerId}
@@ -412,7 +413,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
                       </TableCell>
                       <TableCell>
                         {salariesLoading ? (
-                          <div className="text-gray-400 text-xs">Loading...</div>
+                          <LoadingText size="sm" />
                         ) : (
                           <TaxiSquadToggle
                             playerId={row.playerId}
@@ -478,7 +479,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
                       </TableCell>
                       <TableCell>
                         {salariesLoading ? (
-                          <div className="text-gray-400 text-xs">Loading...</div>
+                          <LoadingText size="sm" />
                         ) : (
                           <EditableSalary
                             playerId={row.playerId}
@@ -490,7 +491,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
                       </TableCell>
                       <TableCell>
                         {salariesLoading ? (
-                          <div className="text-gray-400 text-xs">Loading...</div>
+                          <LoadingText size="sm" />
                         ) : (
                           <div className="text-emerald-400 font-medium">
                             ${getEffectiveSalary(row.playerId).toLocaleString()}
@@ -499,7 +500,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
                       </TableCell>
                       <TableCell>
                         {contractsLoading ? (
-                          <div className="text-gray-400 text-xs">Loading...</div>
+                          <LoadingText size="sm" />
                         ) : (
                           <EditableContractLength
                             playerId={row.playerId}
@@ -511,7 +512,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
                       </TableCell>
                       <TableCell>
                         {salariesLoading ? (
-                          <div className="text-gray-400 text-xs">Loading...</div>
+                          <LoadingText size="sm" />
                         ) : (
                           <TaxiSquadToggle
                             playerId={row.playerId}

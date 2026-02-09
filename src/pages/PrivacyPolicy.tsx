@@ -1,24 +1,44 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, Shield } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import PageHead from '@/components/PageHead';
 
 const PrivacyPolicy = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 p-4">
+    <div className="min-h-screen">
       <PageHead 
         title="Privacy Policy"
         description="Privacy Policy for SleeperSheets - Learn how we collect, use, and protect your data."
         canonicalUrl="https://sleepersheets.com/privacy"
       />
       
-      <div className="max-w-4xl mx-auto py-8">
+      {/* Header */}
+      <div className="glass-header border-b border-white/10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 animate-pulse"></div>
+        <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
+          <div className="flex items-center space-x-4">
+            <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl p-4 shadow-2xl">
+              <Shield className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold gradient-text mb-2">Privacy Policy</h1>
+              <p className="text-gray-300 text-lg">How we protect your data</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 py-12">
         <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold text-center">Privacy Policy</CardTitle>
-            <p className="text-gray-400 text-center">Last updated: {new Date().toLocaleDateString()}</p>
-          </CardHeader>
-          <CardContent className="prose prose-invert max-w-none">
+          <CardContent className="prose prose-invert max-w-none pt-6">
             <div className="space-y-6 text-gray-300">
               <section>
                 <h2 className="text-xl font-semibold text-white mb-3">1. Information We Collect</h2>
@@ -66,7 +86,6 @@ const PrivacyPolicy = () => {
                   <li>Maintain your login session</li>
                   <li>Remember your preferences</li>
                   <li>Analyze site usage and performance</li>
-                  <li>Provide targeted advertising through Google AdSense</li>
                 </ul>
                 <p>You can control cookie settings through your browser preferences.</p>
               </section>
@@ -77,7 +96,6 @@ const PrivacyPolicy = () => {
                 <ul className="list-disc pl-6 space-y-2">
                   <li><strong>Sleeper API:</strong> To fetch your fantasy league data</li>
                   <li><strong>Supabase:</strong> For authentication and data storage</li>
-                  <li><strong>Google AdSense:</strong> For displaying advertisements</li>
                 </ul>
                 <p>These services have their own privacy policies that govern their use of your information.</p>
               </section>

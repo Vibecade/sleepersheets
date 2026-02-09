@@ -1,23 +1,37 @@
-
-import React, { useState, useEffect } from 'react';
-import Footer from '@/components/Footer';
-import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
-import LeagueHeader from '@/components/home/LeagueHeader';
-import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
-import PageHead from '@/components/PageHead';
-import PWAInstallPrompt from '@/components/PWAInstallPrompt';
-import OfflineIndicator from '@/components/OfflineIndicator';
-import UserDashboard from '@/components/dashboard/UserDashboard';
-import ProgressIndicator from '@/components/ui/progress-indicator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueManager } from '@/hooks/useLeagueManager';
-import LeagueView from '@/components/home/LeagueView';
+import { DemoProvider, useDemo } from '@/contexts/DemoContext';
+import PageHead from '@/components/PageHead';
+import LeagueHeader from '@/components/home/LeagueHeader';
+import HeaderNavigation from '@/components/HeaderNavigation';
+import Footer from '@/components/Footer';
+import OfflineIndicator from '@/components/OfflineIndicator';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
+import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
+import { DemoBanner } from '@/components/DemoBanner';
+import LeagueData from '@/components/LeagueData';
+import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
+import UserDashboard from '@/components/dashboard/UserDashboard';
+import HeroSection from '@/components/landing/HeroSection';
+import { UnifiedLoading } from '@/components/ui/unified-loading';
+import { Card } from '@/components/ui/card';
+import FeaturesSection from '@/components/landing/FeaturesSection';
+import HowItWorksSection from '@/components/landing/HowItWorksSection';
+import SocialProofSection from '@/components/landing/SocialProofSection';
+import GetStartedModal from '@/components/landing/GetStartedModal';
+import ReturningUserPrompt from '@/components/landing/ReturningUserPrompt';
+import { DEMO_LEAGUE_ID } from '@/utils/demoData';
+import { useNavigate } from 'react-router-dom';
 
-const Index = React.memo(() => {
+const IndexContent = React.memo(() => {
   const { user } = useAuth();
+  const { setDemoMode } = useDemo();
+  const navigate = useNavigate();
   const [isHeaderCompact, setIsHeaderCompact] = useState(false);
   const [userIsInteracting, setUserIsInteracting] = useState(false);
+  const [showGetStartedModal, setShowGetStartedModal] = useState(false);
+  const [showLeagueConnection, setShowLeagueConnection] = useState(false);
   
   const {
     leagueId,
@@ -40,7 +54,22 @@ const Index = React.memo(() => {
     handleOwnershipChanged,
     userLeaguesData,
     showLeagueSelection,
+    recentLeagues,
   } = useLeagueManager();
+
+  // Auto-show league connection interface when user signs in, reset on logout
+  useEffect(() => {
+    if (user) {
+      setShowLeagueConnection(true);
+      setUserIsInteracting(true);
+      setIsHeaderCompact(true);
+    } else {
+      // Reset state when user logs out
+      setShowLeagueConnection(false);
+      setUserIsInteracting(false);
+      setIsHeaderCompact(false);
+    }
+  }, [user]);
 
   // Auto-compact header when user starts interacting with forms or when league is loaded
   useEffect(() => {
@@ -57,62 +86,186 @@ const Index = React.memo(() => {
     setIsHeaderCompact(!isHeaderCompact);
   };
 
+  const handleGetStarted = () => {
+    setShowGetStartedModal(true);
+  };
+
+  const handleGetStartedOptionSelect = (option: 'connect' | 'auth' | 'demo') => {
+    // Ensure modal is closed first
+    setShowGetStartedModal(false);
+    
+    switch (option) {
+      case 'connect':
+        setShowLeagueConnection(true);
+        setUserIsInteracting(true);
+        setIsHeaderCompact(true);
+        // Scroll to top to show the connection form
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        break;
+      case 'auth':
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Small delay to ensure React processes modal closing before navigation
+        setTimeout(() => {
+          navigate('/auth');
+        }, 100);
+        break;
+      case 'demo':
+        setDemoMode(true);
+        setLeagueId(DEMO_LEAGUE_ID);
+        handleLeagueSubmit();
+        setUserIsInteracting(true);
+        setIsHeaderCompact(true);
+        break;
+    }
+  };
+
+  const handleBackToMarketing = () => {
+    setShowLeagueConnection(false);
+    setUserIsInteracting(false);
+    setIsHeaderCompact(false);
+  };
+
   return (
     <div className="min-h-screen">
       <PageHead
         title="Fantasy Football Salary Cap Management"
         description="The ultimate salary cap and contract management tool for your fantasy football dynasty league. Track salaries, manage contracts, simulate trades, and export league data."
       />
+      <DemoBanner />
       
-      <LeagueHeader 
-        isCompact={isHeaderCompact}
-        onToggleCompact={handleToggleCompact}
-        canToggle={userIsInteracting || !!leagueData}
-      />
+      {/* Show HeaderNavigation only on landing page */}
+      {!leagueData && !userIsInteracting && <HeaderNavigation />}
+      
+      {/* Only show LeagueHeader when user is interacting or league data is loaded */}
+      {(userIsInteracting || leagueData) && (
+        <LeagueHeader 
+          isCompact={isHeaderCompact}
+          onToggleCompact={handleToggleCompact}
+          canToggle={userIsInteracting || !!leagueData}
+        />
+      )}
 
-      <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-12">
         <OfflineIndicator />
         <PWAInstallPrompt />
         
         <EnhancedErrorBoundary level="page">
           {!leagueData ? (
-            <div className="max-w-4xl mx-auto">
-              {user ? (
-                <UserDashboard onSelectLeague={handleSelectLeague} />
-              ) : (
-                <div className="space-y-8">
-                  <LeagueConnectionForm
-                    leagueId={leagueId}
-                    setLeagueId={setLeagueId}
-                    username={username}
-                    setUsername={setUsername}
-                    onLeagueSubmit={handleLeagueSubmit}
-                    onUsernameSubmit={handleUsernameSubmit}
-                    onQuickLoadFirstLeague={handleQuickLoadFirstLeague}
-                    onSelectLeague={handleSelectLeagueFromUsername}
-                    onBackToForm={handleBackToForm}
-                    onRefreshLeagues={handleRefreshLeagues}
-                    loading={loading}
-                    userLeaguesData={userLeaguesData}
-                    showLeagueSelection={showLeagueSelection}
-                  />
+            <>
+              {!showLeagueConnection ? (
+                <>
+                  {/* Quick access for returning users */}
+                  {recentLeagues.length > 0 && (
+                    <ReturningUserPrompt
+                      recentLeagues={recentLeagues}
+                      onSelectLeague={handleSelectLeague}
+                      onConnectNew={() => {
+                        setShowLeagueConnection(true);
+                        setUserIsInteracting(true);
+                        setIsHeaderCompact(true);
+                      }}
+                    />
+                  )}
                   
-                  {loading && !showLeagueSelection && (
-                    <div className="mt-6 text-center">
-                      <div className="text-muted-foreground">Loading...</div>
+                  {/* Marketing Landing Page */}
+                  <HeroSection onGetStarted={handleGetStarted} />
+                  
+                  <FeaturesSection />
+                  
+                  <HowItWorksSection />
+                  
+                  <SocialProofSection />
+                  
+                  {/* Get Started Modal */}
+                  <GetStartedModal
+                    isOpen={showGetStartedModal}
+                    onClose={() => setShowGetStartedModal(false)}
+                    onSelectOption={handleGetStartedOptionSelect}
+                  />
+                </>
+              ) : (
+                /* League Connection Interface */
+                <div className="max-w-4xl mx-auto">
+                  
+                  {user ? (
+                    <>
+                     {/* Show UserDashboard for users with existing data, otherwise show connection form */}
+                      <UserDashboard 
+                        onSelectLeague={handleSelectLeague} 
+                        onConnectLeague={() => {
+                          setShowLeagueConnection(true);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }} 
+                        showConnectionForm={!userLeaguesData && !showLeagueSelection}
+                      />
+                      
+                      {/* Show connection form below dashboard for authenticated users with no data */}
+                      {!userLeaguesData && !showLeagueSelection && (
+                        <div className="mt-8">
+                          <LeagueConnectionForm
+                            leagueId={leagueId}
+                            setLeagueId={setLeagueId}
+                            username={username}
+                            setUsername={setUsername}
+                            onLeagueSubmit={handleLeagueSubmit}
+                            onUsernameSubmit={handleUsernameSubmit}
+                            onQuickLoadFirstLeague={handleQuickLoadFirstLeague}
+                            onSelectLeague={handleSelectLeagueFromUsername}
+                            onBackToForm={handleBackToForm}
+                            onRefreshLeagues={handleRefreshLeagues}
+                            loading={loading}
+                            userLeaguesData={userLeaguesData}
+                            showLeagueSelection={showLeagueSelection}
+                          />
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="space-y-8">
+                      {/* Back to Marketing Button */}
+                      <div className="text-center">
+                        <button
+                          onClick={handleBackToMarketing}
+                          className="text-primary hover:text-primary-glow transition-colors text-sm"
+                        >
+                          ← Back to Home
+                        </button>
+                      </div>
+                      
+                      <LeagueConnectionForm
+                        leagueId={leagueId}
+                        setLeagueId={setLeagueId}
+                        username={username}
+                        setUsername={setUsername}
+                        onLeagueSubmit={handleLeagueSubmit}
+                        onUsernameSubmit={handleUsernameSubmit}
+                        onQuickLoadFirstLeague={handleQuickLoadFirstLeague}
+                        onSelectLeague={handleSelectLeagueFromUsername}
+                        onBackToForm={handleBackToForm}
+                        onRefreshLeagues={handleRefreshLeagues}
+                        loading={loading}
+                        userLeaguesData={userLeaguesData}
+                        showLeagueSelection={showLeagueSelection}
+                      />
+                      
+                      {loading && !showLeagueSelection && (
+                        <div className="mt-6">
+                          <Card className="p-8">
+                            <UnifiedLoading variant="text" size="lg" />
+                          </Card>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               )}
-            </div>
+            </>
           ) : (
-            <LeagueView
-              leagueData={leagueData}
+            <LeagueData
+              data={leagueData}
               onRefreshData={handleRefreshData}
               onResyncData={handleResyncLeagueData}
-              onBackToLeagues={handleBackToLeagues}
               onOwnershipChanged={handleOwnershipChanged}
-              ownershipStatus={ownershipStatus}
             />
           )}
         </EnhancedErrorBoundary>
@@ -123,6 +276,15 @@ const Index = React.memo(() => {
   );
 });
 
-Index.displayName = 'Index';
+const Index = React.memo(() => {
+  return (
+    <DemoProvider>
+      <IndexContent />
+    </DemoProvider>
+  );
+});
 
 export default Index;
+
+Index.displayName = 'Index';
+

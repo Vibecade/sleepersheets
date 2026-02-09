@@ -54,10 +54,16 @@ export const usePlayerContracts = (leagueId: string) => {
       data?.forEach((item) => {
         contractMap[item.player_id] = item.contract_length;
       });
-      
+
+      console.log(`✅ Contracts loaded for league ${currentLeagueId}:`, {
+        totalContracts: Object.keys(contractMap).length,
+        withContracts: Object.values(contractMap).filter(c => c && c > 0).length,
+        sampleContracts: Object.entries(contractMap).slice(0, 3)
+      });
+
       setContracts(contractMap);
       setLastLeagueId(currentLeagueId);
-      
+
       // Cache the result
       contractsCache.set(cacheKey, { data: contractMap, timestamp: Date.now() });
     } catch (error) {

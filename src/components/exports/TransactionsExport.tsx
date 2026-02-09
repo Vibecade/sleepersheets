@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { ArrowUpDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { downloadCSV, formatPlayerName, addExportOptionsToCSV, ExportOptionsData, getPlayerFranchiseValue } from '@/utils/csvExport';
+import { downloadCSV, formatPlayerName, addExportOptionsToCSV, ExportOptionsData, getPlayerFranchiseValue, formatDate } from '@/utils/csvExport';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import ExportButton from './ExportButton';
@@ -26,17 +25,40 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
   const { salaries } = usePlayerSalaries(league.league_id);
 
   const exportTransactionsToCSV = () => {
-    console.log('Preparing clean Transactions CSV export...');
-    console.log('Current salaries for transactions export:', salaries);
-    console.log('Export options:', exportOptions);
+    console.log('Preparing enhanced Transactions CSV export...');
     
-    const csvData = [];
-    const headers = ['Week', 'Fantasy Team', 'Player Name', 'NFL Team', 'Position', 'Action (Add/Drop/Trade)', 'Fantasy Salary', 'Franchise Value'];
+    const csvData: string[][] = [];
+    const headers = [
+      'Date',
+      'Week',
+      'Transaction Type',
+      'Fantasy Team',
+      'Player Name',
+      'NFL Team',
+      'Position',
+      'Action',
+      'FAAB Spent',
+      'Fantasy Salary',
+      'Franchise Value'
+    ];
     
     csvData.push(headers);
 
-    transactions.forEach((transaction) => {
+    // Sort transactions by date (most recent first)
+    const sortedTransactions = [...transactions].sort((a, b) => {
+      const dateA = a.status_updated || a.created || 0;
+      const dateB = b.status_updated || b.created || 0;
+      return dateB - dateA;
+    });
+
+    sortedTransactions.forEach((transaction) => {
       const week = transaction.leg || transaction.week || 'N/A';
+      const txType = getTransactionType(transaction.type);
+      const timestamp = transaction.status_updated || transaction.created;
+      const date = timestamp ? formatDate(timestamp) : 'N/A';
+      
+      // Get FAAB amount if applicable
+      const faabAmount = transaction.settings?.waiver_bid || null;
 
       // Process drops
       if (transaction.drops) {
@@ -48,15 +70,17 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
           if (player) {
             const salary = salaries[playerId];
             const franchiseValue = getPlayerFranchiseValue(player);
-            console.log(`Transaction Drop - Player ${formatPlayerName(player)} (${playerId}) salary:`, salary);
             
             csvData.push([
-              week,
+              date,
+              String(week),
+              txType,
               fantasyTeam,
               formatPlayerName(player),
               player.team || 'FA',
               player.position || 'Unknown',
               'Drop',
+              '',
               salary ? `$${salary.toLocaleString()}` : '',
               franchiseValue
             ]);
@@ -74,19 +98,43 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
           if (player) {
             const salary = salaries[playerId];
             const franchiseValue = getPlayerFranchiseValue(player);
-            console.log(`Transaction Add - Player ${formatPlayerName(player)} (${playerId}) salary:`, salary);
             
             csvData.push([
-              week,
+              date,
+              String(week),
+              txType,
               fantasyTeam,
               formatPlayerName(player),
               player.team || 'FA',
               player.position || 'Unknown',
               'Add',
+              faabAmount ? `$${faabAmount}` : '',
               salary ? `$${salary.toLocaleString()}` : '',
               franchiseValue
             ]);
           }
+        });
+      }
+
+      // Process draft pick trades
+      if (transaction.draft_picks && transaction.draft_picks.length > 0) {
+        transaction.draft_picks.forEach((pick: any) => {
+          const ownerUser = rosterUserMap[pick.owner_id];
+          const prevOwnerUser = rosterUserMap[pick.previous_owner_id];
+          
+          csvData.push([
+            date,
+            String(week),
+            'Trade',
+            getTeamName(prevOwnerUser) + ' → ' + getTeamName(ownerUser),
+            `${pick.season} Round ${pick.round} Pick`,
+            'N/A',
+            'Draft Pick',
+            'Trade',
+            '',
+            '',
+            ''
+          ]);
         });
       }
     });
@@ -96,13 +144,23 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
       ? addExportOptionsToCSV(csvData, exportOptions, league.name)
       : csvData;
 
-    console.log('Final Transactions CSV data with options:', finalCsvData);
     downloadCSV(finalCsvData, `${league.name}_transactions_export.csv`);
     
     toast({
-      title: "Clean Transactions Export Complete!",
-      description: "Your league transaction data has been downloaded as CSV with clean formatting, fantasy salaries, and franchise values"
+      title: "Transactions Export Complete!",
+      description: `Exported ${transactions.length} transactions with full details`
     });
+  };
+
+  const getTransactionType = (type: string): string => {
+    const types: Record<string, string> = {
+      'waiver': 'Waiver Claim',
+      'free_agent': 'Free Agent',
+      'trade': 'Trade',
+      'commissioner': 'Commissioner',
+      'taxi': 'Taxi Squad'
+    };
+    return types[type] || type || 'Unknown';
   };
 
   return (
@@ -111,7 +169,7 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
       disabled={transactions.length === 0}
       icon={ArrowUpDown}
       title="Export Transactions"
-      description="Simplified add/drop data with fantasy salaries and franchise values"
+      description="All transactions with dates, types, FAAB, and trade details"
       colorClass="text-blue-600"
       hoverColorClass="hover:bg-blue-700"
     />

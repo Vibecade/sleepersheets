@@ -2,13 +2,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { 
-  NavigationMenu, 
-  NavigationMenuItem, 
-  NavigationMenuLink, 
-  NavigationMenuList,
-  navigationMenuTriggerStyle
-} from '@/components/ui/navigation-menu';
+import { navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileNav } from '@/components/ui/mobile-nav';
 import { Home, Info, FileText, Download } from 'lucide-react';
@@ -46,24 +40,19 @@ const HeaderNavigation = () => {
   }
 
   return (
-    <div className="absolute top-4 left-4">
-      <NavigationMenu>
-        <NavigationMenuList>
-          {navigationItems.map((item) => (
-            <NavigationMenuItem key={item.path}>
-              <NavigationMenuLink asChild>
-                <Link 
-                  to={item.path}
-                  className={navigationMenuTriggerStyle()}
-                >
-                  <item.icon className="w-4 h-4 mr-2" />
-                  {item.label}
-                </Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-          ))}
-        </NavigationMenuList>
-      </NavigationMenu>
+    <div className="absolute top-4 left-4 lg:top-6 lg:left-6">
+      <nav className="flex items-center space-x-1 lg:space-x-2">
+        {navigationItems.map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={`${navigationMenuTriggerStyle()} hover-border-glow transition-all duration-200 lg:px-4 lg:py-2.5 lg:text-base hover:-translate-y-0.5 hover:shadow-lg`}
+          >
+            <item.icon className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
+            {item.label}
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 };

@@ -2,7 +2,7 @@
 import React from 'react';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Skull, Calculator, Lock } from 'lucide-react';
+import { Users, Skull, Calculator, Lock, Calendar } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface TeamRostersHeaderProps {
@@ -12,6 +12,8 @@ interface TeamRostersHeaderProps {
   onToggleDeadCapManager: () => void;
   showContractCalculator: boolean;
   onToggleContractCalculator: () => void;
+  showPendingFreeAgents: boolean;
+  onTogglePendingFreeAgents: () => void;
   canModifyLeague: boolean;
 }
 
@@ -22,6 +24,8 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
   onToggleDeadCapManager,
   showContractCalculator,
   onToggleContractCalculator,
+  showPendingFreeAgents,
+  onTogglePendingFreeAgents,
   canModifyLeague
 }) => {
   const { user } = useAuth();
@@ -77,6 +81,16 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
           >
             <Calculator className="w-4 h-4" />
             <span>Contract Calculator</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onTogglePendingFreeAgents}
+            className="flex items-center justify-center space-x-2 min-h-[44px] text-sm"
+          >
+            <Calendar className="w-4 h-4" />
+            <span>Free Agents</span>
           </Button>
         </div>
       </div>

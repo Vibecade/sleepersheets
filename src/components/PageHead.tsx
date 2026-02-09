@@ -20,6 +20,8 @@ const PageHead: React.FC<PageHeadProps> = ({
       document.title = leagueName 
         ? `${leagueName} - ${title} | SleeperSheets`
         : `${title} | SleeperSheets`;
+    } else {
+      document.title = 'SleeperSheets - Fantasy Football Salary Cap & Contract Management | Dynasty League Tools';
     }
 
     // Update meta description
@@ -27,6 +29,11 @@ const PageHead: React.FC<PageHeadProps> = ({
       const metaDescription = document.querySelector('meta[name="description"]');
       if (metaDescription) {
         metaDescription.setAttribute('content', description);
+      }
+    } else {
+      const metaDescription = document.querySelector('meta[name="description"]');
+      if (metaDescription) {
+        metaDescription.setAttribute('content', 'Professional dynasty league management with real-time salary tracking, contract management, trade simulation & advanced analytics. Free fantasy football tools for Sleeper leagues.');
       }
     }
 

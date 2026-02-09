@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { downloadCSV, formatPlayerName, addExportOptionsToCSV, ExportOptionsData, getPlayerFranchiseValue } from '@/utils/csvExport';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
+import { usePlayerContracts } from '@/hooks/usePlayerContracts';
 import ExportButton from './ExportButton';
 
 interface DraftExportProps {
@@ -24,36 +24,64 @@ const DraftExport: React.FC<DraftExportProps> = ({
 }) => {
   const { toast } = useToast();
   const { salaries } = usePlayerSalaries(league.league_id);
+  const { contracts } = usePlayerContracts(league.league_id);
 
   const exportDraftToCSV = () => {
-    console.log('Preparing clean Draft CSV export...');
-    console.log('Current salaries for draft export:', salaries);
-    console.log('Export options:', exportOptions);
+    console.log('Preparing enhanced Draft CSV export...');
     
-    const csvData = [];
-    const headers = ['Round', 'Pick', 'Fantasy Team', 'Player Name', 'NFL Team', 'Position', 'Is Keeper', 'Fantasy Salary', 'Franchise Value'];
+    const csvData: string[][] = [];
+    const headers = [
+      'Draft Season',
+      'Draft Type',
+      'Round',
+      'Pick',
+      'Overall Pick',
+      'Fantasy Team',
+      'Player Name',
+      'NFL Team',
+      'Position',
+      'Is Keeper',
+      'Fantasy Salary',
+      'Contract Years',
+      'Franchise Value'
+    ];
     
     csvData.push(headers);
 
+    let overallPick = 0;
+
     draftPicks.forEach(({ draft, picks }) => {
-      picks.forEach((pick: any) => {
+      const draftSeason = draft?.season || league.season || 'Unknown';
+      const draftType = getDraftType(draft?.type);
+      
+      // Sort picks by round then pick number
+      const sortedPicks = [...picks].sort((a: any, b: any) => {
+        if (a.round !== b.round) return a.round - b.round;
+        return a.pick_no - b.pick_no;
+      });
+      
+      sortedPicks.forEach((pick: any) => {
+        overallPick++;
         const player = players[pick.player_id];
         const user = rosterUserMap[pick.roster_id];
         const fantasyTeam = getTeamName(user);
         const salary = salaries[pick.player_id];
+        const contractYears = contracts[pick.player_id];
         const franchiseValue = player ? getPlayerFranchiseValue(player) : '';
         
-        console.log(`Draft Pick - Player ${player ? formatPlayerName(player) : 'Unknown'} (${pick.player_id}) salary:`, salary);
-        
         csvData.push([
-          pick.round || 'N/A',
-          pick.pick_no || 'N/A',
+          draftSeason,
+          draftType,
+          String(pick.round || 'N/A'),
+          String(pick.pick_no || 'N/A'),
+          String(overallPick),
           fantasyTeam,
           player ? formatPlayerName(player) : 'Unknown Player',
           player?.team || 'FA',
           player?.position || 'Unknown',
           pick.is_keeper ? 'Yes' : 'No',
           salary ? `$${salary.toLocaleString()}` : '',
+          contractYears ? `${contractYears} year${contractYears > 1 ? 's' : ''}` : '',
           franchiseValue
         ]);
       });
@@ -64,13 +92,21 @@ const DraftExport: React.FC<DraftExportProps> = ({
       ? addExportOptionsToCSV(csvData, exportOptions, league.name)
       : csvData;
 
-    console.log('Final Draft CSV data with options:', finalCsvData);
     downloadCSV(finalCsvData, `${league.name}_draft_export.csv`);
     
     toast({
-      title: "Clean Draft Export Complete!",
-      description: "Your league draft data has been downloaded as CSV with clean formatting, fantasy salaries, and franchise values"
+      title: "Draft Export Complete!",
+      description: `Exported ${overallPick} draft picks with salaries and contract details`
     });
+  };
+
+  const getDraftType = (type: string | undefined): string => {
+    const types: Record<string, string> = {
+      'snake': 'Snake Draft',
+      'linear': 'Linear Draft',
+      'auction': 'Auction Draft'
+    };
+    return type ? (types[type] || type) : 'Standard';
   };
 
   return (
@@ -79,7 +115,7 @@ const DraftExport: React.FC<DraftExportProps> = ({
       disabled={draftPicks.length === 0}
       icon={FileText}
       title="Export Draft"
-      description="Organized draft results with fantasy salaries and franchise values"
+      description="Draft results with keepers, salaries, and contract years"
       colorClass="text-purple-600"
       hoverColorClass="hover:bg-purple-700"
     />

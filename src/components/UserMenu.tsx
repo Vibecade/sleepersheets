@@ -13,17 +13,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 import { LogOut, Shield, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const UserMenu = () => {
   const { user, signOut } = useAuth();
   const { ownedLeagues } = useLeagueOwnership();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   if (!user) return null;
 
   const handleSignOut = async () => {
     try {
       await signOut();
+      navigate('/');
       toast({
         title: "Signed Out",
         description: "You have been successfully signed out",

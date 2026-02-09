@@ -1,28 +1,44 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trophy, Users, TrendingUp, Shield } from 'lucide-react';
+import { Trophy, Users, TrendingUp, Shield, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import PageHead from '@/components/PageHead';
 
 const About = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 p-4">
+    <div className="min-h-screen">
       <PageHead 
         title="About SleeperSheets"
         description="Learn about SleeperSheets - The ultimate fantasy football salary cap and contract management tool for dynasty leagues."
         canonicalUrl="https://sleepersheets.com/about"
       />
       
-      <div className="max-w-4xl mx-auto py-8">
+      {/* Header */}
+      <div className="glass-header border-b border-white/10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 animate-pulse"></div>
+        <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
+          <div className="flex items-center space-x-4">
+            <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="bg-gradient-to-br from-primary to-primary-glow rounded-2xl p-4 shadow-2xl">
+              <Trophy className="w-8 h-8 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold gradient-text mb-2">About SleeperSheets</h1>
+              <p className="text-gray-300 text-lg">The ultimate fantasy football salary cap management tool</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="max-w-4xl mx-auto px-4 py-12">
         <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold text-center flex items-center justify-center space-x-3">
-              <Trophy className="w-8 h-8 text-yellow-500" />
-              <span>About SleeperSheets</span>
-            </CardTitle>
-            <p className="text-gray-400 text-center text-lg">The ultimate fantasy football salary cap management tool</p>
-          </CardHeader>
-          <CardContent className="space-y-8">
+          <CardContent className="space-y-8 pt-6">
             <section className="text-gray-300">
               <h2 className="text-2xl font-semibold text-white mb-4">What is SleeperSheets?</h2>
               <p className="text-lg leading-relaxed">

@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import { useUrlParams } from '@/hooks/useUrlParams';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeInput, validateLeagueId } from '@/utils/inputValidation';
+import { useDemo } from '@/contexts/DemoContext';
+import { DEMO_LEAGUE_ID } from '@/utils/demoData';
 
 interface UseUrlLeagueLoaderProps {
     leagueIdFromState: string;
@@ -15,12 +17,21 @@ export const useUrlLeagueLoader = ({
 }: UseUrlLeagueLoaderProps) => {
     const { getLeagueFromUrl, clearUrlParams } = useUrlParams();
     const { toast } = useToast();
+    const { isDemoMode } = useDemo();
 
     useEffect(() => {
         const urlLeagueId = getLeagueFromUrl();
         
         if (urlLeagueId && urlLeagueId !== leagueIdFromState) {
             const sanitizedLeagueId = sanitizeInput(urlLeagueId);
+            
+            // Skip validation for demo mode or demo league ID
+            if (isDemoMode || sanitizedLeagueId === DEMO_LEAGUE_ID) {
+                setLeagueId(sanitizedLeagueId);
+                return;
+            }
+            
+            // Only validate non-demo league IDs
             const validation = validateLeagueId(sanitizedLeagueId);
             
             if (validation.isValid) {
@@ -34,5 +45,5 @@ export const useUrlLeagueLoader = ({
                 clearUrlParams();
             }
         }
-    }, [getLeagueFromUrl, leagueIdFromState, setLeagueId, toast, clearUrlParams]);
+    }, [getLeagueFromUrl, leagueIdFromState, setLeagueId, toast, clearUrlParams, isDemoMode]);
 };

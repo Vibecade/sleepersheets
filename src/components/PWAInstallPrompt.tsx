@@ -5,9 +5,29 @@ import { Button } from '@/components/ui/button';
 import { Download, X, Smartphone } from 'lucide-react';
 import { usePWA } from '@/hooks/usePWA';
 
+const PWA_DISMISSED_KEY = 'pwa_install_prompt_dismissed';
+
 const PWAInstallPrompt: React.FC = () => {
   const { canInstall, installApp, isOnline } = usePWA();
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      const stored = localStorage.getItem(PWA_DISMISSED_KEY);
+      return stored === 'true';
+    } catch (error) {
+      console.error('Error reading PWA dismissal state:', error);
+      return false;
+    }
+  });
+
+  const handleDismiss = () => {
+    try {
+      localStorage.setItem(PWA_DISMISSED_KEY, 'true');
+      setDismissed(true);
+    } catch (error) {
+      console.error('Error saving PWA dismissal state:', error);
+      setDismissed(true);
+    }
+  };
 
   if (!canInstall || dismissed || !isOnline) {
     return null;
@@ -16,7 +36,7 @@ const PWAInstallPrompt: React.FC = () => {
   const handleInstall = async () => {
     const success = await installApp();
     if (success) {
-      setDismissed(true);
+      handleDismiss();
     }
   };
 
@@ -31,7 +51,7 @@ const PWAInstallPrompt: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setDismissed(true)}
+            onClick={handleDismiss}
             className="text-emerald-600 hover:text-emerald-700 h-6 w-6 p-0"
           >
             <X className="w-4 h-4" />
@@ -54,7 +74,7 @@ const PWAInstallPrompt: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setDismissed(true)}
+            onClick={handleDismiss}
             className="border-emerald-300 text-emerald-700 hover:bg-emerald-100"
           >
             Maybe Later

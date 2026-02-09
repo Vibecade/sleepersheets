@@ -10,9 +10,7 @@ export interface Matchup {
   custom_points: number | null;
 }
 
-// Cache for matchups to prevent repeated calls
-const matchupsCache = new Map<string, { data: Matchup[]; timestamp: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+// Removed duplicate cache - using apiCache instead
 
 export const useMatchups = (leagueId: string, week: number) => {
   const [matchups, setMatchups] = useState<Matchup[]>([]);
@@ -20,21 +18,35 @@ export const useMatchups = (leagueId: string, week: number) => {
   const [error, setError] = useState<string | null>(null);
   const [lastKey, setLastKey] = useState<string>('');
 
-  // Helper function to get current NFL week for projections
-  const getCurrentNFLWeek = () => {
-    // This is a simplified version - in production you'd want to call the NFL state API
-    // For now, we'll estimate based on date (NFL season typically starts in September)
+  // Helper function to get current NFL week for projections - season aware
+  const getCurrentNFLWeek = (leagueSeason?: string) => {
     const now = new Date();
-    const year = now.getFullYear();
-    const seasonStart = new Date(year, 8, 8); // Approximate season start (September 8th)
+    const currentYear = now.getFullYear();
+    const seasonYear = leagueSeason ? parseInt(leagueSeason) : currentYear;
+    
+    // Use the league's season year for season start calculation
+    const seasonStart = new Date(seasonYear, 8, 5); // September 5th of the league season
+    
+    console.log(`NFL Week calculation: League season ${seasonYear}, Season start: ${seasonStart.toDateString()}, Current: ${now.toDateString()}`);
     
     if (now < seasonStart) {
-      return 1; // Pre-season or early season
+      console.log('Before season start, returning week 1');
+      return 1; // Pre-season
     }
     
+    // Calculate days since season start
     const diffTime = now.getTime() - seasonStart.getTime();
-    const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
-    return Math.min(Math.max(diffWeeks + 1, 1), 18); // NFL has 18 weeks max
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Week transitions on Tuesday (day 2 of the week, where Monday = 1)
+    // Add 2 days to account for Tuesday transition
+    const weekNumber = Math.floor((diffDays + 2) / 7) + 1;
+    
+    const calculatedWeek = Math.min(Math.max(weekNumber, 1), 22);
+    console.log(`NFL Week calculation result: ${calculatedWeek} (based on ${diffDays} days since season start)`);
+    
+    // NFL regular season is 18 weeks, playoffs extend further
+    return calculatedWeek;
   };
 
   const fetchMatchups = useCallback(async (currentLeagueId: string, currentWeek: number) => {
@@ -49,27 +61,38 @@ export const useMatchups = (leagueId: string, week: number) => {
       setError(null);
       console.log(`Fetching matchups for league ${currentLeagueId}, week ${currentWeek}`);
       
-      // Check cache first
-      const cached = matchupsCache.get(cacheKey);
-      if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-        console.log('Using cached matchups data');
-        setMatchups(cached.data);
-        setLastKey(cacheKey);
-        setLoading(false);
-        return;
-      }
+      // Determine cache TTL based on week (shorter for current week)
+      const currentNFLWeek = getCurrentNFLWeek();
+      const isCurrentWeek = currentWeek === currentNFLWeek;
+      const cacheTTL = isCurrentWeek ? 60 * 1000 : 10 * 60 * 1000; // 1 min for current, 10 min for past
       
       const data = await cachedFetch<Matchup[]>(
         `https://api.sleeper.app/v1/league/${currentLeagueId}/matchups/${currentWeek}`,
         {},
-        5 * 60 * 1000 // 5 minutes cache
+        cacheTTL,
+        undefined,
+        'high' // High priority for user-facing matchups data
       );
       
-      setMatchups(data || []);
-      setLastKey(cacheKey);
+      // If we get empty data for current week, try again with cache buster
+      if ((!data || data.length === 0) && isCurrentWeek) {
+        console.log('🔄 Empty matchups for current week, retrying with cache buster...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const retryData = await cachedFetch<Matchup[]>(
+          `https://api.sleeper.app/v1/league/${currentLeagueId}/matchups/${currentWeek}?cb=${Date.now()}`,
+          {},
+          30 * 1000, // Very short cache for retry
+          undefined,
+          'high'
+        );
+        
+        setMatchups(retryData || []);
+      } else {
+        setMatchups(data || []);
+      }
       
-      // Cache the result
-      matchupsCache.set(cacheKey, { data: data || [], timestamp: Date.now() });
+      setLastKey(cacheKey);
     } catch (err) {
       console.error('Error fetching matchups:', err);
       setError('Failed to fetch matchups');

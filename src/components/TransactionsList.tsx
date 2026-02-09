@@ -23,7 +23,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
   players,
   league
 }) => {
-  const [selectedWeek, setSelectedWeek] = useState(league?.settings?.leg || 1);
+  const [selectedWeek, setSelectedWeek] = useState(1);
   const [transactionType, setTransactionType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
@@ -116,30 +116,32 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
   return (
     <Card className="glass-card border-border-light transition-all duration-300 hover:shadow-lg">
       <CardHeader className="pb-4">
-        <div className="flex flex-col space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <ArrowRightLeft className="w-5 h-5 text-primary" />
-              <CardTitle className="text-xl font-bold">League Transactions</CardTitle>
-              <Badge variant="outline" className="text-xs">
-                {sortedTransactions.length} total
+        <div className="flex flex-col space-y-3 sm:space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+              <ArrowRightLeft className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
+              <CardTitle className="text-lg sm:text-xl font-bold truncate">League Transactions</CardTitle>
+              <Badge variant="outline" className="text-xs flex-shrink-0">
+                {sortedTransactions.length}
               </Badge>
-              {hideFailed && hiddenFailedCount > 0 && (
-                <Badge variant="outline" className="text-xs text-muted-foreground">
-                  {hiddenFailedCount} failed hidden
-                </Badge>
-              )}
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowSearch(!showSearch)}
-              className="transition-all duration-200"
+              className="flex-shrink-0"
             >
-              <Search className="w-4 h-4 mr-2" />
-              Search
+              <Search className="w-4 h-4" />
+              <span className="hidden sm:inline ml-2">Search</span>
             </Button>
           </div>
+          
+          {/* Badge row for failed count on mobile */}
+          {hideFailed && hiddenFailedCount > 0 && (
+            <Badge variant="outline" className="text-xs text-muted-foreground self-start">
+              {hiddenFailedCount} failed hidden
+            </Badge>
+          )}
 
           {/* Search Bar */}
           {showSearch && (
@@ -165,9 +167,9 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
           )}
 
           {/* Filters */}
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center space-x-2">
-              <Label htmlFor="week-filter" className="text-sm font-medium">Week:</Label>
+          <div className="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:gap-4">
+            <div className="flex items-center justify-between sm:justify-start gap-2">
+              <Label htmlFor="week-filter" className="text-sm font-medium flex-shrink-0">Week:</Label>
               <Input
                 id="week-filter"
                 type="number"
@@ -175,16 +177,17 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                 max="18"
                 value={selectedWeek}
                 onChange={(e) => setSelectedWeek(Number(e.target.value))}
-                className="w-20 bg-card/50 border-border-light"
+                className="w-16 sm:w-20 bg-card/50 border-border-light text-center"
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <Label htmlFor="type-filter" className="text-sm font-medium">Type:</Label>
+            
+            <div className="flex items-center justify-between sm:justify-start gap-2">
+              <Label htmlFor="type-filter" className="text-sm font-medium flex-shrink-0">Type:</Label>
               <select
                 id="type-filter"
                 value={transactionType}
                 onChange={(e) => setTransactionType(e.target.value)}
-                className="px-3 py-1.5 bg-card/50 border border-border-light rounded-md text-sm transition-colors hover:bg-card"
+                className="px-2 py-1.5 bg-card/50 border border-border-light rounded-md text-sm flex-1 sm:flex-none min-w-0"
               >
                 <option value="all">All Types</option>
                 <option value="trade">Trades</option>
@@ -192,7 +195,8 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                 <option value="free_agent">Free Agents</option>
               </select>
             </div>
-            <div className="flex items-center space-x-2">
+            
+            <div className="flex items-center gap-2">
               <Switch
                 id="hide-failed"
                 checked={hideFailed}
@@ -200,7 +204,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                 className="data-[state=checked]:bg-primary"
               />
               <Label htmlFor="hide-failed" className="text-sm font-medium">
-                Hide Failed Bids
+                Hide Failed
               </Label>
             </div>
           </div>
@@ -219,7 +223,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                 onClick={() => {
                   setSearchTerm('');
                   setTransactionType('all');
-                  setSelectedWeek(league?.settings?.leg || 1);
+                  setSelectedWeek(1);
                   setHideFailed(true);
                 }}
                 className="mt-4"
@@ -239,26 +243,26 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                   key={transaction.transaction_id}
                   className="bg-card/30 rounded-xl p-4 border border-border-light transition-all duration-300 hover:bg-card/50 hover:border-border hover:shadow-md"
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center space-x-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-3">
+                    <div className="flex items-center space-x-2 sm:space-x-3 flex-wrap gap-y-1 flex-1 min-w-0">
                       <Badge
                         variant="outline"
-                        className={`${getTransactionTypeColor(transaction.type)} text-xs font-medium`}
+                        className={`${getTransactionTypeColor(transaction.type)} text-xs font-medium flex-shrink-0`}
                       >
                         {formatTransactionType(transaction.type)}
                       </Badge>
                       {(transaction.leg || transaction.week) && (
-                        <Badge variant="outline" className="text-gray-400 border-gray-400 text-xs">
+                        <Badge variant="outline" className="text-gray-400 border-gray-400 text-xs flex-shrink-0">
                           Week {transaction.leg || transaction.week}
                         </Badge>
                       )}
-                      <span className="text-sm text-gray-400">
+                      <span className="text-xs sm:text-sm text-gray-400 truncate max-w-[120px] sm:max-w-none">
                         by {creatorName}
                       </span>
                     </div>
                     <Badge
                       variant="outline"
-                      className={`text-xs ${
+                      className={`text-xs flex-shrink-0 ${
                         transaction.status === 'complete'
                           ? 'text-green-400 border-green-400'
                           : transaction.status === 'failed'
@@ -270,7 +274,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                     </Badge>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {/* Adds */}
                     {transaction.adds && Object.keys(transaction.adds).length > 0 && (
                       <div className="space-y-2">
@@ -281,16 +285,16 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                         <div className="space-y-1 pl-6">
                           {Object.entries(transaction.adds).map(([playerId, rosterId]) => {
                             return (
-                              <div key={playerId} className="flex items-center justify-between text-sm">
-                                <div>
-                                  <span className="text-white font-medium">
+                              <div key={playerId} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-sm">
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-white font-medium truncate max-w-[200px] block">
                                     {getPlayerName(playerId)}
                                   </span>
-                                  <span className="text-gray-400 ml-2">
+                                  <span className="text-gray-400 text-xs block sm:inline sm:ml-2">
                                     {getPlayerPosition(playerId)} - {getPlayerTeam(playerId)}
                                   </span>
                                 </div>
-                                <span className="text-green-400 text-xs">
+                                <span className="text-green-400 text-xs flex-shrink-0">
                                   to roster #{String(rosterId)}
                                 </span>
                               </div>
@@ -309,16 +313,16 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                         </div>
                         <div className="space-y-1 pl-6">
                           {Object.entries(transaction.drops).map(([playerId, rosterId]) => (
-                            <div key={playerId} className="flex items-center justify-between text-sm">
-                              <div>
-                                <span className="text-white font-medium">
+                            <div key={playerId} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-sm">
+                              <div className="flex-1 min-w-0">
+                                <span className="text-white font-medium truncate max-w-[200px] block">
                                   {getPlayerName(playerId)}
                                 </span>
-                                <span className="text-gray-400 ml-2">
+                                <span className="text-gray-400 text-xs block sm:inline sm:ml-2">
                                   {getPlayerPosition(playerId)} - {getPlayerTeam(playerId)}
                                 </span>
                               </div>
-                              <span className="text-red-400 text-xs">
+                              <span className="text-red-400 text-xs flex-shrink-0">
                                 from roster #{String(rosterId)}
                               </span>
                             </div>

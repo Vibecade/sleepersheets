@@ -81,8 +81,7 @@ const EnhancedTradeSimulator: React.FC<EnhancedTradeSimulatorProps> = ({
     rosters.forEach(roster => {
       const allPlayerIds = [
         ...(roster.players || []),
-        ...(roster.taxi || []),
-        ...(roster.reserve || [])
+        ...(roster.taxi || [])
       ];
       
       allPlayerIds.forEach(playerId => {

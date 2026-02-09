@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Users, Trophy, Calendar, Activity, RefreshCw, ArrowRightLeft } from 'lucide-react';
 import { useMatchups } from '@/hooks/useMatchups';
+import { useHistoricalMatchups } from '@/hooks/useHistoricalMatchups';
 import { useHistoricalProjections } from '@/hooks/useHistoricalProjections';
-import { ProjectedPointsDisplay } from './ProjectedPointsDisplay';
-import { getTeamName } from '@/utils/leagueDataUtils';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
-import { SkeletonCard } from '@/components/ui/skeleton-card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import TransactionsList from './TransactionsList';
-import FunStatistics from './FunStatistics';
 import { useTransactionProcessor } from '@/hooks/useTransactionProcessor';
+import { SkeletonCard } from '@/components/ui/skeleton-card';
+import ErrorBoundaryWithRetry from './ErrorBoundaryWithRetry';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+// Lazy load tab components for better code splitting
+const MatchupsTab = lazy(() => import('./tabs/MatchupsTab'));
+const StandingsTab = lazy(() => import('./tabs/StandingsTab'));
+const TransactionsTab = lazy(() => import('./tabs/TransactionsTab'));
+const StatisticsTab = lazy(() => import('./tabs/StatisticsTab'));
 
 interface TeamOverviewProps {
   league: any;
@@ -25,6 +25,7 @@ interface TeamOverviewProps {
   players: Record<string, any>;
   transactions?: any[];
   onResyncData?: () => void;
+  initialTab?: string;
 }
 
 const TeamOverview: React.FC<TeamOverviewProps> = ({
@@ -33,14 +34,37 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   userMap,
   players,
   transactions = [],
-  onResyncData
+  onResyncData,
+  initialTab
 }) => {
-  const [selectedWeek, setSelectedWeek] = useState(league?.settings?.leg || 1);
-  const { matchups, loading: matchupsLoading, getCurrentNFLWeek } = useMatchups(league?.league_id, selectedWeek);
-  const { processWaiverTransactions, processing: processingTransactions } = useTransactionProcessor();
+  const isMobile = useIsMobile();
   
-  // Get projections for current week
-  const currentWeek = getCurrentNFLWeek();
+  // Calculate current NFL week before state initialization
+  const getCurrentNFLWeek = useCallback((leagueSeason?: string) => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const seasonYear = leagueSeason ? parseInt(leagueSeason) : currentYear;
+    const seasonStart = new Date(seasonYear, 8, 5); // September 5th
+    
+    if (now < seasonStart) return 1;
+    
+    const diffTime = now.getTime() - seasonStart.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const weekNumber = Math.floor((diffDays + 2) / 7) + 1;
+    
+    return Math.min(Math.max(weekNumber, 1), 22);
+  }, []);
+
+  const currentWeek = getCurrentNFLWeek(league?.season);
+
+  // Initialize selectedWeek to current NFL week instead of hardcoded 1
+  const [selectedWeek, setSelectedWeek] = useState(currentWeek);
+  const [showBonusWins, setShowBonusWins] = useState(false);
+  const [expandedTeamId, setExpandedTeamId] = useState<number | null>(null);
+  
+  const { matchups, loading: matchupsLoading } = useMatchups(league?.league_id, selectedWeek);
+  const { processWaiverTransactions, processing: processingTransactions } = useTransactionProcessor();
+  const { historicalMatchups, teamWeeklyData, weeklyAverages, loading: historicalLoading } = useHistoricalMatchups(league?.league_id || '', currentWeek);
 
   // Process waiver transactions when data loads
   useEffect(() => {
@@ -48,6 +72,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
       processWaiverTransactions(league.league_id, transactions);
     }
   }, [league?.league_id, transactions, processWaiverTransactions, processingTransactions]);
+  
   const { projections, loading: projectionsLoading } = useHistoricalProjections(
     league?.league_id || '',
     currentWeek
@@ -63,7 +88,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   }, {} as Record<number, typeof matchups>);
 
   const formatPoints = (points: number) => {
-    return points?.toFixed(1) || '0.0';
+    return points?.toFixed(2) || '0.00';
   };
 
   const getRosterById = (rosterId: number) => {
@@ -77,315 +102,172 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
     return `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
   };
 
+  // Calculate bonus wins from enhanced weekly data
+  const teamBonusWins = useMemo(() => {
+    if (!teamWeeklyData.length || !showBonusWins) {
+      return {};
+    }
+    
+    const bonusWins: Record<number, number> = {};
+    teamWeeklyData.forEach(({ rosterId, weeklyPerformance }) => {
+      bonusWins[rosterId] = weeklyPerformance.filter(week => week.aboveAverage).length;
+    });
+    
+    return bonusWins;
+  }, [teamWeeklyData, showBonusWins]);
+
+  const getTeamRecordWithBonus = (roster: any) => {
+    const wins = roster.settings?.wins || 0;
+    const losses = roster.settings?.losses || 0;
+    const ties = roster.settings?.ties || 0;
+    const bonusWins = teamBonusWins[roster.roster_id] || 0;
+    
+    if (showBonusWins && bonusWins > 0) {
+      return `${wins + bonusWins}-${losses}${ties > 0 ? `-${ties}` : ''} (+${bonusWins})`;
+    }
+    return `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
+  };
+
+  const handleTeamToggle = (rosterId: number) => {
+    setExpandedTeamId(expandedTeamId === rosterId ? null : rosterId);
+  };
+
   return (
-    <div className="space-y-6">
-      {/* League Header */}
-      <Card className="transition-all duration-300 hover:shadow-lg">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Trophy className="w-6 h-6 text-yellow-500" />
-              <div>
-                <CardTitle className="text-2xl transition-colors duration-200">{league?.name}</CardTitle>
-                <p className="text-gray-400 transition-colors duration-200">
-                  {league?.season} Season • Week {league?.settings?.leg || 1}
-                </p>
+    <div className="space-y-4 md:space-y-6 lg:space-y-8">
+      {!isMobile && (
+        <Card className="hover-lift border border-border/50">
+          <CardHeader className="pb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30">
+                  <Trophy className="w-7 h-7 text-yellow-500" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl lg:text-3xl mb-1">{league?.name}</CardTitle>
+                  <p className="text-muted-foreground text-base">
+                    {league?.season} Season <span className="mx-2">•</span> Week {currentWeek}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {onResyncData && (
+                  <Button
+                    variant="outline"
+                    size="default"
+                    onClick={onResyncData}
+                    className="hover-border-glow"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Re-sync Data
+                  </Button>
+                )}
+                <Badge variant="outline" className="text-lg px-4 py-1.5 text-green-400 border-green-400/50 bg-green-400/5 hover:bg-green-400/10 transition-colors">
+                  {rosters.length} Teams
+                </Badge>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              {onResyncData && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onResyncData}
-                  className="transition-all duration-200 hover:scale-105"
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Re-sync Data
-                </Button>
-              )}
-              <Badge variant="outline" className="text-green-400 border-green-400 transition-all duration-200 hover:bg-green-400/10">
-                {rosters.length} Teams
-              </Badge>
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
+          </CardHeader>
+        </Card>
+      )}
 
-      {/* Main Content Tabs */}
-      <Tabs defaultValue="matchups" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 transition-all duration-200">
-          <TabsTrigger value="matchups" className="flex items-center space-x-2 transition-all duration-200 hover:bg-accent/80">
-            <Calendar className="w-4 h-4" />
-            <span>Matchups</span>
+      <Tabs defaultValue={initialTab || "matchups"} className="space-y-4 md:space-y-6">
+        <TabsList className="flex w-full gap-1">
+          <TabsTrigger
+            value="matchups"
+            className="flex-1 flex items-center justify-center gap-1.5 md:gap-2"
+          >
+            <Calendar className="w-4 h-4 shrink-0" />
+            <span className="hidden xs:inline text-xs md:text-sm">Matchups</span>
           </TabsTrigger>
-          <TabsTrigger value="standings" className="flex items-center space-x-2 transition-all duration-200 hover:bg-accent/80">
-            <Users className="w-4 h-4" />
-            <span>Standings</span>
+          <TabsTrigger
+            value="standings"
+            className="flex-1 flex items-center justify-center gap-1.5 md:gap-2"
+          >
+            <Users className="w-4 h-4 shrink-0" />
+            <span className="hidden xs:inline text-xs md:text-sm">Standings</span>
           </TabsTrigger>
-          <TabsTrigger value="transactions" className="flex items-center space-x-2 transition-all duration-200 hover:bg-accent/80">
-            <ArrowRightLeft className="w-4 h-4" />
-            <span>Transactions</span>
+          <TabsTrigger
+            value="transactions"
+            className="flex-1 flex items-center justify-center gap-1.5 md:gap-2"
+          >
+            <ArrowRightLeft className="w-4 h-4 shrink-0" />
+            <span className="hidden xs:inline text-xs md:text-sm">Moves</span>
           </TabsTrigger>
-          <TabsTrigger value="statistics" className="flex items-center space-x-2 transition-all duration-200 hover:bg-accent/80">
-            <Activity className="w-4 h-4" />
-            <span>Fun Stats</span>
+          <TabsTrigger
+            value="statistics"
+            className="flex-1 flex items-center justify-center gap-1.5 md:gap-2"
+          >
+            <Activity className="w-4 h-4 shrink-0" />
+            <span className="hidden xs:inline text-xs md:text-sm">Stats</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="matchups" className="animate-fade-in">
-          <Card className="transition-all duration-300 hover:shadow-lg">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Calendar className="w-5 h-5" />
-                  <CardTitle className="text-lg">Matchups</CardTitle>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-2">
-                    <Label htmlFor="week-select" className="text-sm">Week:</Label>
-                    <Input
-                      id="week-select"
-                      type="number"
-                      min="1"
-                      max="18"
-                      value={selectedWeek}
-                      onChange={(e) => setSelectedWeek(Number(e.target.value))}
-                      className="w-20 bg-gray-800/50 border-gray-600 transition-all duration-200 focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  {matchupsLoading && <LoadingSpinner size="sm" />}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {matchupsLoading ? (
-                <div className="space-y-4">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <SkeletonCard key={i} showHeader={false} lines={2} />
-                  ))}
-                </div>
-              ) : Object.keys(groupedMatchups).length === 0 ? (
-                <div className="text-center py-12 text-gray-400 transition-opacity duration-300">
-                  <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">No matchups found for week {selectedWeek}</p>
-                  <p className="text-sm">Try selecting a different week</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {Object.entries(groupedMatchups).map(([matchupId, teams]) => {
-                    if (teams.length < 2) return null;
-                    
-                    const team1 = teams[0];
-                    const team2 = teams[1];
-                    const roster1 = getRosterById(team1.roster_id);
-                    const roster2 = getRosterById(team2.roster_id);
-                    const user1 = userMap[roster1?.owner_id];
-                    const user2 = userMap[roster2?.owner_id];
-                    const team1Winning = team1.points > team2.points;
-
-                    return (
-                       <div key={matchupId} className="bg-white/5 rounded-lg p-4 md:p-6 border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]">
-                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0">
-                           <div className={`flex-1 text-center transition-all duration-300 ${team1Winning ? 'transform scale-105' : ''} min-w-0`}>
-                             <div className="flex flex-col items-center space-y-2 mb-3">
-                               <Avatar className={`transition-all duration-300 ${team1Winning ? 'scale-110 ring-2 ring-green-400' : ''}`}>
-                                 <AvatarImage 
-                                   src={user1?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user1.avatar}` : undefined}
-                                   alt={`${getTeamName(user1)} avatar`}
-                                 />
-                                 <AvatarFallback className="bg-primary/20 text-primary-foreground">
-                                   {getTeamName(user1).slice(0, 2).toUpperCase()}
-                                 </AvatarFallback>
-                               </Avatar>
-                               <div className={`font-medium ${team1Winning ? 'text-green-400' : 'text-yellow-500'} transition-colors duration-300 truncate`}>
-                                 {getTeamName(user1)}
-                               </div>
-                               <div className="text-sm text-gray-400 transition-colors duration-200">
-                                 {getTeamRecord(roster1)}
-                               </div>
-                             </div>
-                             <div className={`text-2xl font-bold transition-all duration-300 ${team1Winning ? 'text-green-300 scale-110' : 'text-yellow-400'}`}>
-                               {formatPoints(team1.points)}
-                             </div>
-                             {!projectionsLoading && projections[team1.roster_id] && selectedWeek >= currentWeek && (
-                               <div className="mt-2">
-                                 <ProjectedPointsDisplay 
-                                   projection={projections[team1.roster_id]}
-                                   actualPoints={selectedWeek === currentWeek ? team1.points : undefined}
-                                   showActual={selectedWeek === currentWeek}
-                                   size="sm"
-                                 />
-                               </div>
-                             )}
-                           </div>
-                          
-                          <div className="md:px-6 flex justify-center">
-                            <div className="text-center text-gray-400 text-sm font-medium bg-white/10 rounded-full px-3 py-1 md:bg-transparent md:px-0 md:py-0">VS</div>
-                          </div>
-                          
-                           <div className={`flex-1 text-center transition-all duration-300 ${!team1Winning ? 'transform scale-105' : ''} min-w-0`}>
-                             <div className="flex flex-col items-center space-y-2 mb-3">
-                               <Avatar className={`transition-all duration-300 ${!team1Winning ? 'scale-110 ring-2 ring-green-400' : ''}`}>
-                                 <AvatarImage 
-                                   src={user2?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user2.avatar}` : undefined}
-                                   alt={`${getTeamName(user2)} avatar`}
-                                 />
-                                 <AvatarFallback className="bg-primary/20 text-primary-foreground">
-                                   {getTeamName(user2).slice(0, 2).toUpperCase()}
-                                 </AvatarFallback>
-                               </Avatar>
-                               <div className={`font-medium ${!team1Winning ? 'text-green-400' : 'text-yellow-500'} transition-colors duration-300 truncate`}>
-                                 {getTeamName(user2)}
-                               </div>
-                               <div className="text-sm text-gray-400 transition-colors duration-200">
-                                 {getTeamRecord(roster2)}
-                               </div>
-                             </div>
-                             <div className={`text-2xl font-bold transition-all duration-300 ${!team1Winning ? 'text-green-300 scale-110' : 'text-yellow-400'}`}>
-                               {formatPoints(team2.points)}
-                             </div>
-                             {!projectionsLoading && projections[team2.roster_id] && selectedWeek >= currentWeek && (
-                               <div className="mt-2">
-                                 <ProjectedPointsDisplay 
-                                   projection={projections[team2.roster_id]}
-                                   actualPoints={selectedWeek === currentWeek ? team2.points : undefined}
-                                   showActual={selectedWeek === currentWeek}
-                                   size="sm"
-                                 />
-                               </div>
-                             )}
-                           </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <ErrorBoundaryWithRetry fallbackMessage="Failed to load matchups. Please try again.">
+            <Suspense fallback={<SkeletonCard />}>
+              <MatchupsTab
+                selectedWeek={selectedWeek}
+                setSelectedWeek={setSelectedWeek}
+                matchupsLoading={matchupsLoading}
+                groupedMatchups={groupedMatchups}
+                getRosterById={getRosterById}
+                userMap={userMap}
+                players={players}
+                formatPoints={formatPoints}
+                getTeamRecord={getTeamRecord}
+              />
+            </Suspense>
+          </ErrorBoundaryWithRetry>
         </TabsContent>
 
         <TabsContent value="standings" className="animate-fade-in">
-          <Card className="transition-all duration-300 hover:shadow-lg">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <Users className="w-5 h-5" />
-                <CardTitle className="text-lg">League Standings</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {rosters
-                  .sort((a, b) => {
-                    const aWins = a.settings?.wins || 0;
-                    const bWins = b.settings?.wins || 0;
-                    const aLosses = a.settings?.losses || 0;
-                    const bLosses = b.settings?.losses || 0;
-                    
-                    // Sort by win percentage
-                    const aWinPct = aWins + aLosses > 0 ? aWins / (aWins + aLosses) : 0;
-                    const bWinPct = bWins + bLosses > 0 ? bWins / (bWins + bLosses) : 0;
-                    
-                    return bWinPct - aWinPct;
-                  })
-                  .map((roster, index) => {
-                    const user = userMap[roster.owner_id];
-                    const teamName = getTeamName(user);
-                    const record = getTeamRecord(roster);
-                    
-                    return (
-                      <div key={roster.roster_id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]">
-                        <div className="flex items-center space-x-4">
-                          <div className="relative">
-                            <Avatar className={`transition-all duration-300 ${
-                              index === 0 ? 'scale-110 ring-2 ring-yellow-500' : 
-                              index === 1 ? 'scale-105 ring-2 ring-gray-400' :
-                              index === 2 ? 'scale-105 ring-2 ring-amber-600' : ''
-                            }`}>
-                              <AvatarImage 
-                                src={user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user.avatar}` : undefined}
-                                alt={`${teamName} avatar`}
-                              />
-                              <AvatarFallback className="bg-primary/20 text-primary-foreground">
-                                {teamName.slice(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
-                              index === 0 ? 'bg-yellow-500 text-black' : 
-                              index === 1 ? 'bg-gray-400 text-black' :
-                              index === 2 ? 'bg-amber-600 text-white' : 'bg-gray-700 text-white'
-                            }`}>
-                              {index + 1}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="font-medium text-white transition-colors duration-200">{teamName}</div>
-                            <div className="text-sm text-gray-400 transition-colors duration-200">{user?.display_name}</div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-medium text-white transition-colors duration-200">{record}</div>
-                          <div className="text-sm text-gray-400 transition-colors duration-200">
-                            {roster.settings?.fpts?.toFixed(1) || '0.0'} pts
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-            </CardContent>
-          </Card>
+          <ErrorBoundaryWithRetry fallbackMessage="Failed to load standings. Please try again.">
+            <Suspense fallback={<SkeletonCard />}>
+              <StandingsTab
+                rosters={rosters}
+                userMap={userMap}
+                showBonusWins={showBonusWins}
+                setShowBonusWins={setShowBonusWins}
+                historicalLoading={historicalLoading}
+                historicalMatchups={historicalMatchups}
+                teamBonusWins={teamBonusWins}
+                teamWeeklyData={teamWeeklyData}
+                weeklyAverages={weeklyAverages}
+                expandedTeamId={expandedTeamId}
+                getTeamRecordWithBonus={getTeamRecordWithBonus}
+                getTeamRecord={getTeamRecord}
+                handleTeamToggle={handleTeamToggle}
+              />
+            </Suspense>
+          </ErrorBoundaryWithRetry>
         </TabsContent>
 
         <TabsContent value="transactions" className="animate-fade-in">
-          <Card className="transition-all duration-300 hover:shadow-lg">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <ArrowRightLeft className="w-5 h-5" />
-                <CardTitle className="text-lg">League Transactions</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <ScrollArea className="h-[70vh] w-full">
-                <div className="p-6">
-                  <TransactionsList
-                    transactions={transactions}
-                    userMap={userMap}
-                    players={players}
-                    league={league}
-                  />
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+          <ErrorBoundaryWithRetry fallbackMessage="Failed to load transactions. Please try again.">
+            <Suspense fallback={<SkeletonCard />}>
+              <TransactionsTab
+                transactions={transactions}
+                userMap={userMap}
+                players={players}
+                league={league}
+              />
+            </Suspense>
+          </ErrorBoundaryWithRetry>
         </TabsContent>
 
         <TabsContent value="statistics" className="animate-fade-in">
-          <Card className="transition-all duration-300 hover:shadow-lg">
-            <CardHeader>
-              <div className="flex items-center space-x-2">
-                <Activity className="w-5 h-5" />
-                <CardTitle className="text-lg">League Statistics</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <ScrollArea className="h-[70vh] w-full">
-                <div className="p-6">
-                  <FunStatistics
-                    league={league}
-                    rosters={rosters}
-                    userMap={userMap}
-                    players={players}
-                    transactions={transactions}
-                  />
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+          <ErrorBoundaryWithRetry fallbackMessage="Failed to load statistics. Please try again.">
+            <Suspense fallback={<SkeletonCard />}>
+              <StatisticsTab
+                league={league}
+                rosters={rosters}
+                players={players}
+                userMap={userMap}
+              />
+            </Suspense>
+          </ErrorBoundaryWithRetry>
         </TabsContent>
       </Tabs>
-
     </div>
   );
 };

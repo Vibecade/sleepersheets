@@ -17,6 +17,19 @@ interface UserLeaguesData {
   leagues: SleeperLeague[];
 }
 
+const fetchLeaguesForYears = async (userId: string): Promise<{ leagues: SleeperLeague[]; season: number }> => {
+    const currentYear = new Date().getFullYear();
+    const yearsToTry = [currentYear, currentYear - 1];
+    
+    for (const year of yearsToTry) {
+        const leagues = await cachedFetch<SleeperLeague[]>(
+            `https://api.sleeper.app/v1/user/${userId}/leagues/nfl/${year}`, {}, 5 * 60 * 1000
+        );
+        if (leagues.length > 0) return { leagues, season: year };
+    }
+    throw new Error(`No NFL leagues found for ${currentYear} or ${currentYear - 1}`);
+};
+
 const fetchUserLeaguesAndGetFirstId = async (username: string): Promise<string> => {
     const sanitizedUsername = sanitizeInput(username);
     const validation = validateUsername(sanitizedUsername);
@@ -24,12 +37,7 @@ const fetchUserLeaguesAndGetFirstId = async (username: string): Promise<string> 
         throw new Error(validation.error);
     }
     const userData = await cachedFetch<SleeperUser>(`https://api.sleeper.app/v1/user/${sanitizedUsername}`, {}, 10 * 60 * 1000);
-    const currentYear = new Date().getFullYear();
-    const leagues = await cachedFetch<SleeperLeague[]>(`https://api.sleeper.app/v1/user/${userData.user_id}/leagues/nfl/${currentYear}`, {}, 5 * 60 * 1000);
-    
-    if (leagues.length === 0) {
-        throw new Error(`No NFL leagues found for this username in ${currentYear}`);
-    }
+    const { leagues } = await fetchLeaguesForYears(userData.user_id);
     return leagues[0].league_id;
 };
 
@@ -40,21 +48,13 @@ const fetchUserLeaguesData = async (username: string): Promise<UserLeaguesData> 
         throw new Error(validation.error);
     }
     const userData = await cachedFetch<SleeperUser>(`https://api.sleeper.app/v1/user/${sanitizedUsername}`, {}, 10 * 60 * 1000);
-    const currentYear = new Date().getFullYear();
-    const leagues = await cachedFetch<SleeperLeague[]>(`https://api.sleeper.app/v1/user/${userData.user_id}/leagues/nfl/${currentYear}`, {}, 5 * 60 * 1000);
+    const { leagues } = await fetchLeaguesForYears(userData.user_id);
     
-    if (leagues.length === 0) {
-        throw new Error(`No NFL leagues found for this username in ${currentYear}`);
-    }
-    
-    // Sort leagues: active leagues first, then by season (newest first)
     const sortedLeagues = leagues.sort((a, b) => {
         const aActive = a.status === 'in_season' || a.status === 'drafting';
         const bActive = b.status === 'in_season' || b.status === 'drafting';
-        
         if (aActive && !bActive) return -1;
         if (!aActive && bActive) return 1;
-        
         return parseInt(b.season) - parseInt(a.season);
     });
     
@@ -71,8 +71,9 @@ export const useLeagueSubmissions = ({
   const [userLeaguesData, setUserLeaguesData] = useState<UserLeaguesData | null>(null);
   const [showLeagueSelection, setShowLeagueSelection] = useState(false);
 
-  const handleLeagueSubmit = useCallback(async () => {
-    const sanitizedLeagueId = sanitizeInput(leagueIdFromInput);
+  const handleLeagueSubmit = useCallback(async (inputLeagueId?: string) => {
+    const leagueIdValue = inputLeagueId || leagueIdFromInput;
+    const sanitizedLeagueId = sanitizeInput(leagueIdValue);
     const validation = validateLeagueId(sanitizedLeagueId);
     
     if (!validation.isValid) {
@@ -126,12 +127,14 @@ export const useLeagueSubmissions = ({
       }
   });
 
-  const handleUsernameSubmit = async () => {
-      await fetchLeaguesData(usernameFromInput);
+  const handleUsernameSubmit = async (inputUsername?: string) => {
+      const usernameValue = inputUsername || usernameFromInput;
+      await fetchLeaguesData(usernameValue);
   };
 
-  const handleQuickLoadFirstLeague = async () => {
-      await fetchFirstLeague(usernameFromInput);
+  const handleQuickLoadFirstLeague = async (inputUsername?: string) => {
+      const usernameValue = inputUsername || usernameFromInput;
+      await fetchFirstLeague(usernameValue);
   };
 
   const handleSelectLeague = (leagueId: string) => {
@@ -145,9 +148,10 @@ export const useLeagueSubmissions = ({
       setUserLeaguesData(null);
   };
 
-  const handleRefreshLeagues = async () => {
-      if (usernameFromInput) {
-          await fetchLeaguesData(usernameFromInput);
+  const handleRefreshLeagues = async (inputUsername?: string) => {
+      const usernameValue = inputUsername || usernameFromInput;
+      if (usernameValue) {
+          await fetchLeaguesData(usernameValue);
       }
   };
 

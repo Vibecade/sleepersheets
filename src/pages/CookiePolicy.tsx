@@ -1,24 +1,44 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, Cookie } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import PageHead from '@/components/PageHead';
 
 const CookiePolicy = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 p-4">
+    <div className="min-h-screen">
       <PageHead 
         title="Cookie Policy"
         description="Cookie Policy for SleeperSheets - Learn about how we use cookies and tracking technologies."
         canonicalUrl="https://sleepersheets.com/cookies"
       />
       
-      <div className="max-w-4xl mx-auto py-8">
+      {/* Header */}
+      <div className="glass-header border-b border-white/10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 animate-pulse"></div>
+        <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
+          <div className="flex items-center space-x-4">
+            <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="bg-gradient-to-br from-amber-400 to-orange-600 rounded-2xl p-4 shadow-2xl">
+              <Cookie className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold gradient-text mb-2">Cookie Policy</h1>
+              <p className="text-gray-300 text-lg">How we use cookies and tracking</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 py-12">
         <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold text-center">Cookie Policy</CardTitle>
-            <p className="text-gray-400 text-center">Last updated: {new Date().toLocaleDateString()}</p>
-          </CardHeader>
-          <CardContent className="prose prose-invert max-w-none">
+          <CardContent className="prose prose-invert max-w-none pt-6">
             <div className="space-y-6 text-gray-300">
               <section>
                 <h2 className="text-xl font-semibold text-white mb-3">What Are Cookies?</h2>
@@ -52,21 +72,12 @@ const CookiePolicy = () => {
                   <li><strong>Error tracking:</strong> To identify and fix technical issues</li>
                   <li><strong>Feature usage:</strong> To understand which features are most popular</li>
                 </ul>
-
-                <h3 className="text-lg font-medium text-white mt-4 mb-2">Advertising Cookies</h3>
-                <p>These cookies are used for advertising purposes:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>Google AdSense:</strong> To display relevant advertisements</li>
-                  <li><strong>Ad personalization:</strong> To show ads based on your interests</li>
-                  <li><strong>Ad performance:</strong> To measure ad effectiveness</li>
-                </ul>
               </section>
 
               <section>
                 <h2 className="text-xl font-semibold text-white mb-3">Third-Party Cookies</h2>
                 <p>We use services from third parties that may set their own cookies:</p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li><strong>Google AdSense:</strong> For displaying advertisements</li>
                   <li><strong>Supabase:</strong> For authentication and data storage</li>
                   <li><strong>Sleeper API:</strong> For fetching fantasy league data</li>
                 </ul>
@@ -85,13 +96,6 @@ const CookiePolicy = () => {
                   <li>Clear cookies when you close your browser</li>
                 </ul>
 
-                <h3 className="text-lg font-medium text-white mt-4 mb-2">Advertising Opt-Out</h3>
-                <p>You can opt out of personalized advertising by:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>Visiting <a href="https://www.google.com/settings/ads" className="text-blue-400 hover:text-blue-300">Google Ads Settings</a></li>
-                  <li>Using the <a href="https://optout.aboutads.info/" className="text-blue-400 hover:text-blue-300">Digital Advertising Alliance opt-out tool</a></li>
-                  <li>Enabling "Do Not Track" in your browser</li>
-                </ul>
               </section>
 
               <section>
@@ -101,7 +105,6 @@ const CookiePolicy = () => {
                   <li><strong>Essential cookies:</strong> The site may not function properly</li>
                   <li><strong>Functional cookies:</strong> You may lose saved preferences</li>
                   <li><strong>Analytics cookies:</strong> We won't be able to improve the site based on usage data</li>
-                  <li><strong>Advertising cookies:</strong> You may see less relevant ads</li>
                 </ul>
               </section>
 

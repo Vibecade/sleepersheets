@@ -91,8 +91,7 @@ export const useFAABCalculations = ({ rosters, leagueId, transactions = [] }: FA
     rosters.forEach((roster) => {
       const allPlayerIds = [
         ...(roster.players || []),
-        ...(roster.taxi || []),
-        ...(roster.reserve || [])
+        ...(roster.taxi || [])
       ];
       
       const totalSalary = allPlayerIds.reduce((total, playerId) => {

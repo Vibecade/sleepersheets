@@ -26,17 +26,15 @@ const TeamSalaryDisplay: React.FC<TeamSalaryDisplayProps> = ({
     return `$${amount.toLocaleString()}`;
   };
 
-  const getSalaryCapStatus = (teamSalary: number, deadCap: number = 0) => {
-    const totalSalary = teamSalary + deadCap;
-    const percentage = (totalSalary / salaryCap) * 100;
+  const getSalaryCapStatus = (teamSalary: number) => {
+    const percentage = (teamSalary / salaryCap) * 100;
     if (percentage > 100) return { color: 'text-destructive', bg: 'bg-destructive/10', status: 'Over Cap' };
     if (percentage > 90) return { color: 'text-yellow-400', bg: 'bg-yellow-500/10', status: 'Near Cap' };
     return { color: 'text-success', bg: 'bg-success/10', status: 'Under Cap' };
   };
 
-  const salaryStatus = getSalaryCapStatus(teamSalary, teamDeadCap);
-  const totalSalary = teamSalary + teamDeadCap;
-  const percentage = (totalSalary / salaryCap) * 100;
+  const salaryStatus = getSalaryCapStatus(teamSalary);
+  const percentage = (teamSalary / salaryCap) * 100;
   
   const getProgressVariant = () => {
     if (percentage > 100) return 'danger';
@@ -54,7 +52,7 @@ const TeamSalaryDisplay: React.FC<TeamSalaryDisplayProps> = ({
       </div>
 
       <ProgressIndicator
-        value={totalSalary}
+        value={teamSalary}
         max={salaryCap}
         variant={getProgressVariant()}
         showPercentage={true}
@@ -89,8 +87,8 @@ const TeamSalaryDisplay: React.FC<TeamSalaryDisplayProps> = ({
 
       <div className="flex justify-between items-center pt-2 border-t border-border-light">
         <span className="text-foreground font-medium">Cap Space:</span>
-        <span className={`font-bold ${salaryCap - totalSalary > 0 ? 'text-success' : 'text-destructive'}`}>
-          {formatSalary(salaryCap - totalSalary)}
+        <span className={`font-bold ${salaryCap - teamSalary > 0 ? 'text-success' : 'text-destructive'}`}>
+          {formatSalary(salaryCap - teamSalary)}
         </span>
       </div>
       

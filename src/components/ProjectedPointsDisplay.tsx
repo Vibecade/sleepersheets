@@ -115,12 +115,12 @@ export const ProjectedPointsDisplay: React.FC<ProjectedPointsDisplayProps> = ({
               <div><strong>Confidence:</strong> {Math.round(confidence * 100)}%</div>
               {source === 'historical' && projection.historicalAverage && (
                 <>
-                  <div>Historical Avg: {projection.historicalAverage.toFixed(1)} pts</div>
+                  <div>Historical Avg: {projection.historicalAverage.toFixed(2)} pts</div>
                   {trendAdjustment && Math.abs(trendAdjustment) > 0.1 && (
-                    <div>Trend: {trendAdjustment > 0 ? '+' : ''}{trendAdjustment.toFixed(1)} pts</div>
+                    <div>Trend: {trendAdjustment > 0 ? '+' : ''}{trendAdjustment.toFixed(2)} pts</div>
                   )}
                   {projection.opponentAdjustment && Math.abs(projection.opponentAdjustment) > 0.1 && (
-                    <div>Opponent Adj: {projection.opponentAdjustment > 0 ? '+' : ''}{projection.opponentAdjustment.toFixed(1)} pts</div>
+                    <div>Opponent Adj: {projection.opponentAdjustment > 0 ? '+' : ''}{projection.opponentAdjustment.toFixed(2)} pts</div>
                   )}
                 </>
               )}

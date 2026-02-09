@@ -1,15 +1,15 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Users as UserGroup, Search as MagnifyingGlass, Loader2, ArrowLeft, Zap } from 'lucide-react';
+import { Users as UserGroup, Loader2, ArrowLeft, Zap, Link2 } from 'lucide-react';
 import { HowToFindLeagueId } from './HowToFindLeagueId';
 import { SleeperAccountCard } from './SleeperAccountCard';
 import { SleeperLeagueGrid } from './SleeperLeagueGrid';
-import { validateAndSanitizeLeagueId, validateAndSanitizeUsername } from '@/utils/enhancedInputValidation';
+import { validateAndSanitizeLeagueId, validateAndSanitizeUsername } from '@/utils/inputValidation';
+import { UnifiedLoading } from '@/components/ui/unified-loading';
+import { detectInputType, getPlaceholderText } from '@/utils/inputDetection';
 import { useToast } from '@/hooks/use-toast';
 
 interface LeagueConnectionFormProps {
@@ -17,12 +17,12 @@ interface LeagueConnectionFormProps {
   setLeagueId: (value: string) => void;
   username: string;
   setUsername: (value: string) => void;
-  onLeagueSubmit: () => Promise<void>;
-  onUsernameSubmit: () => Promise<void>;
-  onQuickLoadFirstLeague?: () => Promise<void>;
+  onLeagueSubmit: (leagueId?: string) => Promise<void>;
+  onUsernameSubmit: (username?: string) => Promise<void>;
+  onQuickLoadFirstLeague?: (username?: string) => Promise<void>;
   onSelectLeague?: (leagueId: string) => void;
   onBackToForm?: () => void;
-  onRefreshLeagues?: () => Promise<void>;
+  onRefreshLeagues?: (username?: string) => Promise<void>;
   loading: boolean;
   userLeaguesData?: { user: any; leagues: any[] } | null;
   showLeagueSelection?: boolean;
@@ -43,71 +43,85 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
   userLeaguesData,
   showLeagueSelection = false
 }) => {
-  const [leagueIdError, setLeagueIdError] = useState<string>('');
-  const [usernameError, setUsernameError] = useState<string>('');
+  const [smartInput, setSmartInput] = useState<string>('');
+  const [inputError, setInputError] = useState<string>('');
   const { toast } = useToast();
 
-  const handleLeagueSubmit = async (e: React.FormEvent) => {
+  // Scroll to top when component mounts (defensive measure)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // Detect input type and provide smart hints
+  const inputDetection = useMemo(() => {
+    return detectInputType(smartInput);
+  }, [smartInput]);
+
+  const handleSmartSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const validation = validateAndSanitizeLeagueId(leagueId);
-    if (!validation.isValid) {
-      setLeagueIdError(validation.error || 'Invalid league ID');
-      toast({
-        title: "Invalid League ID",
-        description: validation.error,
-        variant: "destructive"
-      });
+    const trimmedInput = smartInput.trim();
+    if (!trimmedInput) {
+      setInputError('Please enter a League ID or Username');
       return;
     }
-    
-    setLeagueIdError('');
-    if (validation.sanitizedValue && validation.sanitizedValue !== leagueId) {
-      setLeagueId(validation.sanitizedValue);
-    }
-    
-    await onLeagueSubmit();
-  };
 
-  const handleUsernameSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    setInputError('');
     
-    const validation = validateAndSanitizeUsername(username);
-    if (!validation.isValid) {
-      setUsernameError(validation.error || 'Invalid username');
+    // Detect input type and validate accordingly
+    const detection = detectInputType(trimmedInput);
+    
+    if (detection.type === 'league-id') {
+      const validation = validateAndSanitizeLeagueId(trimmedInput);
+      if (!validation.isValid) {
+        setInputError(validation.error || 'Invalid League ID');
+        toast({
+          title: "Invalid League ID",
+          description: validation.error,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Submit with current input value
+      const leagueIdValue = validation.sanitizedValue || trimmedInput;
+      setLeagueId(leagueIdValue);
+      await onLeagueSubmit(leagueIdValue);
+      
+    } else if (detection.type === 'username') {
+      const validation = validateAndSanitizeUsername(trimmedInput);
+      if (!validation.isValid) {
+        setInputError(validation.error || 'Invalid Username');
+        toast({
+          title: "Invalid Username", 
+          description: validation.error,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Submit with current input value
+      const usernameValue = validation.sanitizedValue || trimmedInput;
+      setUsername(usernameValue);
+      await onUsernameSubmit(usernameValue);
+      
+    } else {
+      setInputError('Please enter a valid League ID (15-20 digits) or Username (3-20 characters)');
       toast({
-        title: "Invalid Username",
-        description: validation.error,
+        title: "Invalid Input",
+        description: "Please enter a valid League ID or Username",
         variant: "destructive"
       });
-      return;
-    }
-    
-    setUsernameError('');
-    if (validation.sanitizedValue && validation.sanitizedValue !== username) {
-      setUsername(validation.sanitizedValue);
-    }
-    
-    await onUsernameSubmit();
-  };
-
-  const handleLeagueIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setLeagueId(value);
-    
-    // Clear error when user starts typing
-    if (leagueIdError) {
-      setLeagueIdError('');
     }
   };
 
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setUsername(value);
+    setSmartInput(value);
     
     // Clear error when user starts typing
-    if (usernameError) {
-      setUsernameError('');
+    if (inputError) {
+      setInputError('');
     }
   };
 
@@ -129,7 +143,7 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
 
         <SleeperAccountCard 
           user={userLeaguesData.user}
-          onRefresh={onRefreshLeagues || (() => {})}
+          onRefresh={() => onRefreshLeagues?.(userLeaguesData.user.username)}
           onDisconnect={onBackToForm || (() => {})}
           refreshing={loading}
         />
@@ -152,7 +166,7 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
                 </div>
                 <Button
                   variant="outline"
-                  onClick={onQuickLoadFirstLeague}
+                  onClick={() => onQuickLoadFirstLeague?.(userLeaguesData.user.username)}
                   disabled={loading}
                   className="flex items-center space-x-2"
                 >
@@ -169,101 +183,77 @@ const LeagueConnectionForm: React.FC<LeagueConnectionFormProps> = ({
 
   // Show connection form
   return (
-    <div className="space-y-8">
-      <Card className="border-yellow-500/20 shadow-[0_0_50px_-12px] shadow-yellow-500/30">
+    <div className="space-y-8 relative">
+      {loading && !showLeagueSelection && (
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
+          <Card className="p-8 border-primary/20">
+            <UnifiedLoading variant="text" size="lg" />
+          </Card>
+        </div>
+      )}
+      
+      <Card className="border-primary/20 shadow-[0_0_50px_-12px] shadow-primary/30">
         <CardHeader className="text-center">
           <CardTitle className="flex items-center justify-center space-x-3">
-            <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg p-2.5">
-              <UserGroup className="w-6 h-6 text-white" />
+            <div className="bg-gradient-to-br from-primary to-primary-glow rounded-lg p-2.5">
+              <Link2 className="w-6 h-6 text-white" />
             </div>
             <span>Connect Your League</span>
           </CardTitle>
           <CardDescription>
-            Enter your Sleeper League ID or username to get started
+            Enter your League ID or Username - we'll detect which one automatically
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form onSubmit={handleLeagueSubmit} className="space-y-4">
+          <form onSubmit={handleSmartSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="league-id">League ID</Label>
+              <Label htmlFor="smart-input" className="flex items-center space-x-2">
+                <span>League ID or Username</span>
+                {inputDetection.confidence === 'high' && (
+                  <span className="text-xs text-primary font-medium">
+                    {inputDetection.hint}
+                  </span>
+                )}
+              </Label>
               <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <div className="flex-1">
                   <Input
-                    id="league-id"
-                    placeholder="Enter your Sleeper League ID"
-                    value={leagueId}
-                    onChange={handleLeagueIdChange}
+                    id="smart-input"
+                    placeholder={getPlaceholderText(inputDetection)}
+                    value={smartInput}
+                    onChange={handleInputChange}
                     disabled={loading}
-                    className={`bg-white/5 border-yellow-500/20 ${leagueIdError ? 'border-red-500' : ''}`}
-                    aria-invalid={!!leagueIdError}
-                    aria-describedby={leagueIdError ? "league-id-error" : undefined}
+                    className={`bg-white/5 border-primary/20 transition-all ${
+                      inputError ? 'border-red-500' : 
+                      inputDetection.confidence === 'high' ? 'border-primary/40' : ''
+                    }`}
+                    aria-invalid={!!inputError}
+                    aria-describedby={inputError ? "input-error" : undefined}
                   />
-                  {leagueIdError && (
-                    <p id="league-id-error" className="text-sm text-red-500 mt-1">
-                      {leagueIdError}
+                  {inputError && (
+                    <p id="input-error" className="text-sm text-red-500 mt-1">
+                      {inputError}
+                    </p>
+                  )}
+                  {!inputError && inputDetection.confidence !== 'low' && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {inputDetection.hint}
                     </p>
                   )}
                 </div>
                 <Button 
                   type="submit" 
-                  disabled={loading || !leagueId.trim()}
-                  className="min-w-[100px] w-full sm:w-auto"
+                  disabled={loading || !smartInput.trim()}
+                  className="min-w-[120px] w-full sm:w-auto"
                   variant="default"
                 >
                   {loading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <span>Load League</span>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </form>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <Separator />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or</span>
-            </div>
-          </div>
-
-          <form onSubmit={handleUsernameSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                <div className="flex-1">
-                  <Input
-                    id="username"
-                    placeholder="Enter your Sleeper username"
-                    value={username}
-                    onChange={handleUsernameChange}
-                    disabled={loading}
-                    className={`bg-white/5 border-yellow-500/20 ${usernameError ? 'border-red-500' : ''}`}
-                    aria-invalid={!!usernameError}
-                    aria-describedby={usernameError ? "username-error" : undefined}
-                  />
-                  {usernameError && (
-                    <p id="username-error" className="text-sm text-red-500 mt-1">
-                      {usernameError}
-                    </p>
-                  )}
-                </div>
-                <Button 
-                  type="submit" 
-                  variant="outline"
-                  disabled={loading || !username.trim()}
-                  className="min-w-[100px] w-full sm:w-auto"
-                >
-                  {loading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      <MagnifyingGlass className="w-4 h-4 mr-2" />
-                      <span className="hidden xs:inline">Find Leagues</span>
-                      <span className="xs:hidden">Find</span>
-                    </>
+                    <span>
+                      {inputDetection.type === 'league-id' ? 'Load League' : 
+                       inputDetection.type === 'username' ? 'Find Leagues' : 'Connect'}
+                    </span>
                   )}
                 </Button>
               </div>

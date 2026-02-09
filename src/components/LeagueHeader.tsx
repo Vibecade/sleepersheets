@@ -1,7 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trophy, Users, Activity, Calendar, Target } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Trophy, Users, Activity, Calendar, Target, RefreshCw, CheckCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface LeagueHeaderProps {
   league: any;
@@ -9,6 +12,7 @@ interface LeagueHeaderProps {
   draftPickCount: number;
   draftCount: number;
   onRefreshData?: () => Promise<void>;
+  compact?: boolean;
 }
 
 const LeagueHeader: React.FC<LeagueHeaderProps> = ({ 
@@ -16,58 +20,80 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
   transactionCount, 
   draftPickCount, 
   draftCount,
-  onRefreshData
+  onRefreshData,
+  compact = false
 }) => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const { toast } = useToast();
+
+  const handleRefresh = async () => {
+    if (!onRefreshData || isRefreshing) return;
+    
+    setIsRefreshing(true);
+    try {
+      await onRefreshData();
+      setLastRefreshed(new Date());
+      toast({
+        title: "Data refreshed",
+        description: "League data has been updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Refresh failed",
+        description: "Failed to refresh league data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Compact mobile version
+  if (compact) {
+    return (
+      <Card className="glass-card border-gradient">
+        <CardContent className="p-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <div className="bg-gradient-to-br from-primary via-primary-glow to-primary-deep rounded-lg p-2 flex-shrink-0">
+                <Trophy className="w-4 h-4 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-base font-bold truncate">{league.name}</h2>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>Season {league.season}</span>
+                  <span className="w-1 h-1 bg-muted-foreground/40 rounded-full"></span>
+                  <span>{league.total_rosters} Teams</span>
+                </div>
+              </div>
+            </div>
+            {onRefreshData && (
+              <Button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                size="icon"
+                variant="ghost"
+                className="flex-shrink-0"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Full desktop version
   return (
-    <Card className="glass-card fade-in">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl p-3 shadow-lg">
-              <Trophy className="w-6 h-6 md:w-8 md:h-8 text-white" />
-            </div>
-            <div>
-              <CardTitle className="text-xl md:text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                {league.name}
-              </CardTitle>
-              <CardDescription className="text-gray-400 text-sm md:text-lg">
-                {league.total_rosters} teams • Season {league.season} • Week {league.settings?.week || 'N/A'}
-              </CardDescription>
-            </div>
-          </div>
-        </div>
+    <Card className="glass-card fade-in border-gradient">
+      <CardHeader className="pb-6">
+...
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-          <div className="glass p-3 md:p-4 rounded-xl text-center group hover:scale-105 transition-all duration-300">
-            <div className="flex items-center justify-center mb-2">
-              <Users className="w-5 h-5 md:w-6 md:h-6 text-emerald-400" />
-            </div>
-            <div className="text-xl md:text-3xl font-bold text-white mb-1">{league.total_rosters}</div>
-            <div className="text-xs md:text-sm text-gray-400">Teams</div>
-          </div>
-          <div className="glass p-3 md:p-4 rounded-xl text-center group hover:scale-105 transition-all duration-300">
-            <div className="flex items-center justify-center mb-2">
-              <Activity className="w-5 h-5 md:w-6 md:h-6 text-blue-400" />
-            </div>
-            <div className="text-xl md:text-3xl font-bold text-white mb-1">{transactionCount}</div>
-            <div className="text-xs md:text-sm text-gray-400">Transactions</div>
-          </div>
-          <div className="glass p-3 md:p-4 rounded-xl text-center group hover:scale-105 transition-all duration-300">
-            <div className="flex items-center justify-center mb-2">
-              <Target className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
-            </div>
-            <div className="text-xl md:text-3xl font-bold text-white mb-1">{draftPickCount}</div>
-            <div className="text-xs md:text-sm text-gray-400">Draft Picks</div>
-          </div>
-          <div className="glass p-3 md:p-4 rounded-xl text-center group hover:scale-105 transition-all duration-300">
-            <div className="flex items-center justify-center mb-2">
-              <Calendar className="w-5 h-5 md:w-6 md:h-6 text-orange-400" />
-            </div>
-            <div className="text-xl md:text-3xl font-bold text-white mb-1">{draftCount}</div>
-            <div className="text-xs md:text-sm text-gray-400">Drafts</div>
-          </div>
-        </div>
+      
+      <CardContent className="pt-0">
+...
       </CardContent>
     </Card>
   );

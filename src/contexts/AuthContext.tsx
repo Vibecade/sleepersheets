@@ -1,7 +1,10 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
+
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
 interface AuthContextType {
   user: User | null;
@@ -41,7 +44,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           (event, session) => {
             if (!mounted) return;
             
-            console.log('Auth state changed:', event, session?.user?.id);
+            logger.debug('Auth state changed:', event, session?.user?.id);
             
             // Only update state, no side effects here to prevent loops
             setSession(session);
@@ -56,14 +59,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (!mounted) return;
         
         if (error) {
-          console.error('Error getting session:', error);
+          logger.error('Error getting session:', error);
         }
         
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
       } catch (error) {
-        console.error('Error in auth initialization:', error);
+        logger.error('Error in auth initialization:', error);
         if (mounted) {
           setLoading(false);
         }
@@ -81,39 +84,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []); // Empty dependency array to prevent re-initialization
 
   const signInWithGoogle = async () => {
-    console.log('Attempting Google sign in...');
+    logger.debug('Attempting Google sign in...');
     
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin
-        }
-      });
-
-      console.log('Google sign in response:', { data, error });
-
-      if (error) {
-        console.error('Google sign in error:', error);
-        throw error;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin
       }
-    } catch (error) {
-      console.error('Error in signInWithGoogle:', error);
+    });
+
+    if (error) {
+      logger.error('Google sign in error:', error);
+      toast({
+        title: "Sign-in failed",
+        description: error.message || "Failed to sign in with Google. Please try again.",
+        variant: "destructive",
+      });
       throw error;
     }
   };
 
   const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Error signing out:', error);
-        throw error;
-      }
-    } catch (error) {
-      console.error('Error in signOut:', error);
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+      logger.error('Error signing out:', error);
+      toast({
+        title: "Sign-out failed",
+        description: error.message || "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
       throw error;
     }
+    
+    toast({
+      title: "Signed out",
+      description: "You have been successfully signed out.",
+    });
   };
 
   const value = {
@@ -130,3 +137,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+AuthProvider.displayName = 'AuthProvider';
+useAuth.displayName = 'useAuth';

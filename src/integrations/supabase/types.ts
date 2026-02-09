@@ -10,10 +10,78 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
+      comment_reactions: {
+        Row: {
+          comment_id: string | null
+          created_at: string | null
+          id: string
+          reaction_type: string
+          user_id: string | null
+        }
+        Insert: {
+          comment_id?: string | null
+          created_at?: string | null
+          id?: string
+          reaction_type: string
+          user_id?: string | null
+        }
+        Update: {
+          comment_id?: string | null
+          created_at?: string | null
+          id?: string
+          reaction_type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_reactions_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "league_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commissioner_actions: {
+        Row: {
+          action_type: string
+          commissioner_id: string
+          created_at: string
+          description: string
+          id: string
+          league_id: string
+          metadata: Json | null
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action_type: string
+          commissioner_id: string
+          created_at?: string
+          description: string
+          id?: string
+          league_id: string
+          metadata?: Json | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action_type?: string
+          commissioner_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          league_id?: string
+          metadata?: Json | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
       data_integrity_logs: {
         Row: {
           created_at: string
@@ -118,6 +186,119 @@ export type Database = {
           round?: number
         }
         Relationships: []
+      }
+      league_activities: {
+        Row: {
+          activity_type: string
+          created_at: string | null
+          description: string | null
+          id: string
+          league_id: string
+          metadata: Json | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          league_id: string
+          metadata?: Json | null
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          league_id?: string
+          metadata?: Json | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      league_announcements: {
+        Row: {
+          commissioner_id: string
+          content: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          is_pinned: boolean | null
+          league_id: string
+          priority: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          commissioner_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          is_pinned?: boolean | null
+          league_id: string
+          priority?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          commissioner_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          is_pinned?: boolean | null
+          league_id?: string
+          priority?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      league_comments: {
+        Row: {
+          comment_type: string | null
+          content: string
+          created_at: string | null
+          id: string
+          league_id: string
+          parent_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          comment_type?: string | null
+          content: string
+          created_at?: string | null
+          id?: string
+          league_id: string
+          parent_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          comment_type?: string | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          league_id?: string
+          parent_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "league_comments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       league_drafts: {
         Row: {
@@ -332,6 +513,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          created_at: string | null
+          id: string
+          league_activity_notifications: boolean | null
+          push_notifications_enabled: boolean | null
+          trade_deadline_notifications: boolean | null
+          updated_at: string | null
+          user_id: string | null
+          waiver_notifications: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          league_activity_notifications?: boolean | null
+          push_notifications_enabled?: boolean | null
+          trade_deadline_notifications?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+          waiver_notifications?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          league_activity_notifications?: boolean | null
+          push_notifications_enabled?: boolean | null
+          trade_deadline_notifications?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+          waiver_notifications?: boolean | null
+        }
+        Relationships: []
+      }
       player_contracts: {
         Row: {
           contract_length: number | null
@@ -449,11 +663,53 @@ export type Database = {
         }
         Relationships: []
       }
+      transaction_overrides: {
+        Row: {
+          action: string
+          commissioner_id: string
+          created_at: string
+          id: string
+          league_id: string
+          modified_data: Json | null
+          original_data: Json | null
+          reason: string | null
+          transaction_id: string
+        }
+        Insert: {
+          action: string
+          commissioner_id: string
+          created_at?: string
+          id?: string
+          league_id: string
+          modified_data?: Json | null
+          original_data?: Json | null
+          reason?: string | null
+          transaction_id: string
+        }
+        Update: {
+          action?: string
+          commissioner_id?: string
+          created_at?: string
+          id?: string
+          league_id?: string
+          modified_data?: Json | null
+          original_data?: Json | null
+          reason?: string | null
+          transaction_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      find_user_by_email: {
+        Args: { email_to_find: string }
+        Returns: {
+          user_id: string
+        }[]
+      }
       log_integrity_violation: {
         Args: {
           details_param?: Json

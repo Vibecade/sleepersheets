@@ -54,11 +54,46 @@ export const validateSalary = (salary: string | number): { isValid: boolean; err
     return { isValid: false, error: 'Salary cannot be negative' };
   }
   
-  if (numValue > 1000000000) { // 1 billion cap
-    return { isValid: false, error: 'Salary cannot exceed $1,000,000,000' };
+  if (numValue > 10000000) { // 10M cap for sanity
+    return { isValid: false, error: 'Salary cannot exceed $10,000,000' };
   }
   
   return { isValid: true, value: numValue };
+};
+
+// Enhanced validation functions with sanitization (consolidated from enhancedInputValidation)
+export const validateAndSanitizeLeagueId = (input: string): { isValid: boolean; error?: string; sanitizedValue?: string } => {
+  const sanitized = sanitizeInput(input);
+  const validation = validateLeagueId(sanitized);
+  
+  if (!validation.isValid) {
+    return {
+      isValid: false,
+      error: validation.error || 'League ID must be 15-20 digits'
+    };
+  }
+  
+  return {
+    isValid: true,
+    sanitizedValue: sanitized
+  };
+};
+
+export const validateAndSanitizeUsername = (input: string): { isValid: boolean; error?: string; sanitizedValue?: string } => {
+  const sanitized = sanitizeInput(input);
+  const validation = validateUsername(sanitized);
+  
+  if (!validation.isValid) {
+    return {
+      isValid: false,
+      error: validation.error || 'Username must be 3-20 characters (letters, numbers, underscores only)'
+    };
+  }
+  
+  return {
+    isValid: true,
+    sanitizedValue: sanitized
+  };
 };
 
 // Contract length validation

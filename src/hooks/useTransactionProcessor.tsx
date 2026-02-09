@@ -1,7 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { logDataAccess } from '@/utils/securityLogger';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
+import { securityLogger } from '@/utils/securityLogger';
 
 interface WaiverUpdate {
   playerId: string;
@@ -20,6 +22,9 @@ interface ProcessedTransaction {
 export const useTransactionProcessor = () => {
   const [processing, setProcessing] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { canModifyLeague } = useLeagueOwnership();
+  const processedOnceRef = useRef<Set<string>>(new Set());
 
   const isWaiverTransaction = (transaction: any): boolean => {
     return transaction.type === 'waiver' && 
@@ -54,7 +59,7 @@ export const useTransactionProcessor = () => {
 
   const getProcessedTransactions = async (leagueId: string): Promise<Set<string>> => {
     try {
-      logDataAccess(undefined, 'processed_transactions', 'read', true);
+      securityLogger.logDataModification(undefined, 'processed_transactions', 'read', true);
       
       const { data, error } = await supabase
         .from('processed_transactions')
@@ -76,7 +81,7 @@ export const useTransactionProcessor = () => {
     updates: WaiverUpdate[]
   ): Promise<void> => {
     try {
-      logDataAccess(undefined, 'processed_transactions', 'write', true);
+      securityLogger.logDataModification(undefined, 'processed_transactions', 'write', true);
       
       const { error } = await supabase
         .from('processed_transactions')
@@ -100,7 +105,7 @@ export const useTransactionProcessor = () => {
     acquisitionType: 'contract' | 'faab' | 'free_agent' = 'faab'
   ): Promise<boolean> => {
     try {
-      logDataAccess(undefined, 'player_salaries', 'write', true);
+      securityLogger.logDataModification(undefined, 'player_salaries', 'write', true);
       
       const { error } = await supabase
         .from('player_salaries')
@@ -126,7 +131,7 @@ export const useTransactionProcessor = () => {
     contractLength: number = 1
   ): Promise<boolean> => {
     try {
-      logDataAccess(undefined, 'player_contracts', 'write', true);
+      securityLogger.logDataModification(undefined, 'player_contracts', 'write', true);
       
       const { error } = await supabase
         .from('player_contracts')
@@ -150,6 +155,32 @@ export const useTransactionProcessor = () => {
     transactions: any[]
   ): Promise<number> => {
     if (!leagueId || !transactions?.length) return 0;
+
+    // Check if already processed this league in this session
+    if (processedOnceRef.current.has(leagueId)) {
+      return 0;
+    }
+
+    // Debug authentication status
+    console.log(`=== TRANSACTION PROCESSOR DEBUG ===`);
+    console.log(`League ID: ${leagueId}`);
+    console.log(`User authenticated: ${!!user}`);
+    console.log(`User ID: ${user?.id}`);
+    console.log(`Can modify league: ${canModifyLeague(leagueId)}`);
+    console.log(`Total transactions: ${transactions?.length}`);
+    console.log(`Waiver transactions: ${transactions?.filter(t => t.type === 'waiver').length}`);
+    console.log(`Complete waiver transactions: ${transactions?.filter(t => t.type === 'waiver' && t.status === 'complete').length}`);
+    
+    // Check authentication - only proceed if user is logged in and owns the league
+    if (!user || !canModifyLeague(leagueId)) {
+      console.log(`❌ Transaction processing skipped for league ${leagueId}: User not authenticated or doesn't own league`);
+      return 0;
+    }
+    
+    console.log(`✅ User authorized to process transactions for league ${leagueId}`);
+
+    // Mark as processed for this session
+    processedOnceRef.current.add(leagueId);
 
     setProcessing(true);
     let processedCount = 0;

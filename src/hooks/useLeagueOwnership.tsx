@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { validateAndSanitizeLeagueId } from '@/utils/enhancedInputValidation';
-import { logLeagueOwnershipClaim, logUnauthorizedAccess } from '@/utils/securityLogger';
+import { validateAndSanitizeLeagueId } from '@/utils/inputValidation';
+import { securityLogger } from '@/utils/securityLogger';
 
 interface LeagueOwnership {
   id: string;
@@ -82,7 +82,7 @@ export const useLeagueOwnership = () => {
 
   const claimLeague = useCallback(async (leagueId: string): Promise<{ success: boolean; alreadyClaimed: boolean }> => {
     if (!user) {
-      logUnauthorizedAccess(undefined, `league:${leagueId}`, 'claim_league');
+      securityLogger.logUnauthorizedAccess(undefined, `league:${leagueId}`, 'claim_league');
       toast({
         title: "Authentication Required",
         description: "Please sign in to claim a league",
@@ -94,7 +94,7 @@ export const useLeagueOwnership = () => {
     // Validate league ID before claiming
     const validation = validateAndSanitizeLeagueId(leagueId);
     if (!validation.isValid) {
-      logLeagueOwnershipClaim(user.id, leagueId, false);
+      securityLogger.logLeagueAccess(user.id, leagueId, 'claim', false);
       toast({
         title: "Invalid League ID",
         description: validation.error || "Invalid league ID format",
@@ -116,12 +116,12 @@ export const useLeagueOwnership = () => {
 
       if (error) {
         if (error.code === '23505') { // Unique constraint violation - league already claimed
-          logLeagueOwnershipClaim(user.id, sanitizedLeagueId, false);
+          securityLogger.logLeagueAccess(user.id, sanitizedLeagueId, 'claim', false);
           // Don't show toast for 409 errors since we'll dismiss the banner instead
           console.log('League already claimed by another user');
           return { success: false, alreadyClaimed: true };
         } else {
-          logLeagueOwnershipClaim(user.id, sanitizedLeagueId, false);
+          securityLogger.logLeagueAccess(user.id, sanitizedLeagueId, 'claim', false);
           console.error('Error claiming league:', error);
           toast({
             title: "Error",
@@ -133,7 +133,7 @@ export const useLeagueOwnership = () => {
       }
 
       // Log successful claim
-      logLeagueOwnershipClaim(user.id, sanitizedLeagueId, true);
+      securityLogger.logLeagueAccess(user.id, sanitizedLeagueId, 'claim', true);
 
       // Reload owned leagues after successful claim
       await loadOwnedLeagues();
@@ -150,7 +150,7 @@ export const useLeagueOwnership = () => {
       });
       return { success: true, alreadyClaimed: false };
     } catch (error) {
-      logLeagueOwnershipClaim(user.id, sanitizedLeagueId, false);
+      securityLogger.logLeagueAccess(user.id, sanitizedLeagueId, 'claim', false);
       console.error('Error claiming league:', error);
       toast({
         title: "Error",

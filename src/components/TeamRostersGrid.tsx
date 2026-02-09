@@ -30,13 +30,13 @@ const TeamRostersGrid: React.FC<TeamRostersGridProps> = ({
 }) => {
   return (
     <CardContent className="pt-0">
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 lg:gap-6 xl:gap-8">
         {rosters.map((roster) => {
           const user = userMap[roster.owner_id];
           const teamSalary = teamSalaries[roster.roster_id] || 0;
           const teamDeadCap = deadCapEnabled ? (teamDeadCaps[roster.roster_id] || 0) : 0;
           const faabBudget = teamFAAB[roster.roster_id] || { available: 0, spent: 0, total: 0 };
-          
+
           return (
             <TeamRosterCard
               key={roster.roster_id}
