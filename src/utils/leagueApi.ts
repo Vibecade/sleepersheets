@@ -99,7 +99,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     return Math.min(Math.max(weekNumber, NFL_SEASON.MIN_WEEK), NFL_SEASON.MAX_WEEKS);
   };
   
-  const season = league.season || '2024';
+  const season = league.season || new Date().getFullYear().toString();
   const currentNFLWeek = getCurrentNFLWeek(season);
   const leagueWeek = league.settings?.week || 1;
   const effectiveCurrentWeek = Math.max(currentNFLWeek, leagueWeek);
@@ -198,7 +198,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   };
 };
 
-export const fetchSleeperProjections = async (week: number, season: string = '2024'): Promise<Record<string, SleeperProjection> | null> => {
+export const fetchSleeperProjections = async (week: number, season: string = new Date().getFullYear().toString()): Promise<Record<string, SleeperProjection> | null> => {
   logger.debug(`Attempting to fetch Sleeper projections for week ${week}, season ${season}`);
   
   const clientId = 'projections_fetch';
