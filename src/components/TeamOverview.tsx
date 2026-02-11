@@ -6,11 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, Trophy, Calendar, Activity, RefreshCw, ArrowRightLeft } from 'lucide-react';
 import { useMatchups } from '@/hooks/useMatchups';
 import { useHistoricalMatchups } from '@/hooks/useHistoricalMatchups';
-import { useHistoricalProjections } from '@/hooks/useHistoricalProjections';
 import { useTransactionProcessor } from '@/hooks/useTransactionProcessor';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import ErrorBoundaryWithRetry from './ErrorBoundaryWithRetry';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getCurrentNFLWeek } from '@/utils/nflWeek';
 
 // Lazy load tab components for better code splitting
 const MatchupsTab = lazy(() => import('./tabs/MatchupsTab'));
@@ -38,24 +38,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   initialTab
 }) => {
   const isMobile = useIsMobile();
-  
-  // Calculate current NFL week before state initialization
-  const getCurrentNFLWeek = useCallback((leagueSeason?: string) => {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const seasonYear = leagueSeason ? parseInt(leagueSeason) : currentYear;
-    const seasonStart = new Date(seasonYear, 8, 5); // September 5th
-    
-    if (now < seasonStart) return 1;
-    
-    const diffTime = now.getTime() - seasonStart.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    const weekNumber = Math.floor((diffDays + 2) / 7) + 1;
-    
-    return Math.min(Math.max(weekNumber, 1), 22);
-  }, []);
-
-  const currentWeek = getCurrentNFLWeek(league?.season);
+  const currentWeek = useMemo(() => getCurrentNFLWeek(league?.season), [league?.season]);
 
   // Initialize selectedWeek to current NFL week instead of hardcoded 1
   const [selectedWeek, setSelectedWeek] = useState(currentWeek);
@@ -72,28 +55,37 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
       processWaiverTransactions(league.league_id, transactions);
     }
   }, [league?.league_id, transactions, processWaiverTransactions, processingTransactions]);
-  
-  const { projections, loading: projectionsLoading } = useHistoricalProjections(
-    league?.league_id || '',
-    currentWeek
-  );
+
+  // Keep selected week aligned when switching between leagues/seasons.
+  useEffect(() => {
+    setSelectedWeek(currentWeek);
+  }, [currentWeek]);
 
   // Group matchups by matchup_id
-  const groupedMatchups = matchups.reduce((acc, matchup) => {
-    if (!acc[matchup.matchup_id]) {
-      acc[matchup.matchup_id] = [];
-    }
-    acc[matchup.matchup_id].push(matchup);
-    return acc;
-  }, {} as Record<number, typeof matchups>);
+  const groupedMatchups = useMemo(() => {
+    return matchups.reduce((acc, matchup) => {
+      if (!acc[matchup.matchup_id]) {
+        acc[matchup.matchup_id] = [];
+      }
+      acc[matchup.matchup_id].push(matchup);
+      return acc;
+    }, {} as Record<number, typeof matchups>);
+  }, [matchups]);
 
   const formatPoints = (points: number) => {
     return points?.toFixed(2) || '0.00';
   };
 
-  const getRosterById = (rosterId: number) => {
-    return rosters.find(r => r.roster_id === rosterId);
-  };
+  const rosterById = useMemo(() => {
+    return rosters.reduce<Record<number, any>>((acc, roster) => {
+      acc[roster.roster_id] = roster;
+      return acc;
+    }, {});
+  }, [rosters]);
+
+  const getRosterById = useCallback((rosterId: number) => {
+    return rosterById[rosterId];
+  }, [rosterById]);
 
   const getTeamRecord = (roster: any) => {
     const wins = roster.settings?.wins || 0;
@@ -128,9 +120,9 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
     return `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
   };
 
-  const handleTeamToggle = (rosterId: number) => {
-    setExpandedTeamId(expandedTeamId === rosterId ? null : rosterId);
-  };
+  const handleTeamToggle = useCallback((rosterId: number) => {
+    setExpandedTeamId((prevTeamId) => (prevTeamId === rosterId ? null : rosterId));
+  }, []);
 
   return (
     <div className="space-y-4 md:space-y-6 lg:space-y-8">

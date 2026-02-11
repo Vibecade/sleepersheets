@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueManager } from '@/hooks/useLeagueManager';
 import { DemoProvider, useDemo } from '@/contexts/DemoContext';
@@ -24,14 +24,16 @@ import ReturningUserPrompt from '@/components/landing/ReturningUserPrompt';
 import { DEMO_LEAGUE_ID } from '@/utils/demoData';
 import { useNavigate } from 'react-router-dom';
 
+type HomeViewMode = 'marketing' | 'connect';
+
 const IndexContent = React.memo(() => {
   const { user } = useAuth();
   const { setDemoMode } = useDemo();
   const navigate = useNavigate();
+  const previousUserIdRef = useRef<string | null>(null);
   const [isHeaderCompact, setIsHeaderCompact] = useState(false);
-  const [userIsInteracting, setUserIsInteracting] = useState(false);
+  const [viewMode, setViewMode] = useState<HomeViewMode>('marketing');
   const [showGetStartedModal, setShowGetStartedModal] = useState(false);
-  const [showLeagueConnection, setShowLeagueConnection] = useState(false);
   
   const {
     leagueId,
@@ -40,7 +42,6 @@ const IndexContent = React.memo(() => {
     setUsername,
     leagueData,
     loading,
-    ownershipStatus,
     handleLeagueSubmit,
     handleUsernameSubmit,
     handleQuickLoadFirstLeague,
@@ -48,7 +49,6 @@ const IndexContent = React.memo(() => {
     handleBackToForm,
     handleRefreshLeagues,
     handleSelectLeague,
-    handleBackToLeagues,
     handleRefreshData,
     handleResyncLeagueData,
     handleOwnershipChanged,
@@ -57,30 +57,24 @@ const IndexContent = React.memo(() => {
     recentLeagues,
   } = useLeagueManager();
 
-  // Auto-show league connection interface when user signs in, reset on logout
+  const hasLeagueData = Boolean(leagueData);
+  const showConnectionView = viewMode === 'connect' || hasLeagueData;
+
+  // Keep signed-in users in the connection flow.
   useEffect(() => {
     if (user) {
-      setShowLeagueConnection(true);
-      setUserIsInteracting(true);
+      previousUserIdRef.current = user.id;
+      setViewMode('connect');
       setIsHeaderCompact(true);
-    } else {
-      // Reset state when user logs out
-      setShowLeagueConnection(false);
-      setUserIsInteracting(false);
-      setIsHeaderCompact(false);
+      return;
     }
-  }, [user]);
 
-  // Auto-compact header when user starts interacting with forms or when league is loaded
-  useEffect(() => {
-    if ((leagueId.trim() || username.trim()) || leagueData) {
-      setUserIsInteracting(true);
-      setIsHeaderCompact(true);
-    } else if (!leagueId.trim() && !username.trim() && !leagueData) {
-      setUserIsInteracting(false);
+    if (previousUserIdRef.current && !hasLeagueData) {
+      previousUserIdRef.current = null;
+      setViewMode('marketing');
       setIsHeaderCompact(false);
     }
-  }, [leagueId, username, leagueData]);
+  }, [user, hasLeagueData]);
 
   const handleToggleCompact = () => {
     setIsHeaderCompact(!isHeaderCompact);
@@ -96,8 +90,7 @@ const IndexContent = React.memo(() => {
     
     switch (option) {
       case 'connect':
-        setShowLeagueConnection(true);
-        setUserIsInteracting(true);
+        setViewMode('connect');
         setIsHeaderCompact(true);
         // Scroll to top to show the connection form
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -110,18 +103,17 @@ const IndexContent = React.memo(() => {
         }, 100);
         break;
       case 'demo':
+        setViewMode('connect');
         setDemoMode(true);
         setLeagueId(DEMO_LEAGUE_ID);
-        handleLeagueSubmit();
-        setUserIsInteracting(true);
+        handleLeagueSubmit(DEMO_LEAGUE_ID);
         setIsHeaderCompact(true);
         break;
     }
   };
 
   const handleBackToMarketing = () => {
-    setShowLeagueConnection(false);
-    setUserIsInteracting(false);
+    setViewMode('marketing');
     setIsHeaderCompact(false);
   };
 
@@ -134,14 +126,14 @@ const IndexContent = React.memo(() => {
       <DemoBanner />
       
       {/* Show HeaderNavigation only on landing page */}
-      {!leagueData && !userIsInteracting && <HeaderNavigation />}
+      {!hasLeagueData && viewMode === 'marketing' && <HeaderNavigation />}
       
-      {/* Only show LeagueHeader when user is interacting or league data is loaded */}
-      {(userIsInteracting || leagueData) && (
+      {/* Show LeagueHeader in connection and loaded-league views */}
+      {showConnectionView && (
         <LeagueHeader 
           isCompact={isHeaderCompact}
           onToggleCompact={handleToggleCompact}
-          canToggle={userIsInteracting || !!leagueData}
+          canToggle={showConnectionView}
         />
       )}
 
@@ -150,9 +142,9 @@ const IndexContent = React.memo(() => {
         <PWAInstallPrompt />
         
         <EnhancedErrorBoundary level="page">
-          {!leagueData ? (
+          {!hasLeagueData ? (
             <>
-              {!showLeagueConnection ? (
+              {viewMode === 'marketing' ? (
                 <>
                   {/* Quick access for returning users */}
                   {recentLeagues.length > 0 && (
@@ -160,8 +152,7 @@ const IndexContent = React.memo(() => {
                       recentLeagues={recentLeagues}
                       onSelectLeague={handleSelectLeague}
                       onConnectNew={() => {
-                        setShowLeagueConnection(true);
-                        setUserIsInteracting(true);
+                        setViewMode('connect');
                         setIsHeaderCompact(true);
                       }}
                     />
@@ -193,7 +184,7 @@ const IndexContent = React.memo(() => {
                       <UserDashboard 
                         onSelectLeague={handleSelectLeague} 
                         onConnectLeague={() => {
-                          setShowLeagueConnection(true);
+                          setViewMode('connect');
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                         }} 
                         showConnectionForm={!userLeaguesData && !showLeagueSelection}
@@ -287,4 +278,3 @@ const Index = React.memo(() => {
 export default Index;
 
 Index.displayName = 'Index';
-
