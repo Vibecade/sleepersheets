@@ -1,8 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Star, Quote, Twitter, MessageCircle } from 'lucide-react';
+import { Star, Quote, Trophy, Shield, BarChart3 } from 'lucide-react';
 
 const SocialProofSection: React.FC = () => {
   const testimonials = [
@@ -38,38 +37,52 @@ const SocialProofSection: React.FC = () => {
     "Professional export capabilities"
   ];
 
+  const trustStats = [
+    {
+      icon: Trophy,
+      title: 'Dynasty & Keeper Ready',
+      description: 'Built for long-term contract and cap strategy',
+    },
+    {
+      icon: Shield,
+      title: 'Ownership Protected',
+      description: 'Critical league settings are protected by verification',
+    },
+    {
+      icon: BarChart3,
+      title: 'Analytics Driven',
+      description: 'See trends, efficiency, and weekly performance clearly',
+    },
+  ];
+
   return (
     <section className="py-16 sm:py-20 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* Community Section */}
+        {/* Trust Section */}
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-            Join the <span className="gradient-text">Fantasy Community</span>
+            Built for <span className="gradient-text">Serious Managers</span>
           </h2>
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
-            Connect with fellow fantasy managers, share strategies, and stay updated on the latest features.
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-10">
+            No clutter, no ad blocks, and no unnecessary noise. Just a focused experience for managing your league faster and better.
           </p>
 
-          <div className="flex justify-center gap-6">
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="glass-card hover-lift group"
-              onClick={() => {/* Twitter link will be added later */}}
-            >
-              <Twitter className="w-5 h-5 mr-2 group-hover:text-primary transition-colors" />
-              Follow on Twitter
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="glass-card hover-lift group"
-              onClick={() => {/* Discord link will be added later */}}
-            >
-              <MessageCircle className="w-5 h-5 mr-2 group-hover:text-primary transition-colors" />
-              Join Discord
-            </Button>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {trustStats.map((stat) => (
+              <Card key={stat.title} className="glass-card border-border/50 text-left">
+                <CardContent className="p-5">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-background/50 border border-white/10">
+                      <stat.icon className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-semibold mb-1">{stat.title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{stat.description}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
 
@@ -84,7 +97,7 @@ const SocialProofSection: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             {testimonials.map((testimonial, index) => (
               <Card key={index} className="glass-card hover-lift h-full">
                 <CardContent className="p-6">

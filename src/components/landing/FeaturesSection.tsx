@@ -71,10 +71,22 @@ const FeaturesSection: React.FC = () => {
   ];
 
   return (
-    <section className="py-16 sm:py-20 px-4">
+    <section id="features-section" className="py-16 sm:py-20 px-4">
       <div className="max-w-6xl mx-auto">
+        <div className="flex flex-wrap justify-center gap-2 mb-8">
+          <span className="text-xs uppercase tracking-wide px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary">
+            Salary + Contract Control
+          </span>
+          <span className="text-xs uppercase tracking-wide px-3 py-1 rounded-full border border-secondary/30 bg-secondary/10 text-secondary">
+            Cleaner Weekly Workflow
+          </span>
+          <span className="text-xs uppercase tracking-wide px-3 py-1 rounded-full border border-success/30 bg-success/10 text-success">
+            Better League Decisions
+          </span>
+        </div>
+
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-14">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
             Everything You Need to <span className="gradient-text">Dominate</span>
           </h2>
@@ -84,19 +96,19 @@ const FeaturesSection: React.FC = () => {
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-7">
           {features.map((feature, index) => (
-            <Card key={index} className="glass-card hover-lift border-border/50">
-              <CardHeader className="pb-4">
+            <Card key={index} className="glass-card hover-lift border-border/50 h-full">
+              <CardHeader className="pb-3">
                 <div className="flex items-center space-x-3 mb-3">
-                  <div className="p-2 rounded-lg bg-background/50">
+                  <div className="p-2.5 rounded-lg bg-background/50 border border-white/10">
                     <feature.icon className={`w-6 h-6 ${feature.color}`} />
                   </div>
-                  <CardTitle className="text-lg">{feature.title}</CardTitle>
+                  <CardTitle className="text-lg leading-tight">{feature.title}</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground leading-relaxed">
+              <CardContent className="pb-6">
+                <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
                   {feature.description}
                 </p>
               </CardContent>

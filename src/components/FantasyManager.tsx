@@ -5,7 +5,6 @@ import TeamRosters from './TeamRosters';
 import MinimizableDataDashboard from './MinimizableDataDashboard';
 import EnhancedTradeSimulator from './EnhancedTradeSimulator';
 import PlayerSearch from './PlayerSearch';
-import ProTierUpgrade from './ProTierUpgrade';
 import MinimizableFAABContractManager from './MinimizableFAABContractManager';
 import { AnalyticsAccordion } from './analytics/AnalyticsAccordion';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
@@ -49,9 +48,6 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
           </div>
         </CardHeader>
       </Card>
-
-      {/* Pro Tier Upgrade - Hidden by default */}
-      <ProTierUpgrade hidden={true} />
 
       {/* Player Search */}
       <PlayerSearch

@@ -15,33 +15,37 @@ const HowItWorksSection: React.FC = () => {
       step: '01',
       title: 'Connect Your League',
       description: 'Enter your Sleeper League ID or username to automatically sync your league data. We pull rosters, transactions, and league settings instantly.',
-      color: 'text-primary'
+      color: 'text-primary',
+      borderClass: 'border-primary/20'
     },
     {
       icon: Settings,
       step: '02', 
       title: 'Configure Your League',
       description: 'Set up salary cap rules, contract lengths, and league settings. For regular leagues, configure performance tracking and analytics preferences.',
-      color: 'text-secondary'
+      color: 'text-secondary',
+      borderClass: 'border-secondary/20'
     },
     {
       icon: FileText,
       step: '03',
       title: 'Track & Analyze',
       description: 'For dynasty/keeper: manage contracts and salaries. For regular leagues: track performance metrics and compare against league averages.',
-      color: 'text-success'
+      color: 'text-success',
+      borderClass: 'border-success/20'
     },
     {
       icon: Trophy,
       step: '04',
       title: 'Dominate Your League',
       description: 'Use trade simulation, cap planning, and analytics to make championship-caliber decisions. Stay ahead of your competition with data-driven strategy.',
-      color: 'text-chart-3'
+      color: 'text-chart-3',
+      borderClass: 'border-primary/20'
     }
   ];
 
   return (
-    <section className="py-16 sm:py-20 px-4 bg-background/50">
+    <section className="py-16 sm:py-20 px-4 bg-background/40">
       <div className="max-w-6xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -54,13 +58,13 @@ const HowItWorksSection: React.FC = () => {
         </div>
 
         {/* Steps */}
-        <div className="space-y-8 lg:space-y-12">
+        <div className="space-y-6 lg:space-y-10">
           {steps.map((step, index) => (
-            <div key={index} className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+            <div key={index} className="flex flex-col lg:flex-row items-center gap-6 lg:gap-12">
               {/* Step Content */}
               <div className={`flex-1 ${index % 2 === 1 ? 'lg:order-2' : ''}`}>
-                <Card className="glass-card hover-lift h-full">
-                  <CardContent className="p-8">
+                <Card className="glass-card hover-lift h-full border-border/50">
+                  <CardContent className="p-6 sm:p-8">
                     <div className="flex items-center space-x-4 mb-6">
                       <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-background/50">
                         <step.icon className={`w-6 h-6 ${step.color}`} />
@@ -81,9 +85,9 @@ const HowItWorksSection: React.FC = () => {
 
               {/* Step Visual */}
               <div className={`flex-1 ${index % 2 === 1 ? 'lg:order-1' : ''}`}>
-                <div className="glass-card p-8 h-64 flex items-center justify-center">
+                <div className={`glass-card p-6 h-56 sm:h-64 flex items-center justify-center ${step.borderClass}`}>
                   <div className="text-center">
-                    <div className={`w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-background to-background/50 flex items-center justify-center border border-${step.color.replace('text-', '')}/20`}>
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-background to-background/50 flex items-center justify-center border border-white/10">
                       <step.icon className={`w-10 h-10 ${step.color}`} />
                     </div>
                     <div className="scoreboard-text text-lg text-muted-foreground">
