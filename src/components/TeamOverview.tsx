@@ -1,15 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Trophy, Calendar, Activity, RefreshCw, ArrowRightLeft } from 'lucide-react';
+import { Users, Calendar, Activity, ArrowRightLeft } from 'lucide-react';
 import { useMatchups } from '@/hooks/useMatchups';
 import { useHistoricalMatchups } from '@/hooks/useHistoricalMatchups';
 import { useTransactionProcessor } from '@/hooks/useTransactionProcessor';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import ErrorBoundaryWithRetry from './ErrorBoundaryWithRetry';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { getCurrentNFLWeek } from '@/utils/nflWeek';
 
 // Lazy load tab components for better code splitting
@@ -24,7 +20,6 @@ interface TeamOverviewProps {
   userMap: Record<string, any>;
   players: Record<string, any>;
   transactions?: any[];
-  onResyncData?: () => void;
   initialTab?: string;
 }
 
@@ -34,10 +29,8 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   userMap,
   players,
   transactions = [],
-  onResyncData,
   initialTab
 }) => {
-  const isMobile = useIsMobile();
   const currentWeek = useMemo(() => getCurrentNFLWeek(league?.season), [league?.season]);
 
   // Initialize selectedWeek to current NFL week instead of hardcoded 1
@@ -125,44 +118,8 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   }, []);
 
   return (
-    <div className="space-y-4 md:space-y-6 lg:space-y-8">
-      {!isMobile && (
-        <Card className="hover-lift border border-border/50">
-          <CardHeader className="pb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30">
-                  <Trophy className="w-7 h-7 text-yellow-500" />
-                </div>
-                <div>
-                  <CardTitle className="text-2xl lg:text-3xl mb-1">{league?.name}</CardTitle>
-                  <p className="text-muted-foreground text-base">
-                    {league?.season} Season <span className="mx-2">•</span> Week {currentWeek}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                {onResyncData && (
-                  <Button
-                    variant="outline"
-                    size="default"
-                    onClick={onResyncData}
-                    className="hover-border-glow"
-                  >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Re-sync Data
-                  </Button>
-                )}
-                <Badge variant="outline" className="text-lg px-4 py-1.5 text-green-400 border-green-400/50 bg-green-400/5 hover:bg-green-400/10 transition-colors">
-                  {rosters.length} Teams
-                </Badge>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
-      )}
-
-      <Tabs defaultValue={initialTab || "matchups"} className="space-y-4 md:space-y-6">
+    <div className="space-y-3 md:space-y-4">
+      <Tabs defaultValue={initialTab || "matchups"} className="space-y-3 md:space-y-4">
         <TabsList className="flex w-full gap-1">
           <TabsTrigger
             value="matchups"

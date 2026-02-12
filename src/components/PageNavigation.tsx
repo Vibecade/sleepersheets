@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Users, Settings, Trophy, Download, BarChart3, Shield } from 'lucide-react';
+import { Settings, Trophy, Download, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileNav } from '@/components/ui/mobile-nav';
@@ -76,7 +76,7 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
 
   if (isMobile) {
     return (
-      <div className="glass-card rounded-xl p-3 mb-6">
+      <div className="glass-card rounded-xl p-2.5 mb-3">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">
             {navigationItems.find(item => item.id === currentPage)?.label || 'Navigation'}
@@ -101,7 +101,7 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
   }
 
   return (
-    <div className="glass-card rounded-xl p-1.5 lg:p-2 mb-8 shadow-lg border border-border/50">
+    <div className="glass-card rounded-xl p-1 lg:p-1.5 mb-4 shadow-lg border border-border/50">
       <div className="flex items-center gap-1 lg:gap-3">
         {navigationItems.map((item) => (
           <Button
@@ -109,15 +109,14 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
             variant={currentPage === item.id ? 'default' : 'ghost'}
             onClick={item.onClick}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2 lg:gap-3 h-11 lg:h-14 transition-all duration-200",
-              "hover:shadow-md hover:-translate-y-0.5 hover-border-glow",
-              "lg:hover:-translate-y-1 lg:hover:shadow-xl",
+              "flex-1 flex items-center justify-center gap-2 lg:gap-2.5 h-10 lg:h-11 transition-all duration-200",
+              "hover:shadow-md hover-border-glow",
               currentPage === item.id && "shadow-lg ring-2 ring-primary/30"
             )}
             size="default"
           >
-            <item.icon className="w-4 h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 flex-shrink-0" />
-            <span className="hidden sm:inline text-sm lg:text-base xl:text-lg font-semibold">{item.label}</span>
+            <item.icon className="w-4 h-4 lg:w-4 lg:h-4 xl:w-5 xl:h-5 flex-shrink-0" />
+            <span className="hidden sm:inline text-sm lg:text-sm xl:text-base font-semibold">{item.label}</span>
             <span className="sm:hidden text-xs font-semibold">{item.shortLabel}</span>
           </Button>
         ))}

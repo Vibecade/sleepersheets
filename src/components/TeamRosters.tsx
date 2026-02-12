@@ -18,6 +18,7 @@ interface TeamRostersProps {
 
 const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, players = {}, transactions = [] }) => {
   const [showLeagueOptions, setShowLeagueOptions] = useState(false);
+  const [showTeamGrid, setShowTeamGrid] = useState(false);
   
   const {
     leagueId,
@@ -54,7 +55,7 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
 
   return (
     <ErrorBoundaryWithRetry fallbackMessage="Failed to load team rosters">
-      <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-3 sm:space-y-4">
         <MinimizableLeagueOptions
           open={showLeagueOptions}
           onOpenChange={setShowLeagueOptions}
@@ -79,7 +80,7 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
           canModifyLeague={canModify}
         />
 
-        <Card>
+        <Card className="border-border/50">
           <TeamRostersHeader
             showDeadCapManager={showDeadCapManager}
             deadCapEnabled={deadCapEnabled}
@@ -90,20 +91,29 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
             onTogglePendingFreeAgents={() => setShowPendingFreeAgents(!showPendingFreeAgents)}
             showSalaryFeatures={showSalaryFeatures}
             canModifyLeague={canModify}
+            showTeamGrid={showTeamGrid}
+            onToggleTeamGrid={() => setShowTeamGrid(!showTeamGrid)}
+            teamCount={rosters.length}
           />
-          
-          <TeamRostersGrid
-            rosters={rosters}
-            userMap={userMap}
-            showSalaryFeatures={showSalaryFeatures}
-            deadCapEnabled={deadCapEnabled}
-            teamSalaries={teamSalaries}
-            teamDeadCaps={teamDeadCaps}
-            salaryCap={salaryCap}
-            teamFAAB={teamFAAB}
-            showFAAB={showFAAB}
-            canModifyLeague={canModify}
-          />
+
+          {showTeamGrid ? (
+            <TeamRostersGrid
+              rosters={rosters}
+              userMap={userMap}
+              showSalaryFeatures={showSalaryFeatures}
+              deadCapEnabled={deadCapEnabled}
+              teamSalaries={teamSalaries}
+              teamDeadCaps={teamDeadCaps}
+              salaryCap={salaryCap}
+              teamFAAB={teamFAAB}
+              showFAAB={showFAAB}
+              canModifyLeague={canModify}
+            />
+          ) : (
+            <div className="px-6 pb-5 text-sm text-muted-foreground">
+              Team cards are hidden to keep this page compact. Use <span className="text-foreground font-medium">Show Teams</span> to expand.
+            </div>
+          )}
         </Card>
 
         {showDeadCapManager && deadCapEnabled && (

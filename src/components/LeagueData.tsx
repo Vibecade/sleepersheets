@@ -35,7 +35,7 @@ interface LeagueDataProps {
   onOwnershipChanged?: () => void;
 }
 
-const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyncData?: () => Promise<void>; onOwnershipChanged?: () => void; }> = React.memo(({ onRefreshData, onResyncData, onOwnershipChanged }) => {
+const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwnershipChanged?: () => void; }> = React.memo(({ onRefreshData, onOwnershipChanged }) => {
   const { league, rosters, userMap, rosterUserMap, players, transactions, draftPicks, stats } = useLeagueData();
   const [currentPage, setCurrentPage] = useState<'overview' | 'manager' | 'commissioner' | 'more'>('overview');
   const [activeOverviewTab, setActiveOverviewTab] = useState<string>('matchups');
@@ -125,9 +125,9 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
           leagueName={league.name}
         />
         
-        <div className="space-y-8">
+        <div className="space-y-4 md:space-y-5">
           <div className="slide-up">
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-end mb-2">
               <LeagueStatusBadge leagueId={league.league_id} onOwnershipChanged={onOwnershipChanged} />
             </div>
             <ErrorBoundaryWithRetry fallbackMessage="Failed to load league header">
@@ -210,7 +210,6 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
                   userMap={userMap}
                   players={players}
                   transactions={transactions}
-                  onResyncData={onResyncData}
                   initialTab={activeOverviewTab}
                 />
               </Suspense>
@@ -243,10 +242,10 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
 
 LeagueDataContent.displayName = 'LeagueDataContent';
 
-const LeagueData: React.FC<LeagueDataProps> = React.memo(({ data, onRefreshData, onResyncData, onOwnershipChanged }) => {
+const LeagueData: React.FC<LeagueDataProps> = React.memo(({ data, onRefreshData, onOwnershipChanged }) => {
   return (
     <LeagueDataProvider data={data}>
-      <LeagueDataContent onRefreshData={onRefreshData} onResyncData={onResyncData} onOwnershipChanged={onOwnershipChanged} />
+      <LeagueDataContent onRefreshData={onRefreshData} onOwnershipChanged={onOwnershipChanged} />
     </LeagueDataProvider>
   );
 });

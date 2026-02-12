@@ -88,7 +88,7 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
   // Full desktop version
   return (
     <Card className="glass-card fade-in border-gradient">
-      <CardHeader className="pb-6">
+      <CardHeader className="pb-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex items-start gap-4">
             <div className="bg-gradient-to-br from-primary via-primary-glow to-primary-deep rounded-xl p-3 shadow-lg">
@@ -133,8 +133,8 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
       </CardHeader>
       
       <CardContent className="pt-0">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="rounded-lg border border-border/60 bg-muted/20 p-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-2.5">
             <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-wide">
               <Users className="w-3.5 h-3.5" />
               Teams
@@ -142,7 +142,7 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
             <p className="mt-1 text-xl font-semibold">{league.total_rosters ?? 0}</p>
           </div>
 
-          <div className="rounded-lg border border-border/60 bg-muted/20 p-3">
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-2.5">
             <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-wide">
               <Activity className="w-3.5 h-3.5" />
               Transactions
@@ -150,7 +150,7 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
             <p className="mt-1 text-xl font-semibold">{transactionCount}</p>
           </div>
 
-          <div className="rounded-lg border border-border/60 bg-muted/20 p-3">
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-2.5">
             <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-wide">
               <Target className="w-3.5 h-3.5" />
               Draft Picks
@@ -158,7 +158,7 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
             <p className="mt-1 text-xl font-semibold">{draftPickCount}</p>
           </div>
 
-          <div className="rounded-lg border border-border/60 bg-muted/20 p-3">
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-2.5">
             <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-wide">
               <Calendar className="w-3.5 h-3.5" />
               Drafts

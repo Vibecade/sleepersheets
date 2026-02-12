@@ -51,12 +51,12 @@ const MinimizableFAABContractManager: React.FC<MinimizableFAABContractManagerPro
 
   if (isMinimized) {
     return (
-      <Card className="mb-6 border-blue-400/20 bg-accent/5">
-        <CardHeader>
+      <Card className="mb-3 border-blue-400/20 bg-accent/5">
+        <CardHeader className="py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <DollarSign className="w-5 h-5 text-blue-400" />
-              <h3 className="text-lg font-semibold text-foreground">FAAB Tracker</h3>
+              <DollarSign className="w-4 h-4 text-blue-400" />
+              <h3 className="text-base sm:text-lg font-semibold text-foreground">FAAB Tracker</h3>
             </div>
             <Button
               variant="ghost"
@@ -69,7 +69,7 @@ const MinimizableFAABContractManager: React.FC<MinimizableFAABContractManagerPro
           </div>
           
           {/* Quick stats in minimized view */}
-          <div className="flex items-center space-x-6 text-sm text-muted-foreground mt-2">
+          <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-muted-foreground mt-2">
             <div className="flex items-center space-x-2">
               <span className="text-blue-400 font-medium">${totalFAABSpent}</span>
               <span>Total FAAB Spent</span>
@@ -86,13 +86,13 @@ const MinimizableFAABContractManager: React.FC<MinimizableFAABContractManagerPro
   }
 
   return (
-    <div className="mb-6">
+    <div className="mb-3">
       <Card className="border-blue-400/20 bg-accent/5">
-        <CardHeader>
+        <CardHeader className="py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <DollarSign className="w-5 h-5 text-blue-400" />
-              <h3 className="text-lg font-semibold text-foreground">FAAB Tracker</h3>
+              <DollarSign className="w-4 h-4 text-blue-400" />
+              <h3 className="text-base sm:text-lg font-semibold text-foreground">FAAB Tracker</h3>
             </div>
             <Button
               variant="ghost"

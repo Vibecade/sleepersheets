@@ -19,15 +19,15 @@ const TransactionsTab: React.FC<TransactionsTabProps> = ({
 }) => {
   return (
     <Card className="transition-all duration-300 hover:shadow-lg">
-      <CardHeader>
+      <CardHeader className="pb-3">
         <div className="flex items-center space-x-2">
-          <ArrowRightLeft className="w-5 h-5" />
-          <CardTitle className="text-lg">League Transactions</CardTitle>
+          <ArrowRightLeft className="w-4 h-4" />
+          <CardTitle className="text-base sm:text-lg">League Transactions</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-[70vh] w-full">
-          <div className="p-6">
+        <ScrollArea className="h-[60vh] md:h-[62vh] w-full">
+          <div className="p-4 sm:p-5">
             <TransactionsList
               transactions={transactions}
               userMap={userMap}
