@@ -29,14 +29,14 @@ const ReturningUserPrompt: React.FC<ReturningUserPromptProps> = ({
   const otherRecent = recentLeagues.slice(1, 3);
 
   return (
-    <Card className="border-primary/30 bg-gradient-to-br from-primary/10 via-background to-primary/5 shadow-lg mb-8">
-      <CardContent className="pt-6 pb-4">
-        <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/10 via-background to-primary/5 shadow-lg mb-5">
+      <CardContent className="pt-5 pb-4">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-3">
           {/* Welcome message and primary action */}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <Zap className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-semibold">Welcome back!</h2>
+              <Zap className="w-4 h-4 text-primary" />
+              <h2 className="text-base sm:text-lg font-semibold">Welcome back</h2>
             </div>
             
             <Button

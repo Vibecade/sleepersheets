@@ -17,7 +17,6 @@ import HeroSection from '@/components/landing/HeroSection';
 import { UnifiedLoading } from '@/components/ui/unified-loading';
 import { Card } from '@/components/ui/card';
 import FeaturesSection from '@/components/landing/FeaturesSection';
-import HowItWorksSection from '@/components/landing/HowItWorksSection';
 import SocialProofSection from '@/components/landing/SocialProofSection';
 import GetStartedModal from '@/components/landing/GetStartedModal';
 import ReturningUserPrompt from '@/components/landing/ReturningUserPrompt';
@@ -137,7 +136,7 @@ const IndexContent = React.memo(() => {
         />
       )}
 
-      <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-12">
+      <div className={`max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 ${!hasLeagueData && viewMode === 'marketing' ? 'pt-6 pb-12 sm:pt-8 sm:pb-14' : 'py-12'}`}>
         <OfflineIndicator />
         <PWAInstallPrompt />
         
@@ -162,8 +161,6 @@ const IndexContent = React.memo(() => {
                   <HeroSection onGetStarted={handleGetStarted} />
                   
                   <FeaturesSection />
-                  
-                  <HowItWorksSection />
                   
                   <SocialProofSection />
                   
