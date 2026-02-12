@@ -58,7 +58,7 @@ const IndexContent = React.memo(() => {
   } = useLeagueManager();
 
   const hasLeagueData = Boolean(leagueData);
-  const showConnectionView = viewMode === 'connect' || hasLeagueData;
+  const showConnectionView = viewMode === 'connect' && !hasLeagueData;
 
   // Keep signed-in users in the connection flow.
   useEffect(() => {
@@ -128,7 +128,7 @@ const IndexContent = React.memo(() => {
       {/* Show HeaderNavigation only on landing page */}
       {!hasLeagueData && viewMode === 'marketing' && <HeaderNavigation />}
       
-      {/* Show LeagueHeader in connection and loaded-league views */}
+      {/* Show the home header only while connecting to a league */}
       {showConnectionView && (
         <LeagueHeader 
           isCompact={isHeaderCompact}
