@@ -6,6 +6,40 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+let swRegistrationPromise: Promise<ServiceWorkerRegistration | null> | null = null;
+let swMessageListenerAttached = false;
+
+const registerServiceWorker = async (): Promise<ServiceWorkerRegistration | null> => {
+  if (!('serviceWorker' in navigator)) {
+    return null;
+  }
+
+  if (!swRegistrationPromise) {
+    swRegistrationPromise = navigator.serviceWorker
+      .register('/sw.js')
+      .then((reg) => {
+        console.log('Service Worker registered:', reg);
+        return reg;
+      })
+      .catch((error) => {
+        console.error('Service Worker registration failed:', error);
+        return null;
+      });
+  }
+
+  if (!swMessageListenerAttached) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data?.type === 'BACKGROUND_SYNC') {
+        console.log('Background sync triggered');
+        window.dispatchEvent(new CustomEvent('backgroundsync'));
+      }
+    });
+    swMessageListenerAttached = true;
+  }
+
+  return swRegistrationPromise;
+};
+
 export const usePWA = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -15,37 +49,27 @@ export const usePWA = () => {
 
   useEffect(() => {
     // Register service worker with update detection
+    let isMounted = true;
+    let updateFoundListener: (() => void) | null = null;
+    let registeredServiceWorker: ServiceWorkerRegistration | null = null;
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', async () => {
-        try {
-          const reg = await navigator.serviceWorker.register('/sw.js');
-          setRegistration(reg);
-          console.log('Service Worker registered:', reg);
-          
-          // Check for updates
-          reg.addEventListener('updatefound', () => {
-            const newWorker = reg.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  setUpdateAvailable(true);
-                }
-              });
-            }
-          });
-          
-          // Listen for background sync messages
-          navigator.serviceWorker.addEventListener('message', (event) => {
-            if (event.data.type === 'BACKGROUND_SYNC') {
-              console.log('Background sync triggered');
-              // Trigger any pending sync operations
-              window.dispatchEvent(new CustomEvent('backgroundsync'));
-            }
-          });
-          
-        } catch (error) {
-          console.error('Service Worker registration failed:', error);
-        }
+      registerServiceWorker().then((reg) => {
+        if (!reg || !isMounted) return;
+        registeredServiceWorker = reg;
+        setRegistration(reg);
+
+        // Check for updates
+        updateFoundListener = () => {
+          const newWorker = reg.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                setUpdateAvailable(true);
+              }
+            });
+          }
+        };
+        reg.addEventListener('updatefound', updateFoundListener);
       });
     }
 
@@ -76,6 +100,10 @@ export const usePWA = () => {
     }
 
     return () => {
+      isMounted = false;
+      if (registeredServiceWorker && updateFoundListener) {
+        registeredServiceWorker.removeEventListener('updatefound', updateFoundListener);
+      }
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
       window.removeEventListener('online', handleOnline);
