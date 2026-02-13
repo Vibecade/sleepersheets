@@ -259,7 +259,7 @@ const IndexContent = React.memo(() => {
         </EnhancedErrorBoundary>
       </div>
 
-      <Footer />
+      {!hasLeagueData && <Footer />}
     </div>
   );
 });
