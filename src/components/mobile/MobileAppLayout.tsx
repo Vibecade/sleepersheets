@@ -25,12 +25,12 @@ export function MobileAppLayout({
   }
 
   return (
-    <div className="min-h-screen min-h-[100dvh] flex flex-col bg-background relative overflow-hidden">
+    <div className="h-screen h-[100dvh] flex flex-col bg-background relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(234,179,8,0.08),transparent_45%),radial-gradient(circle_at_bottom,rgba(220,38,38,0.06),transparent_45%)]" />
       <main
         className={cn(
-          "flex-1 overflow-x-hidden relative",
-          showBottomNav && "pb-[72px]",
+          "flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain relative",
+          "pb-3",
           className
         )}
         style={{ WebkitOverflowScrolling: 'touch' }}
