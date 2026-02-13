@@ -54,7 +54,14 @@
     --success-muted: 142 40% 35%;
     
     --muted: 214 15% 12%;
-    --muted-foreground: 214 12% 62%;
+    --muted-foreground: 214 14% 72%;
+
+    /* Spacing scale (8/12/16/24/32) */
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
     
     --destructive: 358 75% 52%;
     --destructive-foreground: 45 85% 88%;
@@ -171,14 +178,14 @@
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     background: linear-gradient(135deg, 
-      rgba(255,215,0,0.12), 
-      rgba(0,0,0,0.8), 
-      rgba(220,20,60,0.08)
+      rgba(255,215,0,0.09), 
+      rgba(0,0,0,0.82), 
+      rgba(220,20,60,0.06)
     );
-    border: 1px solid rgba(255, 215, 0, 0.4);
+    border: 1px solid rgba(255, 215, 0, 0.32);
     box-shadow: 
       0 8px 32px rgba(0, 0, 0, 0.4),
-      0 2px 8px rgba(255, 215, 0, 0.2),
+      0 2px 8px rgba(255, 215, 0, 0.14),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
     position: relative;
     animation: stadium-entrance 0.8s ease-out;
@@ -192,6 +199,22 @@
     right: 0;
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(255,215,0,0.6), transparent);
+  }
+
+  /* Compact density mode for league views */
+  .ui-compact {
+    --section-gap: var(--space-3);
+  }
+
+  .ui-compact .glass-card {
+    backdrop-filter: blur(16px) saturate(165%);
+    -webkit-backdrop-filter: blur(16px) saturate(165%);
+  }
+
+  .ui-compact table th,
+  .ui-compact table td {
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
   }
 
   .glass-button {
