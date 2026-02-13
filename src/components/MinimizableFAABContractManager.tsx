@@ -52,7 +52,7 @@ const MinimizableFAABContractManager: React.FC<MinimizableFAABContractManagerPro
   if (isMinimized) {
     return (
       <Card className="mb-3 border-blue-400/20 bg-accent/5">
-        <CardHeader className="py-4">
+        <CardHeader className="py-4 section-sticky-header">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <DollarSign className="w-4 h-4 text-blue-400" />
@@ -88,7 +88,7 @@ const MinimizableFAABContractManager: React.FC<MinimizableFAABContractManagerPro
   return (
     <div className="mb-3">
       <Card className="border-blue-400/20 bg-accent/5">
-        <CardHeader className="py-4">
+        <CardHeader className="py-4 section-sticky-header">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <DollarSign className="w-4 h-4 text-blue-400" />

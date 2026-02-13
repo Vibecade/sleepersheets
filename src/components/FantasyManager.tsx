@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Settings, ChevronDown, ChevronUp, Users, ArrowLeftRight } from 'lucide-react';
 import TeamRosters from './TeamRosters';
@@ -33,12 +33,55 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
 }) => {
   const [showTeamRosters, setShowTeamRosters] = useState(false);
   const [showTradeSimulator, setShowTradeSimulator] = useState(false);
+  const [hasHydratedManagerState, setHasHydratedManagerState] = useState(false);
   const { salaries } = usePlayerSalaries(league.league_id);
   const { contracts } = usePlayerContracts(league.league_id);
+  const managerStorageKey = useMemo(
+    () => (league?.league_id ? `sleepersheets:league-ui:${league.league_id}:manager` : null),
+    [league?.league_id]
+  );
+
+  useEffect(() => {
+    setHasHydratedManagerState(false);
+    if (!managerStorageKey || typeof window === 'undefined') {
+      setHasHydratedManagerState(true);
+      return;
+    }
+
+    try {
+      const storedState = localStorage.getItem(managerStorageKey);
+      if (storedState) {
+        const parsed = JSON.parse(storedState);
+        if (typeof parsed.showTeamRosters === 'boolean') {
+          setShowTeamRosters(parsed.showTeamRosters);
+        }
+        if (typeof parsed.showTradeSimulator === 'boolean') {
+          setShowTradeSimulator(parsed.showTradeSimulator);
+        }
+      }
+    } catch {
+      // Ignore malformed local storage and fallback to defaults.
+    } finally {
+      setHasHydratedManagerState(true);
+    }
+  }, [managerStorageKey]);
+
+  useEffect(() => {
+    if (!hasHydratedManagerState || !managerStorageKey || typeof window === 'undefined') {
+      return;
+    }
+    localStorage.setItem(
+      managerStorageKey,
+      JSON.stringify({
+        showTeamRosters,
+        showTradeSimulator,
+      })
+    );
+  }, [hasHydratedManagerState, managerStorageKey, showTeamRosters, showTradeSimulator]);
 
   return (
-    <div className="space-y-4">
-      <div className="glass-card rounded-xl border border-border/50 p-4">
+    <div className="section-stack">
+      <div className="glass-card rounded-xl border border-border/50 p-4 section-sticky-header">
         <div className="flex items-center space-x-3">
           <Settings className="w-5 h-5 text-blue-500" />
           <div>
@@ -70,7 +113,7 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
       <Collapsible open={showTeamRosters} onOpenChange={setShowTeamRosters}>
         <Card className="border-border/50">
           <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors py-3">
+            <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors py-3 section-sticky-header">
               <CardTitle className="flex items-center justify-between text-base">
                 <span className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-primary" />
@@ -96,7 +139,7 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
       <Collapsible open={showTradeSimulator} onOpenChange={setShowTradeSimulator}>
         <Card className="border-border/50">
           <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors py-3">
+            <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors py-3 section-sticky-header">
               <CardTitle className="flex items-center justify-between text-base">
                 <span className="flex items-center gap-2">
                   <ArrowLeftRight className="w-4 h-4 text-blue-400" />

@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { useTeamRostersManager } from '@/hooks/useTeamRostersManager';
 import MinimizableDeadCapManager from '@/components/MinimizableDeadCapManager';
@@ -19,6 +19,7 @@ interface TeamRostersProps {
 const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, players = {}, transactions = [] }) => {
   const [showLeagueOptions, setShowLeagueOptions] = useState(false);
   const [showTeamGrid, setShowTeamGrid] = useState(false);
+  const [hasHydratedRostersState, setHasHydratedRostersState] = useState(false);
   
   const {
     leagueId,
@@ -52,10 +53,52 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
     canModify,
     salaries,
   } = useTeamRostersManager({ rosters, transactions });
+  const rosterStorageKey = useMemo(
+    () => (leagueId ? `sleepersheets:league-ui:${leagueId}:team-rosters` : null),
+    [leagueId]
+  );
+
+  useEffect(() => {
+    setHasHydratedRostersState(false);
+    if (!rosterStorageKey || typeof window === 'undefined') {
+      setHasHydratedRostersState(true);
+      return;
+    }
+
+    try {
+      const storedState = localStorage.getItem(rosterStorageKey);
+      if (storedState) {
+        const parsed = JSON.parse(storedState);
+        if (typeof parsed.showLeagueOptions === 'boolean') {
+          setShowLeagueOptions(parsed.showLeagueOptions);
+        }
+        if (typeof parsed.showTeamGrid === 'boolean') {
+          setShowTeamGrid(parsed.showTeamGrid);
+        }
+      }
+    } catch {
+      // Ignore malformed local storage and fallback to defaults.
+    } finally {
+      setHasHydratedRostersState(true);
+    }
+  }, [rosterStorageKey]);
+
+  useEffect(() => {
+    if (!hasHydratedRostersState || !rosterStorageKey || typeof window === 'undefined') {
+      return;
+    }
+    localStorage.setItem(
+      rosterStorageKey,
+      JSON.stringify({
+        showLeagueOptions,
+        showTeamGrid,
+      })
+    );
+  }, [hasHydratedRostersState, rosterStorageKey, showLeagueOptions, showTeamGrid]);
 
   return (
     <ErrorBoundaryWithRetry fallbackMessage="Failed to load team rosters">
-      <div className="space-y-3 sm:space-y-4">
+      <div className="section-stack">
         <MinimizableLeagueOptions
           open={showLeagueOptions}
           onOpenChange={setShowLeagueOptions}

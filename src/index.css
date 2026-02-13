@@ -54,7 +54,7 @@
     --success-muted: 142 40% 35%;
     
     --muted: 214 15% 12%;
-    --muted-foreground: 214 14% 72%;
+    --muted-foreground: 214 16% 78%;
 
     /* Spacing scale (8/12/16/24/32) */
     --space-2: 0.5rem;
@@ -62,6 +62,7 @@
     --space-4: 1rem;
     --space-6: 1.5rem;
     --space-8: 2rem;
+    --section-gap: var(--space-4);
     
     --destructive: 358 75% 52%;
     --destructive-foreground: 45 85% 88%;
@@ -85,8 +86,8 @@
     --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--secondary-glow)) 100%);
     --gradient-success: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(142 80% 58%) 100%);
     --gradient-card: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card-light)) 100%);
-    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
-    --gradient-glass-strong: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+    --gradient-glass-strong: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%);
     
     /* Refined Shadow System */
     --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -175,18 +176,18 @@
   }
 
   .glass-card {
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(155%);
+    -webkit-backdrop-filter: blur(16px) saturate(155%);
     background: linear-gradient(135deg, 
-      rgba(255,215,0,0.09), 
-      rgba(0,0,0,0.82), 
-      rgba(220,20,60,0.06)
+      rgba(255,215,0,0.06), 
+      rgba(8,12,18,0.78), 
+      rgba(220,20,60,0.04)
     );
-    border: 1px solid rgba(255, 215, 0, 0.32);
+    border: 1px solid rgba(255, 215, 0, 0.24);
     box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.4),
-      0 2px 8px rgba(255, 215, 0, 0.14),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      0 6px 24px rgba(0, 0, 0, 0.32),
+      0 1px 6px rgba(255, 215, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
     position: relative;
     animation: stadium-entrance 0.8s ease-out;
   }
@@ -198,7 +199,7 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.6), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.38), transparent);
   }
 
   /* Compact density mode for league views */
@@ -207,14 +208,42 @@
   }
 
   .ui-compact .glass-card {
-    backdrop-filter: blur(16px) saturate(165%);
-    -webkit-backdrop-filter: blur(16px) saturate(165%);
+    backdrop-filter: blur(14px) saturate(145%);
+    -webkit-backdrop-filter: blur(14px) saturate(145%);
   }
 
   .ui-compact table th,
   .ui-compact table td {
     padding-top: 0.45rem;
     padding-bottom: 0.45rem;
+  }
+
+  .main-container {
+    width: min(1200px, calc(100% - (2 * var(--space-4))));
+    margin: 0 auto;
+    padding: var(--space-4) 0 calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .section-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--section-gap);
+  }
+
+  .section-sticky-header {
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (min-width: 768px) {
+    .section-sticky-header {
+      position: sticky;
+      top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
+      z-index: 20;
+      background: linear-gradient(180deg, hsl(var(--background) / 0.82), hsl(var(--background) / 0.68));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
   }
 
   .glass-button {
@@ -487,6 +516,12 @@
 
   /* Mobile optimizations */
   @media (max-width: 768px) {
+    .main-container {
+      width: calc(100% - (2 * var(--space-3)));
+      padding-top: var(--space-3);
+      padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom, 0px));
+    }
+
     body {
       font-size: clamp(0.875rem, 3vw, 1rem);
       /* Prevent background attachment issues on mobile */

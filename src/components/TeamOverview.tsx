@@ -21,6 +21,7 @@ interface TeamOverviewProps {
   players: Record<string, any>;
   transactions?: any[];
   initialTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
 const TeamOverview: React.FC<TeamOverviewProps> = ({
@@ -29,7 +30,8 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   userMap,
   players,
   transactions = [],
-  initialTab
+  initialTab,
+  onTabChange
 }) => {
   const currentWeek = useMemo(() => getCurrentNFLWeek(league?.season), [league?.season]);
 
@@ -37,6 +39,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   const [selectedWeek, setSelectedWeek] = useState(currentWeek);
   const [showBonusWins, setShowBonusWins] = useState(false);
   const [expandedTeamId, setExpandedTeamId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState(initialTab || "matchups");
   
   const { matchups, loading: matchupsLoading } = useMatchups(league?.league_id, selectedWeek);
   const { processWaiverTransactions, processing: processingTransactions } = useTransactionProcessor();
@@ -53,6 +56,10 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   useEffect(() => {
     setSelectedWeek(currentWeek);
   }, [currentWeek]);
+
+  useEffect(() => {
+    setActiveTab(initialTab || "matchups");
+  }, [initialTab]);
 
   // Group matchups by matchup_id
   const groupedMatchups = useMemo(() => {
@@ -117,10 +124,15 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
     setExpandedTeamId((prevTeamId) => (prevTeamId === rosterId ? null : rosterId));
   }, []);
 
+  const handleTabChange = useCallback((tab: string) => {
+    setActiveTab(tab);
+    onTabChange?.(tab);
+  }, [onTabChange]);
+
   return (
     <div className="space-y-3 md:space-y-4">
-      <Tabs defaultValue={initialTab || "matchups"} className="space-y-3 md:space-y-4">
-        <TabsList className="flex w-full gap-1">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-3 md:space-y-4">
+        <TabsList className="flex w-full gap-1 section-sticky-header">
           <TabsTrigger
             value="matchups"
             className="flex-1 flex items-center justify-center gap-1.5 md:gap-2"

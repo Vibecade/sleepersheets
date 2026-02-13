@@ -37,7 +37,7 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
   const { user } = useAuth();
 
   return (
-    <CardHeader className="pb-3 sm:pb-4">
+    <CardHeader className="pb-3 sm:pb-4 section-sticky-header">
       <div className="flex flex-col space-y-3 sm:space-y-2">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex items-center space-x-2">

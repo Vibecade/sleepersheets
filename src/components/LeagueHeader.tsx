@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Users, Activity, Calendar, Target, RefreshCw, CheckCircle } from 'lucide-react';
+import { Trophy, Users, Activity, Calendar, Target, RefreshCw, CheckCircle, Minimize2, Maximize2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface LeagueHeaderProps {
@@ -13,6 +13,8 @@ interface LeagueHeaderProps {
   draftCount: number;
   onRefreshData?: () => Promise<void>;
   compact?: boolean;
+  isCompactMode?: boolean;
+  onToggleCompactMode?: () => void;
 }
 
 const LeagueHeader: React.FC<LeagueHeaderProps> = ({ 
@@ -21,7 +23,9 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
   draftPickCount, 
   draftCount,
   onRefreshData,
-  compact = false
+  compact = false,
+  isCompactMode = false,
+  onToggleCompactMode
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
@@ -38,7 +42,7 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
         title: "Data refreshed",
         description: "League data has been updated successfully.",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Refresh failed",
         description: "Failed to refresh league data. Please try again.",
@@ -68,17 +72,31 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
                 </div>
               </div>
             </div>
-            {onRefreshData && (
-              <Button
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                size="icon"
-                variant="ghost"
-                className="flex-shrink-0"
-              >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              </Button>
-            )}
+            <div className="flex items-center gap-1">
+              {onToggleCompactMode && (
+                <Button
+                  onClick={onToggleCompactMode}
+                  size="icon"
+                  variant="ghost"
+                  className="flex-shrink-0"
+                  aria-label={isCompactMode ? 'Expand spacing' : 'Use compact spacing'}
+                  title={isCompactMode ? 'Expand spacing' : 'Use compact spacing'}
+                >
+                  {isCompactMode ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+                </Button>
+              )}
+              {onRefreshData && (
+                <Button
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  size="icon"
+                  variant="ghost"
+                  className="flex-shrink-0"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -118,17 +136,30 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
             </div>
           </div>
 
-          {onRefreshData && (
-            <Button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              variant="outline"
-              className="w-full lg:w-auto"
-            >
-              <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {isRefreshing ? 'Refreshing' : 'Refresh Data'}
-            </Button>
-          )}
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+            {onToggleCompactMode && (
+              <Button
+                onClick={onToggleCompactMode}
+                variant="outline"
+                size="sm"
+                className="w-full sm:w-auto"
+              >
+                {isCompactMode ? <Maximize2 className="w-4 h-4 mr-2" /> : <Minimize2 className="w-4 h-4 mr-2" />}
+                {isCompactMode ? 'Comfort Spacing' : 'Compact Spacing'}
+              </Button>
+            )}
+            {onRefreshData && (
+              <Button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                variant="outline"
+                className="w-full lg:w-auto"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'Refreshing' : 'Refresh Data'}
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       

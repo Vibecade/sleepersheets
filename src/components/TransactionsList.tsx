@@ -19,7 +19,8 @@ interface TransactionsListProps {
 const TransactionsList: React.FC<TransactionsListProps> = ({
   transactions,
   userMap,
-  players
+  players,
+  league
 }) => {
   const [selectedWeek, setSelectedWeek] = useState<string>('all');
   const [transactionType, setTransactionType] = useState<string>('all');
@@ -27,8 +28,37 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
   const [showSearch, setShowSearch] = useState(false);
   const [hideFailed, setHideFailed] = useState(true);
   const [visibleCount, setVisibleCount] = useState(50);
+  const [hasHydratedFilters, setHasHydratedFilters] = useState(false);
   const deferredSearchTerm = useDeferredValue(searchTerm);
   const normalizedSearchTerm = deferredSearchTerm.trim().toLowerCase();
+  const transactionsStorageKey = useMemo(
+    () => (league?.league_id ? `sleepersheets:league-ui:${league.league_id}:transactions` : null),
+    [league?.league_id]
+  );
+
+  useEffect(() => {
+    setHasHydratedFilters(false);
+    if (!transactionsStorageKey || typeof window === 'undefined') {
+      setHasHydratedFilters(true);
+      return;
+    }
+
+    try {
+      const storedFilters = localStorage.getItem(transactionsStorageKey);
+      if (storedFilters) {
+        const parsed = JSON.parse(storedFilters);
+        if (typeof parsed.selectedWeek === 'string') setSelectedWeek(parsed.selectedWeek);
+        if (typeof parsed.transactionType === 'string') setTransactionType(parsed.transactionType);
+        if (typeof parsed.searchTerm === 'string') setSearchTerm(parsed.searchTerm);
+        if (typeof parsed.showSearch === 'boolean') setShowSearch(parsed.showSearch);
+        if (typeof parsed.hideFailed === 'boolean') setHideFailed(parsed.hideFailed);
+      }
+    } catch {
+      // Ignore malformed local storage and fallback to defaults.
+    } finally {
+      setHasHydratedFilters(true);
+    }
+  }, [transactionsStorageKey]);
 
   const getPlayerName = (playerId: string): string => {
     const player = players[playerId];
@@ -122,6 +152,31 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
     setVisibleCount(50);
   }, [selectedWeek, transactionType, normalizedSearchTerm, hideFailed, transactions]);
 
+  useEffect(() => {
+    if (!hasHydratedFilters || !transactionsStorageKey || typeof window === 'undefined') {
+      return;
+    }
+
+    localStorage.setItem(
+      transactionsStorageKey,
+      JSON.stringify({
+        selectedWeek,
+        transactionType,
+        searchTerm,
+        showSearch,
+        hideFailed,
+      })
+    );
+  }, [
+    hasHydratedFilters,
+    transactionsStorageKey,
+    selectedWeek,
+    transactionType,
+    searchTerm,
+    showSearch,
+    hideFailed,
+  ]);
+
   const visibleTransactions = useMemo(
     () => sortedTransactions.slice(0, visibleCount),
     [sortedTransactions, visibleCount]
@@ -130,7 +185,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
 
   return (
     <Card className="glass-card border-border-light transition-all duration-300 hover:shadow-lg">
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-4 section-sticky-header">
         <div className="flex flex-col space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
