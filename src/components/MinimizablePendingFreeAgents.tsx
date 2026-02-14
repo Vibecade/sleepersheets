@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import ScrollableModal from './ScrollableModal';
 import PendingFreeAgentsDisplay from './PendingFreeAgentsDisplay';
 import { usePendingFreeAgents } from '@/hooks/usePendingFreeAgents';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface MinimizablePendingFreeAgentsProps {
   open: boolean;
@@ -40,8 +41,14 @@ const MinimizablePendingFreeAgents: React.FC<MinimizablePendingFreeAgentsProps> 
       maxHeight="85vh"
     >
       {loading ? (
-        <div className="py-8 text-center text-muted-foreground">
-          Loading free agent data...
+        <div className="space-y-3 py-2">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="rounded-lg border p-4 space-y-2">
+              <Skeleton className="h-4 w-44" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          ))}
         </div>
       ) : (
         <PendingFreeAgentsDisplay

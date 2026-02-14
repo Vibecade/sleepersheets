@@ -22,6 +22,7 @@ interface TeamOverviewProps {
   transactions?: any[];
   initialTab?: string;
   onTabChange?: (tab: string) => void;
+  onRefreshData?: () => Promise<void>;
 }
 
 const TeamOverview: React.FC<TeamOverviewProps> = ({
@@ -31,7 +32,8 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   players,
   transactions = [],
   initialTab,
-  onTabChange
+  onTabChange,
+  onRefreshData
 }) => {
   const currentWeek = useMemo(() => getCurrentNFLWeek(league?.season), [league?.season]);
 
@@ -176,6 +178,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                 players={players}
                 formatPoints={formatPoints}
                 getTeamRecord={getTeamRecord}
+                onSyncData={onRefreshData}
               />
             </Suspense>
           </ErrorBoundaryWithRetry>
@@ -211,6 +214,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                 userMap={userMap}
                 players={players}
                 league={league}
+                onSyncData={onRefreshData}
               />
             </Suspense>
           </ErrorBoundaryWithRetry>

@@ -99,11 +99,17 @@
     --shadow-glow: 0 0 20px hsl(var(--primary) / 0.2);
     --shadow-glow-strong: 0 0 30px hsl(var(--primary) / 0.3), 0 0 60px hsl(var(--primary) / 0.1);
     
-    /* Smooth Transitions */
-    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-normal: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    /* Unified motion system */
+    --motion-duration-fast: 120ms;
+    --motion-duration-standard: 160ms;
+    --motion-duration-emphasis: 180ms;
+    --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+    --transition-fast: all var(--motion-duration-fast) var(--motion-ease-standard);
+    --transition-normal: all var(--motion-duration-standard) var(--motion-ease-standard);
+    --transition-slow: all var(--motion-duration-emphasis) var(--motion-ease-standard);
+    --transition-bounce: all var(--motion-duration-emphasis) cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-stadium: var(--transition-normal);
     
     /* Sidebar Variables */
     --sidebar-background: 214 18% 8%;
@@ -189,7 +195,7 @@
       0 1px 6px rgba(255, 215, 0, 0.1),
       inset 0 1px 0 rgba(255, 255, 255, 0.06);
     position: relative;
-    animation: stadium-entrance 0.8s ease-out;
+    animation: stadium-entrance var(--motion-duration-emphasis) var(--motion-ease-standard);
   }
 
   .glass-card::before {
@@ -375,15 +381,15 @@
 
   /* Refined animations */
   .fade-in {
-    animation: fadeInNatural 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: fadeInNatural var(--motion-duration-emphasis) var(--motion-ease-standard);
   }
 
   .slide-up {
-    animation: slideUpNatural 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: slideUpNatural var(--motion-duration-emphasis) var(--motion-ease-standard);
   }
 
   .hover-lift {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: var(--transition-normal);
   }
 
   .hover-lift:hover {
@@ -408,7 +414,7 @@
 
   /* Interactive element hover effects */
   .interactive-hover {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: var(--transition-normal);
   }
 
   .interactive-hover:hover {
@@ -432,7 +438,7 @@
 
   /* Card hover effect */
   .card-hover {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: var(--transition-normal);
   }
 
   .card-hover:hover {
@@ -452,7 +458,7 @@
     padding: 0.75rem 1.5rem;
     border-radius: 0.75rem;
     font-weight: 500;
-    transition: all 0.3s ease;
+    transition: var(--transition-normal);
     box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
     /* Ensure good mobile touch target */
     min-height: 44px;
@@ -629,7 +635,7 @@
 
   /* Utility Animation Classes */
   .animate-stadium-entrance {
-    animation: stadium-entrance 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: stadium-entrance var(--motion-duration-emphasis) var(--motion-ease-standard);
   }
 
   .animate-helmet-glow {
@@ -637,11 +643,11 @@
   }
 
   .animate-header-compact {
-    animation: header-compact 0.3s ease-out forwards;
+    animation: header-compact var(--motion-duration-emphasis) var(--motion-ease-standard) forwards;
   }
 
   .animate-header-expand {
-    animation: header-expand 0.3s ease-out forwards;
+    animation: header-expand var(--motion-duration-emphasis) var(--motion-ease-standard) forwards;
   }
 
   /* Small mobile devices */
@@ -687,7 +693,7 @@
     }
 
     .fade-in, .slide-up {
-      animation-duration: 0.4s;
+      animation-duration: var(--motion-duration-emphasis);
     }
 
     h2 {
@@ -719,6 +725,10 @@
 
   /* Accessibility improvements */
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto !important;
+    }
+
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;

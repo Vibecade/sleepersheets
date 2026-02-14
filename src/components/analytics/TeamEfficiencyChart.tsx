@@ -9,6 +9,7 @@ import { useHistoricalMatchups } from '@/hooks/useHistoricalMatchups';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getCurrentNFLWeek } from '@/utils/nflWeek';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface TeamEfficiencyChartProps {
   rosters: any[];
@@ -181,8 +182,9 @@ const TeamEfficiencyChart: React.FC<TeamEfficiencyChartProps> = ({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground">
-        Loading efficiency data...
+      <div className="space-y-3 h-64">
+        <Skeleton className="h-8 w-40" />
+        <Skeleton className="h-[220px] w-full" />
       </div>
     );
   }

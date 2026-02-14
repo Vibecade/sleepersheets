@@ -14,13 +14,15 @@ interface TransactionsListProps {
   userMap: Record<string, any>;
   players: Record<string, any>;
   league: any;
+  onSyncData?: () => Promise<void>;
 }
 
 const TransactionsList: React.FC<TransactionsListProps> = ({
   transactions,
   userMap,
   players,
-  league
+  league,
+  onSyncData
 }) => {
   const [selectedWeek, setSelectedWeek] = useState<string>('all');
   const [transactionType, setTransactionType] = useState<string>('all');
@@ -184,7 +186,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
   const hasMoreTransactions = visibleCount < sortedTransactions.length;
 
   return (
-    <Card className="glass-card border-border-light transition-all duration-300 hover:shadow-lg">
+    <Card className="glass-card border-border-light transition-all duration-150 hover:shadow-lg">
       <CardHeader className="pb-4 section-sticky-header">
         <div className="flex flex-col space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between gap-2">
@@ -289,9 +291,17 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
           <div className="text-center py-12 text-muted-foreground">
             <ArrowRightLeft className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p className="text-lg font-medium">No transactions found</p>
-            <p className="text-sm">Try adjusting your filters or search terms</p>
-            {(searchTerm || transactionType !== 'all' || selectedWeek !== 'all' || !hideFailed) && (
-                          <Button
+            <p className="text-sm">Try adjusting filters, or sync league data to pull the latest moves.</p>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {onSyncData && (
+                <Button
+                  size="sm"
+                  onClick={() => void onSyncData()}
+                >
+                  Sync Data
+                </Button>
+              )}
+              <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
@@ -300,11 +310,10 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                   setSelectedWeek('all');
                   setHideFailed(true);
                 }}
-                className="mt-4"
               >
-                Clear Filters
+                Reset Filters
               </Button>
-            )}
+            </div>
           </div>
         ) : (
           <div className="space-y-3">
@@ -320,7 +329,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
               return (
                 <div
                   key={transaction.transaction_id}
-                  className="bg-card/30 rounded-xl p-4 border border-border-light transition-all duration-300 hover:bg-card/50 hover:border-border hover:shadow-md"
+                  className="bg-card/30 rounded-xl p-4 border border-border-light transition-all duration-150 hover:bg-card/50 hover:border-border hover:shadow-md"
                 >
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-3">
                     <div className="flex items-center space-x-2 sm:space-x-3 flex-wrap gap-y-1 flex-1 min-w-0">

@@ -3,10 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar } from 'lucide-react';
-import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import { ExpandableMatchupCard } from '../ExpandableMatchupCard';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface MatchupsTabProps {
   selectedWeek: number;
@@ -18,6 +19,7 @@ interface MatchupsTabProps {
   players: Record<string, any>;
   formatPoints: (points: number) => string;
   getTeamRecord: (roster: any) => string;
+  onSyncData?: () => Promise<void>;
 }
 
 const MatchupsTab: React.FC<MatchupsTabProps> = ({
@@ -30,9 +32,10 @@ const MatchupsTab: React.FC<MatchupsTabProps> = ({
   players,
   formatPoints,
   getTeamRecord,
+  onSyncData,
 }) => {
   return (
-    <Card className="transition-all duration-300 hover:shadow-lg">
+    <Card className="transition-all duration-150 hover:shadow-lg">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -49,10 +52,10 @@ const MatchupsTab: React.FC<MatchupsTabProps> = ({
                 max="18"
                 value={selectedWeek}
                 onChange={(e) => setSelectedWeek(Number(e.target.value))}
-                className="w-20 bg-gray-800/50 border-gray-600 transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+                className="w-20 bg-gray-800/50 border-gray-600 transition-all duration-150 focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            {matchupsLoading && <LoadingSpinner size="sm" />}
+            {matchupsLoading && <Skeleton className="h-7 w-16 rounded-full" />}
           </div>
         </div>
       </CardHeader>
@@ -65,10 +68,20 @@ const MatchupsTab: React.FC<MatchupsTabProps> = ({
               ))}
             </div>
           ) : Object.keys(groupedMatchups).length === 0 ? (
-            <div className="text-center py-10 text-gray-400 transition-opacity duration-300">
+            <div className="text-center py-10 text-gray-400 transition-opacity duration-150">
               <Calendar className="w-10 h-10 mx-auto mb-3 opacity-50" />
               <p className="text-base">No matchups found for week {selectedWeek}</p>
-              <p className="text-sm">Try selecting a different week</p>
+              <p className="text-sm">Try selecting a different week or refresh league data.</p>
+              <div className="mt-4 flex justify-center gap-2">
+                <Button size="sm" variant="outline" onClick={() => setSelectedWeek(1)}>
+                  Week 1
+                </Button>
+                {onSyncData && (
+                  <Button size="sm" onClick={() => void onSyncData()}>
+                    Sync Data
+                  </Button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="space-y-3 pr-2">

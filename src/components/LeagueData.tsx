@@ -18,6 +18,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueOwnershipStatus } from '@/hooks/useLeagueOwnershipStatus';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SkeletonCard } from '@/components/ui/skeleton-card';
 
 const VALID_PAGES = ['overview', 'manager', 'commissioner', 'more'] as const;
 const VALID_OVERVIEW_TABS = ['matchups', 'standings', 'transactions', 'statistics'] as const;
@@ -227,7 +228,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
             {isOwner ? (
               <ErrorBoundaryWithRetry fallbackMessage="Error loading commissioner dashboard">
-                <Suspense fallback={<div>Loading commissioner dashboard...</div>}>
+                <Suspense fallback={<SkeletonCard lines={4} />}>
                   <CommissionerDashboard leagueId={league.league_id} leagueData={leagueDataForExport} />
                 </Suspense>
               </ErrorBoundaryWithRetry>
@@ -252,7 +253,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
         {currentPage === 'more' && (
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
             <ErrorBoundaryWithRetry fallbackMessage="Error loading menu">
-              <Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<SkeletonCard lines={3} />}>
                 <MobileMoreMenu
                   leagueId={league.league_id}
                   leagueData={leagueDataForExport}
@@ -276,6 +277,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
                   transactions={transactions}
                   initialTab={activeOverviewTab}
                   onTabChange={setActiveOverviewTab}
+                  onRefreshData={onRefreshData}
                 />
               </Suspense>
             </ErrorBoundaryWithRetry>

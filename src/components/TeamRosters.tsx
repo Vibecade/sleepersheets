@@ -8,6 +8,8 @@ import MinimizablePendingFreeAgents from '@/components/MinimizablePendingFreeAge
 import TeamRostersHeader from '@/components/TeamRostersHeader';
 import TeamRostersGrid from '@/components/TeamRostersGrid';
 import ErrorBoundaryWithRetry from '@/components/ErrorBoundaryWithRetry';
+import { Button } from '@/components/ui/button';
+import { Sparkles } from 'lucide-react';
 
 interface TeamRostersProps {
   rosters: any[];
@@ -123,6 +125,29 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
           canModifyLeague={canModify}
         />
 
+        {!showSalaryFeatures && (
+          <Card className="border-border/50 bg-card/40">
+            <div className="px-4 py-4 sm:px-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Salary tools are currently hidden.</p>
+                  <p className="text-sm text-muted-foreground">Enable salary features to view cap tracking, dead cap, and contract tools.</p>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setShowSalaryFeatures(true);
+                    setShowLeagueOptions(true);
+                  }}
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Enable Salary Features
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
         <Card className="border-border/50">
           <TeamRostersHeader
             showDeadCapManager={showDeadCapManager}
@@ -153,8 +178,13 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
               canModifyLeague={canModify}
             />
           ) : (
-            <div className="px-6 pb-5 text-sm text-muted-foreground">
-              Team cards are hidden to keep this page compact. Use <span className="text-foreground font-medium">Show Teams</span> to expand.
+            <div className="px-6 pb-5 text-sm text-muted-foreground space-y-3">
+              <p>
+                Team cards are hidden to keep this page compact. Use <span className="text-foreground font-medium">Show Teams</span> to expand.
+              </p>
+              <Button size="sm" onClick={() => setShowTeamGrid(true)}>
+                Show Teams
+              </Button>
             </div>
           )}
         </Card>

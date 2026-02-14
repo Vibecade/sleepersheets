@@ -26,9 +26,13 @@ jobs:
         run: npm run lint
 
       - name: Typecheck
-        run: |
-          npx tsc --noEmit -p tsconfig.app.json
-          npx tsc --noEmit -p tsconfig.node.json
+        run: npm run typecheck
 
       - name: Build
         run: npm run build
+
+      - name: Enforce Bundle Budget
+        run: npm run check:bundle
+
+      - name: Route Smoke Checks
+        run: npm run smoke:routes

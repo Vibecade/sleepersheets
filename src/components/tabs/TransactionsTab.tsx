@@ -9,6 +9,7 @@ interface TransactionsTabProps {
   userMap: Record<string, any>;
   players: Record<string, any>;
   league: any;
+  onSyncData?: () => Promise<void>;
 }
 
 const TransactionsTab: React.FC<TransactionsTabProps> = ({
@@ -16,9 +17,10 @@ const TransactionsTab: React.FC<TransactionsTabProps> = ({
   userMap,
   players,
   league,
+  onSyncData,
 }) => {
   return (
-    <Card className="transition-all duration-300 hover:shadow-lg">
+    <Card className="transition-all duration-150 hover:shadow-lg">
       <CardHeader className="pb-3">
         <div className="flex items-center space-x-2">
           <ArrowRightLeft className="w-4 h-4" />
@@ -33,6 +35,7 @@ const TransactionsTab: React.FC<TransactionsTabProps> = ({
               userMap={userMap}
               players={players}
               league={league}
+              onSyncData={onSyncData}
             />
           </div>
         </ScrollArea>
