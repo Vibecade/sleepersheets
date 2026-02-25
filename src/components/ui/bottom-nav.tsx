@@ -21,7 +21,7 @@ const defaultItems: BottomNavItem[] = [
   { label: "Overview", href: "/overview", icon: Trophy },
   { label: "Manager", href: "/manager", icon: Settings },
   { label: "Matchups", href: "/matchups", icon: Calendar },
-  { label: "Stats", href: "/stats", icon: BarChart3 },
+  { label: "News", href: "/news", icon: BarChart3 },
   { label: "More", href: "/more", icon: Menu },
 ]
 

@@ -51,13 +51,13 @@ export function useBottomNav({ leagueId, onPageChange, badges = {} }: UseBottomN
         },
       },
       {
-        label: "Stats",
-        href: "#stats",
+        label: "News",
+        href: "#news",
         icon: BarChart3,
         badge: badges.stats,
         onClick: (e) => {
           e?.preventDefault()
-          onPageChange?.("stats")
+          onPageChange?.("news")
         },
       },
       {

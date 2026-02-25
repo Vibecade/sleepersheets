@@ -129,7 +129,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
       } else if (page === 'matchups') {
         setCurrentPage('overview');
         setActiveOverviewTab('matchups');
-      } else if (page === 'stats') {
+      } else if (page === 'stats' || page === 'news') {
         setCurrentPage('overview');
         setActiveOverviewTab('statistics');
       } else if (page === 'more') {
@@ -146,7 +146,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
     if (currentPage === 'more') return '#more';
     if (currentPage === 'manager') return '#manager';
     if (currentPage === 'overview') {
-      if (activeOverviewTab === 'statistics') return '#stats';
+      if (activeOverviewTab === 'statistics') return '#news';
       if (activeOverviewTab === 'matchups') return '#matchups';
       return '#overview';
     }

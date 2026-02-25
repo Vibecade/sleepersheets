@@ -23,7 +23,7 @@ const StatisticsTab: React.FC<StatisticsTabProps> = ({
       <CardHeader className="pb-3">
         <div className="flex items-center space-x-2">
           <Activity className="w-4 h-4" />
-          <CardTitle className="text-base sm:text-lg">Stats</CardTitle>
+          <CardTitle className="text-base sm:text-lg">News</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="p-0">
