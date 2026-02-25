@@ -7,6 +7,7 @@ import { useUrlLeagueLoader } from './useUrlLeagueLoader';
 import { useLeagueQuery } from './useLeagueQuery';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUserLeagues } from './useUserLeagues';
+import { apiCache } from '@/utils/apiCache';
 
 export const useLeagueManager = () => {
   const [activeLeagueId, setActiveLeagueId] = useState('');
@@ -125,9 +126,6 @@ export const useLeagueManager = () => {
     if (!activeLeagueId) return;
     
     try {
-      // Import apiCache to clear targeted cache entries
-      const { apiCache } = await import('@/utils/apiCache');
-      
       // Clear all league-specific cache except players (to avoid rate limits)
       apiCache.clearLeagueDataExceptPlayers(activeLeagueId);
       

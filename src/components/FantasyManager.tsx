@@ -1,12 +1,9 @@
-import React, { memo, useEffect, useMemo, useState } from 'react';
+import React, { memo, useEffect, useMemo, useState, lazy, Suspense } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Settings, ChevronDown, ChevronUp, Users, ArrowLeftRight } from 'lucide-react';
-import TeamRosters from './TeamRosters';
 import MinimizableDataDashboard from './MinimizableDataDashboard';
-import EnhancedTradeSimulator from './EnhancedTradeSimulator';
 import PlayerSearch from './PlayerSearch';
 import MinimizableFAABContractManager from './MinimizableFAABContractManager';
-import { AnalyticsAccordion } from './analytics/AnalyticsAccordion';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { usePlayerContracts } from '@/hooks/usePlayerContracts';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -20,6 +17,14 @@ interface FantasyManagerProps {
   transactions: any[];
   draftPicks: any[];
 }
+
+const LazyTeamRosters = lazy(() => import('./TeamRosters'));
+const LazyEnhancedTradeSimulator = lazy(() => import('./EnhancedTradeSimulator'));
+const LazyAnalyticsAccordion = lazy(() => import('./analytics/AnalyticsAccordion'));
+
+const SectionFallback: React.FC = () => (
+  <div className="px-6 py-5 text-sm text-muted-foreground">Loading section...</div>
+);
 
 // Memoize the entire component to prevent unnecessary re-renders
 const FantasyManager: React.FC<FantasyManagerProps> = memo(({
@@ -125,12 +130,16 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
           </CollapsibleTrigger>
           <CollapsibleContent>
             <CardContent className="pt-0 pb-4">
-              <TeamRosters
-                rosters={rosters}
-                userMap={userMap}
-                players={players}
-                transactions={transactions}
-              />
+              {showTeamRosters && (
+                <Suspense fallback={<SectionFallback />}>
+                  <LazyTeamRosters
+                    rosters={rosters}
+                    userMap={userMap}
+                    players={players}
+                    transactions={transactions}
+                  />
+                </Suspense>
+              )}
             </CardContent>
           </CollapsibleContent>
         </Card>
@@ -151,12 +160,16 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
           </CollapsibleTrigger>
           <CollapsibleContent>
             <CardContent className="pt-0 pb-4">
-              <EnhancedTradeSimulator
-                league={league}
-                rosters={rosters}
-                userMap={userMap}
-                players={players}
-              />
+              {showTradeSimulator && (
+                <Suspense fallback={<SectionFallback />}>
+                  <LazyEnhancedTradeSimulator
+                    league={league}
+                    rosters={rosters}
+                    userMap={userMap}
+                    players={players}
+                  />
+                </Suspense>
+              )}
             </CardContent>
           </CollapsibleContent>
         </Card>
@@ -174,7 +187,9 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
       />
 
       {/* Advanced Analytics Accordion */}
-      <AnalyticsAccordion />
+      <Suspense fallback={<SectionFallback />}>
+        <LazyAnalyticsAccordion />
+      </Suspense>
     </div>
   );
 });

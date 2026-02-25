@@ -7,11 +7,15 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
-import CookiePolicy from "./pages/CookiePolicy";
-import About from "./pages/About";
-import { LazyExport, LazyAuth, LazyHowTo } from "./components/LazyComponents";
+import {
+  LazyExport,
+  LazyAuth,
+  LazyHowTo,
+  LazyAbout,
+  LazyPrivacyPolicy,
+  LazyTermsOfService,
+  LazyCookiePolicy,
+} from "./components/LazyComponents";
 import { Skeleton } from "@/components/ui/skeleton";
 import EnhancedErrorBoundary from "./components/EnhancedErrorBoundary";
 import DeployUpdateToast from "./components/DeployUpdateToast";
@@ -67,10 +71,26 @@ const App = () => (
                     <LazyExport />
                   </Suspense>
                 } />
-                <Route path="/privacy" element={<PrivacyPolicy />} />
-                <Route path="/terms" element={<TermsOfService />} />
-                <Route path="/cookies" element={<CookiePolicy />} />
-                <Route path="/about" element={<About />} />
+                <Route path="/privacy" element={
+                  <Suspense fallback={<PageSkeleton />}>
+                    <LazyPrivacyPolicy />
+                  </Suspense>
+                } />
+                <Route path="/terms" element={
+                  <Suspense fallback={<PageSkeleton />}>
+                    <LazyTermsOfService />
+                  </Suspense>
+                } />
+                <Route path="/cookies" element={
+                  <Suspense fallback={<PageSkeleton />}>
+                    <LazyCookiePolicy />
+                  </Suspense>
+                } />
+                <Route path="/about" element={
+                  <Suspense fallback={<PageSkeleton />}>
+                    <LazyAbout />
+                  </Suspense>
+                } />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

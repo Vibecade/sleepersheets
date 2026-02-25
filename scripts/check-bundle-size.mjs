@@ -35,8 +35,11 @@ if (jsAssets.length === 0) {
   process.exit(1);
 }
 
-const entryAsset = jsAssets.find((asset) => /^index-[\w-]+\.js$/.test(asset.file))
-  ?? [...jsAssets].sort((a, b) => b.bytes - a.bytes)[0];
+const entryCandidates = jsAssets
+  .filter((asset) => /^index-[\w-]+\.js$/.test(asset.file))
+  .sort((a, b) => b.bytes - a.bytes);
+
+const entryAsset = entryCandidates[0] ?? [...jsAssets].sort((a, b) => b.bytes - a.bytes)[0];
 
 const asyncAssets = jsAssets.filter((asset) => asset.file !== entryAsset.file);
 const totalJsBytes = jsAssets.reduce((total, asset) => total + asset.bytes, 0);

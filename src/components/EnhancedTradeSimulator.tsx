@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useDeferredValue } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,10 @@ interface SelectedPlayer {
   fromRosterId: string;
 }
 
+interface SearchablePlayer extends SelectedPlayer {
+  searchName: string;
+}
+
 interface TeamData {
   rosterId: string;
   teamName: string;
@@ -45,6 +49,7 @@ const EnhancedTradeSimulator: React.FC<EnhancedTradeSimulatorProps> = ({
   players
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const deferredSearchTerm = useDeferredValue(searchTerm);
   const [teams, setTeams] = useState<Record<string, TeamData>>({});
   
   const { salaries, getSalaryCapContribution } = usePlayerSalaries(league.league_id);
@@ -72,34 +77,43 @@ const EnhancedTradeSimulator: React.FC<EnhancedTradeSimulatorProps> = ({
     return `$${amount.toLocaleString()}`;
   };
 
-  // Search for players across all rosters
-  const searchResults = useMemo(() => {
-    if (!searchTerm.trim()) return [];
-    
-    const allPlayers: SelectedPlayer[] = [];
-    
-    rosters.forEach(roster => {
+  const searchablePlayers = useMemo(() => {
+    const indexedPlayers: SearchablePlayer[] = [];
+    rosters.forEach((roster) => {
       const allPlayerIds = [
         ...(roster.players || []),
-        ...(roster.taxi || [])
+        ...(roster.taxi || []),
       ];
-      
-      allPlayerIds.forEach(playerId => {
+      const user = userMap[roster.owner_id];
+      const fromTeam = getTeamName(user);
+
+      allPlayerIds.forEach((playerId) => {
         const player = players[playerId];
-        if (player && formatPlayerName(player).toLowerCase().includes(searchTerm.toLowerCase())) {
-          const user = userMap[roster.owner_id];
-          allPlayers.push({
-            playerId,
-            player,
-            fromTeam: getTeamName(user),
-            fromRosterId: roster.roster_id.toString()
-          });
+        if (!player) {
+          return;
         }
+        indexedPlayers.push({
+          playerId,
+          player,
+          fromTeam,
+          fromRosterId: roster.roster_id.toString(),
+          searchName: formatPlayerName(player).toLowerCase(),
+        });
       });
     });
-    
-    return allPlayers.slice(0, 12); // Show more results
-  }, [searchTerm, rosters, players, userMap]);
+    return indexedPlayers;
+  }, [rosters, players, userMap]);
+
+  // Search over pre-indexed player names to avoid scanning full roster data on every keypress.
+  const searchResults = useMemo(() => {
+    const normalizedSearchTerm = deferredSearchTerm.trim().toLowerCase();
+    if (!normalizedSearchTerm) {
+      return [];
+    }
+    return searchablePlayers
+      .filter((entry) => entry.searchName.includes(normalizedSearchTerm))
+      .slice(0, 12);
+  }, [deferredSearchTerm, searchablePlayers]);
 
   // Add player to a team's trade
   const addPlayerToTrade = (selectedPlayer: SelectedPlayer) => {
