@@ -2,12 +2,19 @@ import { CACHE_TTL, RATE_LIMITS, RATE_LIMIT_WINDOWS } from './constants';
 import { rateLimiter } from './rateLimiter';
 import type { SleeperPlayer } from '@/types/sleeper';
 import { logger } from './logger';
+import {
+  getPersistentCacheValue,
+  removePersistentCacheValue,
+  setPersistentCacheValue,
+} from './persistentCache';
 
 interface CacheEntry<T> {
   data: T;
   timestamp: number;
   expiry: number;
 }
+
+const PLAYERS_CACHE_KEY = 'nfl-players-v1';
 
 /**
  * Unified API cache for all data including players
@@ -16,6 +23,8 @@ class ApiCache {
   private cache = new Map<string, CacheEntry<any>>();
   private defaultTTL = CACHE_TTL.MEDIUM;
   private matchupsTTL = CACHE_TTL.MEDIUM;
+  private playersHydrated = false;
+  private playersHydrationPromise: Promise<void> | null = null;
 
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
@@ -75,30 +84,84 @@ class ApiCache {
     keysToDelete.forEach(key => this.cache.delete(key));
   }
 
-  /**
-   * Get players data from cache
-   */
-  public getPlayers(): Record<string, SleeperPlayer> | null {
-    const PLAYERS_CACHE_KEY = 'nfl-players';
-    const entry = this.cache.get(PLAYERS_CACHE_KEY);
-    
-    if (!entry || Date.now() > entry.expiry) {
-      return null;
+  private async hydratePlayersFromPersistentCache(): Promise<void> {
+    if (this.playersHydrated) {
+      return;
     }
-    
-    return entry.data;
+
+    if (!this.playersHydrationPromise) {
+      this.playersHydrationPromise = (async () => {
+        try {
+          const storedEntry = await getPersistentCacheValue<
+            CacheEntry<Record<string, SleeperPlayer>>
+          >(PLAYERS_CACHE_KEY);
+
+          if (!storedEntry) {
+            return;
+          }
+
+          if (Date.now() > storedEntry.expiry) {
+            await removePersistentCacheValue(PLAYERS_CACHE_KEY);
+            return;
+          }
+
+          this.cache.set(PLAYERS_CACHE_KEY, storedEntry);
+        } catch (error) {
+          logger.warn('Failed to hydrate players cache from persistent storage:', error);
+        }
+      })().finally(() => {
+        this.playersHydrated = true;
+        this.playersHydrationPromise = null;
+      });
+    }
+
+    await this.playersHydrationPromise;
+  }
+
+  public async warmPlayersCache(): Promise<void> {
+    await this.hydratePlayersFromPersistentCache();
   }
 
   /**
-   * Set players data in cache
+   * Get players data from cache (in-memory first, then persistent cache).
    */
-  public setPlayers(data: Record<string, SleeperPlayer>): void {
-    const PLAYERS_CACHE_KEY = 'nfl-players';
-    this.cache.set(PLAYERS_CACHE_KEY, {
+  public async getPlayers(): Promise<Record<string, SleeperPlayer> | null> {
+    const inMemoryEntry = this.cache.get(PLAYERS_CACHE_KEY);
+    if (inMemoryEntry) {
+      if (Date.now() <= inMemoryEntry.expiry) {
+        return inMemoryEntry.data;
+      }
+      this.cache.delete(PLAYERS_CACHE_KEY);
+    }
+
+    await this.hydratePlayersFromPersistentCache();
+
+    const hydratedEntry = this.cache.get(PLAYERS_CACHE_KEY);
+    if (!hydratedEntry || Date.now() > hydratedEntry.expiry) {
+      return null;
+    }
+
+    return hydratedEntry.data;
+  }
+
+  /**
+   * Set players data in cache and persist across reloads.
+   */
+  public async setPlayers(data: Record<string, SleeperPlayer>): Promise<void> {
+    const entry: CacheEntry<Record<string, SleeperPlayer>> = {
       data,
       timestamp: Date.now(),
-      expiry: Date.now() + CACHE_TTL.DAILY
-    });
+      expiry: Date.now() + CACHE_TTL.DAILY,
+    };
+
+    this.cache.set(PLAYERS_CACHE_KEY, entry);
+    this.playersHydrated = true;
+
+    try {
+      await setPersistentCacheValue(PLAYERS_CACHE_KEY, entry);
+    } catch (error) {
+      logger.warn('Failed to persist players cache:', error);
+    }
   }
 }
 

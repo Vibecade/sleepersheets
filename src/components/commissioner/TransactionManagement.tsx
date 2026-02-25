@@ -17,6 +17,7 @@ import {
   ArrowRightLeft
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { SkeletonCard } from '@/components/ui/skeleton-card';
 
 interface TransactionManagementProps {
   leagueId: string;
@@ -238,7 +239,12 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
   };
 
   if (loading) {
-    return <div className="text-center py-8">Loading transactions...</div>;
+    return (
+      <div className="space-y-4">
+        <SkeletonCard lines={4} />
+        <SkeletonCard lines={4} />
+      </div>
+    );
   }
 
   return (

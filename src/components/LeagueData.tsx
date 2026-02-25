@@ -18,7 +18,18 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueOwnershipStatus } from '@/hooks/useLeagueOwnershipStatus';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { SkeletonCard } from '@/components/ui/skeleton-card';
 
+const VALID_PAGES = ['overview', 'manager', 'commissioner', 'more'] as const;
+const VALID_OVERVIEW_TABS = ['matchups', 'standings', 'transactions', 'statistics'] as const;
+
+const isValidPage = (value: string): value is (typeof VALID_PAGES)[number] => {
+  return VALID_PAGES.includes(value as (typeof VALID_PAGES)[number]);
+};
+
+const isValidOverviewTab = (value: string): value is (typeof VALID_OVERVIEW_TABS)[number] => {
+  return VALID_OVERVIEW_TABS.includes(value as (typeof VALID_OVERVIEW_TABS)[number]);
+};
 
 interface LeagueDataProps {
   data: {
@@ -35,14 +46,66 @@ interface LeagueDataProps {
   onOwnershipChanged?: () => void;
 }
 
-const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyncData?: () => Promise<void>; onOwnershipChanged?: () => void; }> = React.memo(({ onRefreshData, onResyncData, onOwnershipChanged }) => {
+const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwnershipChanged?: () => void; }> = React.memo(({ onRefreshData, onOwnershipChanged }) => {
   const { league, rosters, userMap, rosterUserMap, players, transactions, draftPicks, stats } = useLeagueData();
   const [currentPage, setCurrentPage] = useState<'overview' | 'manager' | 'commissioner' | 'more'>('overview');
   const [activeOverviewTab, setActiveOverviewTab] = useState<string>('matchups');
+  const [compactMode, setCompactMode] = useState(false);
+  const [hasHydratedUIState, setHasHydratedUIState] = useState(false);
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const { checkOwnershipStatus } = useLeagueOwnershipStatus();
   const [isOwner, setIsOwner] = useState(false);
+  const uiStoragePrefix = React.useMemo(
+    () => (league?.league_id ? `sleepersheets:league-ui:${league.league_id}` : null),
+    [league?.league_id]
+  );
+
+  useEffect(() => {
+    setHasHydratedUIState(false);
+    if (!uiStoragePrefix || typeof window === 'undefined') {
+      setCompactMode(isMobile);
+      setHasHydratedUIState(true);
+      return;
+    }
+
+    try {
+      const storedPage = localStorage.getItem(`${uiStoragePrefix}:page`);
+      const storedOverviewTab = localStorage.getItem(`${uiStoragePrefix}:overview-tab`);
+      const storedCompactMode = localStorage.getItem(`${uiStoragePrefix}:compact`);
+
+      setCurrentPage(storedPage && isValidPage(storedPage) ? storedPage : 'overview');
+      setActiveOverviewTab(storedOverviewTab && isValidOverviewTab(storedOverviewTab) ? storedOverviewTab : 'matchups');
+      setCompactMode(storedCompactMode ? storedCompactMode === '1' : isMobile);
+    } catch {
+      setCurrentPage('overview');
+      setActiveOverviewTab('matchups');
+      setCompactMode(isMobile);
+    } finally {
+      setHasHydratedUIState(true);
+    }
+  }, [uiStoragePrefix, isMobile]);
+
+  useEffect(() => {
+    if (!hasHydratedUIState || !uiStoragePrefix || typeof window === 'undefined') {
+      return;
+    }
+    localStorage.setItem(`${uiStoragePrefix}:page`, currentPage);
+  }, [hasHydratedUIState, uiStoragePrefix, currentPage]);
+
+  useEffect(() => {
+    if (!hasHydratedUIState || !uiStoragePrefix || typeof window === 'undefined') {
+      return;
+    }
+    localStorage.setItem(`${uiStoragePrefix}:overview-tab`, activeOverviewTab);
+  }, [hasHydratedUIState, uiStoragePrefix, activeOverviewTab]);
+
+  useEffect(() => {
+    if (!hasHydratedUIState || !uiStoragePrefix || typeof window === 'undefined') {
+      return;
+    }
+    localStorage.setItem(`${uiStoragePrefix}:compact`, compactMode ? '1' : '0');
+  }, [hasHydratedUIState, uiStoragePrefix, compactMode]);
 
   // Check if current user is the league owner
   useEffect(() => {
@@ -112,7 +175,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
       activeItem={getActiveNavItem()}
       showBottomNav={isMobile}
     >
-      <div className="main-container">
+      <div className={`main-container ${compactMode ? 'ui-compact' : ''}`}>
         <PageHead
           title={
             currentPage === 'overview' 
@@ -125,9 +188,9 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
           leagueName={league.name}
         />
         
-        <div className="space-y-8">
+        <div className="section-stack">
           <div className="slide-up">
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-end mb-2">
               <LeagueStatusBadge leagueId={league.league_id} onOwnershipChanged={onOwnershipChanged} />
             </div>
             <ErrorBoundaryWithRetry fallbackMessage="Failed to load league header">
@@ -138,7 +201,9 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
                   draftPickCount={stats.draftPickCount}
                   draftCount={stats.draftCount}
                   onRefreshData={onRefreshData}
-                  compact={isMobile}
+                  compact={isMobile ? compactMode : false}
+                  isCompactMode={compactMode}
+                  onToggleCompactMode={() => setCompactMode((prev) => !prev)}
                 />
               </Suspense>
             </ErrorBoundaryWithRetry>
@@ -163,7 +228,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
             {isOwner ? (
               <ErrorBoundaryWithRetry fallbackMessage="Error loading commissioner dashboard">
-                <Suspense fallback={<div>Loading commissioner dashboard...</div>}>
+                <Suspense fallback={<SkeletonCard lines={4} />}>
                   <CommissionerDashboard leagueId={league.league_id} leagueData={leagueDataForExport} />
                 </Suspense>
               </ErrorBoundaryWithRetry>
@@ -188,7 +253,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
         {currentPage === 'more' && (
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
             <ErrorBoundaryWithRetry fallbackMessage="Error loading menu">
-              <Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<SkeletonCard lines={3} />}>
                 <MobileMoreMenu
                   leagueId={league.league_id}
                   leagueData={leagueDataForExport}
@@ -210,8 +275,9 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
                   userMap={userMap}
                   players={players}
                   transactions={transactions}
-                  onResyncData={onResyncData}
                   initialTab={activeOverviewTab}
+                  onTabChange={setActiveOverviewTab}
+                  onRefreshData={onRefreshData}
                 />
               </Suspense>
             </ErrorBoundaryWithRetry>
@@ -243,10 +309,10 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onResyn
 
 LeagueDataContent.displayName = 'LeagueDataContent';
 
-const LeagueData: React.FC<LeagueDataProps> = React.memo(({ data, onRefreshData, onResyncData, onOwnershipChanged }) => {
+const LeagueData: React.FC<LeagueDataProps> = React.memo(({ data, onRefreshData, onOwnershipChanged }) => {
   return (
     <LeagueDataProvider data={data}>
-      <LeagueDataContent onRefreshData={onRefreshData} onResyncData={onResyncData} onOwnershipChanged={onOwnershipChanged} />
+      <LeagueDataContent onRefreshData={onRefreshData} onOwnershipChanged={onOwnershipChanged} />
     </LeagueDataProvider>
   );
 });

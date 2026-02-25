@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Users, Activity, Calendar, Target, RefreshCw, CheckCircle } from 'lucide-react';
+import { Trophy, Users, Activity, Calendar, Target, RefreshCw, CheckCircle, Minimize2, Maximize2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface LeagueHeaderProps {
@@ -13,6 +13,8 @@ interface LeagueHeaderProps {
   draftCount: number;
   onRefreshData?: () => Promise<void>;
   compact?: boolean;
+  isCompactMode?: boolean;
+  onToggleCompactMode?: () => void;
 }
 
 const LeagueHeader: React.FC<LeagueHeaderProps> = ({ 
@@ -21,7 +23,9 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
   draftPickCount, 
   draftCount,
   onRefreshData,
-  compact = false
+  compact = false,
+  isCompactMode = false,
+  onToggleCompactMode
 }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
@@ -38,7 +42,7 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
         title: "Data refreshed",
         description: "League data has been updated successfully.",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Refresh failed",
         description: "Failed to refresh league data. Please try again.",
@@ -68,17 +72,31 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
                 </div>
               </div>
             </div>
-            {onRefreshData && (
-              <Button
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                size="icon"
-                variant="ghost"
-                className="flex-shrink-0"
-              >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              </Button>
-            )}
+            <div className="flex items-center gap-1">
+              {onToggleCompactMode && (
+                <Button
+                  onClick={onToggleCompactMode}
+                  size="icon"
+                  variant="ghost"
+                  className="flex-shrink-0"
+                  aria-label={isCompactMode ? 'Expand spacing' : 'Use compact spacing'}
+                  title={isCompactMode ? 'Expand spacing' : 'Use compact spacing'}
+                >
+                  {isCompactMode ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+                </Button>
+              )}
+              {onRefreshData && (
+                <Button
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  size="icon"
+                  variant="ghost"
+                  className="flex-shrink-0"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -88,12 +106,97 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
   // Full desktop version
   return (
     <Card className="glass-card fade-in border-gradient">
-      <CardHeader className="pb-6">
-...
+      <CardHeader className="pb-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="bg-gradient-to-br from-primary via-primary-glow to-primary-deep rounded-xl p-3 shadow-lg">
+              <Trophy className="w-6 h-6 text-white" />
+            </div>
+
+            <div>
+              <CardTitle className="text-2xl">{league.name}</CardTitle>
+              <CardDescription className="mt-1 text-sm">
+                Season {league.season} • {league.total_rosters} teams
+              </CardDescription>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Badge variant="secondary" className="gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+                  League Active
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  {lastRefreshed
+                    ? `Updated ${lastRefreshed.toLocaleTimeString([], {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}`
+                    : 'Live Data'}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+            {onToggleCompactMode && (
+              <Button
+                onClick={onToggleCompactMode}
+                variant="outline"
+                size="sm"
+                className="w-full sm:w-auto"
+              >
+                {isCompactMode ? <Maximize2 className="w-4 h-4 mr-2" /> : <Minimize2 className="w-4 h-4 mr-2" />}
+                {isCompactMode ? 'Comfort Spacing' : 'Compact Spacing'}
+              </Button>
+            )}
+            {onRefreshData && (
+              <Button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                variant="outline"
+                className="w-full lg:w-auto"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'Refreshing' : 'Refresh Data'}
+              </Button>
+            )}
+          </div>
+        </div>
       </CardHeader>
       
       <CardContent className="pt-0">
-...
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-2.5">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-wide">
+              <Users className="w-3.5 h-3.5" />
+              Teams
+            </div>
+            <p className="mt-1 text-xl font-semibold">{league.total_rosters ?? 0}</p>
+          </div>
+
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-2.5">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-wide">
+              <Activity className="w-3.5 h-3.5" />
+              Transactions
+            </div>
+            <p className="mt-1 text-xl font-semibold">{transactionCount}</p>
+          </div>
+
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-2.5">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-wide">
+              <Target className="w-3.5 h-3.5" />
+              Draft Picks
+            </div>
+            <p className="mt-1 text-xl font-semibold">{draftPickCount}</p>
+          </div>
+
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-2.5">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-wide">
+              <Calendar className="w-3.5 h-3.5" />
+              Drafts
+            </div>
+            <p className="mt-1 text-xl font-semibold">{draftCount}</p>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

@@ -1,16 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Trophy, Calendar, Activity, RefreshCw, ArrowRightLeft } from 'lucide-react';
+import { Users, Calendar, Activity, ArrowRightLeft } from 'lucide-react';
 import { useMatchups } from '@/hooks/useMatchups';
 import { useHistoricalMatchups } from '@/hooks/useHistoricalMatchups';
-import { useHistoricalProjections } from '@/hooks/useHistoricalProjections';
 import { useTransactionProcessor } from '@/hooks/useTransactionProcessor';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import ErrorBoundaryWithRetry from './ErrorBoundaryWithRetry';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { getCurrentNFLWeek } from '@/utils/nflWeek';
 
 // Lazy load tab components for better code splitting
 const MatchupsTab = lazy(() => import('./tabs/MatchupsTab'));
@@ -24,8 +20,9 @@ interface TeamOverviewProps {
   userMap: Record<string, any>;
   players: Record<string, any>;
   transactions?: any[];
-  onResyncData?: () => void;
   initialTab?: string;
+  onTabChange?: (tab: string) => void;
+  onRefreshData?: () => Promise<void>;
 }
 
 const TeamOverview: React.FC<TeamOverviewProps> = ({
@@ -34,33 +31,17 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   userMap,
   players,
   transactions = [],
-  onResyncData,
-  initialTab
+  initialTab,
+  onTabChange,
+  onRefreshData
 }) => {
-  const isMobile = useIsMobile();
-  
-  // Calculate current NFL week before state initialization
-  const getCurrentNFLWeek = useCallback((leagueSeason?: string) => {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const seasonYear = leagueSeason ? parseInt(leagueSeason) : currentYear;
-    const seasonStart = new Date(seasonYear, 8, 5); // September 5th
-    
-    if (now < seasonStart) return 1;
-    
-    const diffTime = now.getTime() - seasonStart.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    const weekNumber = Math.floor((diffDays + 2) / 7) + 1;
-    
-    return Math.min(Math.max(weekNumber, 1), 22);
-  }, []);
-
-  const currentWeek = getCurrentNFLWeek(league?.season);
+  const currentWeek = useMemo(() => getCurrentNFLWeek(league?.season), [league?.season]);
 
   // Initialize selectedWeek to current NFL week instead of hardcoded 1
   const [selectedWeek, setSelectedWeek] = useState(currentWeek);
   const [showBonusWins, setShowBonusWins] = useState(false);
   const [expandedTeamId, setExpandedTeamId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState(initialTab || "matchups");
   
   const { matchups, loading: matchupsLoading } = useMatchups(league?.league_id, selectedWeek);
   const { processWaiverTransactions, processing: processingTransactions } = useTransactionProcessor();
@@ -72,28 +53,41 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
       processWaiverTransactions(league.league_id, transactions);
     }
   }, [league?.league_id, transactions, processWaiverTransactions, processingTransactions]);
-  
-  const { projections, loading: projectionsLoading } = useHistoricalProjections(
-    league?.league_id || '',
-    currentWeek
-  );
+
+  // Keep selected week aligned when switching between leagues/seasons.
+  useEffect(() => {
+    setSelectedWeek(currentWeek);
+  }, [currentWeek]);
+
+  useEffect(() => {
+    setActiveTab(initialTab || "matchups");
+  }, [initialTab]);
 
   // Group matchups by matchup_id
-  const groupedMatchups = matchups.reduce((acc, matchup) => {
-    if (!acc[matchup.matchup_id]) {
-      acc[matchup.matchup_id] = [];
-    }
-    acc[matchup.matchup_id].push(matchup);
-    return acc;
-  }, {} as Record<number, typeof matchups>);
+  const groupedMatchups = useMemo(() => {
+    return matchups.reduce((acc, matchup) => {
+      if (!acc[matchup.matchup_id]) {
+        acc[matchup.matchup_id] = [];
+      }
+      acc[matchup.matchup_id].push(matchup);
+      return acc;
+    }, {} as Record<number, typeof matchups>);
+  }, [matchups]);
 
   const formatPoints = (points: number) => {
     return points?.toFixed(2) || '0.00';
   };
 
-  const getRosterById = (rosterId: number) => {
-    return rosters.find(r => r.roster_id === rosterId);
-  };
+  const rosterById = useMemo(() => {
+    return rosters.reduce<Record<number, any>>((acc, roster) => {
+      acc[roster.roster_id] = roster;
+      return acc;
+    }, {});
+  }, [rosters]);
+
+  const getRosterById = useCallback((rosterId: number) => {
+    return rosterById[rosterId];
+  }, [rosterById]);
 
   const getTeamRecord = (roster: any) => {
     const wins = roster.settings?.wins || 0;
@@ -128,50 +122,19 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
     return `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
   };
 
-  const handleTeamToggle = (rosterId: number) => {
-    setExpandedTeamId(expandedTeamId === rosterId ? null : rosterId);
-  };
+  const handleTeamToggle = useCallback((rosterId: number) => {
+    setExpandedTeamId((prevTeamId) => (prevTeamId === rosterId ? null : rosterId));
+  }, []);
+
+  const handleTabChange = useCallback((tab: string) => {
+    setActiveTab(tab);
+    onTabChange?.(tab);
+  }, [onTabChange]);
 
   return (
-    <div className="space-y-4 md:space-y-6 lg:space-y-8">
-      {!isMobile && (
-        <Card className="hover-lift border border-border/50">
-          <CardHeader className="pb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30">
-                  <Trophy className="w-7 h-7 text-yellow-500" />
-                </div>
-                <div>
-                  <CardTitle className="text-2xl lg:text-3xl mb-1">{league?.name}</CardTitle>
-                  <p className="text-muted-foreground text-base">
-                    {league?.season} Season <span className="mx-2">•</span> Week {currentWeek}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                {onResyncData && (
-                  <Button
-                    variant="outline"
-                    size="default"
-                    onClick={onResyncData}
-                    className="hover-border-glow"
-                  >
-                    <RefreshCw className="w-4 h-4 mr-2" />
-                    Re-sync Data
-                  </Button>
-                )}
-                <Badge variant="outline" className="text-lg px-4 py-1.5 text-green-400 border-green-400/50 bg-green-400/5 hover:bg-green-400/10 transition-colors">
-                  {rosters.length} Teams
-                </Badge>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
-      )}
-
-      <Tabs defaultValue={initialTab || "matchups"} className="space-y-4 md:space-y-6">
-        <TabsList className="flex w-full gap-1">
+    <div className="space-y-3 md:space-y-4">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-3 md:space-y-4">
+        <TabsList className="flex w-full gap-1 section-sticky-header">
           <TabsTrigger
             value="matchups"
             className="flex-1 flex items-center justify-center gap-1.5 md:gap-2"
@@ -215,6 +178,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                 players={players}
                 formatPoints={formatPoints}
                 getTeamRecord={getTeamRecord}
+                onSyncData={onRefreshData}
               />
             </Suspense>
           </ErrorBoundaryWithRetry>
@@ -250,6 +214,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                 userMap={userMap}
                 players={players}
                 league={league}
+                onSyncData={onRefreshData}
               />
             </Suspense>
           </ErrorBoundaryWithRetry>

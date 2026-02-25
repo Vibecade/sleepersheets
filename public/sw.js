@@ -1,6 +1,6 @@
 
-const CACHE_NAME = 'sleepersheets-v2';
-const API_CACHE_NAME = 'sleepersheets-api-v1';
+const CACHE_NAME = 'sleepersheets-v3';
+const API_CACHE_NAME = 'sleepersheets-api-v2';
 const OFFLINE_URL = '/offline.html';
 const MAX_CACHE_SIZE = 50; // Maximum number of cached responses per cache
 const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
@@ -35,6 +35,7 @@ const API_CACHE_PATTERNS = [
 
 // Background sync for offline actions
 const BACKGROUND_SYNC_TAG = 'sleepersheets-sync';
+const ASSET_FILE_PATTERN = /\/assets\/.+\.(js|css|map)$/;
 
 // Utility functions
 const isExpired = (response) => {
@@ -91,6 +92,13 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Allow clients to force activate a waiting worker
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 // Handle background sync
 self.addEventListener('sync', (event) => {
   if (event.tag === BACKGROUND_SYNC_TAG) {
@@ -111,6 +119,35 @@ async function doBackgroundSync() {
 }
 
 self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  const requestUrl = new URL(event.request.url);
+
+  // Never serve hashed JS/CSS bundles from the SW cache.
+  // This avoids stale chunk/version mismatch issues after deployments.
+  if (requestUrl.origin === self.location.origin && ASSET_FILE_PATTERN.test(requestUrl.pathname)) {
+    event.respondWith(
+      fetch(event.request).catch(async () => {
+        const cached = await caches.match(event.request);
+        return cached || new Response('Network error', { status: 408 });
+      })
+    );
+    return;
+  }
+
+  // Keep scripts/styles/workers network-first to reduce stale-client risk.
+  if (['script', 'style', 'worker'].includes(event.request.destination)) {
+    event.respondWith(
+      fetch(event.request).catch(async () => {
+        const cached = await caches.match(event.request);
+        return cached || new Response('Network error', { status: 408 });
+      })
+    );
+    return;
+  }
+
   // Handle navigation requests
   if (event.request.mode === 'navigate') {
     event.respondWith(
@@ -134,6 +171,12 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
       .then((response) => response || fetch(event.request))
+      .catch(() => {
+        if (event.request.destination === 'document') {
+          return caches.match(OFFLINE_URL);
+        }
+        return new Response('Network error', { status: 408 });
+      })
   );
 });
 

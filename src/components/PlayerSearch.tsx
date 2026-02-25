@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Search, X, Filter, Users, TrendingUp } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -44,6 +44,47 @@ const PlayerSearch: React.FC<PlayerSearchProps> = ({
   const [positionFilter, setPositionFilter] = useState<string>("");
   const [teamFilter, setTeamFilter] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
+  const [hasHydratedSearch, setHasHydratedSearch] = useState(false);
+  const searchStorageKey = useMemo(
+    () => (leagueId ? `sleepersheets:league-ui:${leagueId}:player-search` : null),
+    [leagueId]
+  );
+
+  useEffect(() => {
+    setHasHydratedSearch(false);
+    if (!searchStorageKey || typeof window === 'undefined') {
+      setHasHydratedSearch(true);
+      return;
+    }
+
+    try {
+      const storedFilters = localStorage.getItem(searchStorageKey);
+      if (storedFilters) {
+        const parsed = JSON.parse(storedFilters);
+        if (typeof parsed.searchTerm === 'string') setSearchTerm(parsed.searchTerm);
+        if (typeof parsed.positionFilter === 'string') setPositionFilter(parsed.positionFilter);
+        if (typeof parsed.teamFilter === 'string') setTeamFilter(parsed.teamFilter);
+      }
+    } catch {
+      // Ignore malformed local storage and fallback to defaults.
+    } finally {
+      setHasHydratedSearch(true);
+    }
+  }, [searchStorageKey]);
+
+  useEffect(() => {
+    if (!hasHydratedSearch || !searchStorageKey || typeof window === 'undefined') {
+      return;
+    }
+    localStorage.setItem(
+      searchStorageKey,
+      JSON.stringify({
+        searchTerm,
+        positionFilter,
+        teamFilter,
+      })
+    );
+  }, [hasHydratedSearch, searchStorageKey, searchTerm, positionFilter, teamFilter]);
 
   const getPlayerName = useCallback((player: Player): string => {
     return player.full_name || `${player.first_name || ''} ${player.last_name || ''}`.trim() || 'Unknown Player';

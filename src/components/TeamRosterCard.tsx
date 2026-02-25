@@ -33,9 +33,9 @@ const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
   const teamName = getTeamName(user);
 
   return (
-    <div className="glass-card rounded-xl p-4 sm:p-5 lg:p-6 space-y-4 lg:space-y-5 card-hover desktop-card-hover border border-border-light bg-gradient-to-br from-card to-card-light">
-      <div className="flex items-center space-x-4 lg:space-x-5">
-        <Avatar className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 flex-shrink-0 ring-2 ring-primary/20 ring-offset-2 ring-offset-background transition-all duration-200">
+    <div className="glass-card rounded-xl p-3 sm:p-4 lg:p-4 space-y-3 lg:space-y-4 card-hover desktop-card-hover border border-border-light bg-gradient-to-br from-card to-card-light">
+      <div className="flex items-center space-x-3 lg:space-x-4">
+        <Avatar className="w-10 h-10 sm:w-12 sm:h-12 lg:w-12 lg:h-12 flex-shrink-0 ring-2 ring-primary/20 ring-offset-1 ring-offset-background transition-all duration-200">
           <AvatarImage 
             src={user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user.avatar}` : undefined} 
             alt={`${teamName} avatar`}
@@ -47,25 +47,25 @@ const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <h4 className="font-bold text-foreground truncate text-lg sm:text-xl lg:text-2xl leading-tight">{teamName}</h4>
-          <p className="text-sm lg:text-base text-muted-foreground truncate mt-1">{user?.display_name || 'Unknown Manager'}</p>
+          <h4 className="font-bold text-foreground truncate text-base sm:text-lg lg:text-xl leading-tight">{teamName}</h4>
+          <p className="text-xs sm:text-sm text-muted-foreground truncate mt-0.5">{user?.display_name || 'Unknown Manager'}</p>
         </div>
       </div>
       
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-accent/30 rounded-lg p-3 border border-border-light">
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-accent/30 rounded-lg p-2.5 border border-border-light">
             <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Record</span>
-            <div className="mt-1">
+            <div className="mt-0.5">
               <Badge variant="outline" className="text-foreground border-border text-sm font-bold">
                 {roster.settings?.wins || 0}-{roster.settings?.losses || 0}-{roster.settings?.ties || 0}
               </Badge>
             </div>
           </div>
-          <div className="bg-success/10 rounded-lg p-3 border border-success/20">
+          <div className="bg-success/10 rounded-lg p-2.5 border border-success/20">
             <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Points</span>
-            <div className="mt-1">
-              <span className="font-bold text-success text-lg">
+            <div className="mt-0.5">
+              <span className="font-bold text-success text-base sm:text-lg">
                 {roster.settings?.fpts?.toFixed(2) || '0.00'}
               </span>
             </div>
@@ -90,8 +90,8 @@ const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
         )}
         
         <Separator className="bg-border-light" />
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-2 text-sm">
             <div className="bg-accent/20 rounded-lg p-2 flex justify-between items-center">
               <span className="text-muted-foreground font-medium">Active</span>
               <span className="font-bold text-foreground">{playerCounts.active}</span>
@@ -109,9 +109,9 @@ const TeamRosterCard: React.FC<TeamRosterCardProps> = ({
               <span className="font-bold text-foreground">{playerCounts.reserve}</span>
             </div>
           )}
-          <div className="bg-primary/10 rounded-lg p-3 flex justify-between items-center border border-primary/20">
+          <div className="bg-primary/10 rounded-lg p-2.5 flex justify-between items-center border border-primary/20">
             <span className="text-foreground font-bold">Total Players</span>
-            <span className="text-primary font-bold text-lg">{playerCounts.total}</span>
+            <span className="text-primary font-bold text-base sm:text-lg">{playerCounts.total}</span>
           </div>
         </div>
       </div>

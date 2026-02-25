@@ -79,7 +79,7 @@ const MinimizableDataDashboard: React.FC<MinimizableDataDashboardProps> = memo((
   if (isExpanded) {
     return (
       <Card>
-        <CardHeader>
+        <CardHeader className="py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Eye className="w-5 h-5" />
@@ -101,7 +101,7 @@ const MinimizableDataDashboard: React.FC<MinimizableDataDashboardProps> = memo((
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent className="pt-0 pb-4">
           <DataDashboard
             league={league}
             rosters={rosters}
@@ -118,7 +118,7 @@ const MinimizableDataDashboard: React.FC<MinimizableDataDashboardProps> = memo((
 
   return (
     <Card className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setIsExpanded(true)}>
-      <CardHeader>
+      <CardHeader className="py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Eye className="w-5 h-5 text-blue-500" />
@@ -132,8 +132,8 @@ const MinimizableDataDashboard: React.FC<MinimizableDataDashboardProps> = memo((
           <ChevronDown className="w-4 h-4 text-muted-foreground" />
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <CardContent className="pt-0 pb-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-blue-500/20 rounded-lg">
               <Users className="w-4 h-4 text-blue-400" />

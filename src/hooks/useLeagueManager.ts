@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUrlParams } from '@/hooks/useUrlParams';
 import { useLeagueOwnershipStatus } from '@/hooks/useLeagueOwnershipStatus';
@@ -15,6 +15,7 @@ export const useLeagueManager = () => {
   
   const { data: leagueData, isLoading, error, refetch } = useLeagueQuery(activeLeagueId);
   const { addRecentLeague, recentLeagues } = useUserLeagues();
+  const lastTrackedLeagueIdRef = useRef<string | null>(null);
 
   const [ownershipStatus, setOwnershipStatus] = useState<{
     isOwned: boolean;
@@ -72,35 +73,37 @@ export const useLeagueManager = () => {
     }
   }, [error, toast]);
 
-  // Memoize the ownership check to prevent unnecessary calls
-  const checkAndSetOwnership = useMemo(() => {
-    return async (leagueId: string) => {
-      if (!leagueId) return;
-      const status = await checkOwnershipStatus(leagueId);
-      setOwnershipStatus(status);
-    };
+  const checkAndSetOwnership = useCallback(async (leagueId: string) => {
+    if (!leagueId) return;
+    const status = await checkOwnershipStatus(leagueId);
+    setOwnershipStatus(status);
   }, [checkOwnershipStatus]);
 
   // Only check ownership when league ID changes
   useEffect(() => {
     if (leagueData?.league?.league_id) {
-      checkAndSetOwnership(leagueData.league.league_id);
+      const currentLeagueId = leagueData.league.league_id;
+      checkAndSetOwnership(currentLeagueId);
       
-      // Track this league in recent leagues
-      addRecentLeague({
-        leagueId: leagueData.league.league_id,
-        name: leagueData.league.name,
-        season: leagueData.league.season,
-        totalRosters: leagueData.league.total_rosters
-      });
+      // Avoid repeated localStorage writes for the same league during refreshes.
+      if (lastTrackedLeagueIdRef.current !== currentLeagueId) {
+        addRecentLeague({
+          leagueId: currentLeagueId,
+          name: leagueData.league.name,
+          season: leagueData.league.season,
+          totalRosters: leagueData.league.total_rosters
+        });
+        lastTrackedLeagueIdRef.current = currentLeagueId;
+      }
       
       // Only update URL if it's different to prevent navigation spam
       const currentLeagueInUrl = new URLSearchParams(window.location.search).get('league');
-      if (currentLeagueInUrl !== leagueData.league.league_id) {
-        setLeagueInUrl(leagueData.league.league_id);
+      if (currentLeagueInUrl !== currentLeagueId) {
+        setLeagueInUrl(currentLeagueId);
       }
     } else {
       setOwnershipStatus(null);
+      lastTrackedLeagueIdRef.current = null;
     }
   }, [leagueData?.league?.league_id, checkAndSetOwnership, setLeagueInUrl, addRecentLeague, leagueData?.league?.name, leagueData?.league?.season, leagueData?.league?.total_rosters]);
 
