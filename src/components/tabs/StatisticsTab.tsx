@@ -19,27 +19,17 @@ const StatisticsTab: React.FC<StatisticsTabProps> = ({
   userMap,
 }) => {
   return (
-<<<<<<< HEAD
     <Card className="transition-all duration-150 hover:shadow-lg">
-      <CardHeader>
-=======
-    <Card className="transition-all duration-300 hover:shadow-lg">
       <CardHeader className="pb-3">
->>>>>>> 9639500acfca1a9e0a83d6b073a9d2d3cb7e11b0
         <div className="flex items-center space-x-2">
           <Activity className="w-4 h-4" />
           <CardTitle className="text-base sm:text-lg">League Statistics</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="p-0">
-<<<<<<< HEAD
-        <ScrollArea className="h-[70vh] w-full">
-          <div className="p-6 space-y-6">
-            <PlayerNewsFeed />
-=======
         <ScrollArea className="h-[60vh] md:h-[62vh] w-full">
-          <div className="p-4 sm:p-5">
->>>>>>> 9639500acfca1a9e0a83d6b073a9d2d3cb7e11b0
+          <div className="space-y-5 p-4 sm:p-5">
+            <PlayerNewsFeed />
             <FunStatistics
               league={league}
               rosters={rosters}
