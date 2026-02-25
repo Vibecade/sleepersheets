@@ -63,7 +63,14 @@ const decodeXmlEntities = (value) =>
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;|&apos;/g, "'")
-    .replace(/&#x2F;/gi, '/');
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => {
+      const parsed = Number.parseInt(code, 16);
+      return Number.isNaN(parsed) ? _ : String.fromCodePoint(parsed);
+    })
+    .replace(/&#([0-9]+);/g, (_, code) => {
+      const parsed = Number.parseInt(code, 10);
+      return Number.isNaN(parsed) ? _ : String.fromCodePoint(parsed);
+    });
 
 const stripHtml = (value) => value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
