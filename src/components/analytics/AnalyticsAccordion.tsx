@@ -19,19 +19,19 @@ export const AnalyticsAccordion: React.FC = () => {
     <Card>
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="analytics" className="border-none">
-          <AccordionTrigger className="px-6 py-4 hover:no-underline">
+          <AccordionTrigger className="px-4 py-3 hover:no-underline">
             <div className="flex items-center space-x-3">
-              <BarChart3 className="w-6 h-6 text-primary" />
+              <BarChart3 className="w-5 h-5 text-primary" />
               <div className="text-left">
-                <h3 className="text-xl font-semibold">Advanced Analytics</h3>
+                <h3 className="text-lg font-semibold">Advanced Analytics</h3>
                 <p className="text-sm text-muted-foreground">
                   Deep dive into league performance, trends, and key metrics
                 </p>
               </div>
             </div>
           </AccordionTrigger>
-          <AccordionContent className="px-6 pb-6">
-            <div className="space-y-6">
+          <AccordionContent className="px-4 pb-4">
+            <div className="space-y-4">
               <LeagueMetricsCards 
                 rosters={rosters}
                 users={users}
@@ -40,7 +40,7 @@ export const AnalyticsAccordion: React.FC = () => {
                 leagueId={leagueId}
               />
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <Card>
                   <CardHeader className="flex flex-row items-center space-y-0 pb-4">
                     <div className="flex items-center space-x-2">

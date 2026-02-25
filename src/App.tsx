@@ -14,6 +14,7 @@ import About from "./pages/About";
 import { LazyExport, LazyAuth, LazyHowTo } from "./components/LazyComponents";
 import { Skeleton } from "@/components/ui/skeleton";
 import EnhancedErrorBoundary from "./components/EnhancedErrorBoundary";
+import DeployUpdateToast from "./components/DeployUpdateToast";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,6 +47,7 @@ const App = () => (
       <AuthProvider>
         <TooltipProvider>
           <Toaster />
+          <DeployUpdateToast />
           <BrowserRouter>
             <EnhancedErrorBoundary level="page">
               <Routes>

@@ -57,7 +57,7 @@ const MinimizableLeagueOptions: React.FC<MinimizableLeagueOptionsProps> = ({
     <Card>
       <Collapsible open={open} onOpenChange={onOpenChange}>
         <CollapsibleTrigger asChild>
-          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+          <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors section-sticky-header">
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Settings className="h-5 w-5" />

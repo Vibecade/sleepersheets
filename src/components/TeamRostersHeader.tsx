@@ -2,7 +2,7 @@
 import React from 'react';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Skull, Calculator, Lock, Calendar } from 'lucide-react';
+import { Users, Skull, Calculator, Lock, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface TeamRostersHeaderProps {
@@ -15,6 +15,9 @@ interface TeamRostersHeaderProps {
   showPendingFreeAgents: boolean;
   onTogglePendingFreeAgents: () => void;
   canModifyLeague: boolean;
+  showTeamGrid: boolean;
+  onToggleTeamGrid: () => void;
+  teamCount: number;
 }
 
 const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
@@ -26,26 +29,38 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
   onToggleContractCalculator,
   showPendingFreeAgents,
   onTogglePendingFreeAgents,
-  canModifyLeague
+  canModifyLeague,
+  showTeamGrid,
+  onToggleTeamGrid,
+  teamCount
 }) => {
   const { user } = useAuth();
 
   return (
-    <CardHeader className="pb-3 sm:pb-4">
+    <CardHeader className="pb-3 sm:pb-4 section-sticky-header">
       <div className="flex flex-col space-y-3 sm:space-y-2">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex items-center space-x-2">
             <Users className="w-5 h-5 flex-shrink-0" />
             <div className="min-w-0">
               <CardTitle className="text-lg sm:text-xl">Team Rosters</CardTitle>
               <CardDescription className="text-sm">
-                Team overview and roster sizes
+                {teamCount} teams
                 {showSalaryFeatures && ' with salary tracking'}
                 {showDeadCapManager && ' and dead cap management'}
                 {!canModifyLeague && ' (read-only)'}
               </CardDescription>
             </div>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onToggleTeamGrid}
+            className="min-h-[36px] px-3"
+          >
+            {showTeamGrid ? 'Hide Teams' : 'Show Teams'}
+            {showTeamGrid ? <ChevronUp className="w-4 h-4 ml-2" /> : <ChevronDown className="w-4 h-4 ml-2" />}
+          </Button>
         </div>
 
         {!canModifyLeague && (
@@ -63,7 +78,7 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
               variant="outline"
               size="sm"
               onClick={onToggleDeadCapManager}
-              className="flex items-center justify-center space-x-2 min-h-[44px] text-sm"
+              className="flex items-center justify-center space-x-2 min-h-[38px] text-sm"
               disabled={!canModifyLeague}
               title={!canModifyLeague ? 'Claim this league to access dead cap management' : undefined}
             >
@@ -77,7 +92,7 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
             variant="outline"
             size="sm"
             onClick={onToggleContractCalculator}
-            className="flex items-center justify-center space-x-2 min-h-[44px] text-sm"
+            className="flex items-center justify-center space-x-2 min-h-[38px] text-sm"
           >
             <Calculator className="w-4 h-4" />
             <span>Contract Calculator</span>
@@ -87,7 +102,7 @@ const TeamRostersHeader: React.FC<TeamRostersHeaderProps> = ({
             variant="outline"
             size="sm"
             onClick={onTogglePendingFreeAgents}
-            className="flex items-center justify-center space-x-2 min-h-[44px] text-sm"
+            className="flex items-center justify-center space-x-2 min-h-[38px] text-sm"
           >
             <Calendar className="w-4 h-4" />
             <span>Free Agents</span>

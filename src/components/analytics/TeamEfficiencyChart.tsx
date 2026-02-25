@@ -4,12 +4,12 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { ScatterChart, Scatter, XAxis, YAxis, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
-import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 import { useHistoricalMatchups } from '@/hooks/useHistoricalMatchups';
-import { useMatchups } from '@/hooks/useMatchups';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getCurrentNFLWeek } from '@/utils/nflWeek';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface TeamEfficiencyChartProps {
   rosters: any[];
@@ -24,14 +24,10 @@ type ChartType = 'costPerWin' | 'costPerPoint' | 'efficiency';
 const TeamEfficiencyChart: React.FC<TeamEfficiencyChartProps> = ({
   rosters,
   users,
-  players,
-  leagueId,
-  transactions = []
+  leagueId
 }) => {
   const { getSalaryCapContribution } = usePlayerSalaries(leagueId);
-  const { settings } = useLeagueSettings(leagueId);
   const { deadCapPlayers } = useDeadCapPlayers(leagueId);
-  const { getCurrentNFLWeek } = useMatchups(leagueId, 1);
   const isMobile = useIsMobile();
   const [chartType, setChartType] = useState<ChartType>('costPerWin');
 
@@ -186,8 +182,9 @@ const TeamEfficiencyChart: React.FC<TeamEfficiencyChartProps> = ({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground">
-        Loading efficiency data...
+      <div className="space-y-3 h-64">
+        <Skeleton className="h-8 w-40" />
+        <Skeleton className="h-[220px] w-full" />
       </div>
     );
   }

@@ -1,4 +1,5 @@
 import { logger } from './logger';
+import { apiCache } from './apiCache';
 
 // Resource preloader for critical resources
 export class ResourcePreloader {
@@ -69,6 +70,11 @@ export class ResourcePreloader {
     // Prefetch critical pages
     this.prefetchPage('/auth');
     this.prefetchPage('/export');
+
+    // Hydrate long-lived players cache in the background.
+    setTimeout(() => {
+      void apiCache.warmPlayersCache();
+    }, 0);
     
     logger.info('🚀 Critical resources preloaded for better performance');
   }

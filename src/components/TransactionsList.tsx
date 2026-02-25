@@ -1,33 +1,66 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useDeferredValue, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { ArrowRightLeft, Plus, Minus, RefreshCw, Calendar, Users, Search, Filter, X } from 'lucide-react';
+import { ArrowRightLeft, Plus, Minus, Calendar, Search, X } from 'lucide-react';
 import { getTeamName } from '@/utils/leagueDataUtils';
-import PlayerSearch from './PlayerSearch';
 
 interface TransactionsListProps {
   transactions: any[];
   userMap: Record<string, any>;
   players: Record<string, any>;
   league: any;
+  onSyncData?: () => Promise<void>;
 }
 
 const TransactionsList: React.FC<TransactionsListProps> = ({
   transactions,
   userMap,
   players,
-  league
+  league,
+  onSyncData
 }) => {
-  const [selectedWeek, setSelectedWeek] = useState(1);
+  const [selectedWeek, setSelectedWeek] = useState<string>('all');
   const [transactionType, setTransactionType] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [hideFailed, setHideFailed] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(50);
+  const [hasHydratedFilters, setHasHydratedFilters] = useState(false);
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+  const normalizedSearchTerm = deferredSearchTerm.trim().toLowerCase();
+  const transactionsStorageKey = useMemo(
+    () => (league?.league_id ? `sleepersheets:league-ui:${league.league_id}:transactions` : null),
+    [league?.league_id]
+  );
+
+  useEffect(() => {
+    setHasHydratedFilters(false);
+    if (!transactionsStorageKey || typeof window === 'undefined') {
+      setHasHydratedFilters(true);
+      return;
+    }
+
+    try {
+      const storedFilters = localStorage.getItem(transactionsStorageKey);
+      if (storedFilters) {
+        const parsed = JSON.parse(storedFilters);
+        if (typeof parsed.selectedWeek === 'string') setSelectedWeek(parsed.selectedWeek);
+        if (typeof parsed.transactionType === 'string') setTransactionType(parsed.transactionType);
+        if (typeof parsed.searchTerm === 'string') setSearchTerm(parsed.searchTerm);
+        if (typeof parsed.showSearch === 'boolean') setShowSearch(parsed.showSearch);
+        if (typeof parsed.hideFailed === 'boolean') setHideFailed(parsed.hideFailed);
+      }
+    } catch {
+      // Ignore malformed local storage and fallback to defaults.
+    } finally {
+      setHasHydratedFilters(true);
+    }
+  }, [transactionsStorageKey]);
 
   const getPlayerName = (playerId: string): string => {
     const player = players[playerId];
@@ -62,68 +95,107 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
     }
   };
 
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter(transaction => {
-      // Use 'leg' field from API (which represents week) or fall back to 'week'
-      const transactionWeek = transaction.leg || transaction.week;
-      const weekMatch = !selectedWeek || transactionWeek === selectedWeek;
-      const typeMatch = transactionType === 'all' || transaction.type === transactionType;
-      
-      // Failed status filter
-      const statusMatch = !hideFailed || transaction.status !== 'failed';
-      
-      // Search filter
-      const searchMatch = !searchTerm || (
-        // Search in player names
-        (transaction.adds && Object.keys(transaction.adds).some(playerId => 
-          getPlayerName(playerId).toLowerCase().includes(searchTerm.toLowerCase())
-        )) ||
-        (transaction.drops && Object.keys(transaction.drops).some(playerId => 
-          getPlayerName(playerId).toLowerCase().includes(searchTerm.toLowerCase())
-        )) ||
-        // Search in team names
-        getTeamName(userMap[transaction.creator]).toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      
-      return weekMatch && typeMatch && statusMatch && searchMatch;
+  const availableWeeks = useMemo(() => {
+    const weeks = new Set<number>();
+    transactions.forEach((transaction) => {
+      const transactionWeek = Number(transaction.leg || transaction.week || 0);
+      if (transactionWeek > 0) {
+        weeks.add(transactionWeek);
+      }
     });
-  }, [transactions, selectedWeek, transactionType, hideFailed, searchTerm, userMap, players]);
+    return Array.from(weeks).sort((a, b) => b - a);
+  }, [transactions]);
 
-  // Count of hidden failed transactions for display
-  const hiddenFailedCount = useMemo(() => {
-    if (!hideFailed) return 0;
-    return transactions.filter(transaction => {
-      const transactionWeek = transaction.leg || transaction.week;
-      const weekMatch = !selectedWeek || transactionWeek === selectedWeek;
+  const { sortedTransactions, hiddenFailedCount } = useMemo(() => {
+    let hiddenFailed = 0;
+    const filteredTransactions: any[] = [];
+
+    for (const transaction of transactions) {
+      const transactionWeek = Number(transaction.leg || transaction.week || 0);
+      const weekMatch = selectedWeek === 'all' || transactionWeek === Number(selectedWeek);
+      if (!weekMatch) continue;
+
       const typeMatch = transactionType === 'all' || transaction.type === transactionType;
-      const searchMatch = !searchTerm || (
-        (transaction.adds && Object.keys(transaction.adds).some(playerId => 
-          getPlayerName(playerId).toLowerCase().includes(searchTerm.toLowerCase())
-        )) ||
-        (transaction.drops && Object.keys(transaction.drops).some(playerId => 
-          getPlayerName(playerId).toLowerCase().includes(searchTerm.toLowerCase())
-        )) ||
-        getTeamName(userMap[transaction.creator]).toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      return weekMatch && typeMatch && searchMatch && transaction.status === 'failed';
-    }).length;
-  }, [transactions, selectedWeek, transactionType, searchTerm, userMap, players, hideFailed]);
+      if (!typeMatch) continue;
 
-  const sortedTransactions = [...filteredTransactions].sort((a, b) => {
-    return new Date(b.created || 0).getTime() - new Date(a.created || 0).getTime();
-  });
+      const searchMatch =
+        !normalizedSearchTerm ||
+        (transaction.adds &&
+          Object.keys(transaction.adds).some((playerId) =>
+            getPlayerName(playerId).toLowerCase().includes(normalizedSearchTerm)
+          )) ||
+        (transaction.drops &&
+          Object.keys(transaction.drops).some((playerId) =>
+            getPlayerName(playerId).toLowerCase().includes(normalizedSearchTerm)
+          )) ||
+        getTeamName(userMap[transaction.creator]).toLowerCase().includes(normalizedSearchTerm);
+
+      if (!searchMatch) continue;
+
+      if (hideFailed && transaction.status === 'failed') {
+        hiddenFailed++;
+        continue;
+      }
+
+      filteredTransactions.push(transaction);
+    }
+
+    filteredTransactions.sort((a, b) => {
+      return new Date(b.created || 0).getTime() - new Date(a.created || 0).getTime();
+    });
+
+    return {
+      sortedTransactions: filteredTransactions,
+      hiddenFailedCount: hiddenFailed,
+    };
+  }, [transactions, selectedWeek, transactionType, normalizedSearchTerm, hideFailed, userMap]);
+
+  useEffect(() => {
+    setVisibleCount(50);
+  }, [selectedWeek, transactionType, normalizedSearchTerm, hideFailed, transactions]);
+
+  useEffect(() => {
+    if (!hasHydratedFilters || !transactionsStorageKey || typeof window === 'undefined') {
+      return;
+    }
+
+    localStorage.setItem(
+      transactionsStorageKey,
+      JSON.stringify({
+        selectedWeek,
+        transactionType,
+        searchTerm,
+        showSearch,
+        hideFailed,
+      })
+    );
+  }, [
+    hasHydratedFilters,
+    transactionsStorageKey,
+    selectedWeek,
+    transactionType,
+    searchTerm,
+    showSearch,
+    hideFailed,
+  ]);
+
+  const visibleTransactions = useMemo(
+    () => sortedTransactions.slice(0, visibleCount),
+    [sortedTransactions, visibleCount]
+  );
+  const hasMoreTransactions = visibleCount < sortedTransactions.length;
 
   return (
-    <Card className="glass-card border-border-light transition-all duration-300 hover:shadow-lg">
-      <CardHeader className="pb-4">
+    <Card className="glass-card border-border-light transition-all duration-150 hover:shadow-lg">
+      <CardHeader className="pb-4 section-sticky-header">
         <div className="flex flex-col space-y-3 sm:space-y-4">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
               <ArrowRightLeft className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
               <CardTitle className="text-lg sm:text-xl font-bold truncate">League Transactions</CardTitle>
-              <Badge variant="outline" className="text-xs flex-shrink-0">
-                {sortedTransactions.length}
-              </Badge>
+                <Badge variant="outline" className="text-xs flex-shrink-0">
+                  {sortedTransactions.length}
+                </Badge>
             </div>
             <Button
               variant="outline"
@@ -147,11 +219,11 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
           {showSearch && (
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search players or teams..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-card/50 border-border-light"
+                <Input
+                  placeholder="Search players or teams..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-card/50 border-border-light"
               />
               {searchTerm && (
                 <Button
@@ -170,15 +242,19 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
           <div className="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:items-center sm:gap-4">
             <div className="flex items-center justify-between sm:justify-start gap-2">
               <Label htmlFor="week-filter" className="text-sm font-medium flex-shrink-0">Week:</Label>
-              <Input
+              <select
                 id="week-filter"
-                type="number"
-                min="1"
-                max="18"
                 value={selectedWeek}
-                onChange={(e) => setSelectedWeek(Number(e.target.value))}
-                className="w-16 sm:w-20 bg-card/50 border-border-light text-center"
-              />
+                onChange={(e) => setSelectedWeek(e.target.value)}
+                className="px-2 py-1.5 bg-card/50 border border-border-light rounded-md text-sm flex-1 sm:flex-none min-w-0"
+              >
+                <option value="all">All Weeks</option>
+                {availableWeeks.map((week) => (
+                  <option key={week} value={String(week)}>
+                    Week {week}
+                  </option>
+                ))}
+              </select>
             </div>
             
             <div className="flex items-center justify-between sm:justify-start gap-2">
@@ -215,33 +291,45 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
           <div className="text-center py-12 text-muted-foreground">
             <ArrowRightLeft className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p className="text-lg font-medium">No transactions found</p>
-            <p className="text-sm">Try adjusting your filters or search terms</p>
-            {(searchTerm || transactionType !== 'all' || selectedWeek || !hideFailed) && (
+            <p className="text-sm">Try adjusting filters, or sync league data to pull the latest moves.</p>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {onSyncData && (
+                <Button
+                  size="sm"
+                  onClick={() => void onSyncData()}
+                >
+                  Sync Data
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
                   setSearchTerm('');
                   setTransactionType('all');
-                  setSelectedWeek(1);
+                  setSelectedWeek('all');
                   setHideFailed(true);
                 }}
-                className="mt-4"
               >
-                Clear Filters
+                Reset Filters
               </Button>
-            )}
+            </div>
           </div>
         ) : (
           <div className="space-y-3">
-            {sortedTransactions.map((transaction) => {
+            {hasMoreTransactions && (
+              <p className="text-xs text-muted-foreground">
+                Showing {visibleTransactions.length} of {sortedTransactions.length} transactions
+              </p>
+            )}
+            {visibleTransactions.map((transaction) => {
               const creator = userMap[transaction.creator];
               const creatorName = getTeamName(creator);
               
               return (
                 <div
                   key={transaction.transaction_id}
-                  className="bg-card/30 rounded-xl p-4 border border-border-light transition-all duration-300 hover:bg-card/50 hover:border-border hover:shadow-md"
+                  className="bg-card/30 rounded-xl p-4 border border-border-light transition-all duration-150 hover:bg-card/50 hover:border-border hover:shadow-md"
                 >
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 mb-3">
                     <div className="flex items-center space-x-2 sm:space-x-3 flex-wrap gap-y-1 flex-1 min-w-0">
@@ -383,6 +471,17 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                 </div>
               );
             })}
+            {hasMoreTransactions && (
+              <div className="pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setVisibleCount((count) => count + 50)}
+                  className="w-full"
+                >
+                  Load 50 More
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </CardContent>

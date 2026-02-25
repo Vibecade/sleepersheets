@@ -54,7 +54,15 @@
     --success-muted: 142 40% 35%;
     
     --muted: 214 15% 12%;
-    --muted-foreground: 214 12% 62%;
+    --muted-foreground: 214 16% 78%;
+
+    /* Spacing scale (8/12/16/24/32) */
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --section-gap: var(--space-4);
     
     --destructive: 358 75% 52%;
     --destructive-foreground: 45 85% 88%;
@@ -78,8 +86,8 @@
     --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--secondary-glow)) 100%);
     --gradient-success: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(142 80% 58%) 100%);
     --gradient-card: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card-light)) 100%);
-    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
-    --gradient-glass-strong: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+    --gradient-glass-strong: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%);
     
     /* Refined Shadow System */
     --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -91,11 +99,17 @@
     --shadow-glow: 0 0 20px hsl(var(--primary) / 0.2);
     --shadow-glow-strong: 0 0 30px hsl(var(--primary) / 0.3), 0 0 60px hsl(var(--primary) / 0.1);
     
-    /* Smooth Transitions */
-    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-normal: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    /* Unified motion system */
+    --motion-duration-fast: 120ms;
+    --motion-duration-standard: 160ms;
+    --motion-duration-emphasis: 180ms;
+    --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+    --transition-fast: all var(--motion-duration-fast) var(--motion-ease-standard);
+    --transition-normal: all var(--motion-duration-standard) var(--motion-ease-standard);
+    --transition-slow: all var(--motion-duration-emphasis) var(--motion-ease-standard);
+    --transition-bounce: all var(--motion-duration-emphasis) cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-stadium: var(--transition-normal);
     
     /* Sidebar Variables */
     --sidebar-background: 214 18% 8%;
@@ -168,20 +182,20 @@
   }
 
   .glass-card {
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(155%);
+    -webkit-backdrop-filter: blur(16px) saturate(155%);
     background: linear-gradient(135deg, 
-      rgba(255,215,0,0.12), 
-      rgba(0,0,0,0.8), 
-      rgba(220,20,60,0.08)
+      rgba(255,215,0,0.06), 
+      rgba(8,12,18,0.78), 
+      rgba(220,20,60,0.04)
     );
-    border: 1px solid rgba(255, 215, 0, 0.4);
+    border: 1px solid rgba(255, 215, 0, 0.24);
     box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.4),
-      0 2px 8px rgba(255, 215, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      0 6px 24px rgba(0, 0, 0, 0.32),
+      0 1px 6px rgba(255, 215, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
     position: relative;
-    animation: stadium-entrance 0.8s ease-out;
+    animation: stadium-entrance var(--motion-duration-emphasis) var(--motion-ease-standard);
   }
 
   .glass-card::before {
@@ -191,7 +205,51 @@
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.6), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.38), transparent);
+  }
+
+  /* Compact density mode for league views */
+  .ui-compact {
+    --section-gap: var(--space-3);
+  }
+
+  .ui-compact .glass-card {
+    backdrop-filter: blur(14px) saturate(145%);
+    -webkit-backdrop-filter: blur(14px) saturate(145%);
+  }
+
+  .ui-compact table th,
+  .ui-compact table td {
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+  }
+
+  .main-container {
+    width: min(1200px, calc(100% - (2 * var(--space-4))));
+    margin: 0 auto;
+    padding: var(--space-4) 0 calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .section-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--section-gap);
+  }
+
+  .section-sticky-header {
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (min-width: 768px) {
+    .section-sticky-header {
+      position: sticky;
+      top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
+      z-index: 20;
+      background: linear-gradient(180deg, hsl(var(--background) / 0.82), hsl(var(--background) / 0.68));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
   }
 
   .glass-button {
@@ -323,15 +381,15 @@
 
   /* Refined animations */
   .fade-in {
-    animation: fadeInNatural 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: fadeInNatural var(--motion-duration-emphasis) var(--motion-ease-standard);
   }
 
   .slide-up {
-    animation: slideUpNatural 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: slideUpNatural var(--motion-duration-emphasis) var(--motion-ease-standard);
   }
 
   .hover-lift {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: var(--transition-normal);
   }
 
   .hover-lift:hover {
@@ -356,7 +414,7 @@
 
   /* Interactive element hover effects */
   .interactive-hover {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: var(--transition-normal);
   }
 
   .interactive-hover:hover {
@@ -380,7 +438,7 @@
 
   /* Card hover effect */
   .card-hover {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: var(--transition-normal);
   }
 
   .card-hover:hover {
@@ -400,7 +458,7 @@
     padding: 0.75rem 1.5rem;
     border-radius: 0.75rem;
     font-weight: 500;
-    transition: all 0.3s ease;
+    transition: var(--transition-normal);
     box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
     /* Ensure good mobile touch target */
     min-height: 44px;
@@ -464,6 +522,12 @@
 
   /* Mobile optimizations */
   @media (max-width: 768px) {
+    .main-container {
+      width: calc(100% - (2 * var(--space-3)));
+      padding-top: var(--space-3);
+      padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom, 0px));
+    }
+
     body {
       font-size: clamp(0.875rem, 3vw, 1rem);
       /* Prevent background attachment issues on mobile */
@@ -571,7 +635,7 @@
 
   /* Utility Animation Classes */
   .animate-stadium-entrance {
-    animation: stadium-entrance 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: stadium-entrance var(--motion-duration-emphasis) var(--motion-ease-standard);
   }
 
   .animate-helmet-glow {
@@ -579,11 +643,11 @@
   }
 
   .animate-header-compact {
-    animation: header-compact 0.3s ease-out forwards;
+    animation: header-compact var(--motion-duration-emphasis) var(--motion-ease-standard) forwards;
   }
 
   .animate-header-expand {
-    animation: header-expand 0.3s ease-out forwards;
+    animation: header-expand var(--motion-duration-emphasis) var(--motion-ease-standard) forwards;
   }
 
   /* Small mobile devices */
@@ -629,7 +693,7 @@
     }
 
     .fade-in, .slide-up {
-      animation-duration: 0.4s;
+      animation-duration: var(--motion-duration-emphasis);
     }
 
     h2 {
@@ -661,6 +725,10 @@
 
   /* Accessibility improvements */
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto !important;
+    }
+
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;

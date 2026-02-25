@@ -3,12 +3,21 @@ import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="mt-16 py-8 border-t border-white/10">
+    <footer className="mt-16 py-10 border-t border-white/10 bg-black/20 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto px-4">
+        <div className="mb-8 rounded-2xl border border-white/10 bg-gradient-to-r from-primary/10 via-transparent to-secondary/10 p-5 sm:p-6">
+          <p className="text-sm sm:text-base text-foreground/90 font-medium">
+            SleeperSheets is focused on league management, not monetized ad placements.
+          </p>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            Fast, clean, and built for commissioners and managers who want fewer distractions.
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
           <div>
             <h3 className="text-white font-semibold mb-3">SleeperSheets</h3>
-            <p className="text-white/60 text-sm">
+            <p className="text-white/70 text-sm leading-relaxed">
               The ultimate salary cap and contract management tool for your fantasy football dynasty league.
             </p>
           </div>

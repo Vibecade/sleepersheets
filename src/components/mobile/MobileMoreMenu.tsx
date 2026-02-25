@@ -23,10 +23,13 @@ export const MobileMoreMenu: React.FC<MobileMoreMenuProps> = ({
 
   return (
     <div className="space-y-4 pb-20">
-      <h2 className="text-2xl font-bold text-foreground">More Options</h2>
+      <div className="rounded-xl border border-white/10 bg-black/25 backdrop-blur-sm px-4 py-3">
+        <h2 className="text-2xl font-bold text-foreground">More Options</h2>
+        <p className="text-sm text-muted-foreground">Quick actions and league tools, optimized for mobile.</p>
+      </div>
 
       {/* Free Agents / Expiring Contracts */}
-      <Card>
+      <Card className="border-border/50 bg-card/70 backdrop-blur-sm">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-muted-foreground" />
@@ -64,7 +67,7 @@ export const MobileMoreMenu: React.FC<MobileMoreMenuProps> = ({
 
       {/* Commissioner Dashboard - Only show if user is commissioner */}
       {isCommissioner && (
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
@@ -88,7 +91,7 @@ export const MobileMoreMenu: React.FC<MobileMoreMenuProps> = ({
       )}
 
       {/* Export Data */}
-      <Card>
+      <Card className="border-border/50 bg-card/70 backdrop-blur-sm">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Download className="h-5 w-5 text-muted-foreground" />
@@ -111,7 +114,7 @@ export const MobileMoreMenu: React.FC<MobileMoreMenuProps> = ({
       </Card>
 
       {/* Help & Resources */}
-      <Card>
+      <Card className="border-border/50 bg-card/70 backdrop-blur-sm">
         <CardHeader>
           <div className="flex items-center gap-2">
             <HelpCircle className="h-5 w-5 text-muted-foreground" />
@@ -142,7 +145,7 @@ export const MobileMoreMenu: React.FC<MobileMoreMenuProps> = ({
       </Card>
 
       {/* Legal */}
-      <Card>
+      <Card className="border-border/50 bg-card/70 backdrop-blur-sm">
         <CardHeader>
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-muted-foreground" />

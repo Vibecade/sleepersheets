@@ -9,6 +9,7 @@ import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { useCommissionerActions } from '@/hooks/useCommissionerActions';
 import { useToast } from '@/hooks/use-toast';
 import { Save, Settings } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface LeagueConfigurationPanelProps {
   leagueId: string;
@@ -63,7 +64,16 @@ export const LeagueConfigurationPanel = ({ leagueId, leagueData }: LeagueConfigu
   };
 
   if (loading) {
-    return <div className="text-center py-8">Loading league settings...</div>;
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-52" />
+          <Skeleton className="h-4 w-72" />
+        </div>
+        <Skeleton className="h-56 w-full" />
+        <Skeleton className="h-40 w-full" />
+      </div>
+    );
   }
 
   return (

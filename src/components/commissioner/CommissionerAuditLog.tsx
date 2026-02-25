@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { Shield, Settings, Users, FileX, AlertTriangle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface CommissionerAction {
   id: string;
@@ -73,7 +74,17 @@ export const CommissionerAuditLog = ({ leagueId, limit = 10 }: CommissionerAudit
   };
 
   if (loading) {
-    return <div className="text-center py-4 text-sm text-muted-foreground">Loading...</div>;
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="rounded-lg border p-3 space-y-2">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-3 w-2/3" />
+          </div>
+        ))}
+      </div>
+    );
   }
 
   if (actions.length === 0) {

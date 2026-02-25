@@ -3,6 +3,7 @@ import { rateLimiter } from '@/utils/inputValidation';
 import { logger } from '@/utils/logger';
 import { CACHE_TTL, RATE_LIMITS, NFL_SEASON } from '@/utils/constants';
 import type { SleeperLeague, SleeperUser, SleeperRoster, SleeperDraft, SleeperTransaction, SleeperPlayer } from '@/types/sleeper';
+import { getCurrentNFLWeek } from '@/utils/nflWeek';
 
 export interface SleeperProjection {
   player_id: string;
@@ -26,10 +27,6 @@ export interface CombinedLeagueData {
 
 export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedLeagueData> => {
   logger.debug('Fetching league data for ID:', targetLeagueId);
-  
-  // Clear transaction cache for this league to force fresh data
-  const { clearLeagueCache } = await import('@/utils/apiCache');
-  clearLeagueCache(targetLeagueId);
 
   const clientId = 'league_fetch';
   if (!rateLimiter.isAllowed(clientId, RATE_LIMITS.LEAGUE_FETCH_LIMIT, 60000)) {
@@ -63,7 +60,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
 
   // Use cached players data from ApiCache
   let players: Record<string, SleeperPlayer>;
-  const cachedPlayers = apiCache.getPlayers();
+  const cachedPlayers = await apiCache.getPlayers();
   
   if (cachedPlayers) {
     logger.debug('Using cached players data from ApiCache');
@@ -75,31 +72,12 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
       {}, 
       CACHE_TTL.DAILY
     );
-    apiCache.setPlayers(players);
+    void apiCache.setPlayers(players);
   }
 
   // Fetch transactions from multiple weeks to capture all FAAB activity
   
-  // Calculate actual current NFL week using the league's season year
-  const getCurrentNFLWeek = (leagueSeason: string) => {
-    const now = new Date();
-    const seasonYear = parseInt(leagueSeason);
-    
-    // Use the league's season year for season start calculation
-    const seasonStart = new Date(seasonYear, NFL_SEASON.SEASON_START_MONTH, NFL_SEASON.SEASON_START_DAY);
-    
-    logger.debug(`Transaction fetch - League season: ${seasonYear}, Season start: ${seasonStart.toDateString()}, Current: ${now.toDateString()}`);
-    
-    if (now < seasonStart) return 1;
-    
-    const diffTime = now.getTime() - seasonStart.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    const weekNumber = Math.floor((diffDays + 2) / 7) + 1;
-    
-    return Math.min(Math.max(weekNumber, NFL_SEASON.MIN_WEEK), NFL_SEASON.MAX_WEEKS);
-  };
-  
-  const season = league.season || new Date().getFullYear().toString();
+  const season = league.season || '2024';
   const currentNFLWeek = getCurrentNFLWeek(season);
   const leagueWeek = league.settings?.week || 1;
   const effectiveCurrentWeek = Math.max(currentNFLWeek, leagueWeek);
