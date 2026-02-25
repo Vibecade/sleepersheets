@@ -16,35 +16,32 @@ const NEWS_SOURCES = [
   },
 ];
 
-const INJURY_KEYWORDS = [
-  'injury',
-  'injured',
-  'questionable',
-  'doubtful',
-  'out for',
-  'out with',
-  'ir',
-  'injured reserve',
-  'hamstring',
-  'ankle',
-  'knee',
-  'concussion',
-  'acl',
-  'mcl',
-  'broken',
+const INJURY_PATTERNS = [
+  /\binjur(?:y|ies|ed)\b/i,
+  /\bquestionable\b/i,
+  /\bdoubtful\b/i,
+  /\bout for\b/i,
+  /\bout with\b/i,
+  /\binjured reserve\b/i,
+  /\bir\b/i,
+  /\bhamstring\b/i,
+  /\bankle\b/i,
+  /\bknee\b/i,
+  /\bconcussion\b/i,
+  /\bacl\b/i,
+  /\bmcl\b/i,
+  /\bbroken\b/i,
 ];
 
-const ROOKIE_KEYWORDS = [
-  'rookie',
-  'rookies',
-  'nfl draft',
-  'draft prospect',
-  'combine',
-  'first-round',
-  'first round',
-  'undrafted',
-  'udfa',
-  'training camp battle',
+const ROOKIE_PATTERNS = [
+  /\brookie(?:s)?\b/i,
+  /\bnfl draft\b/i,
+  /\bdraft prospect(?:s)?\b/i,
+  /\bcombine\b/i,
+  /\bfirst(?:\s|-)?round\b/i,
+  /\bundrafted\b/i,
+  /\budfa\b/i,
+  /\btraining camp battle\b/i,
 ];
 
 const REQUEST_TIMEOUT_MS = 7000;
@@ -85,11 +82,10 @@ const parseDate = (rawDate) => {
 };
 
 const classifyItem = (text) => {
-  const normalized = text.toLowerCase();
-  if (INJURY_KEYWORDS.some((keyword) => normalized.includes(keyword))) {
+  if (INJURY_PATTERNS.some((pattern) => pattern.test(text))) {
     return 'injury';
   }
-  if (ROOKIE_KEYWORDS.some((keyword) => normalized.includes(keyword))) {
+  if (ROOKIE_PATTERNS.some((pattern) => pattern.test(text))) {
     return 'rookie';
   }
   return 'general';
