@@ -228,7 +228,6 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
                 rosters={rosters}
                 players={players}
                 userMap={userMap}
-                transactions={transactions}
               />
             </Suspense>
           </ErrorBoundaryWithRetry>

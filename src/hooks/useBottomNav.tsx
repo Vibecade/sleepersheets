@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { useLocation } from "react-router-dom"
-import { Trophy, Settings, Calendar, BarChart3, Menu } from "lucide-react"
+import { Trophy, Settings, Calendar, Sparkles, Menu } from "lucide-react"
 import { BottomNavItem } from "@/components/ui/bottom-nav"
 
 interface UseBottomNavOptions {
@@ -9,7 +9,7 @@ interface UseBottomNavOptions {
   badges?: {
     matchups?: number
     manager?: number
-    stats?: number
+    gamify?: number
     more?: number
   }
 }
@@ -21,6 +21,16 @@ export function useBottomNav({ leagueId, onPageChange, badges = {} }: UseBottomN
     if (!leagueId) return []
 
     return [
+      {
+        label: "Gamify",
+        href: "#gamify",
+        icon: Sparkles,
+        badge: badges.gamify,
+        onClick: (e) => {
+          e?.preventDefault()
+          onPageChange?.("gamify")
+        },
+      },
       {
         label: "Overview",
         href: "#overview",
@@ -48,16 +58,6 @@ export function useBottomNav({ leagueId, onPageChange, badges = {} }: UseBottomN
         onClick: (e) => {
           e?.preventDefault()
           onPageChange?.("manager")
-        },
-      },
-      {
-        label: "News",
-        href: "#news",
-        icon: BarChart3,
-        badge: badges.stats,
-        onClick: (e) => {
-          e?.preventDefault()
-          onPageChange?.("news")
         },
       },
       {

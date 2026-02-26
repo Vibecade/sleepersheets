@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Trophy, Settings, Calendar, BarChart3, Menu, LucideIcon } from "lucide-react"
+import { Trophy, Settings, Calendar, Sparkles, Menu, LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Badge } from "./badge"
 
@@ -18,10 +18,10 @@ interface BottomNavProps {
 }
 
 const defaultItems: BottomNavItem[] = [
+  { label: "Gamify", href: "/gamify", icon: Sparkles },
   { label: "Overview", href: "/overview", icon: Trophy },
   { label: "Manager", href: "/manager", icon: Settings },
   { label: "Matchups", href: "/matchups", icon: Calendar },
-  { label: "News", href: "/news", icon: BarChart3 },
   { label: "More", href: "/more", icon: Menu },
 ]
 

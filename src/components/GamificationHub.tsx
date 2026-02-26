@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { formatDistanceToNow } from 'date-fns';
 import { Activity, AlertTriangle, ArrowRightLeft, Trophy, TrendingUp, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { useGamificationInsights } from '@/hooks/useGamificationInsights';
+import { useQuestSnapshots } from '@/hooks/useQuestSnapshots';
 
 interface GamificationHubProps {
   league: any;
@@ -245,6 +247,19 @@ const GamificationHub: React.FC<GamificationHubProps> = ({
     },
   ];
 
+  const {
+    currentSnapshot,
+    history: questSnapshotHistory,
+    isSaving: isSavingSnapshot,
+    saveError: questSnapshotError,
+    canPersist: canPersistSnapshots,
+  } = useQuestSnapshots({
+    leagueId,
+    season: league?.season || String(new Date().getFullYear()),
+    week: data.week,
+    quests: weeklyQuests,
+  });
+
   const injuryRiskPlayers = useMemo(() => {
     const seen = new Set<string>();
     const riskEntries: Array<{ playerId: string; name: string; teamName: string; status: string }> = [];
@@ -385,6 +400,22 @@ const GamificationHub: React.FC<GamificationHubProps> = ({
                 <Trophy className="w-4 h-4 text-primary" />
                 Weekly Quests
               </div>
+              <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                {canPersistSnapshots ? (
+                  <>
+                    <Badge variant="secondary">{isSavingSnapshot ? 'Saving snapshot...' : 'Snapshot synced'}</Badge>
+                    {currentSnapshot?.updated_at && (
+                      <span className="text-muted-foreground">
+                        Updated {formatDistanceToNow(new Date(currentSnapshot.updated_at), { addSuffix: true })}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-muted-foreground">
+                    Claim league ownership to persist weekly quest snapshots.
+                  </span>
+                )}
+              </div>
               <div className="space-y-3">
                 {weeklyQuests.map((quest) => {
                   const progress = Math.min(100, Math.round((quest.current / Math.max(quest.target, 1)) * 100));
@@ -403,6 +434,21 @@ const GamificationHub: React.FC<GamificationHubProps> = ({
                   );
                 })}
               </div>
+              {questSnapshotHistory.length > 1 && (
+                <div className="pt-2 border-t border-border/50">
+                  <p className="text-[11px] font-medium mb-1">Recent Snapshot Trend</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {questSnapshotHistory.slice(0, 4).map((snapshot) => (
+                      <Badge key={`${snapshot.season}-${snapshot.week}`} variant="outline" className="text-[10px]">
+                        W{snapshot.week}: {snapshot.quest_points} pts
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {questSnapshotError && (
+                <p className="text-[11px] text-destructive">{questSnapshotError}</p>
+              )}
             </div>
 
             <div className="rounded-lg border border-border/60 bg-card/40 p-4 space-y-2">
