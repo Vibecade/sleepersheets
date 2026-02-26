@@ -4,12 +4,14 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Activity } from 'lucide-react';
 import FunStatistics from '../FunStatistics';
 import PlayerNewsFeed from '../PlayerNewsFeed';
+import GamificationHub from '../GamificationHub';
 
 interface StatisticsTabProps {
   league: any;
   rosters: any[];
   players: Record<string, any>;
   userMap: Record<string, any>;
+  transactions: any[];
 }
 
 const StatisticsTab: React.FC<StatisticsTabProps> = ({
@@ -17,6 +19,7 @@ const StatisticsTab: React.FC<StatisticsTabProps> = ({
   rosters,
   players,
   userMap,
+  transactions,
 }) => {
   return (
     <Card className="transition-all duration-150 hover:shadow-lg">
@@ -29,6 +32,13 @@ const StatisticsTab: React.FC<StatisticsTabProps> = ({
       <CardContent className="p-0">
         <ScrollArea className="h-[60vh] md:h-[62vh] w-full">
           <div className="space-y-5 p-4 sm:p-5">
+            <GamificationHub
+              league={league}
+              rosters={rosters}
+              players={players}
+              userMap={userMap}
+              transactions={transactions}
+            />
             <PlayerNewsFeed />
             <FunStatistics
               league={league}
