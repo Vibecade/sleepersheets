@@ -126,7 +126,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
       if (page === 'overview') {
         setCurrentPage('overview');
         setActiveOverviewTab('standings');
-      } else if (page === 'gamify' || page === 'gamification') {
+      } else if (page === 'pulse' || page === 'gamify' || page === 'gamification') {
         setCurrentPage('gamification');
       } else if (page === 'matchups') {
         setCurrentPage('overview');
@@ -145,7 +145,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
   });
 
   const getActiveNavItem = () => {
-    if (currentPage === 'gamification') return '#gamify';
+    if (currentPage === 'gamification') return '#pulse';
     if (currentPage === 'more') return '#more';
     if (currentPage === 'manager') return '#manager';
     if (currentPage === 'overview') {
@@ -181,7 +181,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
         <PageHead
           title={
             currentPage === 'gamification'
-              ? 'Gamification Hub'
+              ? 'League Pulse'
               : currentPage === 'overview'
               ? 'League Overview' 
               : currentPage === 'commissioner'
@@ -271,7 +271,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
 
         {currentPage === 'gamification' && (
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
-            <ErrorBoundaryWithRetry fallbackMessage="Failed to load gamification hub">
+            <ErrorBoundaryWithRetry fallbackMessage="Failed to load league pulse">
               <Suspense fallback={<TeamOverviewSkeleton />}>
                 <LazyGamificationCenter
                   league={league}

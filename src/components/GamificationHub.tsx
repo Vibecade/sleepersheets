@@ -296,7 +296,7 @@ const GamificationHub: React.FC<GamificationHubProps> = ({
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Trophy className="w-5 h-5 text-primary" />
-            <CardTitle className="text-base sm:text-lg">Gamification Hub</CardTitle>
+            <CardTitle className="text-base sm:text-lg">League Pulse</CardTitle>
           </div>
           {isFetching ? <Badge variant="outline">Refreshing</Badge> : <Badge variant="secondary">Week {data.week}</Badge>}
         </div>

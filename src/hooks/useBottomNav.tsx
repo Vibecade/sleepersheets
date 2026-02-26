@@ -9,6 +9,7 @@ interface UseBottomNavOptions {
   badges?: {
     matchups?: number
     manager?: number
+    pulse?: number
     gamify?: number
     more?: number
   }
@@ -22,13 +23,13 @@ export function useBottomNav({ leagueId, onPageChange, badges = {} }: UseBottomN
 
     return [
       {
-        label: "Gamify",
-        href: "#gamify",
+        label: "Pulse",
+        href: "#pulse",
         icon: Sparkles,
-        badge: badges.gamify,
+        badge: badges.pulse ?? badges.gamify,
         onClick: (e) => {
           e?.preventDefault()
-          onPageChange?.("gamify")
+          onPageChange?.("pulse")
         },
       },
       {

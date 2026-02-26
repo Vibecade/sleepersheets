@@ -161,7 +161,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
             className="flex-1 flex items-center justify-center gap-1.5 md:gap-2"
           >
             <Activity className="w-4 h-4 shrink-0" />
-            <span className="hidden xs:inline text-xs md:text-sm">News</span>
+            <span className="hidden xs:inline text-xs md:text-sm">Stats</span>
           </TabsTrigger>
         </TabsList>
 
@@ -221,7 +221,7 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
         </TabsContent>
 
         <TabsContent value="statistics" className="animate-fade-in">
-          <ErrorBoundaryWithRetry fallbackMessage="Failed to load news. Please try again.">
+          <ErrorBoundaryWithRetry fallbackMessage="Failed to load statistics. Please try again.">
             <Suspense fallback={<SkeletonCard />}>
               <StatisticsTab
                 league={league}

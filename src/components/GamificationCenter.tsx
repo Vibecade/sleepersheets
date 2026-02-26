@@ -1,6 +1,7 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 import GamificationHub from '@/components/GamificationHub';
+import PlayerNewsFeed from '@/components/PlayerNewsFeed';
 
 interface GamificationCenterProps {
   league: any;
@@ -23,9 +24,9 @@ const GamificationCenter: React.FC<GamificationCenterProps> = ({
         <div className="flex items-center space-x-3">
           <Sparkles className="w-5 h-5 text-primary" />
           <div>
-            <h2 className="text-lg sm:text-xl font-semibold">Gamification</h2>
+            <h2 className="text-lg sm:text-xl font-semibold">League Pulse</h2>
             <p className="text-sm text-muted-foreground">
-              Weekly quests, rivalry pressure, and market momentum tailored to this league.
+              Weekly quests, rivalry pressure, market momentum, and live league storylines.
             </p>
           </div>
         </div>
@@ -38,6 +39,8 @@ const GamificationCenter: React.FC<GamificationCenterProps> = ({
         userMap={userMap}
         transactions={transactions}
       />
+
+      <PlayerNewsFeed />
     </div>
   );
 };

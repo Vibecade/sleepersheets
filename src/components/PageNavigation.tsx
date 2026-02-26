@@ -37,8 +37,8 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
   const baseNavigationItems = [
     {
       id: 'gamification' as const,
-      label: 'Gamification',
-      shortLabel: 'Gamify',
+      label: 'League Pulse',
+      shortLabel: 'Pulse',
       icon: Sparkles,
       onClick: () => onPageChange('gamification'),
     },

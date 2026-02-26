@@ -18,7 +18,7 @@ interface BottomNavProps {
 }
 
 const defaultItems: BottomNavItem[] = [
-  { label: "Gamify", href: "/gamify", icon: Sparkles },
+  { label: "Pulse", href: "/pulse", icon: Sparkles },
   { label: "Overview", href: "/overview", icon: Trophy },
   { label: "Manager", href: "/manager", icon: Settings },
   { label: "Matchups", href: "/matchups", icon: Calendar },
