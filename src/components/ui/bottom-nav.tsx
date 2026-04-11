@@ -63,9 +63,9 @@ export function BottomNav({ items = defaultItems, activeItem, className }: Botto
               className={cn(
                 "flex flex-col items-center justify-center flex-1",
                 "py-2 px-1 mx-0.5 rounded-xl",
-                "transition-all duration-150 ease-out",
+                "transition-[background-color,color,box-shadow,transform] duration-150 ease-out",
                 "touch-manipulation min-h-[48px] min-w-[48px]",
-                "active:scale-90 active:opacity-70",
+                "active:translate-y-px active:opacity-80",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-card",
                 isActive
                   ? "text-primary bg-primary/10"
@@ -76,7 +76,7 @@ export function BottomNav({ items = defaultItems, activeItem, className }: Botto
                 <Icon
                   className={cn(
                     "h-5 w-5 transition-transform duration-150",
-                    isActive && "scale-110"
+                    isActive && "scale-105"
                   )}
                   strokeWidth={isActive ? 2.5 : 2}
                 />

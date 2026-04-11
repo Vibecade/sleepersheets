@@ -108,7 +108,7 @@
     --transition-fast: all var(--motion-duration-fast) var(--motion-ease-standard);
     --transition-normal: all var(--motion-duration-standard) var(--motion-ease-standard);
     --transition-slow: all var(--motion-duration-emphasis) var(--motion-ease-standard);
-    --transition-bounce: all var(--motion-duration-emphasis) cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-bounce: var(--transition-normal);
     --transition-stadium: var(--transition-normal);
     
     /* Sidebar Variables */
@@ -195,7 +195,7 @@
       0 1px 6px rgba(255, 215, 0, 0.1),
       inset 0 1px 0 rgba(255, 255, 255, 0.06);
     position: relative;
-    animation: stadium-entrance var(--motion-duration-emphasis) var(--motion-ease-standard);
+    transition: var(--transition-normal);
   }
 
   .glass-card::before {
@@ -265,8 +265,7 @@
   .glass-button:hover {
     background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,255,255,0.12));
     border: 1px solid rgba(255, 215, 0, 0.6);
-    box-shadow: var(--shadow-helmet);
-    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
   }
 
   .glass-header {
@@ -296,17 +295,20 @@
       rgba(255,215,0,0.08)
     );
     border: 2px solid rgba(255, 215, 0, 0.3);
-    box-shadow: var(--shadow-helmet);
+    box-shadow: var(--shadow-glass);
     position: relative;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: var(--transition-normal);
   }
 
   .team-card:hover {
-    animation: helmet-glow 1s ease-in-out;
-    transform: translateY(-2px);
+    background: linear-gradient(135deg,
+      rgba(255,215,0,0.12),
+      rgba(220,20,60,0.06),
+      rgba(255,215,0,0.09)
+    );
     border-color: rgba(255, 215, 0, 0.6);
-    box-shadow: var(--shadow-glow);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.34), 0 0 14px rgba(234, 179, 8, 0.12);
   }
 
   .team-card::after {
@@ -393,11 +395,10 @@
   }
 
   .hover-lift:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow: 
-      0 12px 40px rgba(0, 0, 0, 0.3),
-      0 0 20px rgba(234, 179, 8, 0.2),
-      0 0 5px rgba(234, 179, 8, 0.1);
+      0 10px 24px rgba(0, 0, 0, 0.26),
+      0 0 10px rgba(234, 179, 8, 0.14);
   }
 
   .text-glow {
@@ -442,11 +443,10 @@
   }
 
   .card-hover:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow:
-      0 20px 40px rgba(0, 0, 0, 0.4),
-      0 0 20px rgba(234, 179, 8, 0.15),
-      0 0 5px rgba(234, 179, 8, 0.1);
+      0 12px 28px rgba(0, 0, 0, 0.32),
+      0 0 12px rgba(234, 179, 8, 0.12);
     border-color: rgba(234, 179, 8, 0.3);
   }
 
@@ -466,8 +466,7 @@
 
   .btn-primary:hover {
     background: linear-gradient(135deg, #047857, #065f46);
-    transform: translateY(-1px);
-    box-shadow: 0 8px 25px rgba(5, 150, 105, 0.4);
+    box-shadow: 0 6px 18px rgba(5, 150, 105, 0.35);
   }
 
   @keyframes fadeInNatural {
@@ -784,14 +783,14 @@
 
   .touch-card {
     @apply transition-all duration-150 ease-out;
-    @apply active:scale-[0.98] active:opacity-90;
+    @apply active:translate-y-px active:opacity-90;
     @apply touch-manipulation;
   }
 
   .touch-button {
     @apply min-h-[44px] min-w-[44px];
     @apply touch-manipulation;
-    @apply active:scale-95 active:opacity-80;
+    @apply active:translate-y-px active:opacity-85;
     @apply transition-transform duration-100;
   }
 
@@ -875,11 +874,10 @@
       }
 
       .desktop-hover-lift:hover {
-        transform: translateY(-4px);
+        transform: translateY(-1px);
         box-shadow:
-          0 20px 40px rgba(0, 0, 0, 0.4),
-          0 4px 12px rgba(234, 179, 8, 0.2),
-          0 0 20px rgba(234, 179, 8, 0.15);
+          0 12px 28px rgba(0, 0, 0, 0.3),
+          0 2px 8px rgba(234, 179, 8, 0.12);
       }
 
       .hover-glow:hover {
@@ -889,7 +887,7 @@
       }
 
       .hover-scale:hover {
-        transform: scale(1.02);
+        transform: scale(1.005);
       }
 
       .hover-border-glow:hover {
@@ -920,11 +918,10 @@
       }
 
       .desktop-card-hover:hover {
-        transform: translateY(-4px);
+        transform: translateY(-1px);
         box-shadow:
-          0 20px 40px rgba(0, 0, 0, 0.4),
-          0 0 20px rgba(234, 179, 8, 0.15),
-          0 0 8px rgba(234, 179, 8, 0.1);
+          0 12px 28px rgba(0, 0, 0, 0.32),
+          0 0 12px rgba(234, 179, 8, 0.12);
         border-color: rgba(234, 179, 8, 0.4);
       }
     }

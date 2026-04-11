@@ -37,7 +37,7 @@ const TabsTrigger = React.forwardRef<
       "min-h-[40px] md:min-h-[32px]",
       "text-sm font-medium",
       "ring-offset-background transition-all duration-150",
-      "touch-manipulation active:scale-95",
+      "touch-manipulation active:translate-y-px",
       "snap-start",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       "disabled:pointer-events-none disabled:opacity-50",
