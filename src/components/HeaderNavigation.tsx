@@ -54,12 +54,12 @@ const HeaderNavigation = () => {
           SleeperSheets
         </Link>
 
-        <nav className="flex items-center space-x-1 lg:space-x-2 rounded-xl border border-white/10 bg-black/20 p-1.5 shadow-lg">
+        <nav className="flex items-center space-x-1 lg:space-x-2 rounded-2xl border border-border/70 bg-card/60 p-1.5 shadow-[0_10px_24px_rgba(0,0,0,0.22)]">
           {navigationItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
-              className={`${navigationMenuTriggerStyle()} hover-border-glow transition-all duration-200 lg:px-4 lg:py-2.5 lg:text-base rounded-lg ${location.pathname === item.path ? 'bg-primary text-primary-foreground hover:bg-primary/90' : ''}`}
+              className={`${navigationMenuTriggerStyle()} lg:px-4 lg:py-2.5 lg:text-base rounded-xl transition-[background-color,color,border-color,box-shadow] duration-150 ${location.pathname === item.path ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-accent/40 hover:text-foreground'}`}
             >
               <item.icon className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
               {item.label}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueManager } from '@/hooks/useLeagueManager';
 import { DemoProvider, useDemo } from '@/contexts/DemoContext';
@@ -10,9 +10,6 @@ import OfflineIndicator from '@/components/OfflineIndicator';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import EnhancedErrorBoundary from '@/components/EnhancedErrorBoundary';
 import { DemoBanner } from '@/components/DemoBanner';
-import LeagueData from '@/components/LeagueData';
-import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
-import UserDashboard from '@/components/dashboard/UserDashboard';
 import HeroSection from '@/components/landing/HeroSection';
 import { UnifiedLoading } from '@/components/ui/unified-loading';
 import { Card } from '@/components/ui/card';
@@ -22,8 +19,22 @@ import GetStartedModal from '@/components/landing/GetStartedModal';
 import ReturningUserPrompt from '@/components/landing/ReturningUserPrompt';
 import { DEMO_LEAGUE_ID } from '@/utils/demoData';
 import { useNavigate } from 'react-router-dom';
+import {
+  LazyLeagueConnectionForm,
+  LazyLeagueData,
+  LazyUserDashboard,
+} from '@/components/LazyComponents';
 
 type HomeViewMode = 'marketing' | 'connect';
+
+const SectionLoadingCard = ({ message }: { message: string }) => (
+  <Card className="p-8 border-primary/15">
+    <div className="space-y-4">
+      <UnifiedLoading variant="text" size="lg" />
+      <p className="text-sm text-muted-foreground text-center">{message}</p>
+    </div>
+  </Card>
+);
 
 const IndexContent = React.memo(() => {
   const { user } = useAuth();
@@ -177,34 +188,38 @@ const IndexContent = React.memo(() => {
                   
                   {user ? (
                     <>
-                     {/* Show UserDashboard for users with existing data, otherwise show connection form */}
-                      <UserDashboard 
-                        onSelectLeague={handleSelectLeague} 
-                        onConnectLeague={() => {
-                          setViewMode('connect');
-                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }} 
-                        showConnectionForm={!userLeaguesData && !showLeagueSelection}
-                      />
+                      {/* Show UserDashboard for users with existing data, otherwise show connection form */}
+                      <Suspense fallback={<SectionLoadingCard message="Loading your dashboard..." />}>
+                        <LazyUserDashboard 
+                          onSelectLeague={handleSelectLeague} 
+                          onConnectLeague={() => {
+                            setViewMode('connect');
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }} 
+                          showConnectionForm={!userLeaguesData && !showLeagueSelection}
+                        />
+                      </Suspense>
                       
                       {/* Show connection form below dashboard for authenticated users with no data */}
                       {!userLeaguesData && !showLeagueSelection && (
                         <div className="mt-8">
-                          <LeagueConnectionForm
-                            leagueId={leagueId}
-                            setLeagueId={setLeagueId}
-                            username={username}
-                            setUsername={setUsername}
-                            onLeagueSubmit={handleLeagueSubmit}
-                            onUsernameSubmit={handleUsernameSubmit}
-                            onQuickLoadFirstLeague={handleQuickLoadFirstLeague}
-                            onSelectLeague={handleSelectLeagueFromUsername}
-                            onBackToForm={handleBackToForm}
-                            onRefreshLeagues={handleRefreshLeagues}
-                            loading={loading}
-                            userLeaguesData={userLeaguesData}
-                            showLeagueSelection={showLeagueSelection}
-                          />
+                          <Suspense fallback={<SectionLoadingCard message="Loading league connection tools..." />}>
+                            <LazyLeagueConnectionForm
+                              leagueId={leagueId}
+                              setLeagueId={setLeagueId}
+                              username={username}
+                              setUsername={setUsername}
+                              onLeagueSubmit={handleLeagueSubmit}
+                              onUsernameSubmit={handleUsernameSubmit}
+                              onQuickLoadFirstLeague={handleQuickLoadFirstLeague}
+                              onSelectLeague={handleSelectLeagueFromUsername}
+                              onBackToForm={handleBackToForm}
+                              onRefreshLeagues={handleRefreshLeagues}
+                              loading={loading}
+                              userLeaguesData={userLeaguesData}
+                              showLeagueSelection={showLeagueSelection}
+                            />
+                          </Suspense>
                         </div>
                       )}
                     </>
@@ -220,21 +235,23 @@ const IndexContent = React.memo(() => {
                         </button>
                       </div>
                       
-                      <LeagueConnectionForm
-                        leagueId={leagueId}
-                        setLeagueId={setLeagueId}
-                        username={username}
-                        setUsername={setUsername}
-                        onLeagueSubmit={handleLeagueSubmit}
-                        onUsernameSubmit={handleUsernameSubmit}
-                        onQuickLoadFirstLeague={handleQuickLoadFirstLeague}
-                        onSelectLeague={handleSelectLeagueFromUsername}
-                        onBackToForm={handleBackToForm}
-                        onRefreshLeagues={handleRefreshLeagues}
-                        loading={loading}
-                        userLeaguesData={userLeaguesData}
-                        showLeagueSelection={showLeagueSelection}
-                      />
+                      <Suspense fallback={<SectionLoadingCard message="Loading league connection tools..." />}>
+                        <LazyLeagueConnectionForm
+                          leagueId={leagueId}
+                          setLeagueId={setLeagueId}
+                          username={username}
+                          setUsername={setUsername}
+                          onLeagueSubmit={handleLeagueSubmit}
+                          onUsernameSubmit={handleUsernameSubmit}
+                          onQuickLoadFirstLeague={handleQuickLoadFirstLeague}
+                          onSelectLeague={handleSelectLeagueFromUsername}
+                          onBackToForm={handleBackToForm}
+                          onRefreshLeagues={handleRefreshLeagues}
+                          loading={loading}
+                          userLeaguesData={userLeaguesData}
+                          showLeagueSelection={showLeagueSelection}
+                        />
+                      </Suspense>
                       
                       {loading && !showLeagueSelection && (
                         <div className="mt-6">
@@ -249,12 +266,14 @@ const IndexContent = React.memo(() => {
               )}
             </>
           ) : (
-            <LeagueData
-              data={leagueData}
-              onRefreshData={handleRefreshData}
-              onResyncData={handleResyncLeagueData}
-              onOwnershipChanged={handleOwnershipChanged}
-            />
+            <Suspense fallback={<SectionLoadingCard message="Loading league workspace..." />}>
+              <LazyLeagueData
+                data={leagueData}
+                onRefreshData={handleRefreshData}
+                onResyncData={handleResyncLeagueData}
+                onOwnershipChanged={handleOwnershipChanged}
+              />
+            </Suspense>
           )}
         </EnhancedErrorBoundary>
       </div>

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Copy, CheckCircle, Sparkles, FileSpreadsheet, Bot } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import StaticPageLayout from '@/components/layout/StaticPageLayout';
 
 const HowTo = () => {
   const { toast } = useToast();
@@ -66,27 +67,15 @@ const HowTo = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <div className="glass-header border-b border-white/10 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 animate-pulse"></div>
-        <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div className="bg-gradient-to-br from-emerald-400 via-blue-500 to-purple-600 rounded-2xl p-4 shadow-2xl pulse-glow">
-              <Bot className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold gradient-text mb-2">How to Use SleeperSheets</h1>
-              <p className="text-gray-300 text-lg">Maximize your fantasy football data with AI-powered analysis</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 py-12 space-y-8">
+    <StaticPageLayout
+      title="How to Use SleeperSheets"
+      description="Turn Sleeper exports into clean reports and shareable AI-ready league analysis."
+      headDescription="Maximize your fantasy football data with AI-powered analysis."
+      eyebrow="Workflow Guide"
+      icon={Bot}
+      iconClassName="bg-gradient-to-br from-emerald-500 to-blue-500"
+    >
+      <div className="space-y-8">
         {/* Step 1 */}
         <Card className="fade-in hover-lift gradient-border">
           <CardHeader>
@@ -217,7 +206,7 @@ const HowTo = () => {
           </Button>
         </div>
       </div>
-    </div>
+    </StaticPageLayout>
   );
 };
 

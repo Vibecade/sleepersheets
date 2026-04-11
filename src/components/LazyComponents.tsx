@@ -5,6 +5,9 @@ import { lazy } from 'react';
 export const LazyTeamOverview = lazy(() => import('./TeamOverview'));
 export const LazyFantasyManager = lazy(() => import('./FantasyManager'));
 export const LazyGamificationCenter = lazy(() => import('./GamificationCenter'));
+export const LazyLeagueData = lazy(() => import('./LeagueData'));
+export const LazyLeagueConnectionForm = lazy(() => import('./home/LeagueConnectionForm'));
+export const LazyUserDashboard = lazy(() => import('./dashboard/UserDashboard'));
 
 // Page components  
 export const LazyExport = lazy(() => import('../pages/Export'));
