@@ -1,12 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-interface DemoContextType {
-  isDemoMode: boolean;
-  setDemoMode: (isDemo: boolean) => void;
-  exitDemo: () => void;
-}
-
-const DemoContext = createContext<DemoContextType | null>(null);
+import React, { useState, ReactNode } from 'react';
+import { DemoContext } from '@/contexts/demo-context';
 
 interface DemoProviderProps {
   children: ReactNode;
@@ -31,13 +24,3 @@ export const DemoProvider: React.FC<DemoProviderProps> = ({ children }) => {
 };
 
 DemoProvider.displayName = 'DemoProvider';
-
-export const useDemo = () => {
-  const context = useContext(DemoContext);
-  if (!context) {
-    throw new Error('useDemo must be used within a DemoProvider');
-  }
-  return context;
-};
-
-useDemo.displayName = 'useDemo';

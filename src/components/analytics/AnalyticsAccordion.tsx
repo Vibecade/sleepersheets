@@ -2,7 +2,7 @@ import React, { lazy, Suspense, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { BarChart3 } from 'lucide-react';
-import { useLeagueData } from '@/components/LeagueDataProvider';
+import { useLeagueData } from '@/components/LeagueDataContext';
 
 const LazyAnalyticsAccordionContent = lazy(() => import('./AnalyticsAccordionContent'));
 

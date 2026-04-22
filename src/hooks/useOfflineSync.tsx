@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { usePWA } from './usePWA';
 import { logger } from '@/utils/logger';
 
@@ -60,7 +60,7 @@ export const useOfflineSync = (leagueId?: string) => {
   };
 
   // Sync pending data when online with priority-based processing
-  const syncPendingData = async () => {
+  const syncPendingData = useCallback(async () => {
     if (!isOnline || pendingSync.length === 0 || syncInProgress) return;
 
     setSyncInProgress(true);
@@ -109,14 +109,14 @@ export const useOfflineSync = (leagueId?: string) => {
     } finally {
       setSyncInProgress(false);
     }
-  };
+  }, [isOnline, pendingSync, syncInProgress, leagueId]);
 
   // Auto-sync when coming back online
   useEffect(() => {
     if (isOnline && pendingSync.length > 0) {
       syncPendingData();
     }
-  }, [isOnline, pendingSync.length]);
+  }, [isOnline, pendingSync.length, syncPendingData]);
 
   const clearPendingSync = () => {
     setPendingSync([]);

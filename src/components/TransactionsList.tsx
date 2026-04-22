@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useDeferredValue, useEffect } from 'react';
+import React, { useState, useMemo, useDeferredValue, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -62,10 +62,10 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
     }
   }, [transactionsStorageKey]);
 
-  const getPlayerName = (playerId: string): string => {
+  const getPlayerName = useCallback((playerId: string): string => {
     const player = players[playerId];
     return player?.full_name || player?.first_name + ' ' + player?.last_name || 'Unknown Player';
-  };
+  }, [players]);
 
   const getPlayerPosition = (playerId: string): string => {
     const player = players[playerId];
@@ -148,7 +148,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
       sortedTransactions: filteredTransactions,
       hiddenFailedCount: hiddenFailed,
     };
-  }, [transactions, selectedWeek, transactionType, normalizedSearchTerm, hideFailed, userMap]);
+  }, [transactions, selectedWeek, transactionType, normalizedSearchTerm, hideFailed, userMap, getPlayerName]);
 
   useEffect(() => {
     setVisibleCount(50);

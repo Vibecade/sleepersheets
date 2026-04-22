@@ -10,26 +10,24 @@ import { useToast } from '@/hooks/use-toast';
 import { LeagueDataProvider } from '@/components/LeagueDataProvider';
 import ExportActions from '@/components/ExportActions';
 import StaticPageLayout from '@/components/layout/StaticPageLayout';
-import type { SleeperPlayer, SleeperRoster, SleeperTransaction, SleeperUser } from '@/types/sleeper';
+import type {
+  SleeperLeagueDataBundle,
+  SleeperUser,
+  SleeperUserMap,
+} from '@/types/sleeper';
 
 interface ExportRouteState {
-  leagueData?: {
-    league: unknown;
-    rosters: SleeperRoster[];
-    users: SleeperUser[];
-    players: Record<string, SleeperPlayer>;
-    transactions?: SleeperTransaction[];
-    draftPicks?: unknown[];
-  };
+  leagueData?: SleeperLeagueDataBundle;
 }
 
 const buildUserMap = (users: SleeperUser[]) =>
-  users.reduce<Record<string, SleeperUser>>((acc, user) => {
+  users.reduce<SleeperUserMap>((acc, user) => {
     acc[user.user_id] = user;
     return acc;
   }, {});
 
-const buildRosterUserMap = (rosters: SleeperRoster[], users: SleeperUser[]) => {
+const buildRosterUserMap = (leagueData: SleeperLeagueDataBundle) => {
+  const { rosters, users } = leagueData;
   const userMap = buildUserMap(users);
 
   return rosters.reduce<Record<number, SleeperUser | undefined>>((acc, roster) => {
@@ -143,7 +141,7 @@ const Export = () => {
                   league={leagueData.league}
                   rosters={leagueData.rosters}
                   userMap={buildUserMap(leagueData.users)}
-                  rosterUserMap={buildRosterUserMap(leagueData.rosters, leagueData.users)}
+                  rosterUserMap={buildRosterUserMap(leagueData)}
                   players={leagueData.players}
                   transactions={leagueData.transactions || []}
                   draftPicks={leagueData.draftPicks || []}

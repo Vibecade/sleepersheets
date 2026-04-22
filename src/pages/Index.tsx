@@ -1,7 +1,8 @@
 import React, { Suspense, useState, useEffect, useRef } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useLeagueManager } from '@/hooks/useLeagueManager';
-import { DemoProvider, useDemo } from '@/contexts/DemoContext';
+import { DemoProvider } from '@/contexts/DemoContext';
+import { useDemo } from '@/contexts/demo-context';
 import PageHead from '@/components/PageHead';
 import LeagueHeader from '@/components/home/LeagueHeader';
 import HeaderNavigation from '@/components/HeaderNavigation';

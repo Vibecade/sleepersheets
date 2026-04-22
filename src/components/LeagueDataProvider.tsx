@@ -1,68 +1,47 @@
-import React, { createContext, useContext, useMemo, ReactNode } from 'react';
-
-interface LeagueDataContextType {
-  league: any;
-  rosters: any[];
-  users: any[];
-  players: Record<string, any>;
-  transactions: any[];
-  drafts: any[];
-  draftPicks: any[];
-  userMap: Record<string, any>;
-  rosterUserMap: Record<number, any>;
-  stats: {
-    transactionCount: number;
-    draftPickCount: number;
-    draftCount: number;
-  };
-}
-
-const LeagueDataContext = createContext<LeagueDataContextType | null>(null);
+import { useMemo, type ReactNode } from 'react';
+import { LeagueDataContext } from './LeagueDataContext';
+import type {
+  SleeperDraftPick,
+  SleeperLeagueDataBundle,
+  SleeperLeagueDataContextValue,
+  SleeperRoster,
+  SleeperUser,
+  SleeperUserMap,
+} from '@/types/sleeper';
 
 interface LeagueDataProviderProps {
-  data: {
-    league: any;
-    rosters: any[];
-    users: any[];
-    players: Record<string, any>;
-    transactions?: any[];
-    drafts?: any[];
-    draftPicks?: any[];
-  };
+  data: SleeperLeagueDataBundle;
   children: ReactNode;
 }
 
-export const LeagueDataProvider: React.FC<LeagueDataProviderProps> = ({ data, children }) => {
-  const { 
-    league, 
-    rosters, 
-    users, 
-    players, 
-    transactions = [], 
-    drafts = [], 
-    draftPicks = [] 
+const buildUserMap = (users: SleeperUser[]): SleeperUserMap =>
+  users.reduce<SleeperUserMap>((acc, user) => {
+    acc[user.user_id] = user;
+    return acc;
+  }, {});
+
+const getDraftPickCount = (draftPicks: SleeperDraftPick[]) =>
+  draftPicks.reduce((acc, draftPick) => acc + (draftPick.picks?.length ?? 0), 0);
+
+const buildRosterUserMap = (rosters: SleeperRoster[], userMap: SleeperUserMap) =>
+  rosters.reduce<Record<number, SleeperUser | undefined>>((acc, roster) => {
+    acc[roster.roster_id] = userMap[roster.owner_id];
+    return acc;
+  }, {});
+
+export const LeagueDataProvider = ({ data, children }: LeagueDataProviderProps) => {
+  const {
+    league,
+    rosters,
+    users,
+    players,
+    transactions = [],
+    drafts = [],
+    draftPicks = [],
   } = data;
 
-  // Memoize all derived data to prevent recalculations
-  const contextValue = useMemo(() => {
-    // Create user map
-    const userMap: Record<string, any> = {};
-    users.forEach(user => {
-      userMap[user.user_id] = user;
-    });
-
-    // Create roster-user map
-    const rosterUserMap: Record<number, any> = {};
-    rosters.forEach(roster => {
-      rosterUserMap[roster.roster_id] = userMap[roster.owner_id];
-    });
-
-    // Calculate stats
-    const stats = {
-      transactionCount: transactions.length,
-      draftPickCount: draftPicks.reduce((acc, dp) => acc + dp.picks.length, 0),
-      draftCount: drafts.length
-    };
+  const contextValue = useMemo<SleeperLeagueDataContextValue>(() => {
+    const userMap = buildUserMap(users);
 
     return {
       league,
@@ -73,8 +52,12 @@ export const LeagueDataProvider: React.FC<LeagueDataProviderProps> = ({ data, ch
       drafts,
       draftPicks,
       userMap,
-      rosterUserMap,
-      stats
+      rosterUserMap: buildRosterUserMap(rosters, userMap),
+      stats: {
+        transactionCount: transactions.length,
+        draftPickCount: getDraftPickCount(draftPicks),
+        draftCount: drafts.length,
+      },
     };
   }, [league, rosters, users, players, transactions, drafts, draftPicks]);
 
@@ -83,12 +66,4 @@ export const LeagueDataProvider: React.FC<LeagueDataProviderProps> = ({ data, ch
       {children}
     </LeagueDataContext.Provider>
   );
-};
-
-export const useLeagueData = () => {
-  const context = useContext(LeagueDataContext);
-  if (!context) {
-    throw new Error('useLeagueData must be used within a LeagueDataProvider');
-  }
-  return context;
 };

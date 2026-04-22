@@ -4,7 +4,8 @@ import { LazyTeamOverview, LazyFantasyManager, LazyGamificationCenter } from './
 import PageNavigation from './PageNavigation';
 import ErrorBoundaryWithRetry from './ErrorBoundaryWithRetry';
 import PageHead from './PageHead';
-import { LeagueDataProvider, useLeagueData } from './LeagueDataProvider';
+import { LeagueDataProvider } from './LeagueDataProvider';
+import { useLeagueData } from './LeagueDataContext';
 import LeagueHeaderSkeleton from './skeletons/LeagueHeaderSkeleton';
 import TeamOverviewSkeleton from './skeletons/TeamOverviewSkeleton';
 import PageNavigationSkeleton from './skeletons/PageNavigationSkeleton';
@@ -14,11 +15,12 @@ import { MobileAppLayout } from '@/components/mobile/MobileAppLayout';
 import { MobileMoreMenu } from '@/components/mobile/MobileMoreMenu';
 import { useBottomNav } from '@/hooks/useBottomNav';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useLeagueOwnershipStatus } from '@/hooks/useLeagueOwnershipStatus';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
+import type { SleeperLeagueDataBundle } from '@/types/sleeper';
 
 const VALID_PAGES = ['gamification', 'overview', 'manager', 'commissioner', 'more'] as const;
 const VALID_OVERVIEW_TABS = ['matchups', 'standings', 'transactions', 'statistics'] as const;
@@ -32,15 +34,7 @@ const isValidOverviewTab = (value: string): value is (typeof VALID_OVERVIEW_TABS
 };
 
 interface LeagueDataProps {
-  data: {
-    league: any;
-    rosters: any[];
-    users: any[];
-    players: Record<string, any>;
-    transactions?: any[];
-    drafts?: any[];
-    draftPicks?: any[];
-  };
+  data: SleeperLeagueDataBundle;
   onRefreshData?: () => Promise<void>;
   onResyncData?: () => Promise<void>;
   onOwnershipChanged?: () => void;
