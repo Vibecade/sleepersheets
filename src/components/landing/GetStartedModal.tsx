@@ -1,22 +1,5 @@
-import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Link2, 
-  Search, 
-  LogIn, 
-  Play,
-  ArrowRight,
-  Users,
-  Trophy,
-  Target
-} from 'lucide-react';
+import React from 'react';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 interface GetStartedModalProps {
   isOpen: boolean;
@@ -24,101 +7,171 @@ interface GetStartedModalProps {
   onSelectOption: (option: 'connect' | 'auth' | 'demo') => void;
 }
 
+type OptionId = 'connect' | 'auth' | 'demo';
+
+interface PathCard {
+  id: OptionId;
+  tag: string;
+  icon: string;
+  title: string;
+  desc: string;
+  cta: string;
+  primary?: boolean;
+}
+
+const cards: PathCard[] = [
+  {
+    id: 'connect',
+    tag: 'SMART DETECTION',
+    icon: '⊕',
+    title: 'Connect Your League',
+    desc: 'Enter your League ID or Username to get started instantly.',
+    cta: 'CONNECT',
+    primary: true,
+  },
+  {
+    id: 'auth',
+    tag: 'FULL ACCESS',
+    icon: '⌬',
+    title: 'Sign In to Manage',
+    desc: 'Create an account to save and manage multiple leagues.',
+    cta: 'SIGN IN',
+  },
+  {
+    id: 'demo',
+    tag: 'NO SETUP',
+    icon: '▶',
+    title: 'Try a Demo League',
+    desc: 'Explore features with a sample dynasty league.',
+    cta: 'EXPLORE',
+  },
+];
+
 const GetStartedModal: React.FC<GetStartedModalProps> = ({
   isOpen,
   onClose,
-  onSelectOption
+  onSelectOption,
 }) => {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-
-  const options = [
-    {
-      id: 'connect',
-      icon: Link2,
-      title: 'Connect Your League',
-      description: 'Enter your League ID or Username to get started instantly',
-      color: 'border-primary/20 hover:border-primary/40',
-      badge: 'Smart Detection'
-    },
-    {
-      id: 'auth',
-      icon: LogIn,
-      title: 'Sign in to manage leagues', 
-      description: 'Create an account to save and manage multiple leagues',
-      color: 'border-success/20 hover:border-success/40',
-      badge: 'Full Features'
-    },
-    {
-      id: 'demo',
-      icon: Play,
-      title: 'Try a demo league',
-      description: 'Explore features with a sample dynasty league',
-      color: 'border-chart-3/20 hover:border-chart-3/40',
-      badge: 'No Setup'
-    }
-  ];
-
-  const handleSelectOption = (optionId: string) => {
-    // Close modal first to prevent race conditions
+  const handleSelect = (id: OptionId) => {
     onClose();
-    // Delay the callback to ensure modal is fully closed before navigation
-    setTimeout(() => {
-      onSelectOption(optionId as 'connect' | 'auth' | 'demo');
-    }, 150);
+    setTimeout(() => onSelectOption(id), 150);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center mb-2">
-            Choose Your <span className="gradient-text">Path to Victory</span>
-          </DialogTitle>
-          <p className="text-muted-foreground text-center">
-            Select how you'd like to get started with SleeperSheets
-          </p>
-        </DialogHeader>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          {options.map((option) => (
-            <Card 
-              key={option.id}
-              className={`glass-card hover-lift cursor-pointer transition-all duration-300 ${option.color} ${
-                selectedOption === option.id ? 'ring-2 ring-primary' : ''
-              }`}
-              onClick={() => setSelectedOption(option.id)}
+      <DialogContent
+        className="max-w-3xl p-0 bg-card border-border"
+        style={{ borderTop: '3px solid hsl(var(--primary))' }}
+      >
+        <div className="px-6 pt-10 pb-6 sm:px-10 text-center">
+          <div
+            className="font-mono text-[11px] font-semibold text-primary mb-3"
+            style={{ letterSpacing: '0.25em' }}
+          >
+            ● CHOOSE YOUR PATH
+          </div>
+          <DialogTitle
+            asChild
+          >
+            <h2
+              className="font-headline font-bold uppercase text-foreground m-0"
+              style={{
+                fontSize: 'clamp(28px, 4.5vw, 48px)',
+                letterSpacing: '-0.01em',
+                lineHeight: 1,
+              }}
             >
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="p-3 rounded-lg bg-background/50">
-                    <option.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <span className="text-xs px-2 py-1 bg-primary/20 text-primary rounded-full">
-                    {option.badge}
-                  </span>
-                </div>
-                <CardTitle className="text-lg">{option.title}</CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  {option.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSelectOption(option.id);
-                  }}
-                  className="w-full"
-                  variant={selectedOption === option.id ? "default" : "outline"}
-                >
-                  Get Started
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+              How will you
+              <br />
+              <span className="text-primary">kick off?</span>
+            </h2>
+          </DialogTitle>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Pick the path that matches your setup. You can always switch later.
+          </p>
         </div>
 
+        <div className="px-6 pb-10 sm:px-10 grid grid-cols-1 md:grid-cols-3 gap-3">
+          {cards.map((card) => (
+            <div
+              key={card.id}
+              className="p-5 sm:p-6 flex flex-col"
+              style={{
+                background: 'hsl(var(--card-light))',
+                border: card.primary
+                  ? '1px solid hsl(var(--primary))'
+                  : '1px solid hsl(var(--border))',
+                position: 'relative',
+              }}
+            >
+              {card.primary && (
+                <span
+                  aria-hidden
+                  className="absolute -top-px left-0 right-0 bg-primary"
+                  style={{ height: 2 }}
+                />
+              )}
+              <div className="flex items-start justify-between mb-6">
+                <div
+                  className="flex items-center justify-center font-headline font-bold"
+                  style={{
+                    width: 44,
+                    height: 44,
+                    fontSize: 22,
+                    background: card.primary ? 'hsl(var(--primary))' : 'hsl(var(--background))',
+                    color: card.primary ? 'hsl(var(--primary-foreground))' : 'hsl(var(--primary))',
+                    border: card.primary ? 'none' : '1px solid hsl(var(--border-light))',
+                  }}
+                >
+                  {card.icon}
+                </div>
+                <span
+                  className="font-mono font-bold"
+                  style={{
+                    fontSize: 9,
+                    letterSpacing: '0.2em',
+                    padding: '3px 8px',
+                    background: card.primary ? 'hsl(var(--primary))' : 'transparent',
+                    color: card.primary ? 'hsl(var(--primary-foreground))' : 'hsl(var(--primary))',
+                    border: card.primary ? 'none' : '1px solid hsl(var(--primary) / 0.3)',
+                  }}
+                >
+                  {card.tag}
+                </span>
+              </div>
+
+              <h3
+                className="font-headline font-bold uppercase text-foreground m-0 mb-2"
+                style={{ fontSize: 22, letterSpacing: '0.02em', lineHeight: 1.05 }}
+              >
+                {card.title}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-5">
+                {card.desc}
+              </p>
+
+              <button
+                onClick={() => handleSelect(card.id)}
+                className="font-headline font-bold uppercase cursor-pointer transition-colors"
+                style={{
+                  fontSize: 13,
+                  letterSpacing: '0.15em',
+                  padding: '12px 16px',
+                  background: card.primary ? 'hsl(var(--primary))' : 'transparent',
+                  color: card.primary
+                    ? 'hsl(var(--primary-foreground))'
+                    : 'hsl(var(--foreground))',
+                  border: card.primary ? 'none' : '1px solid hsl(var(--border-light))',
+                  clipPath: card.primary
+                    ? 'polygon(6% 0, 100% 0, 94% 100%, 0 100%)'
+                    : undefined,
+                }}
+              >
+                {card.cta} →
+              </button>
+            </div>
+          ))}
+        </div>
       </DialogContent>
     </Dialog>
   );

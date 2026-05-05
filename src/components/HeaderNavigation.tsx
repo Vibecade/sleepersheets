@@ -1,73 +1,145 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileNav } from '@/components/ui/mobile-nav';
-import { Home, Info, FileText, Download, Trophy } from 'lucide-react';
 
-const HeaderNavigation = () => {
+const navigationItems = [
+  { path: '/', label: 'Home' },
+  { path: '/about', label: 'About' },
+  { path: '/how-to', label: 'How to Use' },
+  { path: '/export', label: 'Export & AI' },
+];
+
+const Brand: React.FC<{ size?: 'sm' | 'md' }> = ({ size = 'md' }) => {
+  const badge = size === 'sm' ? 32 : 40;
+  const word = size === 'sm' ? 18 : 24;
+  return (
+    <Link to="/" className="inline-flex items-center gap-3">
+      <span
+        className="bg-primary text-primary-foreground font-headline font-bold flex items-center justify-center"
+        style={{
+          width: badge,
+          height: badge,
+          fontSize: badge * 0.55,
+          clipPath: 'polygon(15% 0, 100% 0, 85% 100%, 0 100%)',
+        }}
+      >
+        S
+      </span>
+      <span className="flex flex-col leading-none">
+        <span
+          className="font-headline font-bold text-foreground"
+          style={{ fontSize: word, letterSpacing: '0.1em' }}
+        >
+          SLEEPERSHEETS
+        </span>
+        <span
+          className="font-mono text-muted-foreground mt-1"
+          style={{ fontSize: 9, letterSpacing: '0.2em' }}
+        >
+          LEAGUE OPS · COMMAND CENTER
+        </span>
+      </span>
+    </Link>
+  );
+};
+
+const LiveDot: React.FC = () => (
+  <span
+    aria-hidden
+    className="inline-block text-primary"
+    style={{
+      width: 8,
+      height: 8,
+      borderRadius: '50%',
+      background: 'currentColor',
+      animation: 'livePulse 1.6s ease-out infinite',
+    }}
+  />
+);
+
+const HeaderNavigation: React.FC = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
 
-  const navigationItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/about', label: 'About', icon: Info },
-    { path: '/how-to', label: 'How to Use', icon: FileText },
-    { path: '/export', label: 'Export & AI', icon: Download },
-  ];
-
   if (isMobile) {
     return (
-      <div className="sticky top-0 z-40 border-b border-white/10 bg-background/85 backdrop-blur-md">
-        <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-3 flex items-center justify-between">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide">
-            <Trophy className="w-4 h-4 text-primary" />
-            SleeperSheets
-          </Link>
+      <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-md border-b border-border">
+        <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+          <Brand size="sm" />
 
           <MobileNav>
-            {navigationItems.map((item) => (
-              <Link key={item.path} to={item.path}>
-                <Button
-                  variant={location.pathname === item.path ? 'default' : 'ghost'}
-                  className="flex items-center justify-start space-x-3 w-full h-12 text-left"
-                  size="lg"
+            {navigationItems.map((item) => {
+              const active = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`block px-4 py-3 font-headline font-bold uppercase border-l-2 transition-colors ${
+                    active
+                      ? 'text-primary border-primary bg-primary/5'
+                      : 'text-muted-foreground border-transparent hover:text-foreground hover:border-border'
+                  }`}
+                  style={{ fontSize: 14, letterSpacing: '0.125em' }}
                 >
-                  <item.icon className="w-5 h-5" />
-                  <span className="text-base">{item.label}</span>
-                </Button>
-              </Link>
-            ))}
+                  {item.label}
+                </Link>
+              );
+            })}
           </MobileNav>
         </div>
-      </div>
+      </header>
     );
   }
 
   return (
-    <div className="sticky top-0 z-40 border-b border-white/10 bg-background/85 backdrop-blur-md">
-      <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-3 flex items-center justify-between gap-4">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm lg:text-base font-semibold tracking-wide">
-          <Trophy className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
-          SleeperSheets
-        </Link>
+    <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-md border-b border-border">
+      <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] mx-auto px-6 lg:px-10 h-[72px] flex items-center gap-8">
+        <Brand />
 
-        <nav className="flex items-center space-x-1 lg:space-x-2 rounded-xl border border-white/10 bg-black/20 p-1.5 shadow-lg">
-          {navigationItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`${navigationMenuTriggerStyle()} hover-border-glow transition-all duration-200 lg:px-4 lg:py-2.5 lg:text-base rounded-lg ${location.pathname === item.path ? 'bg-primary text-primary-foreground hover:bg-primary/90' : ''}`}
-            >
-              <item.icon className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
-              {item.label}
-            </Link>
-          ))}
+        <nav className="flex items-stretch ml-4">
+          {navigationItems.map((item) => {
+            const active = location.pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center px-4 lg:px-5 font-headline font-bold uppercase transition-colors border-b-[3px] -mb-px ${
+                  active
+                    ? 'text-primary border-primary'
+                    : 'text-muted-foreground border-transparent hover:text-foreground'
+                }`}
+                style={{ fontSize: 12, letterSpacing: '0.15em', height: 72 }}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
+
+        <div className="ml-auto flex items-center gap-5">
+          <span
+            className="hidden lg:inline-flex items-center gap-2 font-mono text-muted-foreground"
+            style={{ fontSize: 10, letterSpacing: '0.15em' }}
+          >
+            <LiveDot /> WK 22 · LIVE
+          </span>
+          <Link
+            to="/"
+            className="bg-primary text-primary-foreground font-headline font-bold uppercase hover:bg-primary-glow transition-colors flex items-center"
+            style={{
+              padding: '0 22px',
+              height: 44,
+              fontSize: 14,
+              letterSpacing: '0.15em',
+              clipPath: 'polygon(8% 0, 100% 0, 92% 100%, 0 100%)',
+            }}
+          >
+            HIT THE FIELD →
+          </Link>
+        </div>
       </div>
-    </div>
+    </header>
   );
 };
 

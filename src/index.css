@@ -16,45 +16,43 @@
 
 @layer base {
   :root {
-  /* Modern NFL War Room Color Palette */
-    --background: 214 20% 6%;
-    --background-light: 214 18% 8%;
-    --foreground: 45 85% 88%;
-    
-    --card: 214 18% 8%;
-    --card-light: 214 16% 10%;
-    --card-foreground: 45 85% 88%;
-    
-    --popover: 214 22% 5%;
-    --popover-foreground: 45 85% 88%;
-    
-    /* Primary Deep Variant for Enhanced Gradients */
-    --primary-deep: 45 85% 48%;
-    
-    /* Refined Gold Primary */
-    --primary: 45 95% 58%;
-    --primary-foreground: 214 20% 6%;
-    --primary-glow: 45 100% 68%;
-    --primary-muted: 45 60% 35%;
-    
-    /* Sophisticated Red Secondary */
-    --secondary: 358 75% 52%;
-    --secondary-foreground: 45 85% 88%;
-    --secondary-glow: 358 85% 62%;
-    --secondary-muted: 358 40% 35%;
-    
-    /* Modern Steel Accent */
-    --accent: 214 12% 22%;
-    --accent-foreground: 45 85% 88%;
-    --accent-light: 214 12% 28%;
-    
-    /* Professional Green Success */
-    --success: 142 70% 48%;
-    --success-foreground: 214 20% 6%;
-    --success-muted: 142 40% 35%;
-    
-    --muted: 214 15% 12%;
-    --muted-foreground: 214 16% 78%;
+  /* Turf Field Color Palette — pure black, vivid green, magenta alert */
+    --background: 0 0% 0%;
+    --background-light: 120 12% 5%;
+    --foreground: 135 100% 97%;
+
+    --card: 120 12% 5%;
+    --card-light: 120 13% 9%;
+    --card-foreground: 135 100% 97%;
+
+    --popover: 120 12% 5%;
+    --popover-foreground: 135 100% 97%;
+
+    /* Turf Green Primary */
+    --primary-deep: 105 96% 50%;
+    --primary: 105 96% 64%;
+    --primary-foreground: 0 0% 0%;
+    --primary-glow: 105 96% 74%;
+    --primary-muted: 105 60% 35%;
+
+    /* Magenta Alert Secondary */
+    --secondary: 343 100% 59%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-glow: 343 100% 69%;
+    --secondary-muted: 343 60% 35%;
+
+    /* Dark Green Steel Accent */
+    --accent: 132 14% 14%;
+    --accent-foreground: 135 100% 97%;
+    --accent-light: 120 13% 20%;
+
+    /* Success mirrors turf green */
+    --success: 105 96% 64%;
+    --success-foreground: 0 0% 0%;
+    --success-muted: 105 60% 35%;
+
+    --muted: 132 14% 14%;
+    --muted-foreground: 132 7% 51%;
 
     /* Spacing scale (8/12/16/24/32) */
     --space-2: 0.5rem;
@@ -64,27 +62,27 @@
     --space-8: 2rem;
     --section-gap: var(--space-4);
     
-    --destructive: 358 75% 52%;
-    --destructive-foreground: 45 85% 88%;
-    
-    --border: 214 12% 16%;
-    --border-light: 214 12% 20%;
-    --input: 214 12% 16%;
-    --ring: 45 95% 58%;
-    
-    --radius: 0.75rem;
-    
+    --destructive: 343 100% 59%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 132 14% 14%;
+    --border-light: 120 13% 20%;
+    --input: 132 14% 14%;
+    --ring: 105 96% 64%;
+
+    --radius: 0px;
+
     /* Chart Colors for Analytics */
-    --chart-1: 45 95% 58%;      /* Primary Gold */
-    --chart-2: 142 70% 48%;     /* Success Green */
+    --chart-1: 105 96% 64%;     /* Turf Green */
+    --chart-2: 343 100% 59%;    /* Magenta Alert */
     --chart-3: 220 91% 65%;     /* Blue */
     --chart-4: 283 89% 74%;     /* Purple */
     --chart-5: 27 96% 61%;      /* Orange */
-    
+
     /* Refined Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--secondary-glow)) 100%);
-    --gradient-success: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(142 80% 58%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(105 96% 74%) 100%);
     --gradient-card: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card-light)) 100%);
     --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
     --gradient-glass-strong: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%);
@@ -112,14 +110,14 @@
     --transition-stadium: var(--transition-normal);
     
     /* Sidebar Variables */
-    --sidebar-background: 214 18% 8%;
-    --sidebar-foreground: 45 85% 88%;
-    --sidebar-primary: 45 95% 58%;
-    --sidebar-primary-foreground: 214 20% 6%;
-    --sidebar-accent: 214 12% 22%;
-    --sidebar-accent-foreground: 45 85% 88%;
-    --sidebar-border: 214 12% 16%;
-    --sidebar-ring: 45 95% 58%;
+    --sidebar-background: 120 12% 5%;
+    --sidebar-foreground: 135 100% 97%;
+    --sidebar-primary: 105 96% 64%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 132 14% 14%;
+    --sidebar-accent-foreground: 135 100% 97%;
+    --sidebar-border: 132 14% 14%;
+    --sidebar-ring: 105 96% 64%;
   }
 }
 
@@ -140,15 +138,9 @@
     @apply text-foreground min-h-screen;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: hsl(var(--background));
-    background-image: 
-      /* Football field yard lines */
-      linear-gradient(90deg, rgba(255,215,0,0.03) 1px, transparent 1px),
-      linear-gradient(180deg, rgba(255,215,0,0.02) 1px, transparent 1px),
-      /* Stadium lighting effects */
-      radial-gradient(circle at 20% 80%, hsla(var(--primary) / 0.1) 0%, transparent 60%),
-      radial-gradient(circle at 80% 20%, hsla(var(--secondary) / 0.08) 0%, transparent 60%),
-      radial-gradient(circle at 40% 40%, hsla(120 60% 20% / 0.05) 0%, transparent 70%);
-    background-size: 50px 50px, 50px 50px, 100% 100%, 100% 100%, 100% 100%;
+    background-image:
+      /* Yard-line vertical stripes — Turf Field */
+      repeating-linear-gradient(90deg, transparent 0 80px, hsl(var(--border) / 0.4) 80px 81px);
     background-attachment: fixed;
     position: relative;
     color-scheme: dark;
@@ -172,28 +164,19 @@
     user-select: text;
   }
 
-  /* NFL War Room Glass Effects */
+  /* Turf Field surfaces (renamed from NFL War Room glass) */
   .glass {
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    background: var(--gradient-glass);
-    border: 1px solid rgba(255, 215, 0, 0.2);
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
     box-shadow: var(--shadow-glass);
   }
 
   .glass-card {
-    backdrop-filter: blur(16px) saturate(155%);
-    -webkit-backdrop-filter: blur(16px) saturate(155%);
-    background: linear-gradient(135deg, 
-      rgba(255,215,0,0.06), 
-      rgba(8,12,18,0.78), 
-      rgba(220,20,60,0.04)
-    );
-    border: 1px solid rgba(255, 215, 0, 0.24);
-    box-shadow: 
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow:
       0 6px 24px rgba(0, 0, 0, 0.32),
-      0 1px 6px rgba(255, 215, 0, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      inset 0 1px 0 rgba(255, 255, 255, 0.02);
     position: relative;
     animation: stadium-entrance var(--motion-duration-emphasis) var(--motion-ease-standard);
   }
@@ -204,8 +187,14 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,215,0,0.38), transparent);
+    height: 2px;
+    background: hsl(var(--primary));
+    opacity: 0;
+    transition: opacity var(--motion-duration-standard) var(--motion-ease-standard);
+  }
+
+  .glass-card:hover::before {
+    opacity: 1;
   }
 
   /* Compact density mode for league views */
@@ -253,60 +242,46 @@
   }
 
   .glass-button {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,255,255,0.08));
-    border: 1px solid rgba(255, 215, 0, 0.4);
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border-light));
+    color: hsl(var(--foreground));
     transition: var(--transition-stadium);
     min-height: 44px;
     min-width: 44px;
   }
 
   .glass-button:hover {
-    background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(255,255,255,0.12));
-    border: 1px solid rgba(255, 215, 0, 0.6);
-    box-shadow: var(--shadow-helmet);
+    background: hsl(var(--card-light));
+    border-color: hsl(var(--primary) / 0.6);
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.3);
     transform: translateY(-1px);
   }
 
   .glass-header {
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.4));
-    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    background: hsl(var(--background) / 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid hsl(var(--border));
   }
 
-  /* Stadium Field Pattern */
+  /* Turf yard-line pattern */
   .field-pattern {
-    background-image: 
-      linear-gradient(90deg, rgba(255,215,0,0.1) 1px, transparent 1px),
-      linear-gradient(180deg, rgba(255,215,0,0.05) 1px, transparent 1px),
-      radial-gradient(circle at 25% 25%, rgba(255,215,0,0.03) 0%, transparent 50%),
-      radial-gradient(circle at 75% 75%, rgba(220,20,60,0.03) 0%, transparent 50%);
-    background-size: 20px 20px, 20px 20px, 100px 100px, 150px 150px;
-    animation: field-flash 4s ease-in-out infinite;
+    background-image:
+      repeating-linear-gradient(90deg, transparent 0 80px, hsl(var(--border) / 0.4) 80px 81px);
   }
 
   .team-card {
-    backdrop-filter: blur(20px);
-    background: linear-gradient(135deg, 
-      rgba(255,215,0,0.1), 
-      rgba(220,20,60,0.05), 
-      rgba(255,215,0,0.08)
-    );
-    border: 2px solid rgba(255, 215, 0, 0.3);
-    box-shadow: var(--shadow-helmet);
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-left: 4px solid hsl(var(--primary));
     position: relative;
     overflow: hidden;
     transition: all 0.3s ease;
   }
 
   .team-card:hover {
-    animation: helmet-glow 1s ease-in-out;
+    border-color: hsl(var(--primary) / 0.5);
     transform: translateY(-2px);
-    border-color: rgba(255, 215, 0, 0.6);
-    box-shadow: var(--shadow-glow);
   }
 
   .team-card::after {
@@ -316,7 +291,7 @@
     right: -2px;
     bottom: -2px;
     left: -2px;
-    background: linear-gradient(45deg, transparent, rgba(255,215,0,0.3), transparent);
+    background: linear-gradient(45deg, transparent, hsl(var(--primary) / 0.15), transparent);
     z-index: -1;
     border-radius: inherit;
   }
@@ -351,18 +326,14 @@
     font-weight: 500;
   }
 
-  /* War Room Display Text */
+  /* Display Text */
   .war-room-title {
-    font-family: 'Bebas Neue', system-ui, sans-serif;
+    font-family: 'Oswald', system-ui, sans-serif;
     font-size: 4rem;
-    font-weight: 400;
-    letter-spacing: 0.1em;
+    font-weight: 700;
+    letter-spacing: -0.02em;
     text-transform: uppercase;
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 0 0 30px rgba(255,215,0,0.5);
+    color: hsl(var(--primary));
   }
 
   .scoreboard-text {
@@ -394,22 +365,22 @@
 
   .hover-lift:hover {
     transform: translateY(-2px);
-    box-shadow: 
+    box-shadow:
       0 12px 40px rgba(0, 0, 0, 0.3),
-      0 0 20px rgba(234, 179, 8, 0.2),
-      0 0 5px rgba(234, 179, 8, 0.1);
+      0 0 20px hsl(var(--primary) / 0.2),
+      0 0 5px hsl(var(--primary) / 0.1);
   }
 
   .text-glow {
-    text-shadow: 0 0 10px hsla(var(--primary) / 0.5), 0 0 25px hsla(var(--primary) / 0.2);
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.5), 0 0 25px hsl(var(--primary) / 0.2);
   }
 
   .gradient-text {
-    background: linear-gradient(135deg, #eab308, #ca8a04, #a16207);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-weight: 600;
+    color: hsl(var(--primary));
+    font-family: 'Oswald', system-ui, sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
   }
 
   /* Interactive element hover effects */
@@ -418,10 +389,10 @@
   }
 
   .interactive-hover:hover {
-    box-shadow: 
-      0 0 15px rgba(234, 179, 8, 0.15),
-      0 0 5px rgba(234, 179, 8, 0.1);
-    border-color: rgba(234, 179, 8, 0.5);
+    box-shadow:
+      0 0 15px hsl(var(--primary) / 0.15),
+      0 0 5px hsl(var(--primary) / 0.1);
+    border-color: hsl(var(--primary) / 0.5);
   }
 
   /* Table row hover effect */
@@ -430,10 +401,10 @@
   }
 
   tr.hoverable-row:hover {
-    background: rgba(234, 179, 8, 0.05);
-    box-shadow: 
-      inset 0 0 0 1px rgba(234, 179, 8, 0.1),
-      0 0 10px rgba(234, 179, 8, 0.1);
+    background: hsl(var(--primary) / 0.05);
+    box-shadow:
+      inset 0 0 0 1px hsl(var(--primary) / 0.1),
+      0 0 10px hsl(var(--primary) / 0.1);
   }
 
   /* Card hover effect */
@@ -445,29 +416,30 @@
     transform: translateY(-2px);
     box-shadow:
       0 20px 40px rgba(0, 0, 0, 0.4),
-      0 0 20px rgba(234, 179, 8, 0.15),
-      0 0 5px rgba(234, 179, 8, 0.1);
-    border-color: rgba(234, 179, 8, 0.3);
+      0 0 20px hsl(var(--primary) / 0.15),
+      0 0 5px hsl(var(--primary) / 0.1);
+    border-color: hsl(var(--primary) / 0.3);
   }
 
-  /* Professional button styles */
+  /* Turf-style primary button */
   .btn-primary {
-    background: linear-gradient(135deg, #059669, #047857);
-    color: white;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
     border: none;
     padding: 0.75rem 1.5rem;
-    border-radius: 0.75rem;
-    font-weight: 500;
+    font-family: 'Oswald', system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     transition: var(--transition-normal);
-    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
     /* Ensure good mobile touch target */
     min-height: 44px;
+    clip-path: polygon(6% 0, 100% 0, 94% 100%, 0 100%);
   }
 
   .btn-primary:hover {
-    background: linear-gradient(135deg, #047857, #065f46);
+    background: hsl(var(--primary-glow));
     transform: translateY(-1px);
-    box-shadow: 0 8px 25px rgba(5, 150, 105, 0.4);
   }
 
   @keyframes fadeInNatural {
@@ -498,16 +470,15 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: rgba(15, 23, 42, 0.3);
+    background: hsl(var(--card) / 0.5);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, rgba(234, 179, 8, 0.6), rgba(161, 98, 7, 0.6));
-    border-radius: 6px;
+    background: hsl(var(--primary) / 0.6);
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, rgba(234, 179, 8, 0.8), rgba(161, 98, 7, 0.8));
+    background: hsl(var(--primary) / 0.85);
   }
 
   /* Form improvements */
@@ -517,7 +488,7 @@
 
   .form-field input:focus + label,
   .form-field input:not(:placeholder-shown) + label {
-    @apply transform -translate-y-6 scale-75 text-blue-400;
+    @apply transform -translate-y-6 scale-75 text-primary;
   }
 
   /* Mobile optimizations */
@@ -599,11 +570,17 @@
 
   @keyframes helmet-glow {
     0%, 100% {
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.2);
     }
     50% {
-      box-shadow: 0 0 30px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 215, 0, 0.1);
+      box-shadow: 0 0 30px hsl(var(--primary) / 0.4), 0 0 60px hsl(var(--primary) / 0.1);
     }
+  }
+
+  @keyframes livePulse {
+    0%   { box-shadow: 0 0 0 0 currentColor; }
+    70%  { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
   }
 
   @keyframes field-flash {
@@ -740,7 +717,7 @@
   button:focus-visible,
   input:focus-visible,
   [role="button"]:focus-visible {
-    outline: 2px solid #60a5fa;
+    outline: 2px solid hsl(var(--primary));
     outline-offset: 2px;
   }
 
@@ -751,7 +728,7 @@
   textarea {
     font-size: 16px; /* Prevent zoom on iOS */
     -webkit-appearance: none;
-    border-radius: 0.5rem;
+    border-radius: 0;
   }
 
   /* Better mobile table handling */
@@ -878,8 +855,8 @@
         transform: translateY(-4px);
         box-shadow:
           0 20px 40px rgba(0, 0, 0, 0.4),
-          0 4px 12px rgba(234, 179, 8, 0.2),
-          0 0 20px rgba(234, 179, 8, 0.15);
+          0 4px 12px hsl(var(--primary) / 0.2),
+          0 0 20px hsl(var(--primary) / 0.15);
       }
 
       .hover-glow:hover {
@@ -923,9 +900,9 @@
         transform: translateY(-4px);
         box-shadow:
           0 20px 40px rgba(0, 0, 0, 0.4),
-          0 0 20px rgba(234, 179, 8, 0.15),
-          0 0 8px rgba(234, 179, 8, 0.1);
-        border-color: rgba(234, 179, 8, 0.4);
+          0 0 20px hsl(var(--primary) / 0.15),
+          0 0 8px hsl(var(--primary) / 0.1);
+        border-color: hsl(var(--primary) / 0.4);
       }
     }
 
