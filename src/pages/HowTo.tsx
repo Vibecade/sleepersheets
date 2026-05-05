@@ -114,7 +114,7 @@ const HowTo = () => {
             <div className="glass p-6 rounded-xl">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-semibold text-white text-lg flex items-center">
-                  <Sparkles className="w-5 h-5 mr-2 text-yellow-400" />
+                  <Sparkles className="w-5 h-5 mr-2 text-primary" />
                   Copy this prompt to ChatGPT:
                 </h4>
                 <Button onClick={copyToClipboard} variant="outline" size="sm">

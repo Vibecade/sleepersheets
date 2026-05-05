@@ -64,7 +64,7 @@ const About = () => {
               <Card className="glass-card page-panel">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-3 mb-4">
-                    <Trophy className="w-6 h-6 text-yellow-500" />
+                    <Trophy className="w-6 h-6 text-primary" />
                     <h3 className="text-xl font-semibold text-white">Export & AI</h3>
                   </div>
                   <p className="text-gray-300">
@@ -124,7 +124,7 @@ const About = () => {
                   <span><strong>Real-time Updates:</strong> Always stay current with automatic data synchronization</span>
                 </li>
                 <li className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
                   <span><strong>Secure & Private:</strong> Your league data is protected with enterprise-grade security</span>
                 </li>
                 <li className="flex items-center space-x-3">
