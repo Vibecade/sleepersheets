@@ -11,8 +11,6 @@ import { formatDistanceToNow } from 'date-fns';
 import SleeperUsernameForm from '@/components/SleeperUsernameForm';
 import SleeperLeaguesList from '@/components/SleeperLeaguesList';
 import WhatsNewModal from '@/components/WhatsNewModal';
-import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
-
 
 interface UserDashboardProps {
   onSelectLeague: (leagueId: string) => void;

@@ -141,7 +141,7 @@ const TeamEfficiencyChart: React.FC<TeamEfficiencyChartProps> = ({
     }).filter(team => team.gamesPlayed > 0);
 
     return teamStats;
-  }, [rosters, userMap, getSalaryCapContribution, deadCapPlayers, historicalMatchups]);
+  }, [rosters, userMap, getSalaryCapContribution, deadCapPlayers, historicalMatchups, isMobile]);
 
   const getChartConfig = () => {
     switch (chartType) {

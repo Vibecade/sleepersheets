@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,11 +25,7 @@ export const CommissionerAuditLog = ({ leagueId, limit = 10 }: CommissionerAudit
   const [actions, setActions] = useState<CommissionerAction[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadActions();
-  }, [leagueId, limit]);
-
-  const loadActions = async () => {
+  const loadActions = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('commissioner_actions')
@@ -45,7 +41,11 @@ export const CommissionerAuditLog = ({ leagueId, limit = 10 }: CommissionerAudit
     } finally {
       setLoading(false);
     }
-  };
+  }, [leagueId, limit]);
+
+  useEffect(() => {
+    loadActions();
+  }, [loadActions]);
 
   const getActionIcon = (actionType: string) => {
     switch (actionType) {
@@ -109,7 +109,7 @@ export const CommissionerAuditLog = ({ leagueId, limit = 10 }: CommissionerAudit
           
           <div className="flex-1 space-y-1">
             <div className="flex items-center gap-2">
-              <Badge variant={getActionBadgeVariant(action.action_type) as any}>
+              <Badge variant={getActionBadgeVariant(action.action_type)}>
                 {action.action_type.replace('_', ' ')}
               </Badge>
               <span className="text-xs text-muted-foreground">

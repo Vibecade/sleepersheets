@@ -1,5 +1,5 @@
 import React from 'react';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemo } from '@/contexts/demo-context';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, X } from 'lucide-react';

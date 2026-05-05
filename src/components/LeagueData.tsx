@@ -1,10 +1,11 @@
 import React, { useState, Suspense, useEffect } from 'react';
 import LeagueHeader from './LeagueHeader';
-import { LazyTeamOverview, LazyFantasyManager } from './LazyComponents';
+import { LazyTeamOverview, LazyFantasyManager, LazyGamificationCenter } from './LazyComponents';
 import PageNavigation from './PageNavigation';
 import ErrorBoundaryWithRetry from './ErrorBoundaryWithRetry';
 import PageHead from './PageHead';
-import { LeagueDataProvider, useLeagueData } from './LeagueDataProvider';
+import { LeagueDataProvider } from './LeagueDataProvider';
+import { useLeagueData } from './LeagueDataContext';
 import LeagueHeaderSkeleton from './skeletons/LeagueHeaderSkeleton';
 import TeamOverviewSkeleton from './skeletons/TeamOverviewSkeleton';
 import PageNavigationSkeleton from './skeletons/PageNavigationSkeleton';
@@ -14,13 +15,14 @@ import { MobileAppLayout } from '@/components/mobile/MobileAppLayout';
 import { MobileMoreMenu } from '@/components/mobile/MobileMoreMenu';
 import { useBottomNav } from '@/hooks/useBottomNav';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useLeagueOwnershipStatus } from '@/hooks/useLeagueOwnershipStatus';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
+import type { SleeperLeagueDataBundle } from '@/types/sleeper';
 
-const VALID_PAGES = ['overview', 'manager', 'commissioner', 'more'] as const;
+const VALID_PAGES = ['gamification', 'overview', 'manager', 'commissioner', 'more'] as const;
 const VALID_OVERVIEW_TABS = ['matchups', 'standings', 'transactions', 'statistics'] as const;
 
 const isValidPage = (value: string): value is (typeof VALID_PAGES)[number] => {
@@ -32,15 +34,7 @@ const isValidOverviewTab = (value: string): value is (typeof VALID_OVERVIEW_TABS
 };
 
 interface LeagueDataProps {
-  data: {
-    league: any;
-    rosters: any[];
-    users: any[];
-    players: Record<string, any>;
-    transactions?: any[];
-    drafts?: any[];
-    draftPicks?: any[];
-  };
+  data: SleeperLeagueDataBundle;
   onRefreshData?: () => Promise<void>;
   onResyncData?: () => Promise<void>;
   onOwnershipChanged?: () => void;
@@ -48,7 +42,7 @@ interface LeagueDataProps {
 
 const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwnershipChanged?: () => void; }> = React.memo(({ onRefreshData, onOwnershipChanged }) => {
   const { league, rosters, userMap, rosterUserMap, players, transactions, draftPicks, stats } = useLeagueData();
-  const [currentPage, setCurrentPage] = useState<'overview' | 'manager' | 'commissioner' | 'more'>('overview');
+  const [currentPage, setCurrentPage] = useState<'gamification' | 'overview' | 'manager' | 'commissioner' | 'more'>('gamification');
   const [activeOverviewTab, setActiveOverviewTab] = useState<string>('matchups');
   const [compactMode, setCompactMode] = useState(false);
   const [hasHydratedUIState, setHasHydratedUIState] = useState(false);
@@ -74,11 +68,11 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
       const storedOverviewTab = localStorage.getItem(`${uiStoragePrefix}:overview-tab`);
       const storedCompactMode = localStorage.getItem(`${uiStoragePrefix}:compact`);
 
-      setCurrentPage(storedPage && isValidPage(storedPage) ? storedPage : 'overview');
+      setCurrentPage(storedPage && isValidPage(storedPage) ? storedPage : 'gamification');
       setActiveOverviewTab(storedOverviewTab && isValidOverviewTab(storedOverviewTab) ? storedOverviewTab : 'matchups');
       setCompactMode(storedCompactMode ? storedCompactMode === '1' : isMobile);
     } catch {
-      setCurrentPage('overview');
+      setCurrentPage('gamification');
       setActiveOverviewTab('matchups');
       setCompactMode(isMobile);
     } finally {
@@ -126,10 +120,12 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
       if (page === 'overview') {
         setCurrentPage('overview');
         setActiveOverviewTab('standings');
+      } else if (page === 'pulse' || page === 'gamify' || page === 'gamification') {
+        setCurrentPage('gamification');
       } else if (page === 'matchups') {
         setCurrentPage('overview');
         setActiveOverviewTab('matchups');
-      } else if (page === 'stats') {
+      } else if (page === 'stats' || page === 'news') {
         setCurrentPage('overview');
         setActiveOverviewTab('statistics');
       } else if (page === 'more') {
@@ -137,16 +133,16 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
       } else if (page === 'manager') {
         setCurrentPage('manager');
       } else {
-        setCurrentPage(page as 'overview' | 'manager' | 'commissioner');
+        setCurrentPage(page as 'gamification' | 'overview' | 'manager' | 'commissioner');
       }
     }
   });
 
   const getActiveNavItem = () => {
+    if (currentPage === 'gamification') return '#pulse';
     if (currentPage === 'more') return '#more';
     if (currentPage === 'manager') return '#manager';
     if (currentPage === 'overview') {
-      if (activeOverviewTab === 'statistics') return '#stats';
       if (activeOverviewTab === 'matchups') return '#matchups';
       return '#overview';
     }
@@ -178,7 +174,9 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
       <div className={`main-container ${compactMode ? 'ui-compact' : ''}`}>
         <PageHead
           title={
-            currentPage === 'overview' 
+            currentPage === 'gamification'
+              ? 'League Pulse'
+              : currentPage === 'overview'
               ? 'League Overview' 
               : currentPage === 'commissioner'
               ? 'Commissioner Dashboard'
@@ -259,6 +257,22 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
                   leagueData={leagueDataForExport}
                   isCommissioner={isOwner}
                   onNavigateToCommissioner={() => setCurrentPage('commissioner')}
+                />
+              </Suspense>
+            </ErrorBoundaryWithRetry>
+          </div>
+        )}
+
+        {currentPage === 'gamification' && (
+          <div className="slide-up" style={{ animationDelay: '0.2s' }}>
+            <ErrorBoundaryWithRetry fallbackMessage="Failed to load league pulse">
+              <Suspense fallback={<TeamOverviewSkeleton />}>
+                <LazyGamificationCenter
+                  league={league}
+                  rosters={rosters}
+                  userMap={userMap}
+                  players={players}
+                  transactions={transactions}
                 />
               </Suspense>
             </ErrorBoundaryWithRetry>

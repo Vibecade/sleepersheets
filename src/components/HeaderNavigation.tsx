@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileNav } from '@/components/ui/mobile-nav';
 import { NFL_SEASON } from '@/utils/constants';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import UserMenu from '@/components/UserMenu';
 
 const navigationItems = [

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Settings, Trophy, Download, Shield } from 'lucide-react';
+import { Settings, Trophy, Download, Shield, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileNav } from '@/components/ui/mobile-nav';
@@ -9,8 +9,8 @@ import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 import { cn } from '@/lib/utils';
 
 interface PageNavigationProps {
-  currentPage: 'overview' | 'manager' | 'commissioner';
-  onPageChange: (page: 'overview' | 'manager' | 'commissioner') => void;
+  currentPage: 'gamification' | 'overview' | 'manager' | 'commissioner';
+  onPageChange: (page: 'gamification' | 'overview' | 'manager' | 'commissioner') => void;
   leagueData?: any;
 }
 
@@ -35,6 +35,13 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
   };
 
   const baseNavigationItems = [
+    {
+      id: 'gamification' as const,
+      label: 'League Pulse',
+      shortLabel: 'Pulse',
+      icon: Sparkles,
+      onClick: () => onPageChange('gamification'),
+    },
     {
       id: 'overview' as const,
       label: 'League Overview',
@@ -109,9 +116,9 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
             variant={currentPage === item.id ? 'default' : 'ghost'}
             onClick={item.onClick}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2 lg:gap-2.5 h-10 lg:h-11 transition-all duration-200",
-              "hover:shadow-md hover-border-glow",
-              currentPage === item.id && "shadow-lg ring-2 ring-primary/30"
+              "flex-1 flex items-center justify-center gap-2 lg:gap-2.5 h-10 lg:h-11 transition-all duration-150",
+              "hover:shadow-sm",
+              currentPage === item.id && "shadow-md ring-1 ring-primary/30"
             )}
             size="default"
           >

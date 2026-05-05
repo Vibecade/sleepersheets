@@ -3,7 +3,7 @@ import React from 'react';
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Skull, Calculator, Lock, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 
 interface TeamRostersHeaderProps {
   showSalaryFeatures: boolean;

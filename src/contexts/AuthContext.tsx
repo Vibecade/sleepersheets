@@ -1,28 +1,11 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import React, { useState, useEffect, ReactNode } from 'react';
+import type { Session, User } from '@supabase/supabase-js';
 
+import { type AuthContextType, AuthContext } from '@/contexts/auth-context';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
-
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  signInWithGoogle: () => Promise<void>;
-  signOut: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -35,7 +18,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     let mounted = true;
-    let authSubscription: any = null;
+    let authSubscription: ReturnType<typeof supabase.auth.onAuthStateChange> | null = null;
 
     const initializeAuth = async () => {
       try {
@@ -139,4 +122,3 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 };
 
 AuthProvider.displayName = 'AuthProvider';
-useAuth.displayName = 'useAuth';

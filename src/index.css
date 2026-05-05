@@ -106,7 +106,7 @@
     --transition-fast: all var(--motion-duration-fast) var(--motion-ease-standard);
     --transition-normal: all var(--motion-duration-standard) var(--motion-ease-standard);
     --transition-slow: all var(--motion-duration-emphasis) var(--motion-ease-standard);
-    --transition-bounce: all var(--motion-duration-emphasis) cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-bounce: var(--transition-normal);
     --transition-stadium: var(--transition-normal);
     
     /* Sidebar Variables */
@@ -178,7 +178,7 @@
       0 6px 24px rgba(0, 0, 0, 0.32),
       inset 0 1px 0 rgba(255, 255, 255, 0.02);
     position: relative;
-    animation: stadium-entrance var(--motion-duration-emphasis) var(--motion-ease-standard);
+    transition: var(--transition-normal);
   }
 
   .glass-card::before {
@@ -264,6 +264,65 @@
     border-bottom: 1px solid hsl(var(--border));
   }
 
+  /* Static-page hero/panel utilities (used by StaticPageLayout) — recolored to Turf */
+  .page-hero {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid hsl(var(--border) / 0.9);
+    background:
+      linear-gradient(180deg, hsl(var(--background) / 0.92), hsl(var(--background) / 0.74)),
+      linear-gradient(120deg, hsl(var(--primary) / 0.08), transparent 44%, hsl(var(--secondary) / 0.06) 100%);
+    box-shadow: inset 0 -1px 0 rgba(255,255,255,0.04);
+  }
+
+  .page-hero-backdrop {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at top left, hsl(var(--primary) / 0.16), transparent 34%),
+      radial-gradient(circle at top right, hsl(var(--secondary) / 0.1), transparent 30%),
+      repeating-linear-gradient(90deg, transparent 0 80px, hsl(var(--border) / 0.4) 80px 81px);
+    opacity: 0.95;
+    pointer-events: none;
+  }
+
+  .page-hero-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    box-shadow: 0 12px 28px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.14);
+    border: 1px solid hsl(var(--primary) / 0.6);
+    clip-path: polygon(15% 0, 100% 0, 85% 100%, 0 100%);
+  }
+
+  .page-panel {
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+  }
+
+  .page-prose {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .page-prose h2,
+  .page-prose h3,
+  .page-prose h4 {
+    color: hsl(var(--foreground));
+  }
+
+  .page-prose a {
+    color: hsl(var(--primary));
+    transition: color var(--motion-duration-fast) var(--motion-ease-standard);
+  }
+
+  .page-prose a:hover {
+    color: hsl(var(--primary-glow));
+  }
+
   /* Turf yard-line pattern */
   .field-pattern {
     background-image:
@@ -276,7 +335,7 @@
     border-left: 4px solid hsl(var(--primary));
     position: relative;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: var(--transition-normal);
   }
 
   .team-card:hover {
@@ -413,7 +472,7 @@
   }
 
   .card-hover:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     box-shadow:
       0 20px 40px rgba(0, 0, 0, 0.4),
       0 0 20px hsl(var(--primary) / 0.15),
@@ -761,14 +820,14 @@
 
   .touch-card {
     @apply transition-all duration-150 ease-out;
-    @apply active:scale-[0.98] active:opacity-90;
+    @apply active:translate-y-px active:opacity-90;
     @apply touch-manipulation;
   }
 
   .touch-button {
     @apply min-h-[44px] min-w-[44px];
     @apply touch-manipulation;
-    @apply active:scale-95 active:opacity-80;
+    @apply active:translate-y-px active:opacity-85;
     @apply transition-transform duration-100;
   }
 
@@ -852,7 +911,7 @@
       }
 
       .desktop-hover-lift:hover {
-        transform: translateY(-4px);
+        transform: translateY(-1px);
         box-shadow:
           0 20px 40px rgba(0, 0, 0, 0.4),
           0 4px 12px hsl(var(--primary) / 0.2),
@@ -866,7 +925,7 @@
       }
 
       .hover-scale:hover {
-        transform: scale(1.02);
+        transform: scale(1.005);
       }
 
       .hover-border-glow:hover {
@@ -897,7 +956,7 @@
       }
 
       .desktop-card-hover:hover {
-        transform: translateY(-4px);
+        transform: translateY(-1px);
         box-shadow:
           0 20px 40px rgba(0, 0, 0, 0.4),
           0 0 20px hsl(var(--primary) / 0.15),

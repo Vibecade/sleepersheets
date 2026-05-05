@@ -1,73 +1,56 @@
-# Welcome to your Lovable project
+# SleeperSheets
 
-## Project info
+SleeperSheets is a React + Vite app for managing Sleeper fantasy football leagues with salary cap tools, contracts, exports, commissioner workflows, and league insights.
 
-**URL**: https://lovable.dev/projects/d49903bb-a93e-4461-b505-c346b183256f
+## Stack
 
-## How can I edit this code?
+- React 18
+- TypeScript
+- Vite 5
+- Tailwind CSS
+- Radix UI / shadcn-style primitives
+- Supabase
 
-There are several ways of editing your application.
+## Requirements
 
-**Use Lovable**
+- Node.js 20.x
+- npm 11+
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d49903bb-a93e-4461-b505-c346b183256f) and start prompting.
+This repo is standardized on `npm`. Bun, pnpm, and Yarn are not part of the supported workflow.
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Getting Started
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+npm ci
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The local dev server runs on port `8080` by default.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Core Commands
 
-**Use GitHub Codespaces**
+```sh
+npm run dev
+npm run lint
+npm run typecheck
+npm run build
+npm run check:bundle
+npm run smoke:routes
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## CI Expectations
 
-## What technologies are used for this project?
+Before pushing changes, the repo should pass:
 
-This project is built with:
+```sh
+npm run lint
+npm run typecheck
+npm run build
+npm run check:bundle
+npm run smoke:routes
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Notes
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/d49903bb-a93e-4461-b505-c346b183256f) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- `package-lock.json` is the source of truth for installs.
+- The app uses hashed bundles plus a service worker, so a hard refresh may be needed after deploys when chunk names change.

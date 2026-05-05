@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 import { securityLogger } from '@/utils/securityLogger';
 
@@ -26,13 +26,13 @@ export const useTransactionProcessor = () => {
   const { canModifyLeague } = useLeagueOwnership();
   const processedOnceRef = useRef<Set<string>>(new Set());
 
-  const isWaiverTransaction = (transaction: any): boolean => {
+  const isWaiverTransaction = useCallback((transaction: any): boolean => {
     return transaction.type === 'waiver' && 
            transaction.status === 'complete' && 
            transaction.settings?.waiver_bid;
-  };
+  }, []);
 
-  const extractWaiverUpdates = (transaction: any): WaiverUpdate[] => {
+  const extractWaiverUpdates = useCallback((transaction: any): WaiverUpdate[] => {
     if (!isWaiverTransaction(transaction)) return [];
 
     const updates: WaiverUpdate[] = [];
@@ -55,7 +55,7 @@ export const useTransactionProcessor = () => {
     }
 
     return updates;
-  };
+  }, [isWaiverTransaction]);
 
   const getProcessedTransactions = async (leagueId: string): Promise<Set<string>> => {
     try {
@@ -246,7 +246,7 @@ export const useTransactionProcessor = () => {
     } finally {
       setProcessing(false);
     }
-  }, [toast]);
+  }, [toast, user, canModifyLeague, isWaiverTransaction, extractWaiverUpdates]);
 
   return {
     processWaiverTransactions,
