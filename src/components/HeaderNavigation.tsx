@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileNav } from '@/components/ui/mobile-nav';
 import { NFL_SEASON } from '@/utils/constants';
+import { useAuth } from '@/contexts/AuthContext';
+import UserMenu from '@/components/UserMenu';
 
 const navigationItems = [
   { path: '/', label: 'Home' },
@@ -86,33 +88,55 @@ const LiveDot: React.FC = () => (
 const HeaderNavigation: React.FC = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { user, signOut } = useAuth();
   const liveWeek = getLiveNflWeek();
 
   if (isMobile) {
     return (
       <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-md border-b border-border">
-        <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
           <Brand size="sm" />
 
-          <MobileNav>
-            {navigationItems.map((item) => {
-              const active = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`block px-4 py-3 font-headline font-bold uppercase border-l-2 transition-colors ${
-                    active
-                      ? 'text-primary border-primary bg-primary/5'
-                      : 'text-muted-foreground border-transparent hover:text-foreground hover:border-border'
-                  }`}
+          <div className="flex items-center gap-2">
+            {user && <UserMenu />}
+            <MobileNav>
+              {navigationItems.map((item) => {
+                const active = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`block px-4 py-3 font-headline font-bold uppercase border-l-2 transition-colors ${
+                      active
+                        ? 'text-primary border-primary bg-primary/5'
+                        : 'text-muted-foreground border-transparent hover:text-foreground hover:border-border'
+                    }`}
+                    style={{ fontSize: 14, letterSpacing: '0.125em' }}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+              {user ? (
+                <button
+                  type="button"
+                  onClick={() => void signOut()}
+                  className="block w-full text-left px-4 py-3 font-headline font-bold uppercase border-l-2 border-transparent text-secondary hover:text-secondary-glow"
                   style={{ fontSize: 14, letterSpacing: '0.125em' }}
                 >
-                  {item.label}
+                  Sign Out
+                </button>
+              ) : (
+                <Link
+                  to="/auth"
+                  className="block px-4 py-3 font-headline font-bold uppercase border-l-2 border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                  style={{ fontSize: 14, letterSpacing: '0.125em' }}
+                >
+                  Sign In
                 </Link>
-              );
-            })}
-          </MobileNav>
+              )}
+            </MobileNav>
+          </div>
         </div>
       </header>
     );
@@ -152,19 +176,32 @@ const HeaderNavigation: React.FC = () => {
               <LiveDot /> WK {liveWeek} · LIVE
             </span>
           )}
-          <Link
-            to="/"
-            className="bg-primary text-primary-foreground font-headline font-bold uppercase hover:bg-primary-glow transition-colors flex items-center"
-            style={{
-              padding: '0 22px',
-              height: 44,
-              fontSize: 14,
-              letterSpacing: '0.15em',
-              clipPath: 'polygon(8% 0, 100% 0, 92% 100%, 0 100%)',
-            }}
-          >
-            HIT THE FIELD →
-          </Link>
+          {user ? (
+            <UserMenu />
+          ) : (
+            <>
+              <Link
+                to="/auth"
+                className="hidden md:inline-flex font-headline font-bold uppercase text-muted-foreground hover:text-foreground transition-colors"
+                style={{ fontSize: 12, letterSpacing: '0.15em' }}
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/"
+                className="bg-primary text-primary-foreground font-headline font-bold uppercase hover:bg-primary-glow transition-colors flex items-center"
+                style={{
+                  padding: '0 22px',
+                  height: 44,
+                  fontSize: 14,
+                  letterSpacing: '0.15em',
+                  clipPath: 'polygon(8% 0, 100% 0, 92% 100%, 0 100%)',
+                }}
+              >
+                HIT THE FIELD →
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

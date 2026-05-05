@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Activity } from 'lucide-react';
 import FunStatistics from '../FunStatistics';
+import PlayerNewsFeed from '../PlayerNewsFeed';
 
 interface StatisticsTabProps {
   league: any;
@@ -27,7 +28,8 @@ const StatisticsTab: React.FC<StatisticsTabProps> = ({
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="h-[60vh] md:h-[62vh] w-full">
-          <div className="p-4 sm:p-5">
+          <div className="space-y-5 p-4 sm:p-5">
+            <PlayerNewsFeed />
             <FunStatistics
               league={league}
               rosters={rosters}

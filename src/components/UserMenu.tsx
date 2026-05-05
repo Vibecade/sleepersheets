@@ -55,7 +55,7 @@ const UserMenu = () => {
               src={user.user_metadata?.avatar_url} 
               alt={user.user_metadata?.full_name || user.email || 'User'} 
             />
-            <AvatarFallback className="bg-yellow-500 text-black">
+            <AvatarFallback className="bg-primary text-primary-foreground">
               {userInitials}
             </AvatarFallback>
           </Avatar>
