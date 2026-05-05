@@ -1,9 +1,5 @@
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Trophy, Users, Calendar } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import type { SleeperLeague } from '@/types/sleeper';
 
 interface SleeperLeagueGridProps {
@@ -12,114 +8,191 @@ interface SleeperLeagueGridProps {
   loading?: boolean;
 }
 
+const STATUS_PALETTES: Record<
+  string,
+  { label: string; bg: string; fg: string; border: string }
+> = {
+  in_season: {
+    label: 'ACTIVE',
+    bg: 'hsl(var(--primary))',
+    fg: 'hsl(var(--primary-foreground))',
+    border: 'transparent',
+  },
+  drafting: {
+    label: 'DRAFTING',
+    bg: 'hsl(var(--primary))',
+    fg: 'hsl(var(--primary-foreground))',
+    border: 'transparent',
+  },
+  pre_draft: {
+    label: 'PRE-DRAFT',
+    bg: 'transparent',
+    fg: 'hsl(var(--primary))',
+    border: 'hsl(var(--primary))',
+  },
+  complete: {
+    label: 'COMPLETE',
+    bg: 'transparent',
+    fg: 'hsl(var(--muted-foreground))',
+    border: 'hsl(var(--border-light))',
+  },
+};
+
+const ACCENTS = [
+  '#fb923c',
+  '#22d3ee',
+  '#a78bfa',
+  '#f472b6',
+  '#34d399',
+  '#60a5fa',
+  '#fbbf24',
+  '#f87171',
+];
+
+const accentForLeague = (leagueId: string): string => {
+  let hash = 0;
+  for (let i = 0; i < leagueId.length; i++) hash = (hash * 31 + leagueId.charCodeAt(i)) >>> 0;
+  return ACCENTS[hash % ACCENTS.length];
+};
+
 export const SleeperLeagueGrid: React.FC<SleeperLeagueGridProps> = ({
   leagues,
   onSelectLeague,
-  loading = false
+  loading = false,
 }) => {
-  const getStatusBadge = (league: SleeperLeague) => {
-    const currentYear = new Date().getFullYear();
-    const isCurrentYear = league.season === currentYear.toString();
-    
-    if (league.status === 'complete') {
-      return (
-        <Badge variant="secondary" className="bg-gray-500/20 text-gray-400 border-gray-500/20">
-          Complete
-        </Badge>
-      );
-    } else if (league.status === 'in_season' || league.status === 'drafting') {
-      return (
-        <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/20">
-          In Season
-        </Badge>
-      );
-    } else if (league.status === 'pre_draft') {
-      return (
-        <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 border-blue-500/20">
-          Pre-Draft
-        </Badge>
-      );
-    }
-    
-    return (
-      <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/20">
-        {league.status}
-      </Badge>
-    );
-  };
-
   if (leagues.length === 0) {
     return (
-      <Card className="border-primary/20">
-        <CardContent className="pt-6 text-center">
-          <div className="text-muted-foreground mb-4">
-            No NFL leagues found for the current season
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Make sure you have joined NFL leagues in Sleeper
-          </p>
-        </CardContent>
-      </Card>
+      <div className="bg-card border border-border px-6 py-10 text-center">
+        <div className="text-foreground mb-2 font-headline font-bold uppercase" style={{ letterSpacing: '0.1em' }}>
+          No leagues found
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Make sure you've joined NFL leagues in Sleeper for the current season.
+        </p>
+      </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-white">YOUR SLEEPER LEAGUES</h3>
-      <div className="grid gap-4 md:grid-cols-2">
-        {leagues.map((league) => (
-          <Card
-            key={league.league_id}
-            className="border-primary/20 hover:border-primary/40 transition-all duration-200 group"
-          >
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarFallback className="bg-primary/20 text-primary">
-                      <Trophy className="w-5 h-5" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="font-medium text-white truncate" title={league.name}>
-                      {league.name}
-                    </h4>
-                    <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                      <Calendar className="w-3 h-3" />
-                      <span>{league.season}</span>
+      <div
+        className="font-mono font-semibold text-muted-foreground"
+        style={{ fontSize: 11, letterSpacing: '0.25em' }}
+      >
+        ● 02 / YOUR LEAGUES
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {leagues.map((league, index) => {
+          const accent = accentForLeague(league.league_id);
+          const statusKey = String(league.status || '').toLowerCase();
+          const palette =
+            STATUS_PALETTES[statusKey] || {
+              label: (league.status || 'UNKNOWN').toUpperCase(),
+              bg: 'transparent',
+              fg: 'hsl(var(--muted-foreground))',
+              border: 'hsl(var(--border-light))',
+            };
+          const isPrimary = index === 0;
+
+          return (
+            <div
+              key={league.league_id}
+              className="bg-card border border-border px-5 py-5 sm:px-6 sm:py-6"
+              style={{ borderLeft: `4px solid ${accent}` }}
+            >
+              <div className="flex items-start gap-4 mb-5">
+                <div
+                  className="flex-shrink-0 w-12 h-12 flex items-center justify-center"
+                  style={{ background: accent }}
+                >
+                  <Trophy className="w-5 h-5 text-black" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h4
+                    className="font-headline font-bold uppercase text-foreground m-0"
+                    style={{ fontSize: 20, letterSpacing: '0.025em', lineHeight: 1.1 }}
+                    title={league.name}
+                  >
+                    {league.name}
+                  </h4>
+                  <div
+                    className="font-mono text-muted-foreground mt-1.5"
+                    style={{ fontSize: 10, letterSpacing: '0.15em' }}
+                  >
+                    SEASON {league.season} · {league.total_rosters} TEAMS
+                  </div>
+                </div>
+                <span
+                  className="font-mono font-bold flex-shrink-0"
+                  style={{
+                    fontSize: 9,
+                    letterSpacing: '0.15em',
+                    padding: '3px 8px',
+                    color: palette.fg,
+                    background: palette.bg,
+                    border: palette.border === 'transparent' ? 'none' : `1px solid ${palette.border}`,
+                  }}
+                >
+                  ● {palette.label}
+                </span>
+              </div>
+
+              <div
+                className="grid grid-cols-3 mb-5"
+                style={{ borderTop: '1px solid hsl(var(--border))', borderBottom: '1px solid hsl(var(--border))' }}
+              >
+                {[
+                  { label: 'TEAMS', value: String(league.total_rosters || 0) },
+                  { label: 'TYPE', value: (league.settings?.type === 2 ? 'DYN' : league.settings?.type === 1 ? 'KEEP' : 'STD') },
+                  { label: 'WEEK', value: league.season ? String(league.settings?.leg ?? league.settings?.week ?? '—') : '—' },
+                ].map((s, i) => (
+                  <div
+                    key={s.label}
+                    className="px-3 py-2.5"
+                    style={{ borderRight: i < 2 ? '1px solid hsl(var(--border))' : 'none' }}
+                  >
+                    <div
+                      className="font-mono text-muted-foreground"
+                      style={{ fontSize: 9, letterSpacing: '0.15em' }}
+                    >
+                      {s.label}
+                    </div>
+                    <div
+                      className="font-headline font-bold text-foreground mt-0.5"
+                      style={{ fontSize: 18 }}
+                    >
+                      {s.value}
                     </div>
                   </div>
-                </div>
-                {getStatusBadge(league)}
+                ))}
               </div>
-              
-              <div className="flex items-center space-x-4 mb-4 text-sm text-muted-foreground">
-                <div className="flex items-center space-x-1">
-                  <Users className="w-3 h-3" />
-                  <span>{league.total_rosters} teams</span>
-                </div>
-                {league.settings?.type && (
-                  <div className="capitalize">
-                    {league.settings.type}
-                  </div>
-                )}
-              </div>
-              
-              <Button
+
+              <button
+                type="button"
                 onClick={() => onSelectLeague(league.league_id)}
                 disabled={loading}
-                size="mobile"
-                className="w-full bg-primary hover:bg-primary-glow text-primary-foreground font-semibold group-hover:shadow-lg group-hover:shadow-primary/25 transition-all duration-200 mobile-text-wrap"
+                className={`w-full inline-flex items-center justify-center px-5 py-3.5 font-headline font-bold uppercase transition-colors disabled:opacity-60 ${
+                  isPrimary
+                    ? 'bg-primary text-primary-foreground hover:bg-primary-glow border-0'
+                    : 'bg-transparent text-foreground border hover:border-primary/60'
+                }`}
+                style={{
+                  fontSize: 14,
+                  letterSpacing: '0.15em',
+                  borderColor: isPrimary ? undefined : 'hsl(var(--border-light))',
+                  clipPath: isPrimary ? 'polygon(4% 0, 100% 0, 96% 100%, 0 100%)' : undefined,
+                }}
               >
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-primary-foreground/20 border-t-primary-foreground rounded-full animate-spin" />
                 ) : (
-                  'OPEN'
+                  'OPEN LEAGUE →'
                 )}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
