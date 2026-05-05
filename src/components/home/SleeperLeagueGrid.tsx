@@ -42,7 +42,7 @@ export const SleeperLeagueGrid: React.FC<SleeperLeagueGridProps> = ({
     }
     
     return (
-      <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/20">
+      <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/20">
         {league.status}
       </Badge>
     );
@@ -50,7 +50,7 @@ export const SleeperLeagueGrid: React.FC<SleeperLeagueGridProps> = ({
 
   if (leagues.length === 0) {
     return (
-      <Card className="border-yellow-500/20">
+      <Card className="border-primary/20">
         <CardContent className="pt-6 text-center">
           <div className="text-muted-foreground mb-4">
             No NFL leagues found for the current season
@@ -68,9 +68,9 @@ export const SleeperLeagueGrid: React.FC<SleeperLeagueGridProps> = ({
       <h3 className="text-lg font-semibold text-white">YOUR SLEEPER LEAGUES</h3>
       <div className="grid gap-4 md:grid-cols-2">
         {leagues.map((league) => (
-          <Card 
-            key={league.league_id} 
-            className="border-yellow-500/20 hover:border-yellow-500/40 transition-all duration-200 group"
+          <Card
+            key={league.league_id}
+            className="border-primary/20 hover:border-primary/40 transition-all duration-200 group"
           >
             <CardContent className="pt-6">
               <div className="flex items-start justify-between mb-4">
@@ -109,10 +109,10 @@ export const SleeperLeagueGrid: React.FC<SleeperLeagueGridProps> = ({
                 onClick={() => onSelectLeague(league.league_id)}
                 disabled={loading}
                 size="mobile"
-                className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-semibold group-hover:shadow-lg group-hover:shadow-yellow-500/25 transition-all duration-200 mobile-text-wrap"
+                className="w-full bg-primary hover:bg-primary-glow text-primary-foreground font-semibold group-hover:shadow-lg group-hover:shadow-primary/25 transition-all duration-200 mobile-text-wrap"
               >
                 {loading ? (
-                  <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-primary-foreground/20 border-t-primary-foreground rounded-full animate-spin" />
                 ) : (
                   'OPEN'
                 )}

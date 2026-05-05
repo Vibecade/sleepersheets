@@ -106,7 +106,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
-            <Trophy className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+            <Trophy className="w-5 h-5 text-primary flex-shrink-0" />
             <span className="truncate">Owned Leagues</span>
             <Badge variant="secondary" className="text-xs">{ownedLeagues.length}</Badge>
           </CardTitle>
