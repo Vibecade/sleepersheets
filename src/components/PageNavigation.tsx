@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileNav } from '@/components/ui/mobile-nav';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
+import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
 import { cn } from '@/lib/utils';
 
 interface PageNavigationProps {
@@ -22,9 +23,11 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { canModifyLeague } = useLeagueOwnership();
-  
+  const { isSuperAdmin } = useIsSuperAdmin();
+
   // Check if user is league owner (can see commissioner tools)
   const isLeagueOwner = leagueData?.league_id ? canModifyLeague(leagueData.league_id) : false;
+  const canSeeCommissioner = isLeagueOwner || isSuperAdmin;
 
   const handleExportClick = () => {
     if (leagueData) {
@@ -51,8 +54,8 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
     },
   ];
 
-  // Add Commissioner tab only for league owners
-  const commissionerItem = isLeagueOwner ? {
+  // Add Commissioner tab for league owners and super admins
+  const commissionerItem = canSeeCommissioner ? {
     id: 'commissioner' as const,
     label: 'Commissioner',
     shortLabel: 'Commissioner',
