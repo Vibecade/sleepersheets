@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCommissionerActions } from '@/hooks/useCommissionerActions';
 import { useToast } from '@/hooks/use-toast';
+import { useReadOnly } from '@/contexts/read-only-context';
 import { Users, UserCheck, Search, Crown } from 'lucide-react';
 import OwnershipTransferDialog from '@/components/league/OwnershipTransferDialog';
 
@@ -20,6 +21,7 @@ export const UserManagement = ({ leagueId, leagueData }: UserManagementProps) =>
   const [showTransferDialog, setShowTransferDialog] = useState(false);
   const { logAction } = useCommissionerActions(leagueId);
   const { toast } = useToast();
+  const { readOnly } = useReadOnly();
 
   const rosters = leagueData?.rosters || [];
   const users = leagueData?.users || {};
@@ -32,6 +34,7 @@ export const UserManagement = ({ leagueId, leagueData }: UserManagementProps) =>
   });
 
   const handleTransferOwnership = async (rosterId: string, newOwnerId: string) => {
+    if (readOnly) return;
     try {
       await logAction({
         action_type: 'ownership_transfer',
@@ -136,6 +139,7 @@ export const UserManagement = ({ leagueId, leagueData }: UserManagementProps) =>
                         size="sm"
                         onClick={() => setShowTransferDialog(true)}
                         className="gap-2"
+                        disabled={readOnly}
                       >
                         <Crown className="h-3 w-3" />
                         Transfer
