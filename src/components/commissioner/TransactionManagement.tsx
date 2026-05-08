@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCommissionerActions } from '@/hooks/useCommissionerActions';
 import { useToast } from '@/hooks/use-toast';
+import { useReadOnly } from '@/contexts/read-only-context';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   FileX, 
@@ -44,6 +45,7 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
   const [activeTab, setActiveTab] = useState('recent');
   const { logAction } = useCommissionerActions(leagueId);
   const { toast } = useToast();
+  const { readOnly } = useReadOnly();
 
   useEffect(() => {
     loadTransactions();
@@ -73,9 +75,10 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
   };
 
   const handleTransactionAction = async (
-    transaction: Transaction, 
+    transaction: Transaction,
     action: 'approve' | 'reject' | 'reverse'
   ) => {
+    if (readOnly) return;
     try {
       // Log the override action
       const { data: user } = await supabase.auth.getUser();
@@ -211,6 +214,7 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
             variant="outline"
             onClick={() => handleTransactionAction(transaction, 'approve')}
             className="gap-1"
+            disabled={readOnly}
           >
             <Check className="h-3 w-3" />
             Approve
@@ -220,6 +224,7 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
             variant="outline"
             onClick={() => handleTransactionAction(transaction, 'reject')}
             className="gap-1"
+            disabled={readOnly}
           >
             <X className="h-3 w-3" />
             Reject
@@ -229,6 +234,7 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
             variant="outline"
             onClick={() => handleTransactionAction(transaction, 'reverse')}
             className="gap-1"
+            disabled={readOnly}
           >
             <RotateCcw className="h-3 w-3" />
             Reverse

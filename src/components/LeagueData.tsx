@@ -16,6 +16,10 @@ import { useBottomNav } from '@/hooks/useBottomNav';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLeagueOwnershipStatus } from '@/hooks/useLeagueOwnershipStatus';
+import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
+import { ReadOnlyContext } from '@/contexts/read-only-context';
+import { SuperAdminBanner } from '@/components/commissioner/SuperAdminBanner';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
@@ -55,7 +59,14 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const { checkOwnershipStatus } = useLeagueOwnershipStatus();
+  const { isSuperAdmin } = useIsSuperAdmin();
   const [isOwner, setIsOwner] = useState(false);
+  const canAccessCommissioner = isOwner || isSuperAdmin;
+  const isSuperAdminViewer = isSuperAdmin && !isOwner;
+  const readOnlyValue = React.useMemo(
+    () => ({ readOnly: isSuperAdminViewer, reason: isSuperAdminViewer ? 'super-admin' : undefined }),
+    [isSuperAdminViewer]
+  );
   const uiStoragePrefix = React.useMemo(
     () => (league?.league_id ? `sleepersheets:league-ui:${league.league_id}` : null),
     [league?.league_id]
@@ -119,6 +130,26 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
     };
     checkOwnership();
   }, [user, league?.league_id, checkOwnershipStatus]);
+
+  // Audit super admin commissioner-area views (skipped when the user is the
+  // actual commissioner). One insert per (league, page-load).
+  useEffect(() => {
+    if (!isSuperAdminViewer || currentPage !== 'commissioner' || !league?.league_id || !user?.email) {
+      return;
+    }
+    void supabase
+      .from('super_admin_access_log')
+      .insert({
+        viewer_email: user.email,
+        league_id: league.league_id,
+        route: 'commissioner',
+      })
+      .then(({ error }) => {
+        if (error) {
+          console.error('Failed to log super admin access:', error);
+        }
+      });
+  }, [isSuperAdminViewer, currentPage, league?.league_id, user?.email]);
   
   const { bottomNavItems } = useBottomNav({
     leagueId: league.league_id,
@@ -226,12 +257,15 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
 
         {currentPage === 'commissioner' && (
           <div className="slide-up" style={{ animationDelay: '0.2s' }}>
-            {isOwner ? (
-              <ErrorBoundaryWithRetry fallbackMessage="Error loading commissioner dashboard">
-                <Suspense fallback={<SkeletonCard lines={4} />}>
-                  <CommissionerDashboard leagueId={league.league_id} leagueData={leagueDataForExport} />
-                </Suspense>
-              </ErrorBoundaryWithRetry>
+            {canAccessCommissioner ? (
+              <ReadOnlyContext.Provider value={readOnlyValue}>
+                {isSuperAdminViewer && <SuperAdminBanner />}
+                <ErrorBoundaryWithRetry fallbackMessage="Error loading commissioner dashboard">
+                  <Suspense fallback={<SkeletonCard lines={4} />}>
+                    <CommissionerDashboard leagueId={league.league_id} leagueData={leagueDataForExport} />
+                  </Suspense>
+                </ErrorBoundaryWithRetry>
+              </ReadOnlyContext.Provider>
             ) : (
               <Card>
                 <CardHeader>
@@ -257,7 +291,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
                 <MobileMoreMenu
                   leagueId={league.league_id}
                   leagueData={leagueDataForExport}
-                  isCommissioner={isOwner}
+                  isCommissioner={canAccessCommissioner}
                   onNavigateToCommissioner={() => setCurrentPage('commissioner')}
                 />
               </Suspense>

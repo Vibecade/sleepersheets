@@ -663,6 +663,45 @@ export type Database = {
         }
         Relationships: []
       }
+      super_admins: {
+        Row: {
+          added_at: string
+          email: string
+        }
+        Insert: {
+          added_at?: string
+          email: string
+        }
+        Update: {
+          added_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
+      super_admin_access_log: {
+        Row: {
+          id: number
+          league_id: string | null
+          route: string | null
+          viewer_email: string
+          viewed_at: string
+        }
+        Insert: {
+          id?: number
+          league_id?: string | null
+          route?: string | null
+          viewer_email: string
+          viewed_at?: string
+        }
+        Update: {
+          id?: number
+          league_id?: string | null
+          route?: string | null
+          viewer_email?: string
+          viewed_at?: string
+        }
+        Relationships: []
+      }
       transaction_overrides: {
         Row: {
           action: string
@@ -709,6 +748,10 @@ export type Database = {
         Returns: {
           user_id: string
         }[]
+      }
+      is_super_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       log_integrity_violation: {
         Args: {
