@@ -176,7 +176,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   };
 };
 
-export const fetchSleeperProjections = async (week: number, season: string = '2024'): Promise<Record<string, SleeperProjection> | null> => {
+export const fetchSleeperProjections = async (week: number, season: string = new Date().getFullYear().toString()): Promise<Record<string, SleeperProjection> | null> => {
   logger.debug(`Attempting to fetch Sleeper projections for week ${week}, season ${season}`);
   
   const clientId = 'projections_fetch';

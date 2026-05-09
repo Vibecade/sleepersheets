@@ -1,45 +1,23 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trophy, Users, TrendingUp, Shield, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
-import PageHead from '@/components/PageHead';
+import { Trophy, Users, TrendingUp, Shield } from 'lucide-react';
+import StaticPageLayout from '@/components/layout/StaticPageLayout';
 
 const About = () => {
-  const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen">
-      <PageHead 
-        title="About SleeperSheets"
-        description="Learn about SleeperSheets - The ultimate fantasy football salary cap and contract management tool for dynasty leagues."
-        canonicalUrl="https://sleepersheets.com/about"
-      />
-      
-      {/* Header */}
-      <div className="glass-header border-b border-white/10 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 animate-pulse"></div>
-        <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div className="bg-gradient-to-br from-primary to-primary-glow rounded-2xl p-4 shadow-2xl">
-              <Trophy className="w-8 h-8 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold gradient-text mb-2">About SleeperSheets</h1>
-              <p className="text-gray-300 text-lg">The ultimate fantasy football salary cap management tool</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <Card className="mb-8">
-          <CardContent className="space-y-8 pt-6">
-            <section className="text-gray-300">
+    <StaticPageLayout
+      title="About SleeperSheets"
+      description="The salary cap, contract, and league management layer for serious Sleeper leagues."
+      headDescription="Learn about SleeperSheets - The ultimate fantasy football salary cap and contract management tool for dynasty leagues."
+      canonicalUrl="https://sleepersheets.com/about"
+      eyebrow="Platform Overview"
+      icon={Trophy}
+      iconClassName="bg-gradient-to-br from-primary to-primary-glow"
+    >
+      <Card className="page-panel mb-8">
+        <CardContent className="space-y-8 pt-6 page-prose">
+            <section>
               <h2 className="text-2xl font-semibold text-white mb-4">What is SleeperSheets?</h2>
               <p className="text-lg leading-relaxed">
                 SleeperSheets is a comprehensive web-based tool designed specifically for fantasy football dynasty league managers who want to implement salary cap and contract systems. Built to integrate seamlessly with Sleeper fantasy leagues, our platform provides the tools you need to add a new dimension of strategy and realism to your fantasy football experience.
@@ -47,7 +25,7 @@ const About = () => {
             </section>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="glass-card">
+              <Card className="glass-card page-panel">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-3 mb-4">
                     <TrendingUp className="w-6 h-6 text-green-500" />
@@ -59,7 +37,7 @@ const About = () => {
                 </CardContent>
               </Card>
 
-              <Card className="glass-card">
+              <Card className="glass-card page-panel">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-3 mb-4">
                     <Users className="w-6 h-6 text-blue-500" />
@@ -71,10 +49,10 @@ const About = () => {
                 </CardContent>
               </Card>
 
-              <Card className="glass-card">
+              <Card className="glass-card page-panel">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-3 mb-4">
-                    <Shield className="w-6 h-6 text-purple-500" />
+                    <Shield className="w-6 h-6 text-red-400" />
                     <h3 className="text-xl font-semibold text-white">League Ownership</h3>
                   </div>
                   <p className="text-gray-300">
@@ -83,10 +61,10 @@ const About = () => {
                 </CardContent>
               </Card>
 
-              <Card className="glass-card">
+              <Card className="glass-card page-panel">
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-3 mb-4">
-                    <Trophy className="w-6 h-6 text-yellow-500" />
+                    <Trophy className="w-6 h-6 text-primary" />
                     <h3 className="text-xl font-semibold text-white">Export & AI</h3>
                   </div>
                   <p className="text-gray-300">
@@ -146,7 +124,7 @@ const About = () => {
                   <span><strong>Real-time Updates:</strong> Always stay current with automatic data synchronization</span>
                 </li>
                 <li className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
                   <span><strong>Secure & Private:</strong> Your league data is protected with enterprise-grade security</span>
                 </li>
                 <li className="flex items-center space-x-3">
@@ -156,7 +134,7 @@ const About = () => {
               </ul>
             </section>
 
-            <section className="text-gray-300">
+            <section>
               <h2 className="text-2xl font-semibold text-white mb-4">Contact & Support</h2>
               <p className="mb-4">
                 SleeperSheets is developed and maintained by fantasy football enthusiasts who understand the importance of strategic team management. We're committed to providing the best possible experience for dynasty league managers.
@@ -167,10 +145,9 @@ const About = () => {
                 <p><strong>Feature Requests:</strong> feedback@sleepersheets.com</p>
               </div>
             </section>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+        </CardContent>
+      </Card>
+    </StaticPageLayout>
   );
 };
 

@@ -187,6 +187,42 @@ export type Database = {
         }
         Relationships: []
       }
+      gamification_quest_snapshots: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          league_id: string
+          quest_points: number
+          season: string
+          snapshot: Json
+          updated_at: string
+          week: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          league_id: string
+          quest_points?: number
+          season: string
+          snapshot?: Json
+          updated_at?: string
+          week: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          league_id?: string
+          quest_points?: number
+          season?: string
+          snapshot?: Json
+          updated_at?: string
+          week?: number
+        }
+        Relationships: []
+      }
       league_activities: {
         Row: {
           activity_type: string

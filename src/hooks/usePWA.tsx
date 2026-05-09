@@ -149,7 +149,7 @@ export const usePWA = () => {
     if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
       try {
         const reg = await navigator.serviceWorker.ready;
-        // @ts-ignore - Background Sync API is not fully typed
+        // @ts-expect-error - Background Sync is still missing in the DOM lib typing.
         await reg.sync.register(tag);
         console.log('Background sync registered for tag:', tag);
         return true;

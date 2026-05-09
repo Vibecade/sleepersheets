@@ -5,7 +5,7 @@ set -euo pipefail
 HOST="127.0.0.1"
 PORT="${SMOKE_PORT:-4173}"
 BASE_URL="http://${HOST}:${PORT}"
-ROUTES=("/" "/auth" "/how-to" "/export" "/about" "/terms" "/privacy" "/cookies")
+ROUTES=("/" "/auth" "/how-to" "/export" "/about" "/terms" "/privacy" "/cookies" "/this-route-should-404")
 
 npx vite preview --host "${HOST}" --port "${PORT}" --strictPort >/tmp/sleepersheets-preview.log 2>&1 &
 PREVIEW_PID=$!

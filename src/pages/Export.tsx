@@ -9,12 +9,38 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { LeagueDataProvider } from '@/components/LeagueDataProvider';
 import ExportActions from '@/components/ExportActions';
+import StaticPageLayout from '@/components/layout/StaticPageLayout';
+import type {
+  SleeperLeagueDataBundle,
+  SleeperUser,
+  SleeperUserMap,
+} from '@/types/sleeper';
+
+interface ExportRouteState {
+  leagueData?: SleeperLeagueDataBundle;
+}
+
+const buildUserMap = (users: SleeperUser[]) =>
+  users.reduce<SleeperUserMap>((acc, user) => {
+    acc[user.user_id] = user;
+    return acc;
+  }, {});
+
+const buildRosterUserMap = (leagueData: SleeperLeagueDataBundle) => {
+  const { rosters, users } = leagueData;
+  const userMap = buildUserMap(users);
+
+  return rosters.reduce<Record<number, SleeperUser | undefined>>((acc, roster) => {
+    acc[roster.roster_id] = userMap[roster.owner_id];
+    return acc;
+  }, {});
+};
 
 const Export = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const leagueData = location.state?.leagueData;
+  const leagueData = (location.state as ExportRouteState | null)?.leagueData;
 
   const chatGptPrompt = `I am uploading my Sleeper fantasy football league export files. Please analyze and create a comprehensive Google Sheets document with the following structure:
 
@@ -88,27 +114,14 @@ const Export = () => {
   };
 
   const ExportContent = () => (
-    <div className="min-h-screen">
-      {/* Header */}
-      <div className="glass-header border-b border-white/10 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 animate-pulse"></div>
-        <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div className="bg-gradient-to-br from-emerald-400 via-blue-500 to-purple-600 rounded-2xl p-4 shadow-2xl pulse-glow">
-              <Download className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold gradient-text mb-2">Export & Analytics</h1>
-              <p className="text-gray-300 text-lg">Download your data and create professional league reports</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto px-4 py-12">
+    <StaticPageLayout
+      title="Export & Analytics"
+      description="Export clean league data and turn it into reports, sheets, and AI-ready analysis."
+      eyebrow="Reports"
+      icon={Download}
+      iconClassName="bg-gradient-to-br from-emerald-500 to-blue-500"
+      contentClassName="max-w-6xl"
+    >
         <Tabs defaultValue={leagueData ? "export" : "tutorial"} className="w-full">
           <TabsList className="grid w-full grid-cols-2 h-auto p-1 mb-8">
             <TabsTrigger value="tutorial" className="text-sm py-3 px-4 min-h-[50px]">
@@ -127,15 +140,8 @@ const Export = () => {
                 <ExportActions
                   league={leagueData.league}
                   rosters={leagueData.rosters}
-                  userMap={leagueData.users.reduce((acc: any, user: any) => {
-                    acc[user.user_id] = user;
-                    return acc;
-                  }, {})}
-                  rosterUserMap={leagueData.rosters.reduce((acc: any, roster: any) => {
-                    const user = leagueData.users.find((u: any) => u.user_id === roster.owner_id);
-                    acc[roster.roster_id] = user;
-                    return acc;
-                  }, {})}
+                  userMap={buildUserMap(leagueData.users)}
+                  rosterUserMap={buildRosterUserMap(leagueData)}
                   players={leagueData.players}
                   transactions={leagueData.transactions || []}
                   draftPicks={leagueData.draftPicks || []}
@@ -203,7 +209,7 @@ const Export = () => {
                 <div className="glass p-6 rounded-xl">
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="font-semibold text-white text-lg flex items-center">
-                      <Sparkles className="w-5 h-5 mr-2 text-yellow-400" />
+                      <Sparkles className="w-5 h-5 mr-2 text-primary" />
                       Copy this prompt to ChatGPT:
                     </h4>
                     <Button onClick={copyToClipboard} variant="outline" size="sm">
@@ -288,8 +294,7 @@ const Export = () => {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
-    </div>
+    </StaticPageLayout>
   );
 
   return <ExportContent />;

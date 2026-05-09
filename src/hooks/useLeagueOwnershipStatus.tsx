@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { validateAndSanitizeLeagueId } from '@/utils/inputValidation';
 import { logger } from '@/utils/logger';
 
@@ -20,6 +20,7 @@ const CACHE_TTL = 10 * 60 * 1000; // 10 minutes - standardized across hooks
 export const useLeagueOwnershipStatus = () => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+  const currentUserId = user?.id || 'anonymous';
 
   const checkOwnershipStatus = useCallback(async (leagueId: string): Promise<OwnershipStatus> => {
     // Validate input before making database call
@@ -30,7 +31,7 @@ export const useLeagueOwnershipStatus = () => {
     }
 
     const sanitizedLeagueId = validation.sanitizedValue!;
-    const cacheKey = `ownership-${sanitizedLeagueId}-${user?.id || 'anonymous'}`;
+    const cacheKey = `ownership-${sanitizedLeagueId}-${currentUserId}`;
     
     // Check cache first
     const cached = ownershipCache.get(cacheKey);
@@ -55,7 +56,7 @@ export const useLeagueOwnershipStatus = () => {
 
       const result: OwnershipStatus = data ? {
         isOwned: true,
-        ownedByCurrentUser: user ? data.user_id === user.id : false,
+        ownedByCurrentUser: data.user_id === currentUserId,
         ownerInfo: {
           id: data.user_id,
           claimed_at: data.claimed_at
@@ -72,25 +73,25 @@ export const useLeagueOwnershipStatus = () => {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [currentUserId]);
 
   // Function to clear ownership status cache - useful for external cache invalidation
   const clearOwnershipStatusCache = useCallback((leagueId?: string) => {
     if (leagueId) {
       // Clear cache for specific league
-      const cacheKey = `ownership-${leagueId}-${user?.id || 'anonymous'}`;
+      const cacheKey = `ownership-${leagueId}-${currentUserId}`;
       ownershipCache.delete(cacheKey);
     } else {
       // Clear all cache entries for this user
       const keysToDelete: string[] = [];
       ownershipCache.forEach((_, key) => {
-        if (key.includes(`-${user?.id || 'anonymous'}`)) {
+        if (key.includes(`-${currentUserId}`)) {
           keysToDelete.push(key);
         }
       });
       keysToDelete.forEach(key => ownershipCache.delete(key));
     }
-  }, [user?.id]);
+  }, [currentUserId]);
 
   return {
     checkOwnershipStatus,

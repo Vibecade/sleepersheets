@@ -2,7 +2,7 @@
 import React from 'react';
 import { Trophy, Lock, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import UserMenu from '@/components/UserMenu';
@@ -130,12 +130,12 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
         </div>
 
         {!user && (
-          <div className="mb-6 p-3 sm:p-4 bg-amber-400/10 border border-amber-400/20 rounded-lg max-w-2xl mx-auto">
-            <div className="flex items-center justify-center space-x-2 text-amber-400">
+          <div className="mb-6 p-3 sm:p-4 bg-secondary/10 border border-secondary/20 rounded-lg max-w-2xl mx-auto">
+            <div className="flex items-center justify-center space-x-2 text-secondary">
               <Lock className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="font-medium text-sm sm:text-base">Read-Only Mode</span>
             </div>
-            <p className="text-xs sm:text-sm text-amber-300 mt-2">
+            <p className="text-xs sm:text-sm text-secondary/80 mt-2">
               Sign in to modify salary caps, contracts, and claim league ownership
             </p>
           </div>

@@ -80,14 +80,10 @@ export const useFAABCalculations = ({ rosters, leagueId, transactions = [] }: FA
   const teamFAAB = useMemo(() => {
     if (!rosters.length) return {};
     
-    console.log('Calculating FAAB for teams with transaction data');
-    console.log('Settings received in FAAB hook:', settings);
     const calculations: Record<number, { available: number; spent: number; total: number }> = {};
     const salaryCap = settings?.salary_cap || 200000;
     const faabCap = settings?.faab_cap || 100;
-    
-    console.log('FAAB Calculation Settings:', { salaryCap, faabCap, rawSettings: settings });
-    
+
     rosters.forEach((roster) => {
       const allPlayerIds = [
         ...(roster.players || []),
@@ -113,19 +109,7 @@ export const useFAABCalculations = ({ rosters, leagueId, transactions = [] }: FA
       const availableFaabBeforeSpending = Math.max(0, salaryCap - totalWithDeadCap);
       const maxFaab = Math.min(availableFaabBeforeSpending, faabCap);
       const availableFaab = Math.max(0, maxFaab - faabSpent);
-      
-      console.log(`Roster ${roster.roster_id} FAAB Calculation:`, {
-        totalSalary,
-        deadCap,
-        totalWithDeadCap,
-        salaryCap,
-        availableFaabBeforeSpending,
-        faabCap,
-        maxFaab,
-        faabSpent,
-        availableFaab
-      });
-      
+
       calculations[roster.roster_id] = {
         available: availableFaab,
         spent: faabSpent,

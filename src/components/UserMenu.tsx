@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 import { LogOut, Shield, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -55,7 +55,7 @@ const UserMenu = () => {
               src={user.user_metadata?.avatar_url} 
               alt={user.user_metadata?.full_name || user.email || 'User'} 
             />
-            <AvatarFallback className="bg-yellow-500 text-black">
+            <AvatarFallback className="bg-primary text-primary-foreground">
               {userInitials}
             </AvatarFallback>
           </Avatar>

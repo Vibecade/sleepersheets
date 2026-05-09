@@ -1,97 +1,88 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  DollarSign, 
-  FileText, 
-  RefreshCw, 
-  Shield, 
-  BarChart3, 
-  Download
-} from 'lucide-react';
+
+const features = [
+  {
+    num: '01',
+    title: 'Real-Time Salary Tracking',
+    desc: 'See cap usage and realistic space instantly. Every roster move stays compliant.',
+  },
+  {
+    num: '02',
+    title: 'Contract Management',
+    desc: 'Manage terms, years remaining, and dead cap. Import from one place.',
+  },
+  {
+    num: '03',
+    title: 'Trade Simulator',
+    desc: 'Model trade outcomes before you commit, including cap and roster effects.',
+  },
+  {
+    num: '04',
+    title: 'Ownership Protection',
+    desc: 'Protect commissioner-level actions with verification controls.',
+  },
+  {
+    num: '05',
+    title: 'Advanced Analytics',
+    desc: 'Use trend and comparison views to make faster, smarter weekly decisions.',
+  },
+  {
+    num: '06',
+    title: 'Data Export & Backup',
+    desc: 'Export clean reports for your league chat, docs, or offseason planning.',
+  },
+];
 
 const FeaturesSection: React.FC = () => {
-  const features = [
-    {
-      icon: DollarSign,
-      title: 'Real-time Salary Tracking',
-      description: 'See cap usage and available space instantly so every roster move stays compliant.',
-      color: 'text-success'
-    },
-    {
-      icon: FileText,
-      title: 'Contract Management',
-      description: 'Manage terms, years remaining, and dead-cap impact from one place.',
-      color: 'text-primary'
-    },
-    {
-      icon: RefreshCw,
-      title: 'Trade Simulator',
-      description: 'Model trade outcomes before you commit, including cap and roster effects.',
-      color: 'text-secondary'
-    },
-    {
-      icon: Shield,
-      title: 'League Ownership Protection',
-      description: 'Protect commissioner-level actions with ownership verification controls.',
-      color: 'text-chart-3'
-    },
-    {
-      icon: BarChart3,
-      title: 'Advanced Analytics',
-      description: 'Use trend and comparison views to make faster weekly decisions.',
-      color: 'text-chart-4'
-    },
-    {
-      icon: Download,
-      title: 'Data Export & Backup',
-      description: 'Export clean reports for your league chat, docs, or offseason planning.',
-      color: 'text-chart-5'
-    }
-  ];
-
   return (
-    <section id="features-section" className="py-10 sm:py-14 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-wrap justify-center gap-2 mb-6">
-          <span className="text-xs uppercase tracking-wide px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary">
-            Salary + Contract Control
-          </span>
-          <span className="text-xs uppercase tracking-wide px-3 py-1 rounded-full border border-secondary/30 bg-secondary/10 text-secondary">
-            Cleaner Weekly Workflow
-          </span>
-          <span className="text-xs uppercase tracking-wide px-3 py-1 rounded-full border border-success/30 bg-success/10 text-success">
-            Better League Decisions
-          </span>
+    <section id="features-section" className="relative py-12 sm:py-16">
+      {/* Section kicker rule */}
+      <div className="flex items-baseline gap-4 mb-6 sm:mb-8">
+        <div
+          className="font-mono text-[10px] sm:text-[11px] font-semibold text-primary"
+          style={{ letterSpacing: '0.25em' }}
+        >
+          ● 01 / CORE TOOLS
         </div>
+        <div className="flex-1 h-px bg-border" />
+      </div>
 
-        {/* Section Header */}
-        <div className="text-center mb-8 sm:mb-10">
-          <h2 className="font-sans normal-case tracking-tight text-2xl sm:text-3xl lg:text-4xl font-semibold mb-3">
-            Core tools, without the clutter
-          </h2>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
-            Everything needed to run your league day-to-day, in a faster and cleaner workflow.
-          </p>
-        </div>
+      <h2
+        className="font-headline font-bold uppercase text-foreground m-0 max-w-4xl"
+        style={{
+          fontSize: 'clamp(32px, 5.5vw, 56px)',
+          letterSpacing: '-0.01em',
+          lineHeight: 1,
+        }}
+      >
+        Everything to run your league.{' '}
+        <span className="text-muted-foreground">Nothing else.</span>
+      </h2>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
-          {features.map((feature, index) => (
-            <Card key={index} className="glass-card hover-lift border-border/50 h-full">
-              <CardHeader className="pb-2">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2.5 rounded-lg bg-background/50 border border-white/10">
-                    <feature.icon className={`w-5 h-5 ${feature.color}`} />
-                  </div>
-                  <CardTitle className="text-base sm:text-lg leading-tight">{feature.title}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="pb-5">
-                <p className="text-muted-foreground leading-relaxed text-sm">
-                  {feature.description}
-                </p>
-              </CardContent>
-            </Card>
+      {/* Feature grid — gap=1px draws gridlines via the bg-border parent */}
+      <div
+        className="mt-8 sm:mt-10 border border-border"
+        style={{ background: 'hsl(var(--border))' }}
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px">
+          {features.map((f) => (
+            <div key={f.num} className="bg-card px-6 py-7 sm:px-7 sm:py-8 relative">
+              <div
+                className="font-headline font-bold text-primary mb-4"
+                style={{ fontSize: 14, letterSpacing: '0.15em' }}
+              >
+                ● {f.num}
+              </div>
+              <div
+                className="font-headline font-bold uppercase text-foreground mb-3"
+                style={{ fontSize: 22, letterSpacing: '0.025em', lineHeight: 1.1 }}
+              >
+                {f.title}
+              </div>
+              <div className="text-sm text-muted-foreground leading-relaxed">
+                {f.desc}
+              </div>
+            </div>
           ))}
         </div>
       </div>

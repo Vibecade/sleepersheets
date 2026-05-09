@@ -11,8 +11,6 @@ import { formatDistanceToNow } from 'date-fns';
 import SleeperUsernameForm from '@/components/SleeperUsernameForm';
 import SleeperLeaguesList from '@/components/SleeperLeaguesList';
 import WhatsNewModal from '@/components/WhatsNewModal';
-import LeagueConnectionForm from '@/components/home/LeagueConnectionForm';
-
 
 interface UserDashboardProps {
   onSelectLeague: (leagueId: string) => void;
@@ -108,7 +106,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
-            <Trophy className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+            <Trophy className="w-5 h-5 text-primary flex-shrink-0" />
             <span className="truncate">Owned Leagues</span>
             <Badge variant="secondary" className="text-xs">{ownedLeagues.length}</Badge>
           </CardTitle>

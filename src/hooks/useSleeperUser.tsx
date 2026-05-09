@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -29,14 +29,60 @@ export const useSleeperUser = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Load sleeper username from profile
-  useEffect(() => {
-    if (user?.id) {
-      loadSleeperUsername();
-    }
-  }, [user?.id]);
+  const fetchSleeperLeagues = useCallback(async (userId: string) => {
+    try {
+      // Fetch leagues for current season and previous season
+      const currentYear = new Date().getFullYear();
+      const seasons = [currentYear.toString(), (currentYear - 1).toString()];
+      
+      const leaguesPromises = seasons.map(async (season) => {
+        try {
+          const response = await fetch(`https://api.sleeper.app/v1/user/${userId}/leagues/nfl/${season}`);
+          if (response.ok) {
+            return await response.json();
+          }
+          return [];
+        } catch (error) {
+          console.error(`Error fetching leagues for season ${season}:`, error);
+          return [];
+        }
+      });
 
-  const loadSleeperUsername = async () => {
+      const allLeagues = await Promise.all(leaguesPromises);
+      const flattenedLeagues = allLeagues.flat();
+      
+      // Sort by season (newest first) and name
+      const sortedLeagues = flattenedLeagues.sort((a, b) => {
+        if (a.season !== b.season) {
+          return b.season.localeCompare(a.season);
+        }
+        return a.name.localeCompare(b.name);
+      });
+
+      setSleeperLeagues(sortedLeagues);
+    } catch (error) {
+      console.error('Error fetching sleeper leagues:', error);
+    }
+  }, []);
+
+  const fetchSleeperData = useCallback(async (username: string) => {
+    setLoading(true);
+    try {
+      // Fetch user data
+      const userResponse = await fetch(`https://api.sleeper.app/v1/user/${username}`);
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        setSleeperUser(userData);
+        await fetchSleeperLeagues(userData.user_id);
+      }
+    } catch (error) {
+      console.error('Error fetching sleeper data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchSleeperLeagues]);
+
+  const loadSleeperUsername = useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -54,12 +100,19 @@ export const useSleeperUser = () => {
       if (data?.sleeper_username) {
         setSleeperUsername(data.sleeper_username);
         // Auto-fetch leagues if username exists
-        fetchSleeperData(data.sleeper_username);
+        await fetchSleeperData(data.sleeper_username);
       }
     } catch (error) {
       console.error('Error loading sleeper username:', error);
     }
-  };
+  }, [user?.id, fetchSleeperData]);
+
+  // Load sleeper username from profile
+  useEffect(() => {
+    if (user?.id) {
+      loadSleeperUsername();
+    }
+  }, [user?.id, loadSleeperUsername]);
 
   const saveSleeperUsername = async (username: string) => {
     if (!user?.id) return false;
@@ -122,59 +175,6 @@ export const useSleeperUser = () => {
       return false;
     } finally {
       setSaving(false);
-    }
-  };
-
-  const fetchSleeperData = async (username: string) => {
-    setLoading(true);
-    try {
-      // Fetch user data
-      const userResponse = await fetch(`https://api.sleeper.app/v1/user/${username}`);
-      if (userResponse.ok) {
-        const userData = await userResponse.json();
-        setSleeperUser(userData);
-        await fetchSleeperLeagues(userData.user_id);
-      }
-    } catch (error) {
-      console.error('Error fetching sleeper data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchSleeperLeagues = async (userId: string) => {
-    try {
-      // Fetch leagues for current season (2024) and previous season (2023)
-      const currentYear = new Date().getFullYear();
-      const seasons = [currentYear.toString(), (currentYear - 1).toString()];
-      
-      const leaguesPromises = seasons.map(async (season) => {
-        try {
-          const response = await fetch(`https://api.sleeper.app/v1/user/${userId}/leagues/nfl/${season}`);
-          if (response.ok) {
-            return await response.json();
-          }
-          return [];
-        } catch (error) {
-          console.error(`Error fetching leagues for season ${season}:`, error);
-          return [];
-        }
-      });
-
-      const allLeagues = await Promise.all(leaguesPromises);
-      const flattenedLeagues = allLeagues.flat();
-      
-      // Sort by season (newest first) and name
-      const sortedLeagues = flattenedLeagues.sort((a, b) => {
-        if (a.season !== b.season) {
-          return b.season.localeCompare(a.season);
-        }
-        return a.name.localeCompare(b.name);
-      });
-
-      setSleeperLeagues(sortedLeagues);
-    } catch (error) {
-      console.error('Error fetching sleeper leagues:', error);
     }
   };
 
