@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { supabase } from '@/integrations/supabase/client';
 import { cachedFetch } from '@/utils/apiCache';
 import type { SleeperLeague } from '@/types/sleeper';
+import { logger } from '@/utils/logger';
 
 interface UserLeague {
   league_id: string;
@@ -47,7 +48,7 @@ export const useUserLeagues = () => {
         .order('claimed_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading owned leagues:', error);
+        logger.error('Error loading owned leagues:', error);
         return;
       }
 
@@ -75,7 +76,7 @@ export const useUserLeagues = () => {
               }
             };
           } catch (error) {
-            console.error(`Error fetching league data for ${ownership.league_id}:`, error);
+            logger.error(`Error fetching league data for ${ownership.league_id}:`, error);
             return ownership;
           }
         })
@@ -88,7 +89,7 @@ export const useUserLeagues = () => {
 
       setOwnedLeagues(successfulLeagues);
     } catch (error) {
-      console.error('Error loading owned leagues:', error);
+      logger.error('Error loading owned leagues:', error);
     } finally {
       setLoading(false);
     }
@@ -110,7 +111,7 @@ export const useUserLeagues = () => {
           setRecentLeagues(parsed);
         }
       } catch (error) {
-        console.error('Error parsing recent leagues:', error);
+        logger.error('Error parsing recent leagues:', error);
         localStorage.removeItem(RECENT_LEAGUES_KEY);
       }
     }
@@ -129,7 +130,7 @@ export const useUserLeagues = () => {
       try {
         localStorage.setItem(RECENT_LEAGUES_KEY, JSON.stringify(updated));
       } catch (error) {
-        console.error('Error saving recent leagues:', error);
+        logger.error('Error saving recent leagues:', error);
       }
       return updated;
     });
@@ -140,7 +141,7 @@ export const useUserLeagues = () => {
     try {
       localStorage.removeItem(RECENT_LEAGUES_KEY);
     } catch (error) {
-      console.error('Error clearing recent leagues:', error);
+      logger.error('Error clearing recent leagues:', error);
     }
   }, []);
 

@@ -5,6 +5,7 @@ import { downloadCSV, addExportOptionsToCSV, ExportOptionsData } from '@/utils/c
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { cachedFetch } from '@/utils/apiCache';
 import ExportButton from './ExportButton';
+import { logger } from '@/utils/logger';
 
 interface MatchupsExportProps {
   league: any;
@@ -38,7 +39,7 @@ const MatchupsExport: React.FC<MatchupsExportProps> = ({
 
   const exportMatchupsToCSV = async () => {
     setExporting(true);
-    console.log('Preparing Matchups CSV export...');
+    logger.debug('Preparing Matchups CSV export...');
     
     try {
       const csvData: string[][] = [];
@@ -109,7 +110,7 @@ const MatchupsExport: React.FC<MatchupsExportProps> = ({
             ]);
           });
         } catch (err) {
-          console.warn(`Failed to fetch week ${week} matchups:`, err);
+          logger.warn(`Failed to fetch week ${week} matchups:`, err);
         }
       }
 
@@ -134,7 +135,7 @@ const MatchupsExport: React.FC<MatchupsExportProps> = ({
         description: `Exported ${csvData.length - 1} matchup results from ${maxWeeks} weeks`
       });
     } catch (error) {
-      console.error('Error exporting matchups:', error);
+      logger.error('Error exporting matchups:', error);
       toast({
         title: "Export Failed",
         description: "Failed to export matchup data",

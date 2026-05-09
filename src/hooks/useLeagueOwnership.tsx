@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import { validateAndSanitizeLeagueId } from '@/utils/inputValidation';
 import { securityLogger } from '@/utils/securityLogger';
+import { logger } from '@/utils/logger';
 
 interface LeagueOwnership {
   id: string;
@@ -33,7 +34,7 @@ export const useLeagueOwnership = () => {
     const cacheKey = `owned-leagues-${user.id}`;
     const cached = ownedLeaguesCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      console.log('Using cached owned leagues data');
+      logger.debug('Using cached owned leagues data');
       setOwnedLeagues(cached.data);
       return;
     }
@@ -47,7 +48,7 @@ export const useLeagueOwnership = () => {
         .eq('is_active', true);
 
       if (error) {
-        console.error('Error loading owned leagues:', error);
+        logger.error('Error loading owned leagues:', error);
         return;
       }
 
@@ -56,7 +57,7 @@ export const useLeagueOwnership = () => {
       // Cache the result
       ownedLeaguesCache.set(cacheKey, { data: data || [], timestamp: Date.now() });
     } catch (error) {
-      console.error('Error loading owned leagues:', error);
+      logger.error('Error loading owned leagues:', error);
     } finally {
       setLoading(false);
     }
@@ -118,11 +119,11 @@ export const useLeagueOwnership = () => {
         if (error.code === '23505') { // Unique constraint violation - league already claimed
           securityLogger.logLeagueAccess(user.id, sanitizedLeagueId, 'claim', false);
           // Don't show toast for 409 errors since we'll dismiss the banner instead
-          console.log('League already claimed by another user');
+          logger.debug('League already claimed by another user');
           return { success: false, alreadyClaimed: true };
         } else {
           securityLogger.logLeagueAccess(user.id, sanitizedLeagueId, 'claim', false);
-          console.error('Error claiming league:', error);
+          logger.error('Error claiming league:', error);
           toast({
             title: "Error",
             description: "Failed to claim league. Please try again.",
@@ -151,7 +152,7 @@ export const useLeagueOwnership = () => {
       return { success: true, alreadyClaimed: false };
     } catch (error) {
       securityLogger.logLeagueAccess(user.id, sanitizedLeagueId, 'claim', false);
-      console.error('Error claiming league:', error);
+      logger.error('Error claiming league:', error);
       toast({
         title: "Error",
         description: "Failed to claim league. Please try again.",

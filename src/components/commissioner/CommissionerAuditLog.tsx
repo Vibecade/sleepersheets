@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { Shield, Settings, Users, FileX, AlertTriangle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { logger } from '@/utils/logger';
 
 interface CommissionerAction {
   id: string;
@@ -37,7 +38,7 @@ export const CommissionerAuditLog = ({ leagueId, limit = 10 }: CommissionerAudit
       if (error) throw error;
       setActions(data || []);
     } catch (error) {
-      console.error('Error loading commissioner actions:', error);
+      logger.error('Error loading commissioner actions:', error);
     } finally {
       setLoading(false);
     }

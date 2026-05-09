@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/utils/logger';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -18,11 +19,11 @@ const registerServiceWorker = async (): Promise<ServiceWorkerRegistration | null
     swRegistrationPromise = navigator.serviceWorker
       .register('/sw.js')
       .then((reg) => {
-        console.log('Service Worker registered:', reg);
+        logger.debug('Service Worker registered:', reg);
         return reg;
       })
       .catch((error) => {
-        console.error('Service Worker registration failed:', error);
+        logger.error('Service Worker registration failed:', error);
         return null;
       });
   }
@@ -30,7 +31,7 @@ const registerServiceWorker = async (): Promise<ServiceWorkerRegistration | null
   if (!swMessageListenerAttached) {
     navigator.serviceWorker.addEventListener('message', (event) => {
       if (event.data?.type === 'BACKGROUND_SYNC') {
-        console.log('Background sync triggered');
+        logger.debug('Background sync triggered');
         window.dispatchEvent(new CustomEvent('backgroundsync'));
       }
     });
@@ -124,7 +125,7 @@ export const usePWA = () => {
       }
       return false;
     } catch (error) {
-      console.error('Error installing app:', error);
+      logger.error('Error installing app:', error);
       return false;
     }
   };
@@ -140,7 +141,7 @@ export const usePWA = () => {
       }
       return false;
     } catch (error) {
-      console.error('Error updating app:', error);
+      logger.error('Error updating app:', error);
       return false;
     }
   };
@@ -151,10 +152,10 @@ export const usePWA = () => {
         const reg = await navigator.serviceWorker.ready;
         // @ts-expect-error - Background Sync is still missing in the DOM lib typing.
         await reg.sync.register(tag);
-        console.log('Background sync registered for tag:', tag);
+        logger.debug('Background sync registered for tag:', tag);
         return true;
       } catch (error) {
-        console.error('Background sync registration failed:', error);
+        logger.error('Background sync registration failed:', error);
         return false;
       }
     }

@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { downloadCSV, addExportOptionsToCSV, ExportOptionsData } from '@/utils/csvExport';
 import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import ExportButton from './ExportButton';
+import { logger } from '@/utils/logger';
 
 interface LeagueSettingsExportProps {
   league: any;
@@ -18,7 +19,7 @@ const LeagueSettingsExport: React.FC<LeagueSettingsExportProps> = ({
   const { settings: dbSettings } = useLeagueSettings(league.league_id);
 
   const exportSettingsToCSV = () => {
-    console.log('Preparing League Settings CSV export...');
+    logger.debug('Preparing League Settings CSV export...');
     
     const csvData: string[][] = [];
     

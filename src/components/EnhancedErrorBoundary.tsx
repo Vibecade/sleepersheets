@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw, Bug, Home } from 'lucide-react';
+import { logger } from '@/utils/logger';
 
 interface EnhancedErrorBoundaryProps {
   children: React.ReactNode;
@@ -42,7 +43,7 @@ class EnhancedErrorBoundary extends React.Component<EnhancedErrorBoundaryProps, 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     const { level = 'component' } = this.props;
     
-    console.error(`[${level.toUpperCase()}] Error boundary caught an error:`, {
+    logger.error(`[${level.toUpperCase()}] Error boundary caught an error:`, {
       error,
       errorInfo,
       errorId: this.state.errorId,
@@ -63,7 +64,7 @@ class EnhancedErrorBoundary extends React.Component<EnhancedErrorBoundaryProps, 
   reportCriticalError(error: Error, errorInfo: React.ErrorInfo) {
     // In a real app, you would send this to your error tracking service
     // Example: Sentry, LogRocket, Bugsnag, etc.
-    console.error('CRITICAL ERROR REPORTED:', {
+    logger.error('CRITICAL ERROR REPORTED:', {
       message: error.message,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
@@ -137,7 +138,7 @@ const ErrorFallback: React.FC<ErrorFallbackProps> = ({
     try {
       window.location.href = '/';
     } catch (e) {
-      console.error('Failed to navigate home:', e);
+      logger.error('Failed to navigate home:', e);
     }
   };
 

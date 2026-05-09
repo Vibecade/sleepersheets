@@ -1,4 +1,5 @@
 import { RATE_LIMIT_WINDOWS } from './constants';
+import { logger } from '@/utils/logger';
 
 interface RateLimitEntry {
   count: number;
@@ -31,7 +32,7 @@ export class RateLimiter {
     }
     
     if (current.count >= maxRequests) {
-      console.warn(`Rate limit exceeded for ${key}. Please wait.`);
+      logger.warn(`Rate limit exceeded for ${key}. Please wait.`);
       return false;
     }
     

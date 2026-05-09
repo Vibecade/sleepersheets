@@ -5,6 +5,7 @@ import { downloadCSV, formatPlayerName, addExportOptionsToCSV, ExportOptionsData
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import ExportButton from './ExportButton';
+import { logger } from '@/utils/logger';
 
 interface TransactionsExportProps {
   league: any;
@@ -25,7 +26,7 @@ const TransactionsExport: React.FC<TransactionsExportProps> = ({
   const { salaries } = usePlayerSalaries(league.league_id);
 
   const exportTransactionsToCSV = () => {
-    console.log('Preparing enhanced Transactions CSV export...');
+    logger.debug('Preparing enhanced Transactions CSV export...');
     
     const csvData: string[][] = [];
     const headers = [

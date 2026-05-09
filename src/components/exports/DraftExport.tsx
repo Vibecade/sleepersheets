@@ -6,6 +6,7 @@ import { getTeamName } from '@/utils/leagueDataUtils';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { usePlayerContracts } from '@/hooks/usePlayerContracts';
 import ExportButton from './ExportButton';
+import { logger } from '@/utils/logger';
 
 interface DraftExportProps {
   league: any;
@@ -27,7 +28,7 @@ const DraftExport: React.FC<DraftExportProps> = ({
   const { contracts } = usePlayerContracts(league.league_id);
 
   const exportDraftToCSV = () => {
-    console.log('Preparing enhanced Draft CSV export...');
+    logger.debug('Preparing enhanced Draft CSV export...');
     
     const csvData: string[][] = [];
     const headers = [

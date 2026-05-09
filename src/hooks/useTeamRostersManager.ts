@@ -6,6 +6,7 @@ import { useFAABCalculations } from '@/hooks/useFAABCalculations';
 import { useToast } from '@/hooks/use-toast';
 import { calculateOptimizedSalaries } from '@/utils/salaryCalculations';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
+import { logger } from '@/utils/logger';
 
 interface UseTeamRostersManagerProps {
   rosters: any[];
@@ -114,7 +115,7 @@ export const useTeamRostersManager = ({ rosters, transactions = [] }: UseTeamRos
         description: `Salary cap updated to $${newSalaryCap.toLocaleString()}`,
       });
     } catch (error) {
-      console.error('Failed to update salary cap:', error);
+      logger.error('Failed to update salary cap:', error);
       toast({
         title: "Error",
         description: "Failed to update salary cap",
@@ -164,7 +165,7 @@ export const useTeamRostersManager = ({ rosters, transactions = [] }: UseTeamRos
         description: `FAAB settings updated: Cap $${newFaabCap}, Reserve $${newReserveLimit}`,
       });
     } catch (error) {
-      console.error('Failed to update FAAB settings:', error);
+      logger.error('Failed to update FAAB settings:', error);
       toast({
         title: "Error",
         description: "Failed to update FAAB settings",
@@ -186,7 +187,7 @@ export const useTeamRostersManager = ({ rosters, transactions = [] }: UseTeamRos
     try {
       await updateSettings({ dead_cap_enabled: enabled });
     } catch (error) {
-      console.error('Failed to update dead cap setting:', error);
+      logger.error('Failed to update dead cap setting:', error);
       toast({
         title: "Error",
         description: "Failed to update dead cap setting",

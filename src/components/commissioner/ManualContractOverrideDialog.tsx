@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCommissionerActions } from '@/hooks/useCommissionerActions';
 import { useReadOnly } from '@/contexts/read-only-context';
 import { formatCurrency } from '@/utils/csvExport';
+import { logger } from '@/utils/logger';
 
 export type OverrideKind = 'retain' | 'franchise' | 'manual';
 
@@ -194,7 +195,7 @@ export const ManualContractOverrideDialog = ({
       });
       onClose();
     } catch (err) {
-      console.error('Override failed:', err);
+      logger.error('Override failed:', err);
       toast({
         title: 'Override failed',
         description: err instanceof Error ? err.message : 'Could not apply override.',
