@@ -3,6 +3,9 @@ import { useAuth } from '@/contexts/auth-context';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
+import { cachedFetch } from '@/utils/apiCache';
+import { CACHE_TTL } from '@/utils/constants';
+import type { SleeperNflState } from './useNflState';
 
 interface SleeperUser {
   user_id: string;
@@ -32,10 +35,27 @@ export const useSleeperUser = () => {
 
   const fetchSleeperLeagues = useCallback(async (userId: string) => {
     try {
-      // Fetch leagues for current season and previous season
-      const currentYear = new Date().getFullYear();
-      const seasons = [currentYear.toString(), (currentYear - 1).toString()];
-      
+      // Sleeper's `state.league_season` is the canonical "season for new
+      // league fetches" — bumped to the upcoming year during the
+      // Feb–Aug offseason transition. Falling back to `getFullYear()`
+      // returned wrong leagues from Feb–July (Sleeper's NFL year cuts
+      // over in early summer, calendar year doesn't).
+      const fallbackYear = String(new Date().getFullYear());
+      let leagueSeason: string = fallbackYear;
+      try {
+        const state = await cachedFetch<SleeperNflState>(
+          'https://api.sleeper.app/v1/state/nfl',
+          {},
+          CACHE_TTL.MEDIUM,
+        );
+        leagueSeason = state?.league_season || state?.season || fallbackYear;
+      } catch (stateErr) {
+        logger.warn('Falling back to calendar year for league fetch — NFL state unavailable', stateErr);
+      }
+
+      const previousSeason = String(Number(leagueSeason) - 1);
+      const seasons = [leagueSeason, previousSeason];
+
       const leaguesPromises = seasons.map(async (season) => {
         try {
           const response = await fetch(`https://api.sleeper.app/v1/user/${userId}/leagues/nfl/${season}`);
