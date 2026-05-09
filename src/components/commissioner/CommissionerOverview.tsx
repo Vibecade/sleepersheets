@@ -5,6 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ChevronDown, ChevronUp, Crown, RefreshCw, AlertTriangle } from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { useReadOnly } from '@/contexts/read-only-context';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { usePlayerContracts } from '@/hooks/usePlayerContracts';
@@ -197,38 +203,75 @@ export const CommissionerOverview = ({ leagueId, leagueData }: CommissionerOverv
     }
   };
 
-  // Expiring-contracts shortlist (across whole league)
-  const [expiringOpen, setExpiringOpen] = useState(true);
-  const expiringShortlist = useMemo(() => {
-    const list: Array<{
-      playerId: string;
-      playerName: string;
-      position: string;
-      teamName: string;
-      ownerName: string;
-      rosterId: number;
-      salary: number;
-      contractLength: number;
-    }> = [];
+  // Expiring contracts grouped by team. Each group lists players sorted by
+  // salary desc; teams are ordered by expiring count desc, then by total
+  // expiring salary desc, so the most urgent rosters float to the top. Teams
+  // with zero expiring players are dropped — the league-summary panel above
+  // already shows the global zero-state.
+  type ExpiringPlayer = {
+    playerId: string;
+    playerName: string;
+    position: string;
+    salary: number;
+    contractLength: number;
+  };
+  type ExpiringTeamGroup = {
+    rosterId: number;
+    teamName: string;
+    ownerName: string;
+    players: ExpiringPlayer[];
+    totalExpiringSalary: number;
+  };
+
+  const expiringByTeam = useMemo<ExpiringTeamGroup[]>(() => {
+    const groups: ExpiringTeamGroup[] = [];
 
     teamRows.forEach((team) => {
-      team.expiringPlayerIds.forEach((pid) => {
-        const player = players[pid];
-        list.push({
-          playerId: pid,
-          playerName: formatPlayerName(player, pid),
-          position: player?.position || '—',
-          teamName: team.teamName,
-          ownerName: team.ownerName,
-          rosterId: team.roster_id,
-          salary: salaries[pid] || 0,
-          contractLength: contracts[pid] || 0,
-        });
+      if (team.expiringPlayerIds.length === 0) return;
+
+      const teamPlayers: ExpiringPlayer[] = team.expiringPlayerIds
+        .map((pid) => {
+          const player = players[pid];
+          return {
+            playerId: pid,
+            playerName: formatPlayerName(player, pid),
+            position: player?.position || '—',
+            salary: salaries[pid] || 0,
+            contractLength: contracts[pid] || 0,
+          };
+        })
+        .sort((a, b) => b.salary - a.salary);
+
+      const totalExpiringSalary = teamPlayers.reduce((s, p) => s + p.salary, 0);
+
+      groups.push({
+        rosterId: team.roster_id,
+        teamName: team.teamName,
+        ownerName: team.ownerName,
+        players: teamPlayers,
+        totalExpiringSalary,
       });
     });
 
-    return list.sort((a, b) => b.salary - a.salary);
+    return groups.sort((a, b) => {
+      const byCount = b.players.length - a.players.length;
+      if (byCount !== 0) return byCount;
+      return b.totalExpiringSalary - a.totalExpiringSalary;
+    });
   }, [teamRows, players, salaries, contracts]);
+
+  // Default-expand every team that has expiring players so the commissioner
+  // sees the full picture without clicking. The Accordion is uncontrolled —
+  // we just seed the initial value and let radix manage the open set.
+  const expiringDefaultOpen = useMemo(
+    () => expiringByTeam.map((g) => `team-${g.rosterId}`),
+    [expiringByTeam],
+  );
+
+  const totalExpiringPlayers = useMemo(
+    () => expiringByTeam.reduce((s, g) => s + g.players.length, 0),
+    [expiringByTeam],
+  );
 
   // Override dialog state
   const [override, setOverride] = useState<{ target: OverrideTarget; kind: OverrideKind } | null>(null);
@@ -408,24 +451,14 @@ export const CommissionerOverview = ({ leagueId, leagueData }: CommissionerOverv
         </div>
       </TurfPanel>
 
-      {/* Expiring-contracts shortlist */}
+      {/* Expiring contracts — grouped per team in an accordion so the
+          commissioner can scan "which roster needs attention" at a glance
+          and act on every player inline without drilling into another tab. */}
       <TurfPanel
-        kicker={`EXPIRING / WALK YEAR · ${expiringShortlist.length}`}
+        kicker={`EXPIRING / WALK YEAR · ${totalExpiringPlayers}`}
         title="Players Needing Decisions"
-        action={
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setExpiringOpen((o) => !o)}
-            className="gap-1 font-mono"
-            style={{ fontSize: 10, letterSpacing: '0.15em' }}
-          >
-            {expiringOpen ? 'COLLAPSE' : 'EXPAND'}
-            {expiringOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-          </Button>
-        }
       >
-        {!expiringOpen ? null : expiringShortlist.length === 0 ? (
+        {expiringByTeam.length === 0 ? (
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
@@ -434,84 +467,138 @@ export const CommissionerOverview = ({ leagueId, leagueData }: CommissionerOverv
             </AlertDescription>
           </Alert>
         ) : (
-          <div className="space-y-1">
-            {expiringShortlist.slice(0, 20).map((p) => (
-              <div
-                key={`${p.rosterId}-${p.playerId}`}
-                className="grid grid-cols-[1fr_auto] items-center gap-3 px-3 py-2.5 border-l-2 border-secondary/40 transition-colors"
-                style={{ background: 'hsl(var(--card-light) / 0.4)' }}
+          <Accordion
+            type="multiple"
+            defaultValue={expiringDefaultOpen}
+            className="w-full"
+          >
+            {expiringByTeam.map((group) => (
+              <AccordionItem
+                key={group.rosterId}
+                value={`team-${group.rosterId}`}
+                className="border-b border-border/40"
               >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-headline font-bold text-foreground truncate" style={{ fontSize: 13 }}>
-                      {p.playerName}
-                    </span>
-                    <Badge variant="outline" className="font-mono" style={{ fontSize: 9, letterSpacing: '0.1em' }}>
-                      {p.position}
-                    </Badge>
+                <AccordionTrigger className="px-3 py-3 hover:no-underline hover:bg-card-light/30">
+                  <div className="flex flex-1 items-center justify-between gap-3 pr-3">
+                    <div className="min-w-0 text-left">
+                      <div
+                        className="font-headline font-bold uppercase text-foreground truncate"
+                        style={{ fontSize: 13, letterSpacing: '0.05em' }}
+                      >
+                        {group.teamName}
+                      </div>
+                      <div
+                        className="font-mono text-muted-foreground mt-0.5"
+                        style={{ fontSize: 10, letterSpacing: '0.1em' }}
+                      >
+                        {group.ownerName.toUpperCase()}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Badge
+                        variant="outline"
+                        className="font-mono text-secondary border-secondary/40 bg-secondary/10"
+                        style={{ fontSize: 10, letterSpacing: '0.1em' }}
+                      >
+                        {group.players.length} EXPIRING
+                      </Badge>
+                      <span
+                        className="font-mono text-muted-foreground hidden sm:inline"
+                        style={{ fontSize: 10, letterSpacing: '0.1em' }}
+                      >
+                        {formatCurrency(group.totalExpiringSalary)} FREES UP
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="font-mono text-muted-foreground" style={{ fontSize: 10, letterSpacing: '0.1em' }}>
-                      {p.teamName.toUpperCase()} · {formatCurrency(p.salary)}
-                    </span>
+                </AccordionTrigger>
+                <AccordionContent className="pb-3">
+                  <div className="space-y-1">
+                    {group.players.map((p) => (
+                      <div
+                        key={`${group.rosterId}-${p.playerId}`}
+                        className="grid grid-cols-[1fr_auto] items-center gap-3 px-3 py-2.5 border-l-2 border-secondary/40 transition-colors"
+                        style={{ background: 'hsl(var(--card-light) / 0.4)' }}
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="font-headline font-bold text-foreground truncate"
+                              style={{ fontSize: 13 }}
+                            >
+                              {p.playerName}
+                            </span>
+                            <Badge
+                              variant="outline"
+                              className="font-mono"
+                              style={{ fontSize: 9, letterSpacing: '0.1em' }}
+                            >
+                              {p.position}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span
+                              className="font-mono text-muted-foreground"
+                              style={{ fontSize: 10, letterSpacing: '0.1em' }}
+                            >
+                              {formatCurrency(p.salary)} · {p.contractLength}YR LEFT
+                            </span>
+                          </div>
+                        </div>
+                        {!readOnly && (
+                          <div className="flex items-center gap-1.5">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-1 font-mono"
+                              style={{ fontSize: 10, letterSpacing: '0.1em' }}
+                              onClick={() =>
+                                openOverride(
+                                  {
+                                    playerId: p.playerId,
+                                    playerName: p.playerName,
+                                    rosterId: group.rosterId,
+                                    teamName: group.teamName,
+                                    currentSalary: p.salary,
+                                    currentContractLength: p.contractLength,
+                                  },
+                                  'retain',
+                                )
+                              }
+                            >
+                              <RefreshCw className="w-3 h-3" />
+                              RETAIN
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-1 font-mono"
+                              style={{ fontSize: 10, letterSpacing: '0.1em' }}
+                              onClick={() =>
+                                openOverride(
+                                  {
+                                    playerId: p.playerId,
+                                    playerName: p.playerName,
+                                    rosterId: group.rosterId,
+                                    teamName: group.teamName,
+                                    currentSalary: p.salary,
+                                    currentContractLength: p.contractLength,
+                                  },
+                                  'franchise',
+                                )
+                              }
+                            >
+                              <Crown className="w-3 h-3" />
+                              FRANCHISE
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                </div>
-                {!readOnly && (
-                  <div className="flex items-center gap-1.5">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1 font-mono"
-                      style={{ fontSize: 10, letterSpacing: '0.1em' }}
-                      onClick={() =>
-                        openOverride(
-                          {
-                            playerId: p.playerId,
-                            playerName: p.playerName,
-                            rosterId: p.rosterId,
-                            teamName: p.teamName,
-                            currentSalary: p.salary,
-                            currentContractLength: p.contractLength,
-                          },
-                          'retain',
-                        )
-                      }
-                    >
-                      <RefreshCw className="w-3 h-3" />
-                      RETAIN
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1 font-mono"
-                      style={{ fontSize: 10, letterSpacing: '0.1em' }}
-                      onClick={() =>
-                        openOverride(
-                          {
-                            playerId: p.playerId,
-                            playerName: p.playerName,
-                            rosterId: p.rosterId,
-                            teamName: p.teamName,
-                            currentSalary: p.salary,
-                            currentContractLength: p.contractLength,
-                          },
-                          'franchise',
-                        )
-                      }
-                    >
-                      <Crown className="w-3 h-3" />
-                      FRANCHISE
-                    </Button>
-                  </div>
-                )}
-              </div>
+                </AccordionContent>
+              </AccordionItem>
             ))}
-            {expiringShortlist.length > 20 && (
-              <div className="font-mono text-muted-foreground pt-2 text-center" style={{ fontSize: 10, letterSpacing: '0.15em' }}>
-                + {expiringShortlist.length - 20} MORE · USE PER-TEAM TABLE TO DRILL IN
-              </div>
-            )}
-          </div>
+          </Accordion>
         )}
       </TurfPanel>
 
