@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TurfPanel } from '@/components/ui/turf-panel';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,9 +17,11 @@ import {
   usePlayerAcquisitions,
   type AcquisitionSource,
 } from '@/hooks/usePlayerAcquisitions';
+import { useCommissionerActions } from '@/hooks/useCommissionerActions';
 import EditableSalary from '@/components/EditableSalary';
 import EditableContractLength from '@/components/EditableContractLength';
 import { getTeamName, normalizeUsersToMap } from '@/utils/leagueDataUtils';
+import { formatCurrency } from '@/utils/csvExport';
 import type { CommissionerLeagueData } from '@/types/sleeper';
 
 interface PlayerPricingPanelProps {
@@ -41,6 +43,8 @@ interface SourceGroup {
   label: string;
   blurb: string;
   players: UnpricedPlayer[];
+  /** Players in this group whose salary is still null/0 (i.e. need work). */
+  stillUnpricedCount: number;
 }
 
 const formatPlayerName = (player: any, fallback: string) => {
@@ -86,7 +90,7 @@ const SOURCE_META: Record<AcquisitionSource, { label: string; blurb: string }> =
   waiver: {
     label: 'Waiver pickup',
     blurb:
-      'Waivers normally auto-price to the FAAB bid. Anything unpriced here is a bid-of-zero pickup or one that slipped past the auto-processor.',
+      'Waivers normally auto-price to the FAAB bid. Anything unpriced here is a bid-of-zero pickup or one that slipped past the auto-processor — set the salary inline. Contract lengths do not apply (FAAB pickups have no contract in this setup).',
   },
   unknown: {
     label: 'Unknown source',
@@ -133,6 +137,7 @@ export const PlayerPricingPanel = ({
   const { contracts, updateContract, loading: contractsLoading } =
     usePlayerContracts(leagueId);
   const { byPlayer } = usePlayerAcquisitions({ rosters, transactions, draftPicks });
+  const { logAction } = useCommissionerActions(leagueId);
 
   const teamNameByRoster = useMemo(() => {
     const map = new Map<number, string>();
@@ -187,46 +192,49 @@ export const PlayerPricingPanel = ({
   //   the user can submit a length. The "set both inline" workflow breaks
   //   for exactly the case it was added for (drafted players).
   //
-  //   Fix: snapshot every player who shows up as unpriced during the panel's
-  //   lifetime into a sticky set. Keep them rendered until either (a) the
-  //   panel unmounts (page navigation away) or (b) they leave the league
-  //   (traded/dropped). Setting a salary still updates the underlying
-  //   data — we just don't drop the row from sight while the user is
-  //   working on it.
-  const stickyIdsRef = useRef<Set<string>>(new Set());
-  const [stickyTick, setStickyTick] = useState(0);
+  //   Fix: visibleIds = persistedSticky ∪ currentlyUnpriced (computed each
+  //   render so newly-priced rows stay visible AND the first render shows
+  //   the right rows without flicker). The effect below persists the union
+  //   forward and prunes anyone who's no longer rostered, so the set
+  //   doesn't grow unbounded and dropped/traded players fall off cleanly.
+  const [persistedSticky, setPersistedSticky] = useState<Set<string>>(
+    () => new Set(),
+  );
+
+  const visibleIds = useMemo<Set<string>>(() => {
+    const merged = new Set(persistedSticky);
+    currentlyUnpricedIds.forEach((pid) => merged.add(pid));
+    return merged;
+  }, [persistedSticky, currentlyUnpricedIds]);
 
   useEffect(() => {
-    const sticky = stickyIdsRef.current;
-    let changed = false;
-
-    // Add any newly-seen unpriced players
-    currentlyUnpricedIds.forEach((pid) => {
-      if (!sticky.has(pid)) {
-        sticky.add(pid);
-        changed = true;
+    setPersistedSticky((prev) => {
+      const next = new Set<string>();
+      visibleIds.forEach((pid) => {
+        if (allRosteredIds.has(pid)) next.add(pid);
+      });
+      // Avoid a state update when the set hasn't actually changed (state
+      // identity matters for the visibleIds memo dep).
+      if (next.size === prev.size) {
+        let same = true;
+        for (const pid of next) {
+          if (!prev.has(pid)) {
+            same = false;
+            break;
+          }
+        }
+        if (same) return prev;
       }
+      return next;
     });
+  }, [visibleIds, allRosteredIds]);
 
-    // Drop players who are no longer rostered at all (traded/dropped during
-    // the session). Their pricing isn't this commissioner's problem anymore.
-    sticky.forEach((pid) => {
-      if (!allRosteredIds.has(pid)) {
-        sticky.delete(pid);
-        changed = true;
-      }
-    });
-
-    if (changed) setStickyTick((t) => t + 1);
-  }, [currentlyUnpricedIds, allRosteredIds]);
-
-  // Build the visible list off the sticky set. Each row reads its CURRENT
+  // Build the visible list off the union set. Each row reads its CURRENT
   // salary from the salaries map — a freshly-priced player keeps its row
   // but its salary input now displays the saved value, which gives the
   // commissioner a visual confirmation that the row is "done".
   const unpriced = useMemo<UnpricedPlayer[]>(() => {
     const out: UnpricedPlayer[] = [];
-    const sticky = stickyIdsRef.current;
 
     rosters.forEach((roster: any) => {
       const playerIds: string[] = Array.from(
@@ -239,7 +247,7 @@ export const PlayerPricingPanel = ({
 
       playerIds.forEach((pid) => {
         if (!pid || pid === '0') return;
-        if (!sticky.has(pid)) return;
+        if (!visibleIds.has(pid)) return;
 
         const player = players[pid];
         const acquisition = byPlayer.get(pid);
@@ -255,10 +263,7 @@ export const PlayerPricingPanel = ({
     });
 
     return out;
-    // stickyTick is intentional — it forces a recompute when the sticky set
-    // is mutated via the ref above (refs alone don't trigger re-renders).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rosters, players, byPlayer, stickyTick]);
+  }, [rosters, players, byPlayer, visibleIds]);
 
   const grouped = useMemo<SourceGroup[]>(() => {
     const bySource = new Map<AcquisitionSource, UnpricedPlayer[]>();
@@ -280,33 +285,102 @@ export const PlayerPricingPanel = ({
         if (teamCmp !== 0) return teamCmp;
         return a.playerName.localeCompare(b.playerName);
       });
+      const stillUnpricedCount = sorted.reduce(
+        (count, p) => count + (currentlyUnpricedIds.has(p.playerId) ? 1 : 0),
+        0,
+      );
       return [
         {
           source,
           label: meta.label,
           blurb: meta.blurb,
           players: sorted,
+          stillUnpricedCount,
         },
       ];
     });
-  }, [unpriced, teamNameByRoster]);
+  }, [unpriced, teamNameByRoster, currentlyUnpricedIds]);
 
   const defaultOpen = useMemo(() => grouped.map((g) => `source-${g.source}`), [
     grouped,
   ]);
 
+  // Look up the player's display info for audit-log descriptions. Falls
+  // back to the players map if the row was already pruned from `unpriced`
+  // by the time the audit fires (shouldn't happen, but be defensive).
+  const getRowInfo = (playerId: string) => {
+    const row = unpriced.find((p) => p.playerId === playerId);
+    if (row) return row;
+    const player = players[playerId];
+    return {
+      playerId,
+      playerName: formatPlayerName(player, playerId),
+      position: player?.position || '—',
+      nflTeam: player?.team || 'FA',
+      rosterId: -1,
+      source: byPlayer.get(playerId)?.source ?? ('unknown' as AcquisitionSource),
+    };
+  };
+
+  // Both inline edits write to the commissioner_actions audit table on
+  // success so this surface is consistent with the RETAIN/FRANCHISE
+  // override flow on the Walk Year tab. The audit fires async (`void`)
+  // so a slow network doesn't block the UI; failures only log silently.
   const handleSalaryUpdate = async (
     playerId: string,
     salary: number | null,
-  ): Promise<boolean> => updateSalary(playerId, salary);
+  ): Promise<boolean> => {
+    const previous = salaries[playerId] ?? null;
+    const success = await updateSalary(playerId, salary);
+    if (success) {
+      const info = getRowInfo(playerId);
+      const teamName =
+        info.rosterId >= 0 ? teamNameByRoster.get(info.rosterId) : undefined;
+      void logAction({
+        action_type: 'salary_set_inline',
+        target_type: 'player_salary',
+        target_id: playerId,
+        description: `Set salary on ${info.playerName} to ${formatCurrency(salary || 0)}`,
+        metadata: {
+          roster_id: info.rosterId,
+          team_name: teamName,
+          source: info.source,
+          previous_salary: previous,
+          new_salary: salary,
+          surface: 'pricing-panel',
+        },
+      });
+    }
+    return success;
+  };
 
-  // updateContract returns boolean; pass through directly. The
-  // EditableContractLength component refuses the edit on FAAB-acquired
-  // players (read-only display) so we don't need a parallel guard here.
   const handleContractUpdate = async (
     playerId: string,
     contractLength: number | null,
-  ): Promise<boolean> => updateContract(playerId, contractLength);
+  ): Promise<boolean> => {
+    const previous = contracts[playerId] ?? null;
+    const success = await updateContract(playerId, contractLength);
+    if (success) {
+      const info = getRowInfo(playerId);
+      const teamName =
+        info.rosterId >= 0 ? teamNameByRoster.get(info.rosterId) : undefined;
+      void logAction({
+        action_type: 'contract_set_inline',
+        target_type: 'player_contract',
+        target_id: playerId,
+        description: `Set contract on ${info.playerName} to ${contractLength == null ? 'no contract' : `${contractLength}yr`}`,
+        metadata: {
+          roster_id: info.rosterId,
+          team_name: teamName,
+          source: info.source,
+          previous_contract_length: previous,
+          new_contract_length: contractLength,
+          surface: 'pricing-panel',
+        },
+      });
+    }
+    return success;
+  };
 
   if (salariesLoading || contractsLoading) {
     return (
@@ -384,7 +458,9 @@ export const PlayerPricingPanel = ({
                       className="font-mono text-secondary border-secondary/40 bg-secondary/10 flex-shrink-0"
                       style={{ fontSize: 10, letterSpacing: '0.1em' }}
                     >
-                      {group.players.length} {group.players.length === 1 ? 'PLAYER' : 'PLAYERS'}
+                      {group.stillUnpricedCount === group.players.length
+                        ? `${group.players.length} ${group.players.length === 1 ? 'PLAYER' : 'PLAYERS'}`
+                        : `${group.stillUnpricedCount} OF ${group.players.length} LEFT`}
                     </Badge>
                   </div>
                 </AccordionTrigger>
@@ -432,17 +508,30 @@ export const PlayerPricingPanel = ({
                             onSalaryUpdate={handleSalaryUpdate}
                             leagueId={leagueId}
                           />
-                          {/* Contract length lives next to the salary so a
-                              drafted player can have BOTH set in a single
-                              pass. EditableContractLength gates FAAB
-                              acquisitions to read-only on its own. */}
-                          <EditableContractLength
-                            playerId={p.playerId}
-                            currentLength={contracts[p.playerId] ?? null}
-                            onContractUpdate={handleContractUpdate}
-                            leagueId={leagueId}
-                            rosterId={p.rosterId}
-                          />
+                          {/* Waiver pickups don't get contract lengths
+                              (the league policy enforced server-side by
+                              usePlayerContracts.updateContract — it
+                              refuses on acquisition_type='faab'). Hide
+                              the control entirely for waiver source
+                              players and explain why, instead of leaving
+                              an unexplained-disabled input on the row. */}
+                          {p.source === 'waiver' ? (
+                            <span
+                              className="font-mono text-muted-foreground italic"
+                              style={{ fontSize: 10, letterSpacing: '0.05em' }}
+                              title="FAAB / waiver pickups do not have contract lengths in this league setup."
+                            >
+                              FAAB pickup · no contract
+                            </span>
+                          ) : (
+                            <EditableContractLength
+                              playerId={p.playerId}
+                              currentLength={contracts[p.playerId] ?? null}
+                              onContractUpdate={handleContractUpdate}
+                              leagueId={leagueId}
+                              rosterId={p.rosterId}
+                            />
+                          )}
                         </div>
                       </div>
                     ))}
