@@ -24,7 +24,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
-import type { SleeperLeagueDataBundle, CommissionerLeagueData } from '@/types/sleeper';
+import type { SleeperLeagueDataBundle, CommissionerLeagueData, SleeperDraft } from '@/types/sleeper';
 import { logger } from '@/utils/logger';
 
 const VALID_PAGES = ['gamification', 'overview', 'manager', 'commissioner', 'more'] as const;
@@ -197,7 +197,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
     users: Object.values(userMap),
     players,
     transactions,
-    drafts: [],
+    drafts: [] as SleeperDraft[],
     draftPicks
   }), [league, rosters, userMap, players, transactions, draftPicks]);
 

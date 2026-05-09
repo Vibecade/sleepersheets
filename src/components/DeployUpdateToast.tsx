@@ -7,7 +7,7 @@ const LAST_SEEN_VERSION_KEY = 'sleepersheets:last-seen-version';
 const LAST_WHATS_NEW_KEY = 'sleepersheets:last-whats-new-toast';
 const APP_VERSION = __APP_VERSION__;
 
-const DeployUpdateToast = () => {
+const DeployUpdateToast = (): null => {
   const { toast } = useToast();
   const { updateAvailable, updateApp } = usePWA();
   const hasShownReleaseToast = useRef(false);

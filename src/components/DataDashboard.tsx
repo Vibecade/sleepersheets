@@ -50,7 +50,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
 
   // Prepare roster data with duplicate removal
   const rosterData = React.useMemo(() => {
-    const data = [];
+    const data: any[] = [];
     const playerRosterMap = new Map(); // Track players to avoid duplicates
     
     rosters.forEach((roster) => {
@@ -91,7 +91,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
 
   // Prepare transaction data
   const transactionData = React.useMemo(() => {
-    const data = [];
+    const data: any[] = [];
     
     transactions.forEach((transaction) => {
       const week = transaction.leg || transaction.week || 'N/A';
@@ -144,7 +144,7 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
 
   // Prepare draft data
   const draftData = React.useMemo(() => {
-    const data = [];
+    const data: any[] = [];
     
     draftPicks.forEach(({ draft, picks }) => {
       picks.forEach((pick: any) => {

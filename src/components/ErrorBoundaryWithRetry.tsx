@@ -35,7 +35,7 @@ class ErrorBoundaryWithRetry extends Component<Props, State> {
   }
 
   handleReset = () => {
-    this.setState((prevState) => ({
+    this.setState((prevState): State => ({
       hasError: false,
       error: undefined,
       errorInfo: undefined,

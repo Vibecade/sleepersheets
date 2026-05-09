@@ -22,7 +22,7 @@ const registerServiceWorker = async (): Promise<ServiceWorkerRegistration | null
         logger.debug('Service Worker registered:', reg);
         return reg;
       })
-      .catch((error) => {
+      .catch((error: unknown): null => {
         logger.error('Service Worker registration failed:', error);
         return null;
       });
