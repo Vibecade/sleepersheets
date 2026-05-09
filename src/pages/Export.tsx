@@ -16,7 +16,6 @@ import type {
   SleeperLeagueDataBundle,
   SleeperUser,
   SleeperUserMap,
-  SleeperDraftPick,
 } from '@/types/sleeper';
 
 interface ExportRouteState {
@@ -98,9 +97,10 @@ const Export = () => {
     setLoadingLeagueId(leagueId);
     try {
       const combined = await fetchLeagueData(leagueId);
-      const flatPicks: SleeperDraftPick[] = (combined.draftPicks || []).flatMap(
-        (entry) => (entry?.picks || []) as SleeperDraftPick[],
-      );
+      // Pass `draftPicks` through as-is — every export consumer (ExportAll,
+      // DraftExport, DataDashboard) expects the nested `{ draft, picks }[]`
+      // shape, NOT a flat list of picks. SleeperDraftPick is the per-draft
+      // container (see src/types/sleeper.ts:53).
       setInlineLeagueData({
         league: combined.league,
         rosters: combined.rosters,
@@ -108,7 +108,7 @@ const Export = () => {
         players: combined.players,
         transactions: combined.transactions,
         drafts: combined.drafts,
-        draftPicks: flatPicks,
+        draftPicks: combined.draftPicks as SleeperLeagueDataBundle['draftPicks'],
       });
       toast({
         title: 'League loaded',
