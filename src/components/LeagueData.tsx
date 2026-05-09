@@ -49,7 +49,6 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
   const { league, rosters, userMap, rosterUserMap, players, transactions, draftPicks, stats } = useLeagueData();
   const [currentPage, setCurrentPage] = useState<'gamification' | 'overview' | 'manager' | 'commissioner' | 'more'>('gamification');
   const [activeOverviewTab, setActiveOverviewTab] = useState<string>('matchups');
-  const [compactMode, setCompactMode] = useState(false);
   const [hasHydratedUIState, setHasHydratedUIState] = useState(false);
   const isMobile = useIsMobile();
   const { user } = useAuth();
@@ -70,7 +69,6 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
   useEffect(() => {
     setHasHydratedUIState(false);
     if (!uiStoragePrefix || typeof window === 'undefined') {
-      setCompactMode(isMobile);
       setHasHydratedUIState(true);
       return;
     }
@@ -78,19 +76,16 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
     try {
       const storedPage = localStorage.getItem(`${uiStoragePrefix}:page`);
       const storedOverviewTab = localStorage.getItem(`${uiStoragePrefix}:overview-tab`);
-      const storedCompactMode = localStorage.getItem(`${uiStoragePrefix}:compact`);
 
       setCurrentPage(storedPage && isValidPage(storedPage) ? storedPage : 'gamification');
       setActiveOverviewTab(storedOverviewTab && isValidOverviewTab(storedOverviewTab) ? storedOverviewTab : 'matchups');
-      setCompactMode(storedCompactMode ? storedCompactMode === '1' : isMobile);
     } catch {
       setCurrentPage('gamification');
       setActiveOverviewTab('matchups');
-      setCompactMode(isMobile);
     } finally {
       setHasHydratedUIState(true);
     }
-  }, [uiStoragePrefix, isMobile]);
+  }, [uiStoragePrefix]);
 
   useEffect(() => {
     if (!hasHydratedUIState || !uiStoragePrefix || typeof window === 'undefined') {
@@ -105,13 +100,6 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
     }
     localStorage.setItem(`${uiStoragePrefix}:overview-tab`, activeOverviewTab);
   }, [hasHydratedUIState, uiStoragePrefix, activeOverviewTab]);
-
-  useEffect(() => {
-    if (!hasHydratedUIState || !uiStoragePrefix || typeof window === 'undefined') {
-      return;
-    }
-    localStorage.setItem(`${uiStoragePrefix}:compact`, compactMode ? '1' : '0');
-  }, [hasHydratedUIState, uiStoragePrefix, compactMode]);
 
   // Check if current user is the league owner
   useEffect(() => {
@@ -207,7 +195,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
       activeItem={getActiveNavItem()}
       showBottomNav={isMobile}
     >
-      <div className={`main-container ${compactMode ? 'ui-compact' : ''}`}>
+      <div className={`main-container ${isMobile ? 'ui-compact' : ''}`}>
         <PageHead
           title={
             currentPage === 'gamification'
@@ -234,10 +222,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
                   transactionCount={stats.transactionCount}
                   draftPickCount={stats.draftPickCount}
                   draftCount={stats.draftCount}
-                  onRefreshData={onRefreshData}
-                  compact={isMobile ? compactMode : false}
-                  isCompactMode={compactMode}
-                  onToggleCompactMode={() => setCompactMode((prev) => !prev)}
+                  compact={isMobile}
                 />
               </Suspense>
             </ErrorBoundaryWithRetry>

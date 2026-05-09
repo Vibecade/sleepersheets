@@ -4,7 +4,6 @@ import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 import { useAuth } from '@/contexts/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { logger } from '@/utils/logger';
 
@@ -76,41 +75,31 @@ const LeagueStatusBadge: React.FC<LeagueStatusBadgeProps> = ({ leagueId, onOwner
     };
 
     if (checkingStatus || !status) {
-        return <Skeleton className="h-7 w-28 rounded-full" />;
+        return null;
     }
 
-    let badgeText: string;
-    let tooltipText: string;
-    let variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'warning' = 'secondary';
-    let onClick: (() => void) | undefined;
-    let className = '';
-
-    if (status.ownedByCurrentUser) {
-        badgeText = "You Own This";
-        tooltipText = "You have full editing permissions for this league.";
-        variant = "default";
-    } else if (status.isOwned) {
-        badgeText = "Claimed";
-        tooltipText = "This league is owned by another user. You have view-only permissions.";
-        variant = "warning";
-    } else {
-        badgeText = claiming ? "Claiming..." : "Claim League";
-        tooltipText = "Click to claim this league and protect its settings.";
-        variant = "secondary";
-        if (claiming) {
-            className = "cursor-not-allowed opacity-50";
-            onClick = undefined;
-        } else {
-            className = "cursor-pointer hover:bg-white/20";
-            onClick = handleClaim;
-        }
+    // Already-claimed leagues used to render a golden "Claimed" pill (or
+    // an emerald "You Own This" pill for the owner). Both were leftover
+    // artifacts from an earlier ownership-clarity pass — neither is
+    // actionable, both add visual noise above the page header, and the
+    // commissioner-only features already hide themselves for non-owners.
+    // Only render the badge when there's something to do: claim the league.
+    if (status.ownedByCurrentUser || status.isOwned) {
+        return null;
     }
+
+    const badgeText = claiming ? "Claiming..." : "Claim League";
+    const tooltipText = "Click to claim this league and protect its settings.";
+    const className = claiming
+        ? "cursor-not-allowed opacity-50"
+        : "cursor-pointer hover:bg-white/20";
+    const onClick = claiming ? undefined : handleClaim;
 
     return (
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Badge variant={variant} onClick={onClick} className={className}>
+                    <Badge variant="secondary" onClick={onClick} className={className}>
                         {badgeText}
                     </Badge>
                 </TooltipTrigger>
