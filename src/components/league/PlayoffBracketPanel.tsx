@@ -27,18 +27,25 @@ interface NormalizedMatchup {
 /**
  * Round labels for the most common Sleeper bracket sizes:
  *   - 4 teams: rounds 1, 2 → semis, finals
- *   - 6 teams: rounds 1, 2, 3 → wild card, semis, finals
- *   - 8 teams: rounds 1, 2, 3 → quarters, semis, finals
+ *   - 6 teams: rounds 1, 2, 3 → wild card, semis, finals      (2 R1 matchups, top 2 seeds bye)
+ *   - 8 teams: rounds 1, 2, 3 → quarters, semis, finals       (4 R1 matchups, no byes)
  *
- * Sleeper doesn't tell us which structure the league uses, so we infer
- * from the highest round number seen in the bracket.
+ * 6- and 8-team brackets both have 3 rounds, so `totalRounds === 3`
+ * doesn't disambiguate. We additionally inspect the round-1 matchup
+ * count: 4 → quarterfinals, 2 → wild card.
  */
-const roundLabel = (round: number, totalRounds: number): string => {
+const roundLabel = (round: number, totalRounds: number, round1Matchups: number): string => {
   if (totalRounds <= 0) return `Round ${round}`;
   const fromEnd = totalRounds - round;
   if (fromEnd === 0) return 'Championship';
   if (fromEnd === 1) return 'Semifinals';
-  if (fromEnd === 2) return totalRounds === 3 ? 'Wild Card' : 'Quarterfinals';
+  if (fromEnd === 2) {
+    if (totalRounds === 3) {
+      // 8-team field has 4 round-1 games; 6-team has 2.
+      return round1Matchups >= 4 ? 'Quarterfinals' : 'Wild Card';
+    }
+    return 'Quarterfinals';
+  }
   if (fromEnd === 3) return 'Wild Card';
   return `Round ${round}`;
 };
@@ -90,6 +97,7 @@ export const PlayoffBracketPanel: React.FC<PlayoffBracketPanelProps> = ({
   }, [rosters, userMap]);
 
   const totalRounds = matchups.reduce((acc, m) => Math.max(acc, m.round), 0);
+  const round1Matchups = matchups.filter((m) => m.round === 1).length;
 
   const grouped = useMemo(() => {
     const map = new Map<number, NormalizedMatchup[]>();
@@ -122,7 +130,7 @@ export const PlayoffBracketPanel: React.FC<PlayoffBracketPanelProps> = ({
               className="font-mono font-bold text-primary mb-2"
               style={{ fontSize: 10, letterSpacing: '0.2em' }}
             >
-              ● {roundLabel(round, totalRounds).toUpperCase()}
+              ● {roundLabel(round, totalRounds, round1Matchups).toUpperCase()}
             </div>
             <div className="space-y-3">
               {list.map((matchup) => {
@@ -158,7 +166,10 @@ export const PlayoffBracketPanel: React.FC<PlayoffBracketPanelProps> = ({
                       isLoser={decided && !t2IsWinner && matchup.team2Id !== undefined}
                       tbd={matchup.team2Id === undefined}
                     />
-                    {matchup.placement === 1 && (
+                    {/* Sleeper sets `p: 1` on the finals slot before a
+                        winner is decided. Only show the champion banner
+                        once the game has actually been won. */}
+                    {matchup.placement === 1 && matchup.winnerId !== undefined && (
                       <div
                         className="px-2.5 py-1 font-mono font-bold text-primary border-t border-border"
                         style={{ fontSize: 9, letterSpacing: '0.2em' }}
