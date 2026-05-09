@@ -156,16 +156,16 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   );
   
   // Fetch draft picks with rate limiting
-  const draftPicks = [];
+  const draftPicks: { draft: SleeperDraft; picks: any[] }[] = [];
   if (drafts.length > 0) {
     // Only fetch picks for the most recent draft to reduce API calls
     const mostRecentDraft = drafts[0];
-    
-    
+
+
     try {
-      const picks = await cachedFetch(
-        `https://api.sleeper.app/v1/draft/${mostRecentDraft.draft_id}/picks`, 
-        {}, 
+      const picks = await cachedFetch<any[]>(
+        `https://api.sleeper.app/v1/draft/${mostRecentDraft.draft_id}/picks`,
+        {},
         CACHE_TTL.LONG
       );
       draftPicks.push({ draft: mostRecentDraft, picks });

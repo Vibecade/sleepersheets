@@ -203,6 +203,6 @@ export const useLeagueManager = () => {
     // Keep these for component compatibility, but they are no longer actively managed
     loadingProgress: 0,
     loadingMessage: '',
-    cacheMetadata: null,
+    cacheMetadata: null as null,
   };
 };
