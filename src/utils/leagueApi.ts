@@ -75,23 +75,33 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     void apiCache.setPlayers(players);
   }
 
-  // Fetch transactions from multiple weeks to capture all FAAB activity
-  
+  // Fetch transactions across the full season window so league-wide counts
+  // (transactions, FAAB activity, manager activity) reflect the entire
+  // season rather than just the current 2-week slice. Sleeper exposes
+  // transactions per (league_id, week); empty weeks return [] cheaply, all
+  // requests run in parallel through cachedFetch (per-league cache prefix
+  // + SHORT TTL), and any single-week failure is isolated by the catch
+  // below — so the worst case is the same as before, only with more
+  // weeks of cache hits steady-state.
+  //
+  // Historical-season history (prior `previous_league_id` rollovers) is
+  // still out of scope; that requires walking the chain and is deferred
+  // to a future "League History" feature.
+
   const season = league.season || '2024';
   const currentNFLWeek = getCurrentNFLWeek(season);
   const leagueWeek = league.settings?.week || 1;
   const effectiveCurrentWeek = Math.max(currentNFLWeek, leagueWeek);
-  
+
   logger.debug(`=== TRANSACTION FETCH DEBUG ===`);
   logger.debug(`League: ${league.name} (ID: ${targetLeagueId})`);
   logger.debug(`Season: ${season}, NFL Week: ${currentNFLWeek}, League Week: ${leagueWeek}, Using Week: ${effectiveCurrentWeek}`);
-  
-  // Optimize transaction fetching - only fetch current week and previous week for better performance
-  const weeksToFetch = [];
-  for (let week = Math.max(NFL_SEASON.MIN_WEEK, effectiveCurrentWeek - 1); week <= effectiveCurrentWeek; week++) {
+
+  const weeksToFetch: number[] = [];
+  for (let week = NFL_SEASON.MIN_WEEK; week <= NFL_SEASON.MAX_WEEKS; week++) {
     weeksToFetch.push(week);
   }
-  
+
   logger.debug(`Fetching transactions for weeks: ${weeksToFetch.join(', ')}`);
   
   // Fetch transactions from all weeks in parallel with league-specific cache keys
