@@ -52,7 +52,10 @@ export const useRosterInsights = (rosterId: number | null): RosterInsights | nul
       if (length === 1) expiringThisYear++;
       if (length === 2) finalYearNextYear++;
 
-      if (length == null) {
+      // contract_length === 0 is treated as "no contract" elsewhere in the
+      // codebase (see usePendingFreeAgents); commissioner overrides allow 0
+      // explicitly. Match that convention here.
+      if (length == null || length === 0) {
         noContract++;
       } else {
         contractLengthSum += length;
