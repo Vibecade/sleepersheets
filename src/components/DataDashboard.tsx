@@ -5,10 +5,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Users, ArrowUpDown, FileText, Eye } from 'lucide-react';
-import { formatPlayerName } from '@/utils/csvExport';
-import { getTeamName } from '@/utils/leagueDataUtils';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { usePlayerContracts } from '@/hooks/usePlayerContracts';
+import { useDataDashboardTables } from '@/hooks/useDataDashboardTables';
 import EditableSalary from '@/components/EditableSalary';
 import EditableContractLength from '@/components/EditableContractLength';
 import TaxiSquadToggle from '@/components/TaxiSquadToggle';
@@ -48,167 +47,27 @@ const DataDashboard: React.FC<DataDashboardProps> = memo(({
   } = usePlayerSalaries(league.league_id);
   const { contracts, updateContract, loading: contractsLoading } = usePlayerContracts(league.league_id);
 
-  // Prepare roster data with duplicate removal
-  const rosterData = React.useMemo(() => {
-    const data = [];
-    const playerRosterMap = new Map(); // Track players to avoid duplicates
-    
-    rosters.forEach((roster) => {
-      const user = userMap[roster.owner_id];
-      const fantasyTeam = getTeamName(user);
-
-      // Priority order: Active > Reserve > Taxi Squad
-      const playerCategories = [
-        { players: roster.players || [], status: 'Active' },
-        { players: roster.reserve || [], status: 'Reserve' },
-        { players: roster.taxi || [], status: 'Taxi Squad' }
-      ];
-
-      playerCategories.forEach(({ players: playerList, status }) => {
-        playerList.forEach((playerId: string) => {
-          // Only add player if not already added (first occurrence wins by priority)
-          if (!playerRosterMap.has(playerId)) {
-            const player = players[playerId];
-            if (player) {
-              const playerData = {
-                playerId,
-                playerName: formatPlayerName(player),
-                nflTeam: player.team || 'FA',
-                position: player.position || 'Unknown',
-                fantasyTeam,
-                rosterStatus: status
-              };
-              data.push(playerData);
-              playerRosterMap.set(playerId, playerData);
-            }
-          }
-        });
-      });
-    });
-    
-    return data;
-  }, [rosters, userMap, players]);
-
-  // Prepare transaction data
-  const transactionData = React.useMemo(() => {
-    const data = [];
-    
-    transactions.forEach((transaction) => {
-      const week = transaction.leg || transaction.week || 'N/A';
-
-      // Process drops
-      if (transaction.drops) {
-        Object.entries(transaction.drops as Record<string, string>).forEach(([playerId, rosterId]) => {
-          const player = players[playerId];
-          const user = rosterUserMap[rosterId];
-          const fantasyTeam = getTeamName(user);
-          
-          if (player) {
-            data.push({
-              playerId,
-              week,
-              fantasyTeam,
-              playerName: formatPlayerName(player),
-              nflTeam: player.team || 'FA',
-              position: player.position || 'Unknown',
-              action: 'Drop'
-            });
-          }
-        });
-      }
-
-      // Process adds
-      if (transaction.adds) {
-        Object.entries(transaction.adds as Record<string, string>).forEach(([playerId, rosterId]) => {
-          const player = players[playerId];
-          const user = rosterUserMap[rosterId];
-          const fantasyTeam = getTeamName(user);
-          
-          if (player) {
-            data.push({
-              playerId,
-              week,
-              fantasyTeam,
-              playerName: formatPlayerName(player),
-              nflTeam: player.team || 'FA',
-              position: player.position || 'Unknown',
-              action: 'Add'
-            });
-          }
-        });
-      }
-    });
-    
-    return data;
-  }, [transactions, players, rosterUserMap]);
-
-  // Prepare draft data
-  const draftData = React.useMemo(() => {
-    const data = [];
-    
-    draftPicks.forEach(({ draft, picks }) => {
-      picks.forEach((pick: any) => {
-        const player = players[pick.player_id];
-        const user = rosterUserMap[pick.roster_id];
-        const fantasyTeam = getTeamName(user);
-        
-        data.push({
-          playerId: pick.player_id,
-          round: pick.round || 'N/A',
-          pick: pick.pick_no || 'N/A',
-          fantasyTeam,
-          playerName: player ? formatPlayerName(player) : 'Unknown Player',
-          nflTeam: player?.team || 'FA',
-          position: player?.position || 'Unknown',
-          isKeeper: pick.is_keeper ? 'Yes' : 'No'
-        });
-      });
-    });
-    
-    return data;
-  }, [draftPicks, players, rosterUserMap]);
-
-  // Filter roster data based on search term
-  const filteredRosterData = React.useMemo(() => {
-    if (!rosterFilter) return rosterData;
-    
-    const lowerFilter = rosterFilter.toLowerCase();
-    return rosterData.filter(row => 
-      row.playerName.toLowerCase().includes(lowerFilter) ||
-      row.position.toLowerCase().includes(lowerFilter) ||
-      row.nflTeam.toLowerCase().includes(lowerFilter) ||
-      row.fantasyTeam.toLowerCase().includes(lowerFilter)
-    );
-  }, [rosterData, rosterFilter]);
-
-  // Filter transaction data based on search term
-  const filteredTransactionData = React.useMemo(() => {
-    if (!transactionFilter) return transactionData;
-    
-    const lowerFilter = transactionFilter.toLowerCase();
-    return transactionData.filter(row => 
-      row.playerName.toLowerCase().includes(lowerFilter) ||
-      row.position.toLowerCase().includes(lowerFilter) ||
-      row.nflTeam.toLowerCase().includes(lowerFilter) ||
-      row.fantasyTeam.toLowerCase().includes(lowerFilter) ||
-      row.action.toLowerCase().includes(lowerFilter)
-    );
-  }, [transactionData, transactionFilter]);
-
-  // Filter draft data based on search term
-  const filteredDraftData = React.useMemo(() => {
-    if (!draftFilter) return draftData;
-    
-    const lowerFilter = draftFilter.toLowerCase();
-    return draftData.filter(row => 
-      row.playerName.toLowerCase().includes(lowerFilter) ||
-      row.position.toLowerCase().includes(lowerFilter) ||
-      row.nflTeam.toLowerCase().includes(lowerFilter) ||
-      row.fantasyTeam.toLowerCase().includes(lowerFilter) ||
-      (row.round.toString().includes(lowerFilter)) ||
-      (row.pick.toString().includes(lowerFilter))
-    );
-  }, [draftData, draftFilter]);
+  // All table shaping + filtering lives in the hook. See
+  // useDataDashboardTables for the dedup priority, action splitting,
+  // and search-filter logic.
+  const {
+    rosterData,
+    transactionData,
+    draftData,
+    filteredRosterData,
+    filteredTransactionData,
+    filteredDraftData,
+  } = useDataDashboardTables({
+    rosters,
+    userMap,
+    rosterUserMap,
+    players,
+    transactions,
+    draftPicks,
+    rosterFilter,
+    transactionFilter,
+    draftFilter,
+  });
 
   return (
     <Card>
