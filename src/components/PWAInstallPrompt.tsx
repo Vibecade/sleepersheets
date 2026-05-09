@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Download, X, Smartphone } from 'lucide-react';
 import { usePWA } from '@/hooks/usePWA';
+import { logger } from '@/utils/logger';
 
 const PWA_DISMISSED_KEY = 'pwa_install_prompt_dismissed';
 
@@ -14,7 +15,7 @@ const PWAInstallPrompt: React.FC = () => {
       const stored = localStorage.getItem(PWA_DISMISSED_KEY);
       return stored === 'true';
     } catch (error) {
-      console.error('Error reading PWA dismissal state:', error);
+      logger.error('Error reading PWA dismissal state:', error);
       return false;
     }
   });
@@ -24,7 +25,7 @@ const PWAInstallPrompt: React.FC = () => {
       localStorage.setItem(PWA_DISMISSED_KEY, 'true');
       setDismissed(true);
     } catch (error) {
-      console.error('Error saving PWA dismissal state:', error);
+      logger.error('Error saving PWA dismissal state:', error);
       setDismissed(true);
     }
   };

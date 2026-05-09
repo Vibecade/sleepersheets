@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Crown, AlertTriangle } from 'lucide-react';
+import { logger } from '@/utils/logger';
 
 interface OwnershipTransferDialogProps {
   isOpen: boolean;
@@ -40,7 +41,7 @@ const OwnershipTransferDialog = ({
       setNewOwnerId('');
       onClose();
     } catch (error) {
-      console.error('Transfer failed:', error);
+      logger.error('Transfer failed:', error);
     } finally {
       setLoading(false);
     }

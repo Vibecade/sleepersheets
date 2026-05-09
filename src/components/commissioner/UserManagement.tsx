@@ -1,18 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCommissionerActions } from '@/hooks/useCommissionerActions';
 import { useToast } from '@/hooks/use-toast';
+import { useReadOnly } from '@/contexts/read-only-context';
 import { Users, UserCheck, Search, Crown } from 'lucide-react';
 import OwnershipTransferDialog from '@/components/league/OwnershipTransferDialog';
+import { getTeamName, normalizeUsersToMap } from '@/utils/leagueDataUtils';
+import type { CommissionerLeagueData, SleeperRoster } from '@/types/sleeper';
 
 interface UserManagementProps {
   leagueId: string;
-  leagueData: any;
+  leagueData: CommissionerLeagueData;
 }
 
 export const UserManagement = ({ leagueId, leagueData }: UserManagementProps) => {
@@ -20,18 +23,31 @@ export const UserManagement = ({ leagueId, leagueData }: UserManagementProps) =>
   const [showTransferDialog, setShowTransferDialog] = useState(false);
   const { logAction } = useCommissionerActions(leagueId);
   const { toast } = useToast();
+  const { readOnly } = useReadOnly();
 
-  const rosters = leagueData?.rosters || [];
-  const users = leagueData?.users || {};
+  const rosters: SleeperRoster[] = leagueData?.rosters || [];
 
-  // Filter rosters based on search term
+  // `leagueDataForExport` ships users as Object.values(userMap) — an array.
+  // Indexing it as a map silently returned undefined for every lookup,
+  // collapsing every team name to "Team N" (the original UserManagement
+  // bug). Use the shared helper instead of re-rolling the normalization.
+  const userMap = useMemo(
+    () => normalizeUsersToMap(leagueData?.users),
+    [leagueData?.users]
+  );
+
+  // Filter rosters based on search term — match against team name, owner
+  // display name, and username so any of them works.
   const filteredRosters = rosters.filter((roster: any) => {
-    const user = users[roster.owner_id];
-    const displayName = user?.display_name || user?.username || `Team ${roster.roster_id}`;
-    return displayName.toLowerCase().includes(searchTerm.toLowerCase());
+    const user = userMap[roster.owner_id];
+    const teamName = getTeamName(user);
+    const ownerHandle = user?.display_name || user?.username || '';
+    const haystack = `${teamName} ${ownerHandle}`.toLowerCase();
+    return haystack.includes(searchTerm.toLowerCase());
   });
 
   const handleTransferOwnership = async (rosterId: string, newOwnerId: string) => {
+    if (readOnly) return;
     try {
       await logAction({
         action_type: 'ownership_transfer',
@@ -99,9 +115,16 @@ export const UserManagement = ({ leagueId, leagueData }: UserManagementProps) =>
               </Alert>
             ) : (
               filteredRosters.map((roster: any) => {
-                const user = users[roster.owner_id];
-                const displayName = user?.display_name || user?.username || `Team ${roster.roster_id}`;
-                
+                const user = userMap[roster.owner_id];
+                const teamName = getTeamName(user);
+                const ownerHandle = user?.display_name || user?.username;
+                const initials = teamName
+                  .split(' ')
+                  .map((part: string) => part[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase();
+
                 return (
                   <div
                     key={roster.roster_id}
@@ -109,14 +132,18 @@ export const UserManagement = ({ leagueId, leagueData }: UserManagementProps) =>
                   >
                     <div className="flex items-center space-x-3">
                       <Avatar>
-                        <AvatarFallback>
-                          {displayName.substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
+                        {user?.avatar && (
+                          <AvatarImage
+                            src={`https://sleepercdn.com/avatars/thumbs/${user.avatar}`}
+                            alt={`${teamName} avatar`}
+                          />
+                        )}
+                        <AvatarFallback>{initials || '??'}</AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="flex items-center gap-2">
-                          <p className="font-medium">{displayName}</p>
-                          <Badge variant="outline">Team {roster.roster_id}</Badge>
+                          <p className="font-medium">{teamName}</p>
+                          <Badge variant="outline">Slot #{roster.roster_id}</Badge>
                           {roster.co_owners && roster.co_owners.length > 0 && (
                             <Badge variant="secondary">
                               +{roster.co_owners.length} co-owner{roster.co_owners.length > 1 ? 's' : ''}
@@ -125,7 +152,11 @@ export const UserManagement = ({ leagueId, leagueData }: UserManagementProps) =>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <UserCheck className="h-3 w-3" />
-                          <span>Owner ID: {roster.owner_id}</span>
+                          <span>
+                            {ownerHandle
+                              ? `Owner: ${ownerHandle}`
+                              : 'Owner not found in league users'}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -136,6 +167,7 @@ export const UserManagement = ({ leagueId, leagueData }: UserManagementProps) =>
                         size="sm"
                         onClick={() => setShowTransferDialog(true)}
                         className="gap-2"
+                        disabled={readOnly}
                       >
                         <Crown className="h-3 w-3" />
                         Transfer
@@ -164,7 +196,7 @@ export const UserManagement = ({ leagueId, leagueData }: UserManagementProps) =>
             </div>
             <div className="text-center p-4 border rounded-lg">
               <div className="text-2xl font-bold text-primary">
-                {Object.keys(users).length}
+                {Object.keys(userMap).length}
               </div>
               <p className="text-sm text-muted-foreground">Unique Users</p>
             </div>

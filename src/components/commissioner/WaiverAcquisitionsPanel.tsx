@@ -7,17 +7,10 @@ import { ArrowDownAZ, ArrowDownWideNarrow, Calendar, ChevronDown, ChevronUp, Wal
 import { usePlayerAcquisitions } from '@/hooks/usePlayerAcquisitions';
 import { formatPlayerName } from '@/utils/csvExport';
 import { getTeamName } from '@/utils/leagueDataUtils';
+import type { CommissionerLeagueData, SleeperUser } from '@/types/sleeper';
 
 interface WaiverAcquisitionsPanelProps {
-  leagueData: {
-    rosters?: any[];
-    transactions?: any[];
-    draftPicks?: any[];
-    players?: Record<string, any>;
-    users?: any[];
-    userMap?: Record<string, any>;
-    league?: any;
-  };
+  leagueData: CommissionerLeagueData;
 }
 
 type SortMode = 'recent' | 'faab' | 'name';
@@ -65,13 +58,12 @@ export const WaiverAcquisitionsPanel: React.FC<WaiverAcquisitionsPanelProps> = (
     [leagueData?.players],
   );
   const userMap = useMemo(() => {
-    if (leagueData?.userMap) return leagueData.userMap;
-    const map: Record<string, any> = {};
-    (leagueData?.users || []).forEach((user: any) => {
+    const map: Record<string, SleeperUser> = {};
+    (leagueData?.users || []).forEach((user: SleeperUser) => {
       if (user?.user_id) map[user.user_id] = user;
     });
     return map;
-  }, [leagueData?.userMap, leagueData?.users]);
+  }, [leagueData?.users]);
 
   const { waiverByRoster } = usePlayerAcquisitions({ rosters, transactions, draftPicks });
 

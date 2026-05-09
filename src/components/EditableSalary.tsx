@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/auth-context';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
+import { logger } from '@/utils/logger';
 
 interface EditableSalaryProps {
   playerId: string;
@@ -48,7 +49,7 @@ const EditableSalary: React.FC<EditableSalaryProps> = ({
         setIsEditing(false);
       }
     } catch (error) {
-      console.error('Error saving salary:', error);
+      logger.error('Error saving salary:', error);
       setValue(currentSalary ? currentSalary.toString() : '');
     } finally {
       setIsSaving(false);

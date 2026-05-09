@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 
 export interface TeamSalaryData {
   teamSalaries: Record<number, number>;
@@ -19,8 +21,8 @@ export const calculateOptimizedSalaries = ({
   getSalaryCapContribution,
   salaryCap
 }: CalculateOptimizedSalariesProps): TeamSalaryData => {
-  console.log('🧮 Recalculating optimized salary data for', rosters.length, 'teams');
-  console.log('💰 Salary Cap:', salaryCap);
+  logger.debug('🧮 Recalculating optimized salary data for', rosters.length, 'teams');
+  logger.debug('💰 Salary Cap:', salaryCap);
 
   const teamSalaries: Record<number, number> = {};
   const teamDeadCaps: Record<number, number> = {};
@@ -52,7 +54,7 @@ export const calculateOptimizedSalaries = ({
       return total + contribution;
     }, 0);
 
-    console.log(`Team ${rosterId}: ${allPlayerIds.length} players, Active Salary: $${activeSalary}`);
+    logger.debug(`Team ${rosterId}: ${allPlayerIds.length} players, Active Salary: $${activeSalary}`);
     teamSalaries[rosterId] = activeSalary;
     
     // Get pre-calculated dead cap
@@ -63,7 +65,7 @@ export const calculateOptimizedSalaries = ({
     const total = activeSalary + deadCap;
     totalSalaries[rosterId] = total;
 
-    console.log(`Team ${rosterId} Total: $${total} (Active: $${activeSalary} + Dead Cap: $${deadCap})`);
+    logger.debug(`Team ${rosterId} Total: $${total} (Active: $${activeSalary} + Dead Cap: $${deadCap})`);
 
     // Cap percentage based only on active salary (dead cap excluded)
     const percentage = (activeSalary / salaryCap) * 100;
@@ -72,7 +74,7 @@ export const calculateOptimizedSalaries = ({
     if (percentage > 100) status = 'over';
     else if (percentage > 90) status = 'near';
 
-    console.log(`Team ${rosterId} Cap Status: ${percentage.toFixed(1)}% (${status})`);
+    logger.debug(`Team ${rosterId} Cap Status: ${percentage.toFixed(1)}% (${status})`);
 
     capStatus[rosterId] = { percentage, status };
   });

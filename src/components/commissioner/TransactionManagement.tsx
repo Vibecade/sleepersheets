@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,22 +6,26 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCommissionerActions } from '@/hooks/useCommissionerActions';
 import { useToast } from '@/hooks/use-toast';
+import { useReadOnly } from '@/contexts/read-only-context';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  FileX, 
-  Check, 
-  X, 
-  RotateCcw, 
+import {
+  FileX,
+  Check,
+  X,
+  RotateCcw,
   AlertTriangle,
   TrendingUp,
   ArrowRightLeft
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
+import { normalizeUsersToMap } from '@/utils/leagueDataUtils';
+import type { CommissionerLeagueData } from '@/types/sleeper';
+import { logger } from '@/utils/logger';
 
 interface TransactionManagementProps {
   leagueId: string;
-  leagueData: any;
+  leagueData: CommissionerLeagueData;
 }
 
 interface Transaction {
@@ -44,6 +48,7 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
   const [activeTab, setActiveTab] = useState('recent');
   const { logAction } = useCommissionerActions(leagueId);
   const { toast } = useToast();
+  const { readOnly } = useReadOnly();
 
   const loadTransactions = useCallback(async () => {
     try {
@@ -57,7 +62,7 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
       if (error) throw error;
       setTransactions(data || []);
     } catch (error) {
-      console.error('Error loading transactions:', error);
+      logger.error('Error loading transactions:', error);
       toast({
         title: "Error",
         description: "Failed to load transactions",
@@ -73,9 +78,10 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
   }, [loadTransactions]);
 
   const handleTransactionAction = async (
-    transaction: Transaction, 
+    transaction: Transaction,
     action: 'approve' | 'reject' | 'reverse'
   ) => {
+    if (readOnly) return;
     try {
       // Log the override action
       const { data: user } = await supabase.auth.getUser();
@@ -116,7 +122,7 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
       // Reload transactions
       loadTransactions();
     } catch (error) {
-      console.error('Error updating transaction:', error);
+      logger.error('Error updating transaction:', error);
       toast({
         title: "Error",
         description: `Failed to ${action} transaction. Please try again.`,
@@ -151,9 +157,17 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
+  // Same array-vs-map shape mismatch that hit UserManagement (PR #10):
+  // `leagueData.users` is `Object.values(userMap)` (an array), but
+  // we want to look up the creator by user_id. Normalize once,
+  // memoized at component scope, instead of inline per-row.
+  const userMap = useMemo(
+    () => normalizeUsersToMap(leagueData?.users),
+    [leagueData?.users]
+  );
+
   const renderTransactionDetails = (transaction: Transaction) => {
-    const users = leagueData?.users || {};
-    const creator = users[transaction.creator];
+    const creator = userMap[transaction.creator];
     
     return (
       <div className="space-y-3">
@@ -211,6 +225,7 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
             variant="outline"
             onClick={() => handleTransactionAction(transaction, 'approve')}
             className="gap-1"
+            disabled={readOnly}
           >
             <Check className="h-3 w-3" />
             Approve
@@ -220,6 +235,7 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
             variant="outline"
             onClick={() => handleTransactionAction(transaction, 'reject')}
             className="gap-1"
+            disabled={readOnly}
           >
             <X className="h-3 w-3" />
             Reject
@@ -229,6 +245,7 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
             variant="outline"
             onClick={() => handleTransactionAction(transaction, 'reverse')}
             className="gap-1"
+            disabled={readOnly}
           >
             <RotateCcw className="h-3 w-3" />
             Reverse

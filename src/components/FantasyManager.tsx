@@ -4,6 +4,7 @@ import { Settings, ChevronDown, ChevronUp, Users, ArrowLeftRight } from 'lucide-
 import MinimizableDataDashboard from './MinimizableDataDashboard';
 import PlayerSearch from './PlayerSearch';
 import MinimizableFAABContractManager from './MinimizableFAABContractManager';
+import RosterInsightsCard from './roster/RosterInsightsCard';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { usePlayerContracts } from '@/hooks/usePlayerContracts';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -97,6 +98,10 @@ const FantasyManager: React.FC<FantasyManagerProps> = memo(({
           </div>
         </div>
       </div>
+
+      {/* Owner-only roster insights — renders nothing if the signed-in Sleeper user
+          doesn't own a roster in this league. */}
+      <RosterInsightsCard />
 
       {/* Player Search */}
       <PlayerSearch

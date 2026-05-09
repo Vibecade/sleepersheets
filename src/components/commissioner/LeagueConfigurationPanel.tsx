@@ -8,18 +8,21 @@ import { Separator } from '@/components/ui/separator';
 import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { useCommissionerActions } from '@/hooks/useCommissionerActions';
 import { useToast } from '@/hooks/use-toast';
+import { useReadOnly } from '@/contexts/read-only-context';
 import { Save, Settings } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { CommissionerLeagueData } from '@/types/sleeper';
 
 interface LeagueConfigurationPanelProps {
   leagueId: string;
-  leagueData: any;
+  leagueData: CommissionerLeagueData;
 }
 
 export const LeagueConfigurationPanel = ({ leagueId, leagueData }: LeagueConfigurationPanelProps) => {
   const { settings, updateSettings, loading } = useLeagueSettings(leagueId);
   const { logAction } = useCommissionerActions(leagueId);
   const { toast } = useToast();
+  const { readOnly } = useReadOnly();
   const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -30,6 +33,7 @@ export const LeagueConfigurationPanel = ({ leagueId, leagueData }: LeagueConfigu
   });
 
   const handleSave = async () => {
+    if (readOnly) return;
     setSaving(true);
     try {
       const success = await updateSettings(formData);
@@ -60,6 +64,7 @@ export const LeagueConfigurationPanel = ({ leagueId, leagueData }: LeagueConfigu
   };
 
   const handleInputChange = (field: string, value: any) => {
+    if (readOnly) return;
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -105,6 +110,7 @@ export const LeagueConfigurationPanel = ({ leagueId, leagueData }: LeagueConfigu
                 value={formData.salary_cap}
                 onChange={(e) => handleInputChange('salary_cap', Number(e.target.value))}
                 placeholder="200000"
+                disabled={readOnly}
               />
               <p className="text-xs text-muted-foreground">
                 Total salary budget per team
@@ -119,6 +125,7 @@ export const LeagueConfigurationPanel = ({ leagueId, leagueData }: LeagueConfigu
                 value={formData.faab_cap}
                 onChange={(e) => handleInputChange('faab_cap', Number(e.target.value))}
                 placeholder="100"
+                disabled={readOnly}
               />
               <p className="text-xs text-muted-foreground">
                 Free Agent Acquisition Budget per team
@@ -137,6 +144,7 @@ export const LeagueConfigurationPanel = ({ leagueId, leagueData }: LeagueConfigu
                 value={formData.reserve_limit}
                 onChange={(e) => handleInputChange('reserve_limit', Number(e.target.value))}
                 placeholder="100"
+                disabled={readOnly}
               />
               <p className="text-xs text-muted-foreground">
                 Maximum reserve budget per team
@@ -154,6 +162,7 @@ export const LeagueConfigurationPanel = ({ leagueId, leagueData }: LeagueConfigu
                 id="dead_cap_enabled"
                 checked={formData.dead_cap_enabled}
                 onCheckedChange={(checked) => handleInputChange('dead_cap_enabled', checked)}
+                disabled={readOnly}
               />
             </div>
           </div>
@@ -193,9 +202,9 @@ export const LeagueConfigurationPanel = ({ leagueId, leagueData }: LeagueConfigu
       </Card>
 
       <div className="flex justify-end">
-        <Button 
-          onClick={handleSave} 
-          disabled={saving}
+        <Button
+          onClick={handleSave}
+          disabled={saving || readOnly}
           className="gap-2"
         >
           <Save className="h-4 w-4" />

@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 interface SecurityLogEntry {
   timestamp: Date;
   userId?: string;
@@ -27,7 +29,7 @@ class SecurityLogger {
 
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
-      console.log('Security Log:', logEntry);
+      logger.debug('Security Log:', logEntry);
     }
 
     // In production, you could send to external logging service

@@ -8,12 +8,13 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ArrowRightLeft, Plus, Minus, Calendar, Search, X } from 'lucide-react';
 import { getTeamName } from '@/utils/leagueDataUtils';
+import type { SleeperLeague, SleeperPlayer, SleeperTransaction, SleeperUserMap } from '@/types/sleeper';
 
 interface TransactionsListProps {
-  transactions: any[];
-  userMap: Record<string, any>;
-  players: Record<string, any>;
-  league: any;
+  transactions: SleeperTransaction[];
+  userMap: SleeperUserMap;
+  players: Record<string, SleeperPlayer>;
+  league: SleeperLeague;
   onSyncData?: () => Promise<void>;
 }
 
@@ -108,7 +109,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
 
   const { sortedTransactions, hiddenFailedCount } = useMemo(() => {
     let hiddenFailed = 0;
-    const filteredTransactions: any[] = [];
+    const filteredTransactions: SleeperTransaction[] = [];
 
     for (const transaction of transactions) {
       const transactionWeek = Number(transaction.leg || transaction.week || 0);
@@ -428,17 +429,19 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                         <span>Draft Picks Involved</span>
                       </div>
                       <div className="grid grid-cols-2 gap-2 pl-6">
-                        {transaction.draft_picks.map((pick: any, index: number) => (
-                          <Badge key={index} variant="outline" className="text-blue-400 border-blue-400 text-xs">
-                            {String(pick.season)} Round {String(pick.round)}
-                          </Badge>
-                        ))}
+                        {(transaction.draft_picks as Array<{ season?: string | number; round?: number }>).map(
+                          (pick, index) => (
+                            <Badge key={index} variant="outline" className="text-blue-400 border-blue-400 text-xs">
+                              {String(pick.season)} Round {String(pick.round)}
+                            </Badge>
+                          )
+                        )}
                       </div>
                     </div>
                   )}
 
                   {/* FAAB Information */}
-                  {((transaction.waiver_budget && transaction.waiver_budget.length > 0) || 
+                  {((Array.isArray(transaction.waiver_budget) && transaction.waiver_budget.length > 0) ||
                     (transaction.settings && transaction.settings.waiver_bid)) && (
                     <div className="mt-3 pt-3 border-t border-white/10">
                       <div className="flex items-center space-x-2 text-sm font-medium text-purple-400 mb-2">
@@ -454,9 +457,11 @@ const TransactionsList: React.FC<TransactionsListProps> = ({
                           </div>
                         )}
                         
-                        {/* FAAB Transfers */}
-                        {transaction.waiver_budget && transaction.waiver_budget.length > 0 && 
-                          transaction.waiver_budget.map((transfer: any, index: number) => (
+                        {/* FAAB Transfers — narrow the union; waiver_budget can
+                            also arrive as Record<string, number>, in which case
+                            this block correctly skips. */}
+                        {Array.isArray(transaction.waiver_budget) && transaction.waiver_budget.length > 0 &&
+                          transaction.waiver_budget.map((transfer, index) => (
                             <div key={index} className="text-sm">
                               <span className="text-purple-400 font-medium">${transfer.amount}</span>
                               <span className="text-gray-400 ml-2">

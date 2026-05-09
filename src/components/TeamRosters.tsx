@@ -1,8 +1,9 @@
 import React, { memo, useEffect, useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { useTeamRostersManager } from '@/hooks/useTeamRostersManager';
-import MinimizableDeadCapManager from '@/components/MinimizableDeadCapManager';
-import MinimizableContractCalculator from '@/components/MinimizableContractCalculator';
+import ScrollableModal from '@/components/ScrollableModal';
+import DeadCapManager from '@/components/DeadCapManager';
+import ContractDeadCapCalculator from '@/components/ContractDeadCapCalculator';
 import MinimizableLeagueOptions from '@/components/MinimizableLeagueOptions';
 import MinimizablePendingFreeAgents from '@/components/MinimizablePendingFreeAgents';
 import TeamRostersHeader from '@/components/TeamRostersHeader';
@@ -190,23 +191,33 @@ const TeamRosters: React.FC<TeamRostersProps> = memo(({ rosters, userMap, player
         </Card>
 
         {showDeadCapManager && deadCapEnabled && (
-          <MinimizableDeadCapManager
-            open={showDeadCapManager && deadCapEnabled}
+          <ScrollableModal
+            open
             onOpenChange={setShowDeadCapManager}
-            leagueId={leagueId}
-            rosters={rosters}
-            userMap={userMap}
-            players={players}
-          />
+            title="Dynasty Dead Cap Manager"
+            maxHeight="85vh"
+          >
+            <DeadCapManager
+              leagueId={leagueId}
+              rosters={rosters}
+              userMap={userMap}
+              players={players}
+            />
+          </ScrollableModal>
         )}
 
         {showContractCalculator && (
-          <MinimizableContractCalculator
-            open={showContractCalculator}
+          <ScrollableModal
+            open
             onOpenChange={setShowContractCalculator}
-            leagueId={leagueId}
-            players={players}
-          />
+            title="Contract Dead Cap Calculator"
+            maxHeight="85vh"
+          >
+            <ContractDeadCapCalculator
+              leagueId={leagueId}
+              players={players}
+            />
+          </ScrollableModal>
         )}
 
         {showPendingFreeAgents && showSalaryFeatures && (
