@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { TrendingUp, TrendingDown, Star, Users, Trophy, Activity, Zap, Calendar } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useFunStatisticsData } from '@/hooks/useFunStatisticsData';
 
 interface FunStatisticsProps {
   league: any;
@@ -23,134 +24,16 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
   transactions = []
 }) => {
   const isMobile = useIsMobile();
-  // Calculate power rankings with meaningful data and real trends
-  const calculatePowerRankings = () => {
-    const allPoints = rosters.map(r => r.settings?.fpts || 0);
-    const maxPoints = Math.max(...allPoints);
-    const avgPoints = allPoints.reduce((sum, p) => sum + p, 0) / allPoints.length;
-    
-    return rosters
-      .map(roster => {
-        const user = userMap[roster.owner_id];
-        const wins = roster.settings?.wins || 0;
-        const losses = roster.settings?.losses || 0;
-        const points = roster.settings?.fpts || 0;
-        const gamesPlayed = wins + losses;
-        const winPct = gamesPlayed > 0 ? wins / gamesPlayed : 0;
-        
-        // Improved power score: balanced formula with normalized components
-        const normalizedWinPct = winPct; // Already 0-1
-        const normalizedPoints = maxPoints > 0 ? points / maxPoints : 0;
-        const powerScore = (normalizedWinPct * 0.65) + (normalizedPoints * 0.35);
-        
-        // Calculate real trend based on streak data
-        const streakData = roster.metadata?.streak || '';
-        let trend = 'neutral';
-        if (streakData) {
-          const match = streakData.match(/^(\d+)([WL])$/);
-          if (match) {
-            const streakCount = parseInt(match[1], 10);
-            const streakType = match[2];
-            if (streakType === 'W' && streakCount >= 2) trend = 'up';
-            else if (streakType === 'L' && streakCount >= 2) trend = 'down';
-          }
-        }
-        
-        return {
-          rosterId: roster.roster_id,
-          teamName: user?.metadata?.team_name || user?.display_name || 'Unknown Team',
-          user,
-          powerScore,
-          wins,
-          losses,
-          points,
-          winPct,
-          pointsVsAvg: points - avgPoints,
-          trend,
-          gamesPlayed
-        };
-      })
-      .sort((a, b) => b.powerScore - a.powerScore);
-  };
 
-  // Calculate team streaks using real data from roster metadata
-  const calculateStreaks = () => {
-    return rosters.map(roster => {
-      const user = userMap[roster.owner_id];
-      const wins = roster.settings?.wins || 0;
-      const losses = roster.settings?.losses || 0;
-      
-      // Parse real streak data from roster.metadata.streak (e.g., "1L", "3W")
-      const streakData = roster.metadata?.streak || '';
-      let streak = 0;
-      let streakType = 'none';
-      
-      if (streakData) {
-        const match = streakData.match(/^(\d+)([WL])$/);
-        if (match) {
-          streak = parseInt(match[1], 10);
-          streakType = match[2] === 'W' ? 'win' : 'loss';
-        }
-      }
-      
-      // Fallback: if no streak data, use wins/losses for simple calculation
-      if (!streakData && (wins > 0 || losses > 0)) {
-        streak = wins > losses ? wins : losses;
-        streakType = wins > losses ? 'win' : 'loss';
-      }
-      
-      return {
-        teamName: user?.metadata?.team_name || user?.display_name || 'Unknown Team',
-        user,
-        streak,
-        streakType,
-        isHot: streakType === 'win' && streak >= 2,
-        isCold: streakType === 'loss' && streak >= 2
-      };
-    });
-  };
-
-  // Calculate most active managers
-  const calculateActivity = () => {
-    const activityMap = new Map();
-    
-    transactions.forEach(transaction => {
-      const creator = transaction.creator;
-      if (creator) {
-        activityMap.set(creator, (activityMap.get(creator) || 0) + 1);
-      }
-    });
-
-    return rosters
-      .map(roster => {
-        const user = userMap[roster.owner_id];
-        const activity = activityMap.get(roster.owner_id) || 0;
-        
-        return {
-          teamName: user?.metadata?.team_name || user?.display_name || 'Unknown Team',
-          user,
-          transactionCount: activity,
-          activityLevel: activity > 10 ? 'high' : activity > 5 ? 'medium' : 'low'
-        };
-      })
-      .sort((a, b) => b.transactionCount - a.transactionCount);
-  };
-
-  const powerRankings = calculatePowerRankings();
-  const streaks = calculateStreaks();
-  const activity = calculateActivity();
-
-  // If no team has played a game yet (every roster has wins=0 and losses=0),
-  // we're in the offseason / pre-season window and the rankings below will
-  // render as all-zeros with no trends. Surface that state explicitly so the
-  // empty look isn't mistaken for a bug.
-  const totalGamesPlayed = rosters.reduce((sum, roster) => {
-    const wins = roster.settings?.wins || 0;
-    const losses = roster.settings?.losses || 0;
-    const ties = roster.settings?.ties || 0;
-    return sum + wins + losses + ties;
-  }, 0);
-  const isPreseason = totalGamesPlayed === 0;
+  // All derived calculations (power rankings, streaks, manager activity)
+  // and the offseason banner toggle live in the hook now. Side benefit:
+  // each calculation is now memoized — the original code recomputed all
+  // three on every render.
+  const { powerRankings, streaks, activity, isPreseason } = useFunStatisticsData({
+    rosters,
+    userMap,
+    transactions,
+  });
 
   const getActivityColor = (level: string) => {
     switch (level) {
