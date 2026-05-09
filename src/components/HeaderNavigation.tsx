@@ -179,28 +179,19 @@ const HeaderNavigation: React.FC = () => {
           {user ? (
             <UserMenu />
           ) : (
-            <>
-              <Link
-                to="/auth"
-                className="hidden md:inline-flex font-headline font-bold uppercase text-muted-foreground hover:text-foreground transition-colors"
-                style={{ fontSize: 12, letterSpacing: '0.15em' }}
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/"
-                className="bg-primary text-primary-foreground font-headline font-bold uppercase hover:bg-primary-glow transition-colors flex items-center"
-                style={{
-                  padding: '0 22px',
-                  height: 44,
-                  fontSize: 14,
-                  letterSpacing: '0.15em',
-                  clipPath: 'polygon(8% 0, 100% 0, 92% 100%, 0 100%)',
-                }}
-              >
-                HIT THE FIELD →
-              </Link>
-            </>
+            // "HIT THE FIELD →" used to live next to "Sign In" here, but it
+            // linked to "/" — i.e. the same page the user was already on
+            // when they could see this header. The path-picker modal opened
+            // by HeroSection's "GET STARTED FREE" button covers the
+            // get-started flow; this header just needs the direct
+            // sign-in shortcut for returning users.
+            <Link
+              to="/auth"
+              className="font-headline font-bold uppercase text-muted-foreground hover:text-foreground transition-colors"
+              style={{ fontSize: 12, letterSpacing: '0.15em' }}
+            >
+              Sign In
+            </Link>
           )}
         </div>
       </div>

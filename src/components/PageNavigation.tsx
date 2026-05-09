@@ -6,6 +6,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileNav } from '@/components/ui/mobile-nav';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 import { useIsSuperAdmin } from '@/hooks/useIsSuperAdmin';
+import UserMenu from '@/components/UserMenu';
 import { cn } from '@/lib/utils';
 
 interface PageNavigationProps {
@@ -160,6 +161,10 @@ const PageNavigation: React.FC<PageNavigationProps> = ({
       >
         WEEK {leagueData?.league?.settings?.leg ?? leagueData?.league?.settings?.week ?? '—'} ↓
       </span>
+      {/* Once a user has loaded a league there was no header at all and
+          therefore nowhere to sign out. UserMenu returns null when the
+          user is anonymous, so this is a no-op for guest viewers. */}
+      <UserMenu />
     </div>
   );
 };
