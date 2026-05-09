@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,21 +8,23 @@ import { useCommissionerActions } from '@/hooks/useCommissionerActions';
 import { useToast } from '@/hooks/use-toast';
 import { useReadOnly } from '@/contexts/read-only-context';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  FileX, 
-  Check, 
-  X, 
-  RotateCcw, 
+import {
+  FileX,
+  Check,
+  X,
+  RotateCcw,
   AlertTriangle,
   TrendingUp,
   ArrowRightLeft
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
+import { normalizeUsersToMap } from '@/utils/leagueDataUtils';
+import type { CommissionerLeagueData } from '@/types/sleeper';
 
 interface TransactionManagementProps {
   leagueId: string;
-  leagueData: any;
+  leagueData: CommissionerLeagueData;
 }
 
 interface Transaction {
@@ -154,9 +156,17 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
+  // Same array-vs-map shape mismatch that hit UserManagement (PR #10):
+  // `leagueData.users` is `Object.values(userMap)` (an array), but
+  // we want to look up the creator by user_id. Normalize once,
+  // memoized at component scope, instead of inline per-row.
+  const userMap = useMemo(
+    () => normalizeUsersToMap(leagueData?.users),
+    [leagueData?.users]
+  );
+
   const renderTransactionDetails = (transaction: Transaction) => {
-    const users = leagueData?.users || {};
-    const creator = users[transaction.creator];
+    const creator = userMap[transaction.creator];
     
     return (
       <div className="space-y-3">

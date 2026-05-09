@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Shield, Download, Info, HelpCircle, FileText, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MinimizablePendingFreeAgents from '@/components/MinimizablePendingFreeAgents';
+import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
+import { useLeagueSettings } from '@/hooks/useLeagueSettings';
+import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
+import { calculateOptimizedSalaries } from '@/utils/salaryCalculations';
+import { normalizeUsersToMap } from '@/utils/leagueDataUtils';
+import type { CommissionerLeagueData } from '@/types/sleeper';
 
 interface MobileMoreMenuProps {
   leagueId: string;
-  leagueData: any;
+  leagueData: CommissionerLeagueData;
   isCommissioner: boolean;
   onNavigateToCommissioner: () => void;
 }
@@ -20,6 +26,36 @@ export const MobileMoreMenu: React.FC<MobileMoreMenuProps> = ({
 }) => {
   const navigate = useNavigate();
   const [showFreeAgents, setShowFreeAgents] = useState(false);
+
+  // The pending-free-agents modal needs salary + cap data that the
+  // parent's `leagueDataForExport` doesn't carry. Pull it locally so the
+  // modal actually populates instead of rendering empty (the previous
+  // shape mismatch — `leagueData?.salaries` etc. — was always undefined).
+  // Memoize the rosters array so the `||` fallback doesn't churn the
+  // dep array on every render.
+  const rosters = useMemo(
+    () => leagueData?.rosters || [],
+    [leagueData?.rosters]
+  );
+  const userMap = useMemo(
+    () => normalizeUsersToMap(leagueData?.users),
+    [leagueData?.users]
+  );
+  const { salaries, getSalaryCapContribution, loading: salariesLoading } =
+    usePlayerSalaries(leagueId);
+  const { settings } = useLeagueSettings(leagueId);
+  const { deadCapPlayers, loading: deadCapLoading } = useDeadCapPlayers(leagueId);
+  const salaryCap = settings?.salary_cap || 200000;
+
+  const teamSalaries = useMemo(() => {
+    if (!rosters.length || salariesLoading || deadCapLoading) return {};
+    return calculateOptimizedSalaries({
+      rosters,
+      deadCapPlayers,
+      getSalaryCapContribution,
+      salaryCap,
+    }).teamSalaries;
+  }, [rosters, deadCapPlayers, getSalaryCapContribution, salaryCap, salariesLoading, deadCapLoading]);
 
   return (
     <div className="space-y-4 pb-20">
@@ -56,12 +92,12 @@ export const MobileMoreMenu: React.FC<MobileMoreMenuProps> = ({
           open={showFreeAgents}
           onOpenChange={setShowFreeAgents}
           leagueId={leagueId}
-          rosters={leagueData?.rosters || []}
-          userMap={leagueData?.userMap || {}}
+          rosters={rosters}
+          userMap={userMap}
           players={leagueData?.players || {}}
-          salaries={leagueData?.salaries || {}}
-          salaryCap={leagueData?.salaryCap || 500}
-          teamSalaries={leagueData?.teamSalaries || {}}
+          salaries={salaries}
+          salaryCap={salaryCap}
+          teamSalaries={teamSalaries}
         />
       )}
 

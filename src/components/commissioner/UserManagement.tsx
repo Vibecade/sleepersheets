@@ -10,11 +10,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useReadOnly } from '@/contexts/read-only-context';
 import { Users, UserCheck, Search, Crown } from 'lucide-react';
 import OwnershipTransferDialog from '@/components/league/OwnershipTransferDialog';
-import { getTeamName } from '@/utils/leagueDataUtils';
+import { getTeamName, normalizeUsersToMap } from '@/utils/leagueDataUtils';
+import type { CommissionerLeagueData, SleeperRoster } from '@/types/sleeper';
 
 interface UserManagementProps {
   leagueId: string;
-  leagueData: any;
+  leagueData: CommissionerLeagueData;
 }
 
 export const UserManagement = ({ leagueId, leagueData }: UserManagementProps) => {
@@ -24,24 +25,16 @@ export const UserManagement = ({ leagueId, leagueData }: UserManagementProps) =>
   const { toast } = useToast();
   const { readOnly } = useReadOnly();
 
-  const rosters = leagueData?.rosters || [];
+  const rosters: SleeperRoster[] = leagueData?.rosters || [];
 
-  // Upstream LeagueData passes `users` as Object.values(userMap) (an array),
-  // but historically this component indexed it as a map — every lookup
-  // returned undefined and team names fell back to "Team N". Normalize to a
-  // map keyed by user_id so getTeamName() can resolve metadata.team_name
-  // (custom Sleeper team names) rather than always landing on the fallback.
-  const userMap: Record<string, any> = useMemo(() => {
-    const raw = leagueData?.users;
-    if (!raw) return {};
-    if (Array.isArray(raw)) {
-      return raw.reduce<Record<string, any>>((acc, user) => {
-        if (user?.user_id) acc[user.user_id] = user;
-        return acc;
-      }, {});
-    }
-    return raw as Record<string, any>;
-  }, [leagueData?.users]);
+  // `leagueDataForExport` ships users as Object.values(userMap) — an array.
+  // Indexing it as a map silently returned undefined for every lookup,
+  // collapsing every team name to "Team N" (the original UserManagement
+  // bug). Use the shared helper instead of re-rolling the normalization.
+  const userMap = useMemo(
+    () => normalizeUsersToMap(leagueData?.users),
+    [leagueData?.users]
+  );
 
   // Filter rosters based on search term — match against team name, owner
   // display name, and username so any of them works.

@@ -19,13 +19,19 @@ import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 import { CommissionerAuditLog } from './CommissionerAuditLog';
 import { ManualContractOverrideDialog, type OverrideKind, type OverrideTarget } from './ManualContractOverrideDialog';
-import { getTeamName } from '@/utils/leagueDataUtils';
+import { getTeamName, normalizeUsersToMap } from '@/utils/leagueDataUtils';
 import { formatCurrency } from '@/utils/csvExport';
 import { cn } from '@/lib/utils';
+import type {
+  CommissionerLeagueData,
+  SleeperPlayer,
+  SleeperRoster,
+  SleeperTransaction,
+} from '@/types/sleeper';
 
 interface CommissionerOverviewProps {
   leagueId: string;
-  leagueData: any;
+  leagueData: CommissionerLeagueData;
 }
 
 type SortKey = 'team' | 'salary' | 'capPct' | 'faabAvail' | 'contracts' | 'expiring' | 'deadCap';
@@ -73,23 +79,27 @@ const CapBar = ({ used, total }: { used: number; total: number }) => {
 
 export const CommissionerOverview = ({ leagueId, leagueData }: CommissionerOverviewProps) => {
   const { readOnly } = useReadOnly();
-  const rosters: any[] = useMemo(() => leagueData?.rosters || [], [leagueData?.rosters]);
-  const players: Record<string, any> = useMemo(() => leagueData?.players || {}, [leagueData?.players]);
-  const transactions: any[] = useMemo(() => leagueData?.transactions || [], [leagueData?.transactions]);
+  const rosters: SleeperRoster[] = useMemo(
+    () => leagueData?.rosters || [],
+    [leagueData?.rosters]
+  );
+  const players: Record<string, SleeperPlayer> = useMemo(
+    () => leagueData?.players || {},
+    [leagueData?.players]
+  );
+  const transactions: SleeperTransaction[] = useMemo(
+    () => leagueData?.transactions || [],
+    [leagueData?.transactions]
+  );
 
-  // Upstream LeagueData passes `users` as Object.values(userMap), so we may
-  // get either an array or a map depending on the caller. Normalize to a map.
-  const userMap: Record<string, any> = useMemo(() => {
-    const raw = leagueData?.users;
-    if (!raw) return {};
-    if (Array.isArray(raw)) {
-      return raw.reduce<Record<string, any>>((acc, user) => {
-        if (user?.user_id) acc[user.user_id] = user;
-        return acc;
-      }, {});
-    }
-    return raw as Record<string, any>;
-  }, [leagueData?.users]);
+  // `leagueDataForExport` ships users as Object.values(userMap) — an array.
+  // Normalize defensively so map-keyed lookups (`userMap[ownerId]`) don't
+  // silently return undefined; that pattern was the UserManagement bug
+  // and the TransactionManagement creator-name bug.
+  const userMap = useMemo(
+    () => normalizeUsersToMap(leagueData?.users),
+    [leagueData?.users]
+  );
 
   const { settings, loading: settingsLoading } = useLeagueSettings(leagueId);
   const { salaries, getSalaryCapContribution, loading: salariesLoading } = usePlayerSalaries(leagueId);

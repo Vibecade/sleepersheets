@@ -24,7 +24,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
-import type { SleeperLeagueDataBundle } from '@/types/sleeper';
+import type { SleeperLeagueDataBundle, CommissionerLeagueData } from '@/types/sleeper';
 
 const VALID_PAGES = ['gamification', 'overview', 'manager', 'commissioner', 'more'] as const;
 const VALID_OVERVIEW_TABS = ['matchups', 'standings', 'transactions', 'statistics'] as const;
@@ -180,8 +180,12 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
     return '#overview';
   };
 
-  // Prepare league data for export navigation
-  const leagueDataForExport = React.useMemo(() => ({
+  // Prepare league data for export navigation. Typed explicitly so
+  // commissioner panels and the mobile menu downstream catch shape
+  // mismatches at compile time instead of silently rendering empty
+  // (see UserManagement / TransactionManagement creator-name regressions
+  // from before this prop was typed).
+  const leagueDataForExport: CommissionerLeagueData = React.useMemo(() => ({
     league_id: league.league_id,
     name: league.name,
     season: league.season,

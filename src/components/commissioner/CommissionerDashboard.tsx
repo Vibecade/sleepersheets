@@ -4,10 +4,11 @@ import { LeagueConfigurationPanel } from './LeagueConfigurationPanel';
 import { UserManagement } from './UserManagement';
 import { TransactionManagement } from './TransactionManagement';
 import { CommissionerOverview } from './CommissionerOverview';
+import type { CommissionerLeagueData } from '@/types/sleeper';
 
 interface CommissionerDashboardProps {
   leagueId: string;
-  leagueData: any;
+  leagueData: CommissionerLeagueData;
 }
 
 export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDashboardProps) => {

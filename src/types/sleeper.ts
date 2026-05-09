@@ -126,3 +126,27 @@ export interface SleeperLeagueDataContextValue extends SleeperLeagueDataBundle {
   rosterUserMap: SleeperRosterUserMap;
   stats: SleeperLeagueDataStats;
 }
+
+/**
+ * Shape passed to commissioner panels and the `MobileMoreMenu` via the
+ * `leagueDataForExport` memo in `LeagueData.tsx`. It's a `SleeperLeagueDataBundle`
+ * with a few flattened convenience fields lifted off `league` for legacy export
+ * paths. New code should prefer `leagueData.league.<field>` so this can shrink
+ * back to the bundle alone.
+ *
+ * `users` here is intentionally `SleeperUser[]` — a callable shape mismatch with
+ * any code that wants map-keyed lookup. Use `normalizeUsersToMap()` from
+ * `leagueDataUtils` rather than indexing `users[ownerId]` directly; that
+ * indexing pattern was the root cause of the UserManagement (#10) and
+ * TransactionManagement creator-name bugs.
+ */
+export interface CommissionerLeagueData extends SleeperLeagueDataBundle {
+  league_id: string;
+  name: string;
+  season: string;
+  sport?: string;
+  total_rosters?: number;
+  transactions: SleeperTransaction[];
+  drafts: SleeperDraft[];
+  draftPicks: SleeperDraftPick[];
+}
