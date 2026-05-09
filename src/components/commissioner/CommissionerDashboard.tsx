@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Settings, Users, FileX } from 'lucide-react';
 import { LeagueConfigurationPanel } from './LeagueConfigurationPanel';
 import { UserManagement } from './UserManagement';
 import { TransactionManagement } from './TransactionManagement';
-import { CommissionerAuditLog } from './CommissionerAuditLog';
+import { CommissionerOverview } from './CommissionerOverview';
 
 interface CommissionerDashboardProps {
   leagueId: string;
@@ -17,14 +15,19 @@ export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDash
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Shield className="h-6 w-6 text-primary" />
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Commissioner Dashboard</h1>
-          <p className="text-muted-foreground">
-            League management tools for {leagueData?.name || 'Your League'}
-          </p>
-        </div>
+      <div className="mb-2">
+        <h1
+          className="font-headline font-bold uppercase text-foreground"
+          style={{ fontSize: 28, letterSpacing: '0.04em', lineHeight: 1 }}
+        >
+          Commissioner Dashboard
+        </h1>
+        <p
+          className="font-mono text-muted-foreground mt-2"
+          style={{ fontSize: 11, letterSpacing: '0.15em' }}
+        >
+          LEAGUE MANAGEMENT TOOLS FOR {(leagueData?.name || 'YOUR LEAGUE').toUpperCase()}
+        </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
@@ -35,64 +38,8 @@ export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDash
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Teams</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{leagueData?.total_rosters || 0}</div>
-                <p className="text-xs text-muted-foreground">Active team owners</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Season</CardTitle>
-                <Settings className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{leagueData?.season || '2024'}</div>
-                <p className="text-xs text-muted-foreground">{leagueData?.sport || 'NFL'} League</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">League Status</CardTitle>
-                <Shield className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">Active</div>
-                <p className="text-xs text-muted-foreground">Commissioner controlled</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Actions Today</CardTitle>
-                <FileX className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">0</div>
-                <p className="text-xs text-muted-foreground">Commissioner actions</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Commissioner Actions</CardTitle>
-              <CardDescription>
-                Your latest league management activities
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CommissionerAuditLog leagueId={leagueId} />
-            </CardContent>
-          </Card>
+        <TabsContent value="overview">
+          <CommissionerOverview leagueId={leagueId} leagueData={leagueData} />
         </TabsContent>
 
         <TabsContent value="settings">
