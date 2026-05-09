@@ -3,6 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TurfPanel } from '@/components/ui/turf-panel';
+import { PlayoffBracketPanel } from '@/components/league/PlayoffBracketPanel';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { useGamificationInsights, type SleeperMatchup } from '@/hooks/useGamificationInsights';
 import { useQuestSnapshots } from '@/hooks/useQuestSnapshots';
@@ -465,45 +466,106 @@ const GamificationHub: React.FC<GamificationHubProps> = ({
         </TurfPanel>
       </div>
 
+      {/* Playoff bracket — only renders when Sleeper has published bracket
+          slots (i.e. season is in or past wild-card week). */}
+      {data.winnersBracket.length > 0 && (
+        <PlayoffBracketPanel
+          bracket={data.winnersBracket}
+          rosters={rosters}
+          userMap={userMap}
+          variant="winners"
+        />
+      )}
+
       {/* Three-column row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <TurfPanel kicker="TOP ADDS / 24H" title="Market Heat">
-          <div className="space-y-3">
-            {data.trendingAdds.slice(0, 3).map((entry, i) => (
-              <div key={`add-${entry.player_id}`} className="flex items-center gap-3">
+        <TurfPanel kicker="NFL-WIDE / 24H" title="Market Heat">
+          <div className="space-y-4">
+            {/* Top Adds */}
+            <div>
+              <div
+                className="flex items-baseline justify-between mb-2"
+                style={{ borderBottom: '1px solid hsl(var(--border))', paddingBottom: 4 }}
+              >
                 <span
-                  className="font-headline font-bold text-primary flex-shrink-0"
-                  style={{ fontSize: 24, letterSpacing: '-0.02em', minWidth: 22 }}
+                  className="font-mono font-bold text-primary"
+                  style={{ fontSize: 9, letterSpacing: '0.2em' }}
                 >
-                  {i + 1}
+                  ▲ TRENDING ADDS
                 </span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-semibold text-foreground truncate">
-                    {formatPlayerName(players[entry.player_id], entry.player_id)}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div
-                    className="font-headline font-bold text-foreground"
-                    style={{ fontSize: 16 }}
-                  >
-                    {entry.count || 0}
-                  </div>
-                  <div
-                    className="font-mono text-primary"
-                    style={{ fontSize: 9, letterSpacing: '0.1em' }}
-                  >
-                    ▲ ADDS
-                  </div>
-                </div>
               </div>
-            ))}
-            {data.trendingAdds.length === 0 && (
-              <p className="text-sm text-muted-foreground">No trending adds tracked.</p>
-            )}
+              <div className="space-y-2 pt-1">
+                {data.trendingAdds.slice(0, 3).map((entry, i) => (
+                  <div key={`add-${entry.player_id}`} className="flex items-center gap-3">
+                    <span
+                      className="font-headline font-bold text-primary flex-shrink-0"
+                      style={{ fontSize: 22, letterSpacing: '-0.02em', minWidth: 20 }}
+                    >
+                      {i + 1}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[12px] font-semibold text-foreground truncate">
+                        {formatPlayerName(players[entry.player_id], entry.player_id)}
+                      </div>
+                    </div>
+                    <div
+                      className="font-headline font-bold text-foreground flex-shrink-0"
+                      style={{ fontSize: 14 }}
+                    >
+                      {entry.count || 0}
+                    </div>
+                  </div>
+                ))}
+                {data.trendingAdds.length === 0 && (
+                  <p className="text-xs text-muted-foreground">No trending adds tracked.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Top Drops */}
+            <div>
+              <div
+                className="flex items-baseline justify-between mb-2"
+                style={{ borderBottom: '1px solid hsl(var(--border))', paddingBottom: 4 }}
+              >
+                <span
+                  className="font-mono font-bold text-secondary"
+                  style={{ fontSize: 9, letterSpacing: '0.2em' }}
+                >
+                  ▼ COOLING OFF
+                </span>
+              </div>
+              <div className="space-y-2 pt-1">
+                {data.trendingDrops.slice(0, 3).map((entry, i) => (
+                  <div key={`drop-${entry.player_id}`} className="flex items-center gap-3">
+                    <span
+                      className="font-headline font-bold text-secondary flex-shrink-0"
+                      style={{ fontSize: 22, letterSpacing: '-0.02em', minWidth: 20 }}
+                    >
+                      {i + 1}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[12px] font-semibold text-foreground truncate">
+                        {formatPlayerName(players[entry.player_id], entry.player_id)}
+                      </div>
+                    </div>
+                    <div
+                      className="font-headline font-bold text-foreground flex-shrink-0"
+                      style={{ fontSize: 14 }}
+                    >
+                      {entry.count || 0}
+                    </div>
+                  </div>
+                ))}
+                {data.trendingDrops.length === 0 && (
+                  <p className="text-xs text-muted-foreground">No trending drops tracked.</p>
+                )}
+              </div>
+            </div>
+
             {topWaiver && (
               <p className="text-[10px] text-muted-foreground pt-2 border-t border-border">
-                Highest waiver bid: ${topWaiver?.settings?.waiver_bid || 0}
+                Highest league waiver bid: ${topWaiver?.settings?.waiver_bid || 0}
               </p>
             )}
           </div>
