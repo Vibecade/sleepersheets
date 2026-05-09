@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { RefreshCw, Minimize2, Maximize2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import React from 'react';
 
 interface LeagueHeaderProps {
   league: any;
   transactionCount: number;
   draftPickCount: number;
   draftCount: number;
-  onRefreshData?: () => Promise<void>;
+  /**
+   * Renders the slim mobile pill layout instead of the full Turf hero.
+   * Parent passes `isMobile`; no manual toggle anymore — we used to surface
+   * Refresh/Compact buttons here but data refreshes are handled by
+   * TanStack Query and density auto-detects from the viewport.
+   */
   compact?: boolean;
-  isCompactMode?: boolean;
-  onToggleCompactMode?: () => void;
 }
 
 const splitLeagueName = (raw: string): [string, string] => {
@@ -23,16 +23,6 @@ const splitLeagueName = (raw: string): [string, string] => {
   const head = tokens.slice(0, -1).join(' ');
   const tail = tokens[tokens.length - 1];
   return [head, tail];
-};
-
-const formatRelative = (date: Date | null): string => {
-  if (!date) return 'JUST NOW';
-  const seconds = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
-  if (seconds < 60) return `${seconds}s AGO`;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m AGO`;
-  const hours = Math.floor(minutes / 60);
-  return `${hours}h AGO`;
 };
 
 const formatScoringMode = (league: any): string => {
@@ -94,80 +84,35 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
   transactionCount,
   draftPickCount,
   draftCount,
-  onRefreshData,
   compact = false,
-  isCompactMode = false,
-  onToggleCompactMode,
 }) => {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
-  const { toast } = useToast();
-
   const [headLine, tailLine] = splitLeagueName(league?.name || 'LEAGUE');
   const week = league?.settings?.leg ?? league?.settings?.week ?? 0;
   const playoffStart = Number(league?.settings?.playoff_week_start) || 0;
   const totalWeeks = playoffStart > 1 ? playoffStart - 1 : 17;
 
-  const handleRefresh = async () => {
-    if (!onRefreshData || isRefreshing) return;
-    setIsRefreshing(true);
-    try {
-      await onRefreshData();
-      setLastRefreshed(new Date());
-      toast({ title: 'Data refreshed', description: 'League data has been updated.' });
-    } catch {
-      toast({
-        title: 'Refresh failed',
-        description: 'Failed to refresh league data. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   // Compact mobile pill (kept simple — used inline above the bottom-nav)
   if (compact) {
     return (
-      <div className="bg-card border border-border px-4 py-3 flex items-center justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <div
-            className="font-mono text-[9px] text-primary font-semibold mb-1"
-            style={{ letterSpacing: '0.2em' }}
-          >
-            ● WK {week} · LIVE
-          </div>
-          <h2
-            className="font-headline font-bold uppercase text-foreground m-0 truncate"
-            style={{ fontSize: 18, letterSpacing: '-0.005em', lineHeight: 1.05 }}
-            title={league?.name || ''}
-          >
-            {league?.name}
-          </h2>
-          <div
-            className="font-mono text-[10px] text-muted-foreground mt-1"
-            style={{ letterSpacing: '0.1em' }}
-          >
-            S{league?.season} · {league?.total_rosters} TEAMS
-          </div>
+      <div className="bg-card border border-border px-4 py-3">
+        <div
+          className="font-mono text-[9px] text-primary font-semibold mb-1"
+          style={{ letterSpacing: '0.2em' }}
+        >
+          ● WK {week} · LIVE
         </div>
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          {onToggleCompactMode && (
-            <Button
-              onClick={onToggleCompactMode}
-              size="icon"
-              variant="ghost"
-              aria-label={isCompactMode ? 'Expand spacing' : 'Use compact spacing'}
-              title={isCompactMode ? 'Expand spacing' : 'Use compact spacing'}
-            >
-              {isCompactMode ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
-            </Button>
-          )}
-          {onRefreshData && (
-            <Button onClick={handleRefresh} disabled={isRefreshing} size="icon" variant="ghost">
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </Button>
-          )}
+        <h2
+          className="font-headline font-bold uppercase text-foreground m-0 truncate"
+          style={{ fontSize: 18, letterSpacing: '-0.005em', lineHeight: 1.05 }}
+          title={league?.name || ''}
+        >
+          {league?.name}
+        </h2>
+        <div
+          className="font-mono text-[10px] text-muted-foreground mt-1"
+          style={{ letterSpacing: '0.1em' }}
+        >
+          S{league?.season} · {league?.total_rosters} TEAMS
         </div>
       </div>
     );
@@ -176,70 +121,40 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
   // Full Turf Field hero
   return (
     <section className="fade-in">
-      {/* Top row: massive league name + actions */}
-      <div className="grid gap-6 md:gap-8 md:grid-cols-[1fr_auto] items-end mb-6">
-        <div>
-          <div
-            className="font-mono font-semibold text-primary mb-2"
-            style={{ fontSize: 11, letterSpacing: '0.25em' }}
-          >
-            ● COMMISSIONER VIEW / SEASON {league?.season} / WEEK {week} OF {totalWeeks}
-          </div>
-          <h1
-            className="font-headline font-bold uppercase text-foreground m-0"
-            style={{
-              fontSize: 'clamp(40px, 7vw, 88px)',
-              letterSpacing: '-0.01em',
-              lineHeight: 0.92,
-            }}
-          >
-            {headLine}
-            {tailLine && (
-              <>
-                <br />
-                <span className="text-primary">{tailLine}.</span>
-              </>
-            )}
-          </h1>
-          <div
-            className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-muted-foreground"
-            style={{ fontSize: 12, letterSpacing: '0.1em' }}
-          >
-            <span>ID {league?.league_id}</span>
-            <span>{league?.total_rosters || 0} FRANCHISES</span>
-            <span>{formatScoringMode(league)}</span>
-            <span className="text-primary">● SYNCED {formatRelative(lastRefreshed)}</span>
-          </div>
+      {/* Top row: massive league name. The button column (Refresh / Compact)
+          used to live in a second grid column here — both are gone now since
+          data refreshes are handled by TanStack Query and density auto-detects
+          from the viewport. */}
+      <div className="mb-6">
+        <div
+          className="font-mono font-semibold text-primary mb-2"
+          style={{ fontSize: 11, letterSpacing: '0.25em' }}
+        >
+          ● COMMISSIONER VIEW / SEASON {league?.season} / WEEK {week} OF {totalWeeks}
         </div>
-
-        <div className="flex items-stretch gap-2 min-w-[260px]">
-          {onRefreshData && (
-            <button
-              type="button"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-transparent border border-border-light text-foreground font-mono text-[11px] font-semibold uppercase hover:border-primary/60 transition-colors disabled:opacity-60"
-              style={{ letterSpacing: '0.15em', borderColor: 'hsl(var(--border-light))' }}
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {isRefreshing ? 'Refreshing' : 'Refresh'}
-            </button>
+        <h1
+          className="font-headline font-bold uppercase text-foreground m-0"
+          style={{
+            fontSize: 'clamp(40px, 7vw, 88px)',
+            letterSpacing: '-0.01em',
+            lineHeight: 0.92,
+          }}
+        >
+          {headLine}
+          {tailLine && (
+            <>
+              <br />
+              <span className="text-primary">{tailLine}.</span>
+            </>
           )}
-          {onToggleCompactMode && (
-            <button
-              type="button"
-              onClick={onToggleCompactMode}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-transparent border text-foreground font-mono text-[11px] font-semibold uppercase hover:border-primary/60 transition-colors"
-              style={{ letterSpacing: '0.15em', borderColor: 'hsl(var(--border-light))' }}
-            >
-              {isCompactMode ? (
-                <Maximize2 className="w-4 h-4" />
-              ) : (
-                <Minimize2 className="w-4 h-4" />
-              )}
-              Compact
-            </button>
-          )}
+        </h1>
+        <div
+          className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-muted-foreground"
+          style={{ fontSize: 12, letterSpacing: '0.1em' }}
+        >
+          <span>ID {league?.league_id}</span>
+          <span>{league?.total_rosters || 0} FRANCHISES</span>
+          <span>{formatScoringMode(league)}</span>
         </div>
       </div>
 
