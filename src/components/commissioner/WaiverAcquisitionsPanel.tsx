@@ -42,11 +42,28 @@ const POSITION_TONES: Record<string, string> = {
 const positionTone = (pos?: string): string =>
   POSITION_TONES[String(pos || '').toUpperCase()] || 'bg-muted text-muted-foreground border-border';
 
+const EMPTY_ARRAY: never[] = [];
+const EMPTY_RECORD: Record<string, never> = {};
+
 export const WaiverAcquisitionsPanel: React.FC<WaiverAcquisitionsPanelProps> = ({ leagueData }) => {
-  const rosters = leagueData?.rosters || [];
-  const transactions = leagueData?.transactions || [];
-  const draftPicks = leagueData?.draftPicks || [];
-  const players = leagueData?.players || {};
+  // Stabilise the optional/falsy fields so downstream hooks don't see a new
+  // reference every render (eslint react-hooks/exhaustive-deps).
+  const rosters = useMemo(
+    () => leagueData?.rosters ?? (EMPTY_ARRAY as any[]),
+    [leagueData?.rosters],
+  );
+  const transactions = useMemo(
+    () => leagueData?.transactions ?? (EMPTY_ARRAY as any[]),
+    [leagueData?.transactions],
+  );
+  const draftPicks = useMemo(
+    () => leagueData?.draftPicks ?? (EMPTY_ARRAY as any[]),
+    [leagueData?.draftPicks],
+  );
+  const players = useMemo(
+    () => leagueData?.players ?? (EMPTY_RECORD as Record<string, any>),
+    [leagueData?.players],
+  );
   const userMap = useMemo(() => {
     if (leagueData?.userMap) return leagueData.userMap;
     const map: Record<string, any> = {};
