@@ -140,6 +140,18 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
   const streaks = calculateStreaks();
   const activity = calculateActivity();
 
+  // If no team has played a game yet (every roster has wins=0 and losses=0),
+  // we're in the offseason / pre-season window and the rankings below will
+  // render as all-zeros with no trends. Surface that state explicitly so the
+  // empty look isn't mistaken for a bug.
+  const totalGamesPlayed = rosters.reduce((sum, roster) => {
+    const wins = roster.settings?.wins || 0;
+    const losses = roster.settings?.losses || 0;
+    const ties = roster.settings?.ties || 0;
+    return sum + wins + losses + ties;
+  }, 0);
+  const isPreseason = totalGamesPlayed === 0;
+
   const getActivityColor = (level: string) => {
     switch (level) {
       case 'high': return 'text-green-400';
@@ -158,6 +170,19 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
 
   return (
     <div className="space-y-6">
+      {isPreseason && (
+        <div className="rounded-lg border border-border/60 bg-card-light/40 px-4 py-3 flex items-start gap-3">
+          <Calendar className="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+          <div className="text-sm">
+            <p className="font-medium text-foreground">Regular season hasn't started yet.</p>
+            <p className="text-muted-foreground text-xs mt-0.5">
+              Power Rankings, Streaks, and Activity populate as games play out — for now they're showing
+              the carry-over baseline.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Power Rankings */}
       <Card className="transition-all duration-150 hover:shadow-lg">
         <CardHeader>
