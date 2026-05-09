@@ -159,7 +159,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
   return (
     <div className="space-y-6">
       {/* Power Rankings */}
-      <Card className="transition-all duration-300 hover:shadow-lg">
+      <Card className="transition-all duration-150 hover:shadow-lg">
         <CardHeader>
           <div className="flex items-center space-x-2">
             <Trophy className="w-5 h-5 text-yellow-500" />
@@ -169,12 +169,12 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
         <CardContent>
           <div className="space-y-4">
             {powerRankings.slice(0, 8).map((team, index) => (
-              <div key={team.rosterId} className="p-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/70 hover:shadow-lg hover:scale-[1.01]">
+              <div key={team.rosterId} className="p-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-150 hover:bg-card/70 hover:shadow-lg ">
                 {!isMobile ? (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4 flex-1">
                       <div className="relative">
-                        <Avatar className={`w-12 h-12 transition-all duration-300 ${
+                        <Avatar className={`w-12 h-12 transition-all duration-150 ${
                           index === 0 ? 'ring-2 ring-yellow-500 ring-offset-2 ring-offset-background' : 
                           index === 1 ? 'ring-2 ring-slate-400 ring-offset-2 ring-offset-background' :
                           index === 2 ? 'ring-2 ring-amber-600 ring-offset-2 ring-offset-background' : ''
@@ -187,7 +187,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
                             {team.teamName.slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <div className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 shadow-lg ${
+                        <div className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-150 shadow-lg ${
                           index === 0 ? 'bg-yellow-500 text-black' : 
                           index === 1 ? 'bg-slate-400 text-white' :
                           index === 2 ? 'bg-amber-600 text-white' : 'bg-muted text-muted-foreground'
@@ -220,7 +220,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
                           />
                         </div>
                       </div>
-                      <div className="transition-transform duration-300 hover:scale-125">
+                      <div className="transition-colors duration-150">
                         {team.trend === 'up' ? (
                           <TrendingUp className="w-6 h-6 text-green-400" />
                         ) : team.trend === 'down' ? (
@@ -238,7 +238,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4 flex-1">
                         <div className="relative">
-                          <Avatar className={`w-12 h-12 transition-all duration-300 ${
+                          <Avatar className={`w-12 h-12 transition-all duration-150 ${
                             index === 0 ? 'ring-2 ring-yellow-500 ring-offset-2 ring-offset-background' : 
                             index === 1 ? 'ring-2 ring-slate-400 ring-offset-2 ring-offset-background' :
                             index === 2 ? 'ring-2 ring-amber-600 ring-offset-2 ring-offset-background' : ''
@@ -251,7 +251,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
                               {team.teamName.slice(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                          <div className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 shadow-lg ${
+                          <div className={`absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-150 shadow-lg ${
                             index === 0 ? 'bg-yellow-500 text-black' : 
                             index === 1 ? 'bg-slate-400 text-white' :
                             index === 2 ? 'bg-amber-600 text-white' : 'bg-muted text-muted-foreground'
@@ -274,7 +274,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
                           </div>
                         </div>
                       </div>
-                      <div className="transition-transform duration-300 hover:scale-125">
+                      <div className="transition-colors duration-150">
                         {team.trend === 'up' ? (
                           <TrendingUp className="w-4 h-4 text-green-400" />
                         ) : team.trend === 'down' ? (
@@ -307,7 +307,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
       </Card>
 
       {/* Hot & Cold Streaks */}
-      <Card className="transition-all duration-300 hover:shadow-lg">
+      <Card className="transition-all duration-150 hover:shadow-lg">
         <CardHeader>
           <div className="flex items-center space-x-2">
             <TrendingUp className="w-5 h-5 text-orange-500" />
@@ -323,7 +323,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
               </h4>
               <div className="space-y-3">
                 {streaks.filter(team => team.isHot).slice(0, 4).map((team, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/30 backdrop-blur-sm transition-all duration-300 hover:from-green-500/20 hover:to-emerald-500/20 hover:scale-[1.02]">
+                  <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/30 backdrop-blur-sm transition-all duration-150 hover:from-green-500/20 hover:to-emerald-500/20 ">
                     <div className="flex items-center space-x-3 flex-1 min-w-0">
                       <Avatar className="w-10 h-10 ring-2 ring-green-400/50 flex-shrink-0">
                         <AvatarImage 
@@ -355,7 +355,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
               </h4>
               <div className="space-y-3">
                 {streaks.filter(team => team.isCold).slice(0, 4).map((team, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-red-500/10 to-pink-500/10 rounded-xl border border-red-500/30 backdrop-blur-sm transition-all duration-300 hover:from-red-500/20 hover:to-pink-500/20 hover:scale-[1.02]">
+                  <div key={index} className="flex items-center justify-between p-4 bg-gradient-to-r from-red-500/10 to-pink-500/10 rounded-xl border border-red-500/30 backdrop-blur-sm transition-all duration-150 hover:from-red-500/20 hover:to-pink-500/20 ">
                     <div className="flex items-center space-x-3 flex-1 min-w-0">
                       <Avatar className="w-10 h-10 ring-2 ring-red-400/50 flex-shrink-0">
                         <AvatarImage 
@@ -385,7 +385,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
       </Card>
 
       {/* Manager Activity */}
-      <Card className="transition-all duration-300 hover:shadow-lg">
+      <Card className="transition-all duration-150 hover:shadow-lg">
         <CardHeader>
           <div className="flex items-center space-x-2">
             <Users className="w-5 h-5 text-purple-500" />
@@ -395,9 +395,9 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
         <CardContent>
           <div className="space-y-4">
             {activity.slice(0, 8).map((manager, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/70 hover:shadow-lg hover:scale-[1.01]">
+              <div key={index} className="flex items-center justify-between p-4 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-150 hover:bg-card/70 hover:shadow-lg ">
                 <div className="flex items-center space-x-4 flex-1 min-w-0 overflow-hidden">
-                  <Avatar className="w-11 h-11 transition-all duration-300 hover:scale-110 flex-shrink-0">
+                  <Avatar className="w-11 h-11 transition-all duration-150  flex-shrink-0">
                     <AvatarImage 
                       src={manager.user?.avatar ? `https://sleepercdn.com/avatars/thumbs/${manager.user.avatar}` : undefined}
                       alt={`${manager.teamName} avatar`}
@@ -414,8 +414,8 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className={`flex items-center space-x-2 transition-all duration-300 ${getActivityColor(manager.activityLevel)}`}>
-                    <div className="transition-transform duration-300 hover:scale-125">
+                  <div className={`flex items-center space-x-2 transition-all duration-150 ${getActivityColor(manager.activityLevel)}`}>
+                    <div className="transition-colors duration-150">
                       {getActivityIcon(manager.activityLevel)}
                     </div>
                     <Badge 
@@ -433,7 +433,7 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
       </Card>
 
       {/* League Insights */}
-      <Card className="transition-all duration-300 hover:shadow-lg">
+      <Card className="transition-all duration-150 hover:shadow-lg">
         <CardHeader>
           <div className="flex items-center space-x-2">
             <Calendar className="w-5 h-5 text-blue-500" />
@@ -442,25 +442,25 @@ const FunStatistics: React.FC<FunStatisticsProps> = ({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <div className="text-center p-4 md:p-6 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-xl border border-yellow-500/20 transition-all duration-300 hover:from-yellow-500/20 hover:to-orange-500/20 hover:scale-105">
+            <div className="text-center p-4 md:p-6 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-xl border border-yellow-500/20 transition-all duration-150 hover:from-yellow-500/20 hover:to-orange-500/20 ">
               <div className="text-3xl font-bold text-yellow-400 mb-2">
                 {Math.max(...rosters.map(r => r.settings?.fpts || 0)).toFixed(1)}
               </div>
               <div className="text-sm text-muted-foreground font-medium">Highest Score</div>
             </div>
-            <div className="text-center p-4 md:p-6 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-xl border border-blue-500/20 transition-all duration-300 hover:from-blue-500/20 hover:to-cyan-500/20 hover:scale-105">
+            <div className="text-center p-4 md:p-6 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 rounded-xl border border-blue-500/20 transition-all duration-150 hover:from-blue-500/20 hover:to-cyan-500/20 ">
               <div className="text-3xl font-bold text-blue-400 mb-2">
                 {transactions.length}
               </div>
               <div className="text-sm text-muted-foreground font-medium">Total Moves</div>
             </div>
-            <div className="text-center p-4 md:p-6 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20 transition-all duration-300 hover:from-green-500/20 hover:to-emerald-500/20 hover:scale-105">
+            <div className="text-center p-4 md:p-6 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20 transition-all duration-150 hover:from-green-500/20 hover:to-emerald-500/20 ">
               <div className="text-3xl font-bold text-green-400 mb-2">
                 {rosters.reduce((sum, r) => sum + (r.settings?.wins || 0), 0)}
               </div>
               <div className="text-sm text-muted-foreground font-medium">Total Wins</div>
             </div>
-            <div className="text-center p-4 md:p-6 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20 transition-all duration-300 hover:from-purple-500/20 hover:to-pink-500/20 hover:scale-105">
+            <div className="text-center p-4 md:p-6 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-xl border border-purple-500/20 transition-all duration-150 hover:from-purple-500/20 hover:to-pink-500/20 ">
               <div className="text-3xl font-bold text-purple-400 mb-2">
                 {league?.settings?.leg || 1}
               </div>

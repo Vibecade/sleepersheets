@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useUrlParams } from '@/hooks/useUrlParams';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeInput, validateLeagueId } from '@/utils/inputValidation';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemo } from '@/contexts/demo-context';
 import { DEMO_LEAGUE_ID } from '@/utils/demoData';
 
 interface UseUrlLeagueLoaderProps {

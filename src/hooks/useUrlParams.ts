@@ -1,29 +1,32 @@
 import { useSearchParams } from 'react-router-dom';
-import { useCallback } from 'react';
-
-// Debounce function to prevent rapid URL updates
-const debounce = (func: Function, wait: number) => {
-  let timeout: number | undefined;
-  return (...args: any[]) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait) as unknown as number;
-  };
-};
+import { useCallback, useEffect, useRef } from 'react';
 
 export const useUrlParams = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const timeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current !== null) {
+        window.clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
   
   const getLeagueFromUrl = useCallback(() => {
     return searchParams.get('league');
   }, [searchParams]);
   
   // Debounced version of setSearchParams to prevent rapid URL updates
-  const debouncedSetParams = useCallback(
-    debounce((params: URLSearchParams) => {
+  const debouncedSetParams = useCallback((params: URLSearchParams) => {
+    if (timeoutRef.current !== null) {
+      window.clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = window.setTimeout(() => {
       setSearchParams(params, { replace: true });
-    }, 300), // 300ms debounce
-    [setSearchParams]
-  );
+    }, 300);
+  }, [setSearchParams]);
   
   const setLeagueInUrl = useCallback((leagueId: string) => {
     const currentLeague = searchParams.get('league');

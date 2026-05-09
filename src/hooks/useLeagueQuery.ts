@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchLeagueData, type CombinedLeagueData } from '@/utils/leagueApi';
 import { validateLeagueId, sanitizeInput } from '@/utils/inputValidation';
 import { createDemoLeagueData, DEMO_LEAGUE_ID } from '@/utils/demoData';
-import { useDemo } from '@/contexts/DemoContext';
+import { useDemo } from '@/contexts/demo-context';
 import { performanceMonitor } from '@/utils/performanceMonitor';
 import { CACHE_TTL, QUERY_CONFIG } from '@/utils/constants';
 

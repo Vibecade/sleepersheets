@@ -13,6 +13,35 @@ export default defineConfig(({ mode }) => ({
       'dev'
     ),
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) {
+            return undefined;
+          }
+
+          if (id.includes("@supabase")) {
+            return "supabase-vendor";
+          }
+
+          if (id.includes("victory-vendor")) {
+            return "charts-core-vendor";
+          }
+
+          if (id.includes("/lodash/") || id.includes("\\lodash\\")) {
+            return "utility-vendor";
+          }
+
+          if (id.includes("recharts")) {
+            return "charts-vendor";
+          }
+
+          return undefined;
+        },
+      },
+    },
+  },
   server: {
     host: "::",
     port: 8080,

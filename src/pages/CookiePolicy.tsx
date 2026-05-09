@@ -1,45 +1,22 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Cookie } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import PageHead from '@/components/PageHead';
+import { Card, CardContent } from '@/components/ui/card';
+import { Cookie } from 'lucide-react';
+import StaticPageLayout from '@/components/layout/StaticPageLayout';
 
 const CookiePolicy = () => {
-  const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen">
-      <PageHead 
-        title="Cookie Policy"
-        description="Cookie Policy for SleeperSheets - Learn about how we use cookies and tracking technologies."
-        canonicalUrl="https://sleepersheets.com/cookies"
-      />
-      
-      {/* Header */}
-      <div className="glass-header border-b border-white/10 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-emerald-600/10 animate-pulse"></div>
-        <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div className="bg-gradient-to-br from-amber-400 to-orange-600 rounded-2xl p-4 shadow-2xl">
-              <Cookie className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold gradient-text mb-2">Cookie Policy</h1>
-              <p className="text-gray-300 text-lg">How we use cookies and tracking</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <Card className="mb-8">
-          <CardContent className="prose prose-invert max-w-none pt-6">
-            <div className="space-y-6 text-gray-300">
+    <StaticPageLayout
+      title="Cookie Policy"
+      description="How SleeperSheets uses cookies, session data, and preference storage."
+      canonicalUrl="https://sleepersheets.com/cookies"
+      eyebrow="Policy"
+      icon={Cookie}
+      iconClassName="bg-gradient-to-br from-amber-400 to-orange-500"
+    >
+      <Card className="page-panel mb-8">
+        <CardContent className="prose prose-invert max-w-none pt-6 page-prose">
+            <div className="space-y-6">
               <section>
                 <h2 className="text-xl font-semibold text-white mb-3">What Are Cookies?</h2>
                 <p>Cookies are small text files that are stored on your device when you visit our website. They help us provide you with a better experience by remembering your preferences and enabling certain functionality.</p>
@@ -115,10 +92,9 @@ const CookiePolicy = () => {
                 <p>Twitter: <a href="https://x.com/dustybeerbong" className="text-blue-400 hover:text-blue-300">@dustybeerbong</a></p>
               </section>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+        </CardContent>
+      </Card>
+    </StaticPageLayout>
   );
 };
 

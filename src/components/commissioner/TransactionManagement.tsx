@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -47,11 +47,7 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
   const { toast } = useToast();
   const { readOnly } = useReadOnly();
 
-  useEffect(() => {
-    loadTransactions();
-  }, [leagueId]);
-
-  const loadTransactions = async () => {
+  const loadTransactions = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('league_transactions')
@@ -72,7 +68,11 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
     } finally {
       setLoading(false);
     }
-  };
+  }, [leagueId, toast]);
+
+  useEffect(() => {
+    loadTransactions();
+  }, [loadTransactions]);
 
   const handleTransactionAction = async (
     transaction: Transaction,

@@ -1,96 +1,124 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Trophy, TrendingUp, Users, BarChart3, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
 
 interface HeroSectionProps {
   onGetStarted: () => void;
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ onGetStarted }) => {
-  const handleExploreFeatures = () => {
+  const handleSeeDashboard = () => {
     const target = document.getElementById('features-section');
     if (!target) return;
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const stats = [
+    { value: '12.4K', label: 'LEAGUES MANAGED' },
+    { value: '847K', label: 'TRANSACTIONS PROCESSED' },
+    { value: '99.9%', label: 'SLEEPER API UPTIME' },
+    { value: 'FREE', label: 'ALWAYS, NO ADS' },
+  ];
+
   return (
-    <section className="relative py-10 sm:py-14 lg:py-16 px-4 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
-      <div className="absolute -top-28 right-0 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+    <section className="relative overflow-hidden">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-40"
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(90deg, transparent 0 80px, hsl(var(--border)) 80px 81px)',
+        }}
+        aria-hidden
+      />
 
-      <div className="relative max-w-6xl mx-auto">
-        <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-6 lg:gap-8 items-stretch">
-          <div className="glass-card p-6 sm:p-8 lg:p-10 rounded-2xl text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs sm:text-sm mb-5">
-              <Sparkles className="w-3.5 h-3.5" />
-              Built for dynasty, keeper, and redraft leagues
-            </div>
+      <div className="relative px-2 sm:px-4 pt-10 pb-8 sm:pt-14 sm:pb-12">
+        <div
+          className="font-mono text-[10px] sm:text-[11px] font-semibold text-primary mb-3 sm:mb-4"
+          style={{ letterSpacing: '0.25em' }}
+        >
+          ● COMMISSIONER OPS / DYNASTY · KEEPER · REDRAFT
+        </div>
 
-            <h1 className="font-sans normal-case tracking-tight text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground mb-4 leading-tight">
-              Manage your fantasy league faster, with fewer manual steps.
-            </h1>
+        <h1
+          className="font-headline font-bold uppercase text-foreground m-0"
+          style={{
+            fontSize: 'clamp(44px, 10vw, 144px)',
+            letterSpacing: '-0.02em',
+            lineHeight: 0.88,
+          }}
+        >
+          Run your league
+          <br />
+          <span className="text-primary">like a franchise.</span>
+        </h1>
 
-            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-6 max-w-2xl">
-              SleeperSheets gives commissioners and managers one clean workspace for contracts, cap tracking, transactions, and exports.
-            </p>
+        <div className="mt-6 sm:mt-8 grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8 lg:gap-16 items-start">
+          <p className="text-base sm:text-lg leading-relaxed text-foreground max-w-xl m-0">
+            One clean workspace for contracts, cap tracking, transactions, and exports.
+            Built for commissioners who want speed, clarity, and control —
+            without the upsells, ads, or weekly setup tax.
+          </p>
 
-            <div className="flex flex-wrap gap-2 mb-7">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-background/40 px-3 py-1.5 text-sm">
-                <TrendingUp className="w-4 h-4 text-success" />
-                Real-time tracking
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-background/40 px-3 py-1.5 text-sm">
-                <Users className="w-4 h-4 text-primary" />
-                Multi-league support
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-background/40 px-3 py-1.5 text-sm">
-                <BarChart3 className="w-4 h-4 text-secondary" />
-                Advanced analytics
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <Button
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
                 onClick={onGetStarted}
-                size="lg"
-                className="text-base px-8 h-11 bg-gradient-to-r from-primary to-primary-glow hover:from-primary-glow hover:to-primary text-primary-foreground font-semibold"
+                className="flex-1 px-7 py-5 bg-primary text-primary-foreground font-headline text-sm sm:text-base font-bold uppercase cursor-pointer border-0 hover:bg-primary-glow transition-colors"
+                style={{
+                  letterSpacing: '0.125em',
+                  clipPath: 'polygon(6% 0, 100% 0, 94% 100%, 0 100%)',
+                }}
               >
-                Get Started Free
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={handleExploreFeatures}
-                className="text-base px-6 h-11 border-primary/40 hover:border-primary/70 hover:bg-primary/10"
+                GET STARTED FREE →
+              </button>
+              <button
+                onClick={handleSeeDashboard}
+                className="flex-1 px-7 py-5 bg-transparent text-foreground font-headline text-sm sm:text-base font-bold uppercase cursor-pointer border hover:border-primary/60 transition-colors"
+                style={{ letterSpacing: '0.125em', borderColor: 'hsl(var(--border-light))' }}
               >
-                Explore Features
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+                SEE DASHBOARD
+              </button>
+            </div>
+            <div
+              className="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10px] text-muted-foreground"
+              style={{ letterSpacing: '0.15em' }}
+            >
+              <span>● NO CARD REQUIRED</span>
+              <span>● 2 MIN SETUP</span>
+              <span>● UNLIMITED LEAGUES</span>
             </div>
           </div>
+        </div>
+      </div>
 
-          <div className="glass-card p-6 sm:p-7 rounded-2xl flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-5">
-              <div className="inline-flex items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-glow p-3">
-                <Trophy className="w-7 h-7 text-primary-foreground" />
+      {/* Stat strip — gap=1px creates the gridlines via parent bg */}
+      <div
+        className="relative border-y border-border"
+        style={{ background: 'hsl(var(--border))' }}
+      >
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-px">
+          {stats.map((s) => (
+            <div
+              key={s.label}
+              className="bg-background px-4 py-6 sm:px-6 sm:py-8"
+            >
+              <div
+                className="font-headline font-bold text-foreground"
+                style={{
+                  fontSize: 'clamp(32px, 5.5vw, 56px)',
+                  letterSpacing: '-0.01em',
+                  lineHeight: 1,
+                  marginBottom: 8,
+                }}
+              >
+                {s.value}
               </div>
-              <div className="inline-flex items-center gap-2 text-xs text-success bg-success/10 border border-success/25 px-2.5 py-1 rounded-full">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Ownership protected
+              <div
+                className="font-mono font-semibold text-muted-foreground"
+                style={{ fontSize: 10, letterSpacing: '0.2em' }}
+              >
+                {s.label}
               </div>
             </div>
-
-            <div className="space-y-4">
-              <div className="rounded-xl border border-border/60 bg-background/30 p-4">
-                <p className="text-sm font-semibold mb-1">For dynasty and keeper leagues</p>
-                <p className="text-sm text-muted-foreground">Track contracts, dead cap, and long-term payroll strategy without spreadsheets.</p>
-              </div>
-              <div className="rounded-xl border border-border/60 bg-background/30 p-4">
-                <p className="text-sm font-semibold mb-1">For regular redraft leagues</p>
-                <p className="text-sm text-muted-foreground">Measure trends, compare teams, and export league data for weekly recaps.</p>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>

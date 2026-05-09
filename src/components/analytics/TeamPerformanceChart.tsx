@@ -78,7 +78,7 @@ const TeamPerformanceChart: React.FC<TeamPerformanceChartProps> = ({
         totalPlayers
       };
     });
-  }, [rosters, userMap, getSalaryCapContribution, transactions]);
+  }, [rosters, userMap, getSalaryCapContribution, transactions, isMobile]);
 
   const chartConfig = {
     teams: {

@@ -3,7 +3,7 @@ import React from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Truck, Lock } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth-context';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 import { useToast } from '@/hooks/use-toast';
 

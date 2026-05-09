@@ -50,18 +50,18 @@ export const ExpandableMatchupCard: React.FC<ExpandableMatchupCardProps> = ({
   return (
     <>
       <Card 
-        className={`bg-card/50 border border-border/50 transition-all duration-300 cursor-pointer group touch-manipulation ${
+        className={`bg-card/50 border border-border/50 transition-all duration-150 cursor-pointer group touch-manipulation ${
           isMobile 
-            ? 'hover:bg-card/80 active:bg-card active:scale-[0.98]' 
-            : 'hover:bg-card/80 hover:border-border hover:scale-[1.02]'
+            ? 'hover:bg-card/80 active:bg-card active:translate-y-px' 
+            : 'hover:bg-card/80 hover:border-border hover:shadow-md'
         }`}
         onClick={handleCardClick}
       >
         <CardContent className={`${isMobile ? 'p-4' : 'p-4 md:p-6'}`}>
           <div className={`flex ${isMobile ? 'flex-col gap-4' : 'flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0'}`}>
-            <div className={`flex-1 text-center transition-all duration-300 ${team1Winning && !isMobile ? 'transform scale-105' : ''} min-w-0`}>
+            <div className={`flex-1 text-center transition-all duration-150 ${team1Winning && !isMobile ? 'transform scale-105' : ''} min-w-0`}>
               <div className="flex flex-col items-center space-y-2 mb-3">
-                <Avatar className={`transition-all duration-300 ${team1Winning ? 'scale-110 ring-2 ring-primary' : ''}`}>
+                <Avatar className={`transition-all duration-150 ${team1Winning ? 'scale-110 ring-2 ring-primary' : ''}`}>
                   <AvatarImage 
                     src={user1?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user1.avatar}` : undefined}
                     alt={`${getTeamName(user1)} avatar`}
@@ -70,14 +70,14 @@ export const ExpandableMatchupCard: React.FC<ExpandableMatchupCardProps> = ({
                     {getTeamName(user1).slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div className={`font-medium ${team1Winning ? 'text-primary' : 'text-muted-foreground'} transition-colors duration-300 truncate`}>
+                <div className={`font-medium ${team1Winning ? 'text-primary' : 'text-muted-foreground'} transition-colors duration-150 truncate`}>
                   {getTeamName(user1)}
                 </div>
                 <div className="text-sm text-muted-foreground transition-colors duration-200">
                   {getTeamRecord(roster1)}
                 </div>
               </div>
-              <div className={`text-2xl font-bold transition-all duration-300 ${team1Winning ? 'text-primary scale-110' : 'text-foreground'}`}>
+              <div className={`text-2xl font-bold transition-all duration-150 ${team1Winning ? 'text-primary scale-110' : 'text-foreground'}`}>
                 {formatPoints(team1.points)}
               </div>
             </div>
@@ -88,9 +88,9 @@ export const ExpandableMatchupCard: React.FC<ExpandableMatchupCardProps> = ({
               </div>
             </div>
            
-            <div className={`flex-1 text-center transition-all duration-300 ${!team1Winning && !isMobile ? 'transform scale-105' : ''} min-w-0`}>
+            <div className={`flex-1 text-center transition-all duration-150 ${!team1Winning && !isMobile ? 'transform scale-105' : ''} min-w-0`}>
               <div className="flex flex-col items-center space-y-2 mb-3">
-                <Avatar className={`transition-all duration-300 ${!team1Winning ? 'scale-110 ring-2 ring-primary' : ''}`}>
+                <Avatar className={`transition-all duration-150 ${!team1Winning ? 'scale-110 ring-2 ring-primary' : ''}`}>
                   <AvatarImage 
                     src={user2?.avatar ? `https://sleepercdn.com/avatars/thumbs/${user2.avatar}` : undefined}
                     alt={`${getTeamName(user2)} avatar`}
@@ -99,14 +99,14 @@ export const ExpandableMatchupCard: React.FC<ExpandableMatchupCardProps> = ({
                     {getTeamName(user2).slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div className={`font-medium ${!team1Winning ? 'text-primary' : 'text-muted-foreground'} transition-colors duration-300 truncate`}>
+                <div className={`font-medium ${!team1Winning ? 'text-primary' : 'text-muted-foreground'} transition-colors duration-150 truncate`}>
                   {getTeamName(user2)}
                 </div>
                 <div className="text-sm text-muted-foreground transition-colors duration-200">
                   {getTeamRecord(roster2)}
                 </div>
               </div>
-              <div className={`text-2xl font-bold transition-all duration-300 ${!team1Winning ? 'text-primary scale-110' : 'text-foreground'}`}>
+              <div className={`text-2xl font-bold transition-all duration-150 ${!team1Winning ? 'text-primary scale-110' : 'text-foreground'}`}>
                 {formatPoints(team2.points)}
               </div>
             </div>
