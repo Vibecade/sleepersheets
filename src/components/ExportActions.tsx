@@ -95,11 +95,12 @@ const ExportActions: React.FC<ExportActionsProps> = ({
               <h3 className="text-sm font-medium text-muted-foreground mb-3">Core Data</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 <div className="flex justify-center">
-                  <RosterExport 
+                  <RosterExport
                     league={league}
                     rosters={rosters}
                     userMap={userMap}
                     players={players}
+                    transactions={transactions}
                     exportOptions={exportOptions}
                   />
                 </div>
@@ -147,6 +148,7 @@ const ExportActions: React.FC<ExportActionsProps> = ({
                 <div className="flex justify-center">
                   <LeagueSettingsExport
                     league={league}
+                    rosters={rosters}
                     exportOptions={exportOptions}
                   />
                 </div>

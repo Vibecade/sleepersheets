@@ -67,6 +67,46 @@ export const formatCurrency = (amount: number | null | undefined): string => {
   return `$${amount.toLocaleString()}`;
 };
 
+/**
+ * Spreadsheet-safe currency: writes the raw number as a string ("200000")
+ * so Excel/Sheets/Numbers will auto-detect it as numeric and SUM/AVG work.
+ * Use this in CSV export rows. Use `formatCurrency` for in-app display.
+ */
+export const formatCurrencyRaw = (amount: number | null | undefined): string => {
+  if (amount === null || amount === undefined || Number.isNaN(amount)) return '';
+  return String(Math.round(amount));
+};
+
+/**
+ * Spreadsheet-safe date: ISO 8601 timestamp. Sleeper timestamps are in
+ * milliseconds. Sortable as text, parseable everywhere.
+ */
+export const formatDateISO = (timestamp: number | null | undefined): string => {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString();
+};
+
+/**
+ * Spreadsheet-safe boolean: writes "TRUE"/"FALSE" so spreadsheets and
+ * filters can use the value as a real boolean. Empty string for null.
+ */
+export const formatBoolRaw = (value: boolean | null | undefined): string => {
+  if (value === null || value === undefined) return '';
+  return value ? 'TRUE' : 'FALSE';
+};
+
+/**
+ * Raw franchise value for CSV export — strips the "$" and trailing ".00"
+ * formatting that `getPlayerFranchiseValue` adds for in-app display.
+ */
+export const getPlayerFranchiseValueRaw = (player: any): string => {
+  const raw = player?.fantasy_data_nfl?.fantasy_positions_value;
+  if (typeof raw !== 'number' || Number.isNaN(raw)) return '';
+  return (raw / 100).toFixed(2);
+};
+
 export const sanitizeFilename = (filename: string): string => {
   // Remove or replace invalid filename characters
   return filename
