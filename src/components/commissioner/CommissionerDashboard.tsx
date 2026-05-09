@@ -6,6 +6,7 @@ import { LeagueConfigurationPanel } from './LeagueConfigurationPanel';
 import { UserManagement } from './UserManagement';
 import { TransactionManagement } from './TransactionManagement';
 import { CommissionerAuditLog } from './CommissionerAuditLog';
+import { WaiverAcquisitionsPanel } from './WaiverAcquisitionsPanel';
 
 interface CommissionerDashboardProps {
   leagueId: string;
@@ -28,8 +29,9 @@ export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDash
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="waivers">Waivers</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
@@ -93,6 +95,10 @@ export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDash
               <CommissionerAuditLog leagueId={leagueId} />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="waivers">
+          <WaiverAcquisitionsPanel leagueData={leagueData} />
         </TabsContent>
 
         <TabsContent value="settings">
