@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { TurfPanel } from '@/components/ui/turf-panel';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,11 +12,13 @@ import {
 } from '@/components/ui/accordion';
 import { useReadOnly } from '@/contexts/read-only-context';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
+import { usePlayerContracts } from '@/hooks/usePlayerContracts';
 import {
   usePlayerAcquisitions,
   type AcquisitionSource,
 } from '@/hooks/usePlayerAcquisitions';
 import EditableSalary from '@/components/EditableSalary';
+import EditableContractLength from '@/components/EditableContractLength';
 import { getTeamName, normalizeUsersToMap } from '@/utils/leagueDataUtils';
 import type { CommissionerLeagueData } from '@/types/sleeper';
 
@@ -128,6 +130,8 @@ export const PlayerPricingPanel = ({
 
   const { salaries, updateSalary, loading: salariesLoading } =
     usePlayerSalaries(leagueId);
+  const { contracts, updateContract, loading: contractsLoading } =
+    usePlayerContracts(leagueId);
   const { byPlayer } = usePlayerAcquisitions({ rosters, transactions, draftPicks });
 
   const teamNameByRoster = useMemo(() => {
@@ -138,9 +142,91 @@ export const PlayerPricingPanel = ({
     return map;
   }, [rosters, userMap]);
 
-  // Build the list of unpriced players, with their acquisition source.
+  // Set of players currently rostered AND missing a salary right this render.
+  // The visible list is derived from the SESSION-STICKY set below, not this —
+  // see comment there for why.
+  const currentlyUnpricedIds = useMemo<Set<string>>(() => {
+    const ids = new Set<string>();
+    rosters.forEach((roster: any) => {
+      const playerIds: string[] = [
+        ...(roster.players || []),
+        ...(roster.reserve || []),
+        ...(roster.taxi || []),
+      ];
+      playerIds.forEach((pid) => {
+        if (!pid || pid === '0') return;
+        const salary = salaries[pid];
+        if (salary == null || salary === 0) ids.add(pid);
+      });
+    });
+    return ids;
+  }, [rosters, salaries]);
+
+  // Set of all currently rostered player_ids (any roster). Used to garbage-
+  // collect the sticky set when a player is traded or dropped mid-session.
+  const allRosteredIds = useMemo<Set<string>>(() => {
+    const ids = new Set<string>();
+    rosters.forEach((roster: any) => {
+      [
+        ...(roster.players || []),
+        ...(roster.reserve || []),
+        ...(roster.taxi || []),
+      ].forEach((pid: string) => {
+        if (pid && pid !== '0') ids.add(pid);
+      });
+    });
+    return ids;
+  }, [rosters]);
+
+  // SESSION-STICKY visibility:
+  //
+  //   The contract-length control sits next to the salary control on every
+  //   row. If the visible list were filtered by "salary == null || 0" on
+  //   every render, then the moment the commissioner saves the salary the
+  //   row unmounts — taking the contract-length control with it before
+  //   the user can submit a length. The "set both inline" workflow breaks
+  //   for exactly the case it was added for (drafted players).
+  //
+  //   Fix: snapshot every player who shows up as unpriced during the panel's
+  //   lifetime into a sticky set. Keep them rendered until either (a) the
+  //   panel unmounts (page navigation away) or (b) they leave the league
+  //   (traded/dropped). Setting a salary still updates the underlying
+  //   data — we just don't drop the row from sight while the user is
+  //   working on it.
+  const stickyIdsRef = useRef<Set<string>>(new Set());
+  const [stickyTick, setStickyTick] = useState(0);
+
+  useEffect(() => {
+    const sticky = stickyIdsRef.current;
+    let changed = false;
+
+    // Add any newly-seen unpriced players
+    currentlyUnpricedIds.forEach((pid) => {
+      if (!sticky.has(pid)) {
+        sticky.add(pid);
+        changed = true;
+      }
+    });
+
+    // Drop players who are no longer rostered at all (traded/dropped during
+    // the session). Their pricing isn't this commissioner's problem anymore.
+    sticky.forEach((pid) => {
+      if (!allRosteredIds.has(pid)) {
+        sticky.delete(pid);
+        changed = true;
+      }
+    });
+
+    if (changed) setStickyTick((t) => t + 1);
+  }, [currentlyUnpricedIds, allRosteredIds]);
+
+  // Build the visible list off the sticky set. Each row reads its CURRENT
+  // salary from the salaries map — a freshly-priced player keeps its row
+  // but its salary input now displays the saved value, which gives the
+  // commissioner a visual confirmation that the row is "done".
   const unpriced = useMemo<UnpricedPlayer[]>(() => {
     const out: UnpricedPlayer[] = [];
+    const sticky = stickyIdsRef.current;
 
     rosters.forEach((roster: any) => {
       const playerIds: string[] = Array.from(
@@ -153,9 +239,7 @@ export const PlayerPricingPanel = ({
 
       playerIds.forEach((pid) => {
         if (!pid || pid === '0') return;
-        const salary = salaries[pid];
-        // Treat null and 0 alike — both mean "no usable cost set".
-        if (salary != null && salary > 0) return;
+        if (!sticky.has(pid)) return;
 
         const player = players[pid];
         const acquisition = byPlayer.get(pid);
@@ -171,7 +255,10 @@ export const PlayerPricingPanel = ({
     });
 
     return out;
-  }, [rosters, players, salaries, byPlayer]);
+    // stickyTick is intentional — it forces a recompute when the sticky set
+    // is mutated via the ref above (refs alone don't trigger re-renders).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rosters, players, byPlayer, stickyTick]);
 
   const grouped = useMemo<SourceGroup[]>(() => {
     const bySource = new Map<AcquisitionSource, UnpricedPlayer[]>();
@@ -213,7 +300,15 @@ export const PlayerPricingPanel = ({
     salary: number | null,
   ): Promise<boolean> => updateSalary(playerId, salary);
 
-  if (salariesLoading) {
+  // updateContract returns boolean; pass through directly. The
+  // EditableContractLength component refuses the edit on FAAB-acquired
+  // players (read-only display) so we don't need a parallel guard here.
+  const handleContractUpdate = async (
+    playerId: string,
+    contractLength: number | null,
+  ): Promise<boolean> => updateContract(playerId, contractLength);
+
+  if (salariesLoading || contractsLoading) {
     return (
       <div className="space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
@@ -223,10 +318,21 @@ export const PlayerPricingPanel = ({
     );
   }
 
+  // Counts: `unpriced.length` is the visible row count (sticky — includes
+  // already-priced rows the commissioner is mid-edit on). `stillUnpricedCount`
+  // is the work that remains. Show "X of Y" in the kicker when they differ
+  // so the commissioner can see progress without losing context on which
+  // players they've already touched.
+  const stillUnpricedCount = currentlyUnpricedIds.size;
+  const kickerCount =
+    stillUnpricedCount === unpriced.length
+      ? String(unpriced.length)
+      : `${stillUnpricedCount} of ${unpriced.length}`;
+
   return (
     <div className="space-y-5">
       <TurfPanel
-        kicker={`PRICING / NEEDS COST · ${unpriced.length}`}
+        kicker={`PRICING / NEEDS COST · ${kickerCount}`}
         title="Players Without a Salary"
       >
         {readOnly && (
@@ -319,12 +425,23 @@ export const PlayerPricingPanel = ({
                             {(teamNameByRoster.get(p.rosterId) || 'Unknown Team').toUpperCase()}
                           </div>
                         </div>
-                        <div className="flex-shrink-0">
+                        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                           <EditableSalary
                             playerId={p.playerId}
                             currentSalary={salaries[p.playerId] ?? null}
                             onSalaryUpdate={handleSalaryUpdate}
                             leagueId={leagueId}
+                          />
+                          {/* Contract length lives next to the salary so a
+                              drafted player can have BOTH set in a single
+                              pass. EditableContractLength gates FAAB
+                              acquisitions to read-only on its own. */}
+                          <EditableContractLength
+                            playerId={p.playerId}
+                            currentLength={contracts[p.playerId] ?? null}
+                            onContractUpdate={handleContractUpdate}
+                            leagueId={leagueId}
+                            rosterId={p.rosterId}
                           />
                         </div>
                       </div>
