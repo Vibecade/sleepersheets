@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Download, Info, HelpCircle, FileText, Calendar } from 'lucide-react';
+import { Shield, Download, Info, HelpCircle, FileText, Calendar, LogOut, LogIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MinimizablePendingFreeAgents from '@/components/MinimizablePendingFreeAgents';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
@@ -9,6 +9,8 @@ import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 import { calculateOptimizedSalaries } from '@/utils/salaryCalculations';
 import { normalizeUsersToMap } from '@/utils/leagueDataUtils';
+import { useAuth } from '@/contexts/auth-context';
+import { useToast } from '@/hooks/use-toast';
 import type { CommissionerLeagueData } from '@/types/sleeper';
 
 interface MobileMoreMenuProps {
@@ -25,7 +27,21 @@ export const MobileMoreMenu: React.FC<MobileMoreMenuProps> = ({
   onNavigateToCommissioner,
 }) => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
   const [showFreeAgents, setShowFreeAgents] = useState(false);
+
+  // The desktop view has UserMenu in PageNavigation; on mobile the only nav
+  // surface in-league is this menu, so the sign-out lives here.
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+      toast({ title: 'Signed Out', description: 'You have been successfully signed out' });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to sign out', variant: 'destructive' });
+    }
+  };
 
   // The pending-free-agents modal needs salary + cap data that the
   // parent's `leagueDataForExport` doesn't carry. Pull it locally so the
@@ -177,6 +193,44 @@ export const MobileMoreMenu: React.FC<MobileMoreMenuProps> = ({
             <Info className="h-4 w-4 mr-2" />
             About SleeperSheets
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Account */}
+      <Card className="border-border/50 bg-card/70 backdrop-blur-sm">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-muted-foreground" />
+            <CardTitle>Account</CardTitle>
+          </div>
+          <CardDescription>
+            {user
+              ? user.email
+                ? `Signed in as ${user.email}`
+                : 'Manage your sign-in session'
+              : 'Sign in to claim leagues and persist preferences'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {user ? (
+            <Button
+              onClick={() => void handleSignOut()}
+              variant="outline"
+              className="w-full justify-start text-red-400 hover:text-red-300"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          ) : (
+            <Button
+              onClick={() => navigate('/auth')}
+              variant="outline"
+              className="w-full justify-start"
+            >
+              <LogIn className="h-4 w-4 mr-2" />
+              Sign In
+            </Button>
+          )}
         </CardContent>
       </Card>
 
