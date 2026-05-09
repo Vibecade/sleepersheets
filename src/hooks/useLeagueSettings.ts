@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
 interface LeagueSettings {
   id: string;
@@ -32,13 +33,13 @@ export const useLeagueSettings = (leagueId: string) => {
 
     setLoading(true);
     try {
-      console.log('Loading league settings for:', currentLeagueId);
+      logger.debug('Loading league settings for:', currentLeagueId);
       
       // Check cache first
       const cacheKey = currentLeagueId;
       const cached = settingsCache.get(cacheKey);
       if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-        console.log('Using cached league settings for:', currentLeagueId);
+        logger.debug('Using cached league settings for:', currentLeagueId);
         setSettings(cached.data);
         setLastLeagueId(currentLeagueId);
         setLoading(false);
@@ -52,11 +53,11 @@ export const useLeagueSettings = (leagueId: string) => {
         .maybeSingle();
 
       if (error) {
-        console.error('Error loading league settings:', error);
+        logger.error('Error loading league settings:', error);
         return;
       }
 
-      console.log('Loaded league settings:', data);
+      logger.debug('Loaded league settings:', data);
       if (data) {
         setSettings(data);
         settingsCache.set(cacheKey, { data, timestamp: Date.now() });
@@ -77,7 +78,7 @@ export const useLeagueSettings = (leagueId: string) => {
           .single();
 
         if (createError) {
-          console.error('Error creating default league settings:', createError);
+          logger.error('Error creating default league settings:', createError);
         } else {
           setSettings(newSettings);
           settingsCache.set(cacheKey, { data: newSettings, timestamp: Date.now() });
@@ -86,7 +87,7 @@ export const useLeagueSettings = (leagueId: string) => {
       
       setLastLeagueId(currentLeagueId);
     } catch (error) {
-      console.error('Error loading league settings:', error);
+      logger.error('Error loading league settings:', error);
     } finally {
       setLoading(false);
     }
@@ -104,7 +105,7 @@ export const useLeagueSettings = (leagueId: string) => {
   // Update settings in database - using useCallback to stabilize the function reference
   const updateSettings = useCallback(async (updates: Partial<Pick<LeagueSettings, 'salary_cap' | 'dead_cap_enabled' | 'faab_cap' | 'reserve_limit'>>) => {
     try {
-      console.log('Updating league settings:', updates);
+      logger.debug('Updating league settings:', updates);
       const { data, error } = await supabase
         .from('league_settings')
         .update({
@@ -116,7 +117,7 @@ export const useLeagueSettings = (leagueId: string) => {
         .single();
 
       if (error) {
-        console.error('Error updating league settings:', error);
+        logger.error('Error updating league settings:', error);
         toast({
           title: "Error",
           description: "Failed to save league settings",
@@ -137,7 +138,7 @@ export const useLeagueSettings = (leagueId: string) => {
       });
       return true;
     } catch (error) {
-      console.error('Error updating league settings:', error);
+      logger.error('Error updating league settings:', error);
       toast({
         title: "Error",
         description: "Failed to save league settings",

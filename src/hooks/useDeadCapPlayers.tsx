@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
 interface DeadCapPlayer {
   id: string;
@@ -30,14 +31,14 @@ export const useDeadCapPlayers = (leagueId: string) => {
     }
 
     try {
-      console.log('Loading dead cap players for league:', currentLeagueId);
+      logger.debug('Loading dead cap players for league:', currentLeagueId);
       setLoading(true);
       
       // Check cache first
       const cacheKey = currentLeagueId;
       const cached = deadCapCache.get(cacheKey);
       if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-        console.log('Using cached dead cap players for:', currentLeagueId);
+        logger.debug('Using cached dead cap players for:', currentLeagueId);
         setDeadCapPlayers(cached.data);
         setLastLeagueId(currentLeagueId);
         setLoading(false);
@@ -50,18 +51,18 @@ export const useDeadCapPlayers = (leagueId: string) => {
         .eq('league_id', currentLeagueId);
 
       if (error) {
-        console.error('Error loading dead cap players:', error);
+        logger.error('Error loading dead cap players:', error);
         return;
       }
 
-      console.log('Loaded dead cap players:', data);
+      logger.debug('Loaded dead cap players:', data);
       setDeadCapPlayers(data || []);
       setLastLeagueId(currentLeagueId);
       
       // Cache the result
       deadCapCache.set(cacheKey, { data: data || [], timestamp: Date.now() });
     } catch (error) {
-      console.error('Error loading dead cap players:', error);
+      logger.error('Error loading dead cap players:', error);
     } finally {
       setLoading(false);
     }
@@ -76,7 +77,7 @@ export const useDeadCapPlayers = (leagueId: string) => {
   // Add dead cap player
   const addDeadCapPlayer = async (playerId: string, rosterId: number, salary: number | null) => {
     try {
-      console.log('Adding dead cap player:', playerId, rosterId, salary);
+      logger.debug('Adding dead cap player:', playerId, rosterId, salary);
       const { data, error } = await supabase
         .from('dead_cap_players')
         .insert({
@@ -89,7 +90,7 @@ export const useDeadCapPlayers = (leagueId: string) => {
         .single();
 
       if (error) {
-        console.error('Error adding dead cap player:', error);
+        logger.error('Error adding dead cap player:', error);
         toast({
           title: "Error",
           description: "Failed to add dead cap player",
@@ -116,7 +117,7 @@ export const useDeadCapPlayers = (leagueId: string) => {
       });
       return true;
     } catch (error) {
-      console.error('Error adding dead cap player:', error);
+      logger.error('Error adding dead cap player:', error);
       toast({
         title: "Error",
         description: "Failed to add dead cap player",
@@ -129,7 +130,7 @@ export const useDeadCapPlayers = (leagueId: string) => {
   // Update dead cap player salary
   const updateDeadCapPlayer = async (id: string, salary: number | null) => {
     try {
-      console.log('Updating dead cap player:', id, salary);
+      logger.debug('Updating dead cap player:', id, salary);
       const { error } = await supabase
         .from('dead_cap_players')
         .update({
@@ -139,7 +140,7 @@ export const useDeadCapPlayers = (leagueId: string) => {
         .eq('id', id);
 
       if (error) {
-        console.error('Error updating dead cap player:', error);
+        logger.error('Error updating dead cap player:', error);
         toast({
           title: "Error",
           description: "Failed to update dead cap player",
@@ -167,7 +168,7 @@ export const useDeadCapPlayers = (leagueId: string) => {
       });
       return true;
     } catch (error) {
-      console.error('Error updating dead cap player:', error);
+      logger.error('Error updating dead cap player:', error);
       toast({
         title: "Error",
         description: "Failed to update dead cap player",
@@ -180,14 +181,14 @@ export const useDeadCapPlayers = (leagueId: string) => {
   // Remove dead cap player
   const removeDeadCapPlayer = async (id: string) => {
     try {
-      console.log('Removing dead cap player:', id);
+      logger.debug('Removing dead cap player:', id);
       const { error } = await supabase
         .from('dead_cap_players')
         .delete()
         .eq('id', id);
 
       if (error) {
-        console.error('Error removing dead cap player:', error);
+        logger.error('Error removing dead cap player:', error);
         toast({
           title: "Error",
           description: "Failed to remove dead cap player",
@@ -212,7 +213,7 @@ export const useDeadCapPlayers = (leagueId: string) => {
       });
       return true;
     } catch (error) {
-      console.error('Error removing dead cap player:', error);
+      logger.error('Error removing dead cap player:', error);
       toast({
         title: "Error",
         description: "Failed to remove dead cap player",

@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { logger } from '@/utils/logger';
 
 interface OwnershipStatus {
   isOwned: boolean;
@@ -33,7 +34,7 @@ const LeagueStatusBadge: React.FC<LeagueStatusBadgeProps> = ({ leagueId, onOwner
         
         // Check cache first
         if (statusCache.has(leagueId)) {
-            console.log('Using cached badge status for:', leagueId);
+            logger.debug('Using cached badge status for:', leagueId);
             setStatus(statusCache.get(leagueId)!);
             setLastCheckedLeagueId(leagueId);
             return;

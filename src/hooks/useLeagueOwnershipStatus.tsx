@@ -26,7 +26,7 @@ export const useLeagueOwnershipStatus = () => {
     // Validate input before making database call
     const validation = validateAndSanitizeLeagueId(leagueId);
     if (!validation.isValid) {
-      console.error('Invalid league ID provided to checkOwnershipStatus:', validation.error);
+      logger.error('Invalid league ID provided to checkOwnershipStatus:', validation.error);
       return { isOwned: false, ownedByCurrentUser: false };
     }
 

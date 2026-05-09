@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 interface PerformanceMetric {
   name: string;
   duration: number;
@@ -31,7 +33,7 @@ class PerformanceMonitor {
 
     // Log slow operations in development
     if (process.env.NODE_ENV === 'development' && duration > 1000) {
-      console.warn(`Slow operation detected: ${name} took ${duration.toFixed(2)}ms`);
+      logger.warn(`Slow operation detected: ${name} took ${duration.toFixed(2)}ms`);
     }
   }
 

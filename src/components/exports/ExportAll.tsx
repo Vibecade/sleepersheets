@@ -10,6 +10,7 @@ import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { useFAABCalculations } from '@/hooks/useFAABCalculations';
 import { cachedFetch } from '@/utils/apiCache';
+import { logger } from '@/utils/logger';
 
 interface ExportAllProps {
   league: any;
@@ -66,7 +67,7 @@ const ExportAll: React.FC<ExportAllProps> = ({
         description: "Complete league data has been downloaded as a single CSV file"
       });
     } catch (error) {
-      console.error('Error exporting all data:', error);
+      logger.error('Error exporting all data:', error);
       toast({
         title: "Export Failed",
         description: "Failed to generate export. Please try again.",
@@ -392,7 +393,7 @@ const ExportAll: React.FC<ExportAllProps> = ({
           ]);
         });
       } catch (err) {
-        console.warn(`Failed to fetch week ${week}:`, err);
+        logger.warn(`Failed to fetch week ${week}:`, err);
       }
     }
     csvData.push([]);

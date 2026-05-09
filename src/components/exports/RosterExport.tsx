@@ -7,6 +7,7 @@ import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { usePlayerContracts } from '@/hooks/usePlayerContracts';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 import ExportButton from './ExportButton';
+import { logger } from '@/utils/logger';
 
 interface RosterExportProps {
   league: any;
@@ -29,7 +30,7 @@ const RosterExport: React.FC<RosterExportProps> = ({
   const { deadCapPlayers } = useDeadCapPlayers(league.league_id);
 
   const exportRostersToCSV = () => {
-    console.log('Preparing enhanced Rosters CSV export...');
+    logger.debug('Preparing enhanced Rosters CSV export...');
     
     const csvData: string[][] = [];
     const headers = [

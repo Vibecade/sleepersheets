@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
 interface CommissionerActionData {
   action_type: string;
@@ -32,13 +33,13 @@ export const useCommissionerActions = (leagueId: string) => {
         });
 
       if (error) {
-        console.error('Error logging commissioner action:', error);
+        logger.error('Error logging commissioner action:', error);
         throw error;
       }
 
       return true;
     } catch (error) {
-      console.error('Error logging commissioner action:', error);
+      logger.error('Error logging commissioner action:', error);
       toast({
         title: "Error",
         description: "Failed to log commissioner action",

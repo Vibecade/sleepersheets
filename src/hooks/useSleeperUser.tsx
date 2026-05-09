@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
 interface SleeperUser {
   user_id: string;
@@ -43,7 +44,7 @@ export const useSleeperUser = () => {
           }
           return [];
         } catch (error) {
-          console.error(`Error fetching leagues for season ${season}:`, error);
+          logger.error(`Error fetching leagues for season ${season}:`, error);
           return [];
         }
       });
@@ -61,7 +62,7 @@ export const useSleeperUser = () => {
 
       setSleeperLeagues(sortedLeagues);
     } catch (error) {
-      console.error('Error fetching sleeper leagues:', error);
+      logger.error('Error fetching sleeper leagues:', error);
     }
   }, []);
 
@@ -76,7 +77,7 @@ export const useSleeperUser = () => {
         await fetchSleeperLeagues(userData.user_id);
       }
     } catch (error) {
-      console.error('Error fetching sleeper data:', error);
+      logger.error('Error fetching sleeper data:', error);
     } finally {
       setLoading(false);
     }
@@ -93,7 +94,7 @@ export const useSleeperUser = () => {
         .single();
 
       if (error && error.code !== 'PGRST116') { // Not found error is OK
-        console.error('Error loading sleeper username:', error);
+        logger.error('Error loading sleeper username:', error);
         return;
       }
 
@@ -103,7 +104,7 @@ export const useSleeperUser = () => {
         await fetchSleeperData(data.sleeper_username);
       }
     } catch (error) {
-      console.error('Error loading sleeper username:', error);
+      logger.error('Error loading sleeper username:', error);
     }
   }, [user?.id, fetchSleeperData]);
 
@@ -144,7 +145,7 @@ export const useSleeperUser = () => {
         });
 
       if (error) {
-        console.error('Error saving sleeper username:', error);
+        logger.error('Error saving sleeper username:', error);
         toast({
           title: "Error",
           description: "Failed to save Sleeper username",
@@ -166,7 +167,7 @@ export const useSleeperUser = () => {
       
       return true;
     } catch (error) {
-      console.error('Error saving sleeper username:', error);
+      logger.error('Error saving sleeper username:', error);
       toast({
         title: "Error",
         description: "Failed to validate or save Sleeper username",
@@ -188,7 +189,7 @@ export const useSleeperUser = () => {
         .eq('id', user.id);
 
       if (error) {
-        console.error('Error clearing sleeper username:', error);
+        logger.error('Error clearing sleeper username:', error);
         return;
       }
 
@@ -201,7 +202,7 @@ export const useSleeperUser = () => {
         description: "Sleeper username has been removed"
       });
     } catch (error) {
-      console.error('Error clearing sleeper data:', error);
+      logger.error('Error clearing sleeper data:', error);
     }
   }, [user?.id, toast]);
 

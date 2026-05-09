@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 import { securityLogger } from '@/utils/securityLogger';
+import { logger } from '@/utils/logger';
 
 interface WaiverUpdate {
   playerId: string;
@@ -49,7 +50,7 @@ export const useTransactionProcessor = () => {
             salary: waiverBid,
             rosterId: rosterId as number
           });
-          console.log(`Extracted waiver update: Player ${playerId}, FAAB: $${waiverBid}, Roster: ${rosterId}`);
+          logger.debug(`Extracted waiver update: Player ${playerId}, FAAB: $${waiverBid}, Roster: ${rosterId}`);
         }
       });
     }
@@ -70,7 +71,7 @@ export const useTransactionProcessor = () => {
 
       return new Set(data?.map(t => t.transaction_id) || []);
     } catch (error) {
-      console.error('Error fetching processed transactions:', error);
+      logger.error('Error fetching processed transactions:', error);
       return new Set();
     }
   };
@@ -93,7 +94,7 @@ export const useTransactionProcessor = () => {
 
       if (error) throw error;
     } catch (error) {
-      console.error('Error marking transaction as processed:', error);
+      logger.error('Error marking transaction as processed:', error);
       throw error;
     }
   };
@@ -120,7 +121,7 @@ export const useTransactionProcessor = () => {
       if (error) throw error;
       return true;
     } catch (error) {
-      console.error('Error updating player salary:', error);
+      logger.error('Error updating player salary:', error);
       return false;
     }
   };
@@ -145,7 +146,7 @@ export const useTransactionProcessor = () => {
       if (error) throw error;
       return true;
     } catch (error) {
-      console.error('Error updating player contract:', error);
+      logger.error('Error updating player contract:', error);
       return false;
     }
   };
@@ -162,22 +163,22 @@ export const useTransactionProcessor = () => {
     }
 
     // Debug authentication status
-    console.log(`=== TRANSACTION PROCESSOR DEBUG ===`);
-    console.log(`League ID: ${leagueId}`);
-    console.log(`User authenticated: ${!!user}`);
-    console.log(`User ID: ${user?.id}`);
-    console.log(`Can modify league: ${canModifyLeague(leagueId)}`);
-    console.log(`Total transactions: ${transactions?.length}`);
-    console.log(`Waiver transactions: ${transactions?.filter(t => t.type === 'waiver').length}`);
-    console.log(`Complete waiver transactions: ${transactions?.filter(t => t.type === 'waiver' && t.status === 'complete').length}`);
+    logger.debug(`=== TRANSACTION PROCESSOR DEBUG ===`);
+    logger.debug(`League ID: ${leagueId}`);
+    logger.debug(`User authenticated: ${!!user}`);
+    logger.debug(`User ID: ${user?.id}`);
+    logger.debug(`Can modify league: ${canModifyLeague(leagueId)}`);
+    logger.debug(`Total transactions: ${transactions?.length}`);
+    logger.debug(`Waiver transactions: ${transactions?.filter(t => t.type === 'waiver').length}`);
+    logger.debug(`Complete waiver transactions: ${transactions?.filter(t => t.type === 'waiver' && t.status === 'complete').length}`);
     
     // Check authentication - only proceed if user is logged in and owns the league
     if (!user || !canModifyLeague(leagueId)) {
-      console.log(`❌ Transaction processing skipped for league ${leagueId}: User not authenticated or doesn't own league`);
+      logger.debug(`❌ Transaction processing skipped for league ${leagueId}: User not authenticated or doesn't own league`);
       return 0;
     }
     
-    console.log(`✅ User authorized to process transactions for league ${leagueId}`);
+    logger.debug(`✅ User authorized to process transactions for league ${leagueId}`);
 
     // Mark as processed for this session
     processedOnceRef.current.add(leagueId);
@@ -199,7 +200,7 @@ export const useTransactionProcessor = () => {
         return 0;
       }
 
-      console.log(`Processing ${unprocessedWaivers.length} new waiver transactions for league ${leagueId}`);
+      logger.debug(`Processing ${unprocessedWaivers.length} new waiver transactions for league ${leagueId}`);
 
       // Process each transaction
       for (const transaction of unprocessedWaivers) {
@@ -213,7 +214,7 @@ export const useTransactionProcessor = () => {
             const salarySuccess = await updatePlayerSalary(leagueId, update.playerId, update.salary, 'faab');
 
             if (salarySuccess) {
-              console.log(`Auto-updated FAAB player ${update.playerId}: salary=${update.salary}, acquisition_type=faab (no contract)`);
+              logger.debug(`Auto-updated FAAB player ${update.playerId}: salary=${update.salary}, acquisition_type=faab (no contract)`);
             }
           }
 
@@ -222,7 +223,7 @@ export const useTransactionProcessor = () => {
           processedCount++;
 
         } catch (error) {
-          console.error(`Error processing transaction ${transaction.transaction_id}:`, error);
+          logger.error(`Error processing transaction ${transaction.transaction_id}:`, error);
         }
       }
 
@@ -236,7 +237,7 @@ export const useTransactionProcessor = () => {
       return processedCount;
 
     } catch (error) {
-      console.error('Error processing waiver transactions:', error);
+      logger.error('Error processing waiver transactions:', error);
       toast({
         title: "Processing Error",
         description: "Error auto-updating waiver transactions. Check console for details.",

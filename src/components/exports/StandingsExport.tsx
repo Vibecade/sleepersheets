@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { downloadCSV, addExportOptionsToCSV, ExportOptionsData } from '@/utils/csvExport';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import ExportButton from './ExportButton';
+import { logger } from '@/utils/logger';
 
 interface StandingsExportProps {
   league: any;
@@ -21,7 +22,7 @@ const StandingsExport: React.FC<StandingsExportProps> = ({
   const { toast } = useToast();
 
   const exportStandingsToCSV = () => {
-    console.log('Preparing Standings CSV export...');
+    logger.debug('Preparing Standings CSV export...');
     
     const csvData: string[][] = [];
     const headers = [

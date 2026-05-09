@@ -25,6 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import type { SleeperLeagueDataBundle, CommissionerLeagueData } from '@/types/sleeper';
+import { logger } from '@/utils/logger';
 
 const VALID_PAGES = ['gamification', 'overview', 'manager', 'commissioner', 'more'] as const;
 const VALID_OVERVIEW_TABS = ['matchups', 'standings', 'transactions', 'statistics'] as const;
@@ -140,7 +141,7 @@ const LeagueDataContent: React.FC<{ onRefreshData?: () => Promise<void>; onOwner
       })
       .then(({ error }) => {
         if (error) {
-          console.error('Failed to log super admin access:', error);
+          logger.error('Failed to log super admin access:', error);
         }
       });
   }, [isSuperAdminViewer, currentPage, league?.league_id, user?.email]);

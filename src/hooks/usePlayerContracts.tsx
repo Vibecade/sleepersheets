@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
 interface PlayerContract {
   player_id: string;
@@ -25,14 +26,14 @@ export const usePlayerContracts = (leagueId: string) => {
     }
 
     try {
-      console.log('Loading contracts for league:', currentLeagueId);
+      logger.debug('Loading contracts for league:', currentLeagueId);
       setLoading(true);
       
       // Check cache first
       const cacheKey = currentLeagueId;
       const cached = contractsCache.get(cacheKey);
       if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-        console.log('Using cached contracts for:', currentLeagueId);
+        logger.debug('Using cached contracts for:', currentLeagueId);
         setContracts(cached.data);
         setLastLeagueId(currentLeagueId);
         setLoading(false);
@@ -45,17 +46,17 @@ export const usePlayerContracts = (leagueId: string) => {
         .eq('league_id', currentLeagueId);
 
       if (error) {
-        console.error('Error loading contracts:', error);
+        logger.error('Error loading contracts:', error);
         return;
       }
 
-      console.log('Loaded contract data:', data);
+      logger.debug('Loaded contract data:', data);
       const contractMap: Record<string, number | null> = {};
       data?.forEach((item) => {
         contractMap[item.player_id] = item.contract_length;
       });
 
-      console.log(`✅ Contracts loaded for league ${currentLeagueId}:`, {
+      logger.debug(`✅ Contracts loaded for league ${currentLeagueId}:`, {
         totalContracts: Object.keys(contractMap).length,
         withContracts: Object.values(contractMap).filter(c => c && c > 0).length,
         sampleContracts: Object.entries(contractMap).slice(0, 3)
@@ -67,7 +68,7 @@ export const usePlayerContracts = (leagueId: string) => {
       // Cache the result
       contractsCache.set(cacheKey, { data: contractMap, timestamp: Date.now() });
     } catch (error) {
-      console.error('Error loading contracts:', error);
+      logger.error('Error loading contracts:', error);
     } finally {
       setLoading(false);
     }
@@ -99,7 +100,7 @@ export const usePlayerContracts = (leagueId: string) => {
         return false;
       }
 
-      console.log('Updating contract for player:', playerId, 'length:', contractLength);
+      logger.debug('Updating contract for player:', playerId, 'length:', contractLength);
       const { error } = await supabase
         .from('player_contracts')
         .upsert({
@@ -112,7 +113,7 @@ export const usePlayerContracts = (leagueId: string) => {
         });
 
       if (error) {
-        console.error('Error updating contract:', error);
+        logger.error('Error updating contract:', error);
         toast({
           title: "Error",
           description: "Failed to save contract length",
@@ -134,7 +135,7 @@ export const usePlayerContracts = (leagueId: string) => {
       });
       return true;
     } catch (error) {
-      console.error('Error updating contract:', error);
+      logger.error('Error updating contract:', error);
       toast({
         title: "Error",
         description: "Failed to save contract length",

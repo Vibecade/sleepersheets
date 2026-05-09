@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/auth-context';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
+import { logger } from '@/utils/logger';
 
 export interface QuestProgressInput {
   id: string;
@@ -110,7 +111,7 @@ export const useQuestSnapshots = ({
           lastPersistedSignatureRef.current = signature;
         }
       } catch (error) {
-        console.error('Failed to load quest snapshots:', error);
+        logger.error('Failed to load quest snapshots:', error);
       } finally {
         if (active) {
           setIsLoading(false);
@@ -173,7 +174,7 @@ export const useQuestSnapshots = ({
 
         lastPersistedSignatureRef.current = signature;
       } catch (error) {
-        console.error('Failed to save quest snapshot:', error);
+        logger.error('Failed to save quest snapshot:', error);
         setSaveError('Unable to persist quest snapshot.');
       } finally {
         setIsSaving(false);

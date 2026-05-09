@@ -21,6 +21,7 @@ import { format } from 'date-fns';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import { normalizeUsersToMap } from '@/utils/leagueDataUtils';
 import type { CommissionerLeagueData } from '@/types/sleeper';
+import { logger } from '@/utils/logger';
 
 interface TransactionManagementProps {
   leagueId: string;
@@ -61,7 +62,7 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
       if (error) throw error;
       setTransactions(data || []);
     } catch (error) {
-      console.error('Error loading transactions:', error);
+      logger.error('Error loading transactions:', error);
       toast({
         title: "Error",
         description: "Failed to load transactions",
@@ -121,7 +122,7 @@ export const TransactionManagement = ({ leagueId, leagueData }: TransactionManag
       // Reload transactions
       loadTransactions();
     } catch (error) {
-      console.error('Error updating transaction:', error);
+      logger.error('Error updating transaction:', error);
       toast({
         title: "Error",
         description: `Failed to ${action} transaction. Please try again.`,

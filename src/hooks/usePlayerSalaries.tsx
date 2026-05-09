@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth-context';
 import { validateSalary } from '@/utils/inputValidation';
 import { securityLogger } from '@/utils/securityLogger';
+import { logger } from '@/utils/logger';
 
 interface PlayerSalary {
   player_id: string;
@@ -28,7 +29,7 @@ export const usePlayerSalaries = (leagueId: string) => {
     }
 
     try {
-      console.log('Loading salaries for league:', currentLeagueId);
+      logger.debug('Loading salaries for league:', currentLeagueId);
       setLoading(true);
 
       const { data, error } = await supabase
@@ -39,11 +40,11 @@ export const usePlayerSalaries = (leagueId: string) => {
       securityLogger.logDataModification(user?.id, 'player_salaries', 'read', !error);
 
       if (error) {
-        console.error('Error loading salaries:', error);
+        logger.error('Error loading salaries:', error);
         return;
       }
 
-      console.log('Loaded salary data:', data);
+      logger.debug('Loaded salary data:', data);
       const salaryMap: Record<string, number | null> = {};
       const taxiMap: Record<string, boolean> = {};
       const acquisitionMap: Record<string, 'contract' | 'faab' | 'free_agent'> = {};
@@ -61,7 +62,7 @@ export const usePlayerSalaries = (leagueId: string) => {
       setAcquisitionTypes(acquisitionMap);
       setLastLeagueId(currentLeagueId);
     } catch (error) {
-      console.error('Error loading salaries:', error);
+      logger.error('Error loading salaries:', error);
       securityLogger.logDataModification(user?.id, 'player_salaries', 'read', false);
     } finally {
       setLoading(false);
@@ -89,7 +90,7 @@ export const usePlayerSalaries = (leagueId: string) => {
     }
 
     try {
-      console.log('Updating salary for player:', playerId, 'salary:', salary);
+      logger.debug('Updating salary for player:', playerId, 'salary:', salary);
       const { error } = await supabase
         .from('player_salaries')
         .upsert({
@@ -106,7 +107,7 @@ export const usePlayerSalaries = (leagueId: string) => {
       securityLogger.logDataModification(user?.id, 'player_salaries', 'write', !error);
 
       if (error) {
-        console.error('Error updating salary:', error);
+        logger.error('Error updating salary:', error);
         toast({
           title: "Error",
           description: "Failed to save salary",
@@ -123,7 +124,7 @@ export const usePlayerSalaries = (leagueId: string) => {
       });
       return true;
     } catch (error) {
-      console.error('Error updating salary:', error);
+      logger.error('Error updating salary:', error);
       securityLogger.logDataModification(user?.id, 'player_salaries', 'write', false);
       toast({
         title: "Error",
@@ -136,7 +137,7 @@ export const usePlayerSalaries = (leagueId: string) => {
 
   const updateTaxiSquadStatus = async (playerId: string, taxiSquad: boolean) => {
     try {
-      console.log('Updating taxi squad status for player:', playerId, 'taxi_squad:', taxiSquad);
+      logger.debug('Updating taxi squad status for player:', playerId, 'taxi_squad:', taxiSquad);
       const { error } = await supabase
         .from('player_salaries')
         .upsert({
@@ -153,7 +154,7 @@ export const usePlayerSalaries = (leagueId: string) => {
       securityLogger.logDataModification(user?.id, 'player_salaries', 'write', !error);
 
       if (error) {
-        console.error('Error updating taxi squad status:', error);
+        logger.error('Error updating taxi squad status:', error);
         toast({
           title: "Error",
           description: "Failed to save taxi squad status",
@@ -170,7 +171,7 @@ export const usePlayerSalaries = (leagueId: string) => {
       });
       return true;
     } catch (error) {
-      console.error('Error updating taxi squad status:', error);
+      logger.error('Error updating taxi squad status:', error);
       securityLogger.logDataModification(user?.id, 'player_salaries', 'write', false);
       toast({
         title: "Error",
@@ -199,13 +200,13 @@ export const usePlayerSalaries = (leagueId: string) => {
 
     // FAAB acquisitions don't count toward salary cap
     if (acquisitionType === 'faab') {
-      console.log(`Player ${playerId}: FAAB acquisition, $0 cap hit (salary: $${baseSalary})`);
+      logger.debug(`Player ${playerId}: FAAB acquisition, $0 cap hit (salary: $${baseSalary})`);
       return 0;
     }
 
     if (isTaxiSquad && baseSalary > 0) {
       const discounted = Math.max(1, Math.round(baseSalary * 0.25));
-      console.log(`Player ${playerId}: Taxi squad, $${discounted} cap hit (from $${baseSalary})`);
+      logger.debug(`Player ${playerId}: Taxi squad, $${discounted} cap hit (from $${baseSalary})`);
       return discounted;
     }
 
