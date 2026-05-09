@@ -11,11 +11,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onGetStarted }) => {
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  // Verifiable claims, no fake counters.
   const stats = [
-    { value: '12.4K', label: 'LEAGUES MANAGED' },
-    { value: '847K', label: 'TRANSACTIONS PROCESSED' },
-    { value: '99.9%', label: 'SLEEPER API UPTIME' },
     { value: 'FREE', label: 'ALWAYS, NO ADS' },
+    { value: 'LIVE', label: 'SLEEPER API SYNC' },
+    { value: 'DYNASTY', label: 'KEEPER · REDRAFT' },
+    { value: 'OPEN', label: 'NO LOGIN NEEDED' },
   ];
 
   return (
