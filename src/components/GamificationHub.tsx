@@ -4,15 +4,22 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TurfPanel } from '@/components/ui/turf-panel';
 import { getTeamName } from '@/utils/leagueDataUtils';
-import { useGamificationInsights } from '@/hooks/useGamificationInsights';
+import { useGamificationInsights, type SleeperMatchup } from '@/hooks/useGamificationInsights';
 import { useQuestSnapshots } from '@/hooks/useQuestSnapshots';
+import type {
+  SleeperLeague,
+  SleeperPlayer,
+  SleeperRoster,
+  SleeperTransaction,
+  SleeperUserMap,
+} from '@/types/sleeper';
 
 interface GamificationHubProps {
-  league: any;
-  rosters: any[];
-  players: Record<string, any>;
-  userMap: Record<string, any>;
-  transactions: any[];
+  league: SleeperLeague;
+  rosters: SleeperRoster[];
+  players: Record<string, SleeperPlayer>;
+  userMap: SleeperUserMap;
+  transactions: SleeperTransaction[];
 }
 
 interface QuestItem {
@@ -25,14 +32,15 @@ interface QuestItem {
 
 const RISK_STATUS_KEYWORDS = ['out', 'doubtful', 'questionable', 'injur', 'ir', 'suspend'];
 
-const formatRecord = (roster: any) => {
-  const wins = roster?.settings?.wins || 0;
-  const losses = roster?.settings?.losses || 0;
-  const ties = roster?.settings?.ties || 0;
+const formatRecord = (roster: SleeperRoster | undefined) => {
+  const settings = (roster?.settings ?? {}) as { wins?: number; losses?: number; ties?: number };
+  const wins = settings.wins ?? 0;
+  const losses = settings.losses ?? 0;
+  const ties = settings.ties ?? 0;
   return `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
 };
 
-const formatPlayerName = (player: any, fallback: string) => {
+const formatPlayerName = (player: SleeperPlayer | undefined, fallback: string) => {
   const fullName = player?.full_name;
   if (typeof fullName === 'string' && fullName.trim()) {
     return fullName.trim();
@@ -57,7 +65,7 @@ const GamificationHub: React.FC<GamificationHubProps> = ({
   });
 
   const rosterById = useMemo(() => {
-    const map = new Map<number, any>();
+    const map = new Map<number, SleeperRoster>();
     rosters.forEach((roster) => map.set(roster.roster_id, roster));
     return map;
   }, [rosters]);
@@ -74,7 +82,7 @@ const GamificationHub: React.FC<GamificationHubProps> = ({
   const getTeamLabel = (rosterId: number) => teamNameByRosterId.get(rosterId) || `Team ${rosterId}`;
 
   const rivalryGame = useMemo(() => {
-    const grouped = new Map<number, any[]>();
+    const grouped = new Map<number, SleeperMatchup[]>();
     data.matchups.forEach((matchup) => {
       if (!grouped.has(matchup.matchup_id)) {
         grouped.set(matchup.matchup_id, []);
@@ -85,8 +93,8 @@ const GamificationHub: React.FC<GamificationHubProps> = ({
     const pairs: Array<{
       diff: number;
       combinedPoints: number;
-      home: any;
-      away: any;
+      home: SleeperMatchup;
+      away: SleeperMatchup;
     }> = [];
 
     grouped.forEach((matchups) => {
@@ -121,13 +129,14 @@ const GamificationHub: React.FC<GamificationHubProps> = ({
 
   const standings = useMemo(() => {
     return [...rosters].sort((a, b) => {
-      const aWins = a?.settings?.wins || 0;
-      const bWins = b?.settings?.wins || 0;
+      // SleeperRoster.settings is Record<string, unknown>; coerce numerics.
+      const aWins = Number(a?.settings?.wins || 0);
+      const bWins = Number(b?.settings?.wins || 0);
       if (bWins !== aWins) {
         return bWins - aWins;
       }
-      const aPoints = a?.settings?.fpts || 0;
-      const bPoints = b?.settings?.fpts || 0;
+      const aPoints = Number(a?.settings?.fpts || 0);
+      const bPoints = Number(b?.settings?.fpts || 0);
       return bPoints - aPoints;
     });
   }, [rosters]);
@@ -442,7 +451,7 @@ const GamificationHub: React.FC<GamificationHubProps> = ({
                     className="font-mono text-muted-foreground text-right"
                     style={{ fontSize: 10 }}
                   >
-                    {Math.round(roster?.settings?.fpts || 0)}
+                    {Math.round(Number(roster?.settings?.fpts || 0))}
                   </span>
                 </div>
               );
