@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
-interface TurfPanelProps extends React.HTMLAttributes<HTMLDivElement> {
+interface TurfPanelProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   /** Mono kicker shown above the title, e.g. "● TOP 6 ADVANCE". Adds the leading dot automatically. */
   kicker?: string;
   /** Section title in Oswald uppercase. */
