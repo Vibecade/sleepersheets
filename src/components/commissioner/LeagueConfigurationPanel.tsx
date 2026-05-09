@@ -11,10 +11,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useReadOnly } from '@/contexts/read-only-context';
 import { Save, Settings } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { CommissionerLeagueData } from '@/types/sleeper';
 
 interface LeagueConfigurationPanelProps {
   leagueId: string;
-  leagueData: any;
+  leagueData: CommissionerLeagueData;
 }
 
 export const LeagueConfigurationPanel = ({ leagueId, leagueData }: LeagueConfigurationPanelProps) => {
