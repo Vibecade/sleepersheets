@@ -12,11 +12,13 @@ import {
 } from '@/components/ui/accordion';
 import { useReadOnly } from '@/contexts/read-only-context';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
+import { usePlayerContracts } from '@/hooks/usePlayerContracts';
 import {
   usePlayerAcquisitions,
   type AcquisitionSource,
 } from '@/hooks/usePlayerAcquisitions';
 import EditableSalary from '@/components/EditableSalary';
+import EditableContractLength from '@/components/EditableContractLength';
 import { getTeamName, normalizeUsersToMap } from '@/utils/leagueDataUtils';
 import type { CommissionerLeagueData } from '@/types/sleeper';
 
@@ -128,6 +130,8 @@ export const PlayerPricingPanel = ({
 
   const { salaries, updateSalary, loading: salariesLoading } =
     usePlayerSalaries(leagueId);
+  const { contracts, updateContract, loading: contractsLoading } =
+    usePlayerContracts(leagueId);
   const { byPlayer } = usePlayerAcquisitions({ rosters, transactions, draftPicks });
 
   const teamNameByRoster = useMemo(() => {
@@ -213,7 +217,15 @@ export const PlayerPricingPanel = ({
     salary: number | null,
   ): Promise<boolean> => updateSalary(playerId, salary);
 
-  if (salariesLoading) {
+  // updateContract returns boolean; pass through directly. The
+  // EditableContractLength component refuses the edit on FAAB-acquired
+  // players (read-only display) so we don't need a parallel guard here.
+  const handleContractUpdate = async (
+    playerId: string,
+    contractLength: number | null,
+  ): Promise<boolean> => updateContract(playerId, contractLength);
+
+  if (salariesLoading || contractsLoading) {
     return (
       <div className="space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
@@ -319,12 +331,23 @@ export const PlayerPricingPanel = ({
                             {(teamNameByRoster.get(p.rosterId) || 'Unknown Team').toUpperCase()}
                           </div>
                         </div>
-                        <div className="flex-shrink-0">
+                        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                           <EditableSalary
                             playerId={p.playerId}
                             currentSalary={salaries[p.playerId] ?? null}
                             onSalaryUpdate={handleSalaryUpdate}
                             leagueId={leagueId}
+                          />
+                          {/* Contract length lives next to the salary so a
+                              drafted player can have BOTH set in a single
+                              pass. EditableContractLength gates FAAB
+                              acquisitions to read-only on its own. */}
+                          <EditableContractLength
+                            playerId={p.playerId}
+                            currentLength={contracts[p.playerId] ?? null}
+                            onContractUpdate={handleContractUpdate}
+                            leagueId={leagueId}
+                            rosterId={p.rosterId}
                           />
                         </div>
                       </div>
