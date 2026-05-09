@@ -5,18 +5,20 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { MatchupDetailsModal } from './MatchupDetailsModal';
 import { useIsMobile } from '@/hooks/use-mobile';
+import type { Matchup } from '@/hooks/useMatchups';
+import type { SleeperRoster, SleeperUser, SleeperPlayer } from '@/types/sleeper';
 
 interface ExpandableMatchupCardProps {
   matchupId: string;
-  team1: any;
-  team2: any;
-  roster1: any;
-  roster2: any;
-  user1: any;
-  user2: any;
-  players: Record<string, any>;
+  team1: Matchup;
+  team2: Matchup;
+  roster1: SleeperRoster;
+  roster2: SleeperRoster;
+  user1: SleeperUser | undefined;
+  user2: SleeperUser | undefined;
+  players: Record<string, SleeperPlayer>;
   formatPoints: (points: number) => string;
-  getTeamRecord: (roster: any) => string;
+  getTeamRecord: (roster: SleeperRoster) => string;
 }
 
 export const ExpandableMatchupCard: React.FC<ExpandableMatchupCardProps> = ({
