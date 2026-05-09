@@ -5,6 +5,8 @@ import { UserManagement } from './UserManagement';
 import { TransactionManagement } from './TransactionManagement';
 import { CommissionerOverview } from './CommissionerOverview';
 import { WaiverAcquisitionsPanel } from './WaiverAcquisitionsPanel';
+import { WalkYearPanel } from './WalkYearPanel';
+import { PlayerPricingPanel } from './PlayerPricingPanel';
 import type { CommissionerLeagueData } from '@/types/sleeper';
 
 interface CommissionerDashboardProps {
@@ -33,8 +35,14 @@ export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDash
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+        {/* Two new tabs: Walk Year (decisions on expiring contracts, was buried
+            at the bottom of Overview) and Pricing (players whose salary is null
+            or 0 — i.e. drafted/traded/FA acquisitions where Sleeper doesn't
+            give us a cost; waivers auto-price via the FAAB-bid processor). */}
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="walk-year">Walk Year</TabsTrigger>
+          <TabsTrigger value="pricing">Pricing</TabsTrigger>
           <TabsTrigger value="waivers">Waivers</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
@@ -43,6 +51,14 @@ export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDash
 
         <TabsContent value="overview">
           <CommissionerOverview leagueId={leagueId} leagueData={leagueData} />
+        </TabsContent>
+
+        <TabsContent value="walk-year">
+          <WalkYearPanel leagueId={leagueId} leagueData={leagueData} />
+        </TabsContent>
+
+        <TabsContent value="pricing">
+          <PlayerPricingPanel leagueId={leagueId} leagueData={leagueData} />
         </TabsContent>
 
         <TabsContent value="waivers">
