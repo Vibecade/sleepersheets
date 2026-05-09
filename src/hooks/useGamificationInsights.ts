@@ -36,7 +36,7 @@ export interface SleeperTrendingEntry {
   count?: number;
 }
 
-interface GamificationInsightsPayload {
+export interface GamificationInsightsPayload {
   week: number;
   matchups: SleeperMatchup[];
   winnersBracket: SleeperBracketEntry[];
