@@ -1,19 +1,22 @@
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Copy, CheckCircle, Sparkles, FileSpreadsheet, Bot, Download } from 'lucide-react';
+import { ArrowLeft, Copy, CheckCircle, Sparkles, FileSpreadsheet, Bot, Download, Loader2, Trophy, Clock } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { LeagueDataProvider } from '@/components/LeagueDataProvider';
 import ExportActions from '@/components/ExportActions';
 import StaticPageLayout from '@/components/layout/StaticPageLayout';
+import { useUserLeagues, type RecentLeague } from '@/hooks/useUserLeagues';
+import { fetchLeagueData } from '@/utils/leagueApi';
 import type {
   SleeperLeagueDataBundle,
   SleeperUser,
   SleeperUserMap,
+  SleeperDraftPick,
 } from '@/types/sleeper';
 
 interface ExportRouteState {
@@ -40,7 +43,88 @@ const Export = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const leagueData = (location.state as ExportRouteState | null)?.leagueData;
+  const routeLeagueData = (location.state as ExportRouteState | null)?.leagueData;
+  const { recentLeagues, ownedLeagues } = useUserLeagues();
+
+  // League loaded inline from this page (when user picks one from the empty-state)
+  const [inlineLeagueData, setInlineLeagueData] = useState<SleeperLeagueDataBundle | null>(null);
+  const [loadingLeagueId, setLoadingLeagueId] = useState<string | null>(null);
+
+  const leagueData = routeLeagueData ?? inlineLeagueData;
+
+  // Merge owned + recent into a single deduped quick-pick list, owned first.
+  const quickPickLeagues = useMemo(() => {
+    const seen = new Set<string>();
+    const list: Array<{
+      leagueId: string;
+      name: string;
+      season?: string;
+      totalRosters?: number;
+      lastAccessed?: string;
+      source: 'owned' | 'recent';
+    }> = [];
+
+    ownedLeagues.forEach((entry) => {
+      if (!entry.league_id || seen.has(entry.league_id)) return;
+      seen.add(entry.league_id);
+      list.push({
+        leagueId: entry.league_id,
+        name: entry.leagueData?.name || `League ${entry.league_id.slice(-6)}`,
+        season: entry.leagueData?.season,
+        totalRosters: entry.leagueData?.total_rosters,
+        lastAccessed: entry.claimed_at,
+        source: 'owned',
+      });
+    });
+
+    recentLeagues.forEach((entry: RecentLeague) => {
+      if (!entry.leagueId || seen.has(entry.leagueId)) return;
+      seen.add(entry.leagueId);
+      list.push({
+        leagueId: entry.leagueId,
+        name: entry.name,
+        season: entry.season,
+        totalRosters: entry.totalRosters,
+        lastAccessed: entry.lastAccessed,
+        source: 'recent',
+      });
+    });
+
+    return list.slice(0, 6);
+  }, [ownedLeagues, recentLeagues]);
+
+  const handleLoadLeague = async (leagueId: string) => {
+    if (loadingLeagueId) return;
+    setLoadingLeagueId(leagueId);
+    try {
+      const combined = await fetchLeagueData(leagueId);
+      const flatPicks: SleeperDraftPick[] = (combined.draftPicks || []).flatMap(
+        (entry) => (entry?.picks || []) as SleeperDraftPick[],
+      );
+      setInlineLeagueData({
+        league: combined.league,
+        rosters: combined.rosters,
+        users: combined.users,
+        players: combined.players,
+        transactions: combined.transactions,
+        drafts: combined.drafts,
+        draftPicks: flatPicks,
+      });
+      toast({
+        title: 'League loaded',
+        description: `${combined.league.name} is ready to export.`,
+      });
+    } catch (error) {
+      console.error('Failed to load league for export:', error);
+      toast({
+        title: 'Could not load league',
+        description: error instanceof Error ? error.message : 'Try again in a moment.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingLeagueId(null);
+    }
+  };
 
   const chatGptPrompt = `I am uploading my Sleeper fantasy football league export files. Please analyze and create a comprehensive Google Sheets document with the following structure:
 
@@ -147,22 +231,94 @@ const Export = () => {
                   draftPicks={leagueData.draftPicks || []}
                 />
               </LeagueDataProvider>
+            ) : quickPickLeagues.length > 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Pick a league to export</CardTitle>
+                  <CardDescription>
+                    Choose one of your saved leagues to load it here. We'll pull the data and have it ready to export in a moment.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {quickPickLeagues.map((entry) => {
+                      const isLoading = loadingLeagueId === entry.leagueId;
+                      return (
+                        <button
+                          key={entry.leagueId}
+                          type="button"
+                          onClick={() => handleLoadLeague(entry.leagueId)}
+                          disabled={!!loadingLeagueId}
+                          className="group flex items-center gap-3 px-4 py-3 bg-card border border-border text-left hover:border-primary/50 transition-colors disabled:opacity-60 disabled:cursor-wait"
+                        >
+                          <span
+                            className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-primary text-primary-foreground"
+                            style={{ clipPath: 'polygon(15% 0, 100% 0, 85% 100%, 0 100%)' }}
+                          >
+                            {isLoading ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trophy className="w-4 h-4" />
+                            )}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="font-headline font-bold uppercase text-foreground truncate"
+                                style={{ fontSize: 14, letterSpacing: '0.05em' }}
+                                title={entry.name}
+                              >
+                                {entry.name}
+                              </span>
+                              {entry.source === 'owned' && (
+                                <Badge variant="outline" className="text-[10px] py-0 h-5">
+                                  OWNED
+                                </Badge>
+                              )}
+                            </div>
+                            <div
+                              className="font-mono text-muted-foreground mt-0.5 flex items-center gap-2"
+                              style={{ fontSize: 10, letterSpacing: '0.1em' }}
+                            >
+                              <Clock className="w-3 h-3" />
+                              {entry.season ? `S${entry.season}` : ''}
+                              {entry.totalRosters ? ` · ${entry.totalRosters} TEAMS` : ''}
+                            </div>
+                          </div>
+                          <span
+                            className="font-mono font-bold text-primary group-hover:translate-x-0.5 transition-transform"
+                            style={{ fontSize: 11, letterSpacing: '0.15em' }}
+                          >
+                            LOAD →
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-5 pt-4 border-t border-border flex flex-col sm:flex-row sm:items-center gap-3">
+                    <p className="text-sm text-muted-foreground flex-1">
+                      Don't see your league? Connect a different one from the home page.
+                    </p>
+                    <Button variant="outline" onClick={() => navigate('/')}>
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      Connect Another League
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             ) : (
               <Card>
                 <CardHeader>
-                  <CardTitle>Export Your League Data</CardTitle>
+                  <CardTitle>Load a league to export</CardTitle>
                   <CardDescription>
-                    To export your league data, please go back to the main page and load your league first.
+                    Connect a Sleeper league on the home page and we'll bring you back here ready to export.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="text-center py-8">
-                    <p className="text-gray-400 mb-4">
-                      Export functionality is available after loading league data on the main page.
-                    </p>
-                    <Button onClick={() => navigate(-1)}>
+                    <Button onClick={() => navigate('/')}>
                       <ArrowLeft className="w-4 h-4 mr-2" />
-                      Return to Home
+                      Connect a League
                     </Button>
                   </div>
                 </CardContent>
