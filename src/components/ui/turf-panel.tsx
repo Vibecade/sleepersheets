@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
+// `Omit` the native `title` attribute (which is a `string`) so we can
+// repurpose the prop name for the panel header, which accepts arbitrary
+// ReactNode (e.g. a span with an inline accent color).
 interface TurfPanelProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   /** Mono kicker shown above the title, e.g. "● TOP 6 ADVANCE". Adds the leading dot automatically. */
   kicker?: string;
