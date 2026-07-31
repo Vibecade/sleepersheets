@@ -21,6 +21,7 @@ import { useCommissionerActions } from '@/hooks/useCommissionerActions';
 import EditableSalary from '@/components/EditableSalary';
 import EditableContractLength from '@/components/EditableContractLength';
 import { getTeamName, normalizeUsersToMap } from '@/utils/leagueDataUtils';
+import { selectUnpricedPlayerIds } from '@/utils/pricing';
 import { formatCurrency } from '@/utils/csvExport';
 import type { CommissionerLeagueData } from '@/types/sleeper';
 
@@ -150,22 +151,12 @@ export const PlayerPricingPanel = ({
   // Set of players currently rostered AND missing a salary right this render.
   // The visible list is derived from the SESSION-STICKY set below, not this —
   // see comment there for why.
-  const currentlyUnpricedIds = useMemo<Set<string>>(() => {
-    const ids = new Set<string>();
-    rosters.forEach((roster: any) => {
-      const playerIds: string[] = [
-        ...(roster.players || []),
-        ...(roster.reserve || []),
-        ...(roster.taxi || []),
-      ];
-      playerIds.forEach((pid) => {
-        if (!pid || pid === '0') return;
-        const salary = salaries[pid];
-        if (salary == null || salary === 0) ids.add(pid);
-      });
-    });
-    return ids;
-  }, [rosters, salaries]);
+  // Shared with the Pricing tab badge in CommissionerDashboard so the
+  // count on the tab always matches the rows inside it.
+  const currentlyUnpricedIds = useMemo<Set<string>>(
+    () => selectUnpricedPlayerIds(rosters, salaries),
+    [rosters, salaries],
+  );
 
   // Set of all currently rostered player_ids (any roster). Used to garbage-
   // collect the sticky set when a player is traded or dropped mid-session.

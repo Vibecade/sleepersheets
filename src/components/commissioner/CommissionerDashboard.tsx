@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
+import { selectUnpricedPlayerIds } from '@/utils/pricing';
 import { LeagueConfigurationPanel } from './LeagueConfigurationPanel';
 import { UserManagement } from './UserManagement';
 import { TransactionManagement } from './TransactionManagement';
@@ -16,6 +18,21 @@ interface CommissionerDashboardProps {
 
 export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDashboardProps) => {
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Outstanding pricing work, surfaced on the Pricing tab so the
+  // commissioner can see it without opening the tab.
+  //
+  // Waiver pickups auto-price from the FAAB bid, but only while someone
+  // with `canModifyLeague` has the app open. Waivers clear Wednesday, so
+  // between then and the commissioner's next visit those players carry no
+  // salary and every manager's cap figure is short. Drafted and traded
+  // players never auto-price at all. This count is that backlog.
+  const { salaries, loading: salariesLoading } = usePlayerSalaries(leagueId);
+  const unpricedCount = useMemo(
+    () => selectUnpricedPlayerIds(leagueData?.rosters || [], salaries).size,
+    [leagueData?.rosters, salaries],
+  );
+  const showPricingBadge = !salariesLoading && unpricedCount > 0;
 
   return (
     <div className="space-y-6">
@@ -42,7 +59,22 @@ export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDash
         <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="walk-year">Walk Year</TabsTrigger>
-          <TabsTrigger value="pricing">Pricing</TabsTrigger>
+          <TabsTrigger value="pricing" className="gap-1.5">
+            Pricing
+            {showPricingBadge && (
+              <span
+                // Count of players still needing a salary. Deliberately
+                // plain text in a pill rather than a bare dot — "how much
+                // work" is the useful signal, not just "some work".
+                className="inline-flex items-center justify-center rounded-full bg-secondary/20 text-secondary font-mono font-semibold min-w-[1.25rem] px-1 leading-none"
+                style={{ fontSize: 10, paddingTop: 2, paddingBottom: 2 }}
+                aria-label={`${unpricedCount} player${unpricedCount === 1 ? '' : 's'} need a salary`}
+                title={`${unpricedCount} rostered player${unpricedCount === 1 ? '' : 's'} still need a salary set`}
+              >
+                {unpricedCount > 99 ? '99+' : unpricedCount}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="waivers">Waivers</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
