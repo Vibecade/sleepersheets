@@ -6,7 +6,7 @@ import { useHistoricalMatchups } from '@/hooks/useHistoricalMatchups';
 import { useTransactionProcessor } from '@/hooks/useTransactionProcessor';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import ErrorBoundaryWithRetry from './ErrorBoundaryWithRetry';
-import { getCurrentNFLWeek } from '@/utils/nflWeek';
+import { resolveNflWeek } from '@/utils/nflWeek';
 
 // Lazy load tab components for better code splitting
 const MatchupsTab = lazy(() => import('./tabs/MatchupsTab'));
@@ -35,15 +35,26 @@ const TeamOverview: React.FC<TeamOverviewProps> = ({
   onTabChange,
   onRefreshData
 }) => {
-  const currentWeek = useMemo(() => getCurrentNFLWeek(league?.season), [league?.season]);
+  // Prefer Sleeper's own week pointer (settings.leg) over the calendar
+  // estimate — the estimate can only ever approximate the real schedule.
+  const currentWeek = useMemo(
+    () => resolveNflWeek(league),
+    [league],
+  );
 
   // Initialize selectedWeek to current NFL week instead of hardcoded 1
   const [selectedWeek, setSelectedWeek] = useState(currentWeek);
   const [showBonusWins, setShowBonusWins] = useState(false);
   const [expandedTeamId, setExpandedTeamId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState(initialTab || "matchups");
-  
-  const { matchups, loading: matchupsLoading } = useMatchups(league?.league_id, selectedWeek);
+
+  // Pass the resolved week down so useMatchups' "is this live?" cache
+  // decision agrees with what the page is actually showing.
+  const { matchups, loading: matchupsLoading } = useMatchups(
+    league?.league_id,
+    selectedWeek,
+    currentWeek,
+  );
   const { processWaiverTransactions, processing: processingTransactions } = useTransactionProcessor();
   const { historicalMatchups, teamWeeklyData, weeklyAverages, loading: historicalLoading } = useHistoricalMatchups(league?.league_id || '', currentWeek);
 

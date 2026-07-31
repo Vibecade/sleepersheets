@@ -14,12 +14,19 @@ export interface Matchup {
   custom_points: number | null;
 }
 
-export const useMatchups = (leagueId: string, week: number) => {
+/**
+ * @param currentWeek The league's resolved current week. Callers that have
+ *   a league object should pass `resolveNflWeek(league)` so the "is this
+ *   the live week?" decision (60s cache + empty-response retry) is keyed
+ *   off Sleeper's truth. Omitting it falls back to the calendar estimate,
+ *   which has no season context and is wrong in Jan/Feb during playoffs.
+ */
+export const useMatchups = (leagueId: string, week: number, currentWeek?: number) => {
   const getCurrentNFLWeekForSeason = useCallback((leagueSeason?: string) => {
     return getCurrentNFLWeek(leagueSeason);
   }, []);
 
-  const currentNFLWeek = getCurrentNFLWeekForSeason();
+  const currentNFLWeek = currentWeek ?? getCurrentNFLWeekForSeason();
   const isCurrentWeek = week === currentNFLWeek;
   const cacheTTL = isCurrentWeek ? 60 * 1000 : CACHE_TTL.MEDIUM;
 
