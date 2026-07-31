@@ -110,13 +110,22 @@ export const useTransactionProcessor = () => {
       
       const { error } = await supabase
         .from('player_salaries')
-        .upsert({
-          league_id: leagueId,
-          player_id: playerId,
-          salary: salary,
-          acquisition_type: acquisitionType,
-          updated_at: new Date().toISOString()
-        });
+        .upsert(
+          {
+            league_id: leagueId,
+            player_id: playerId,
+            salary: salary,
+            acquisition_type: acquisitionType,
+            updated_at: new Date().toISOString()
+          },
+          // Without an explicit conflict target PostgREST inserts a new
+          // row rather than updating the existing one, so re-pricing a
+          // player would leave duplicate salary rows and whichever came
+          // back last would win. Every other player_salaries writer
+          // (usePlayerSalaries, ManualContractOverrideDialog) already
+          // specifies this; the waiver processor was the odd one out.
+          { onConflict: 'league_id,player_id' }
+        );
 
       if (error) throw error;
       return true;
