@@ -61,14 +61,20 @@ export const calculateOptimizedSalaries = ({
     const deadCap = deadCapsByRoster[rosterId] || 0;
     teamDeadCaps[rosterId] = deadCap;
 
-    // Calculate totals (dead cap doesn't count toward salary cap)
+    // Total cap commitment = active salary + dead cap.
     const total = activeSalary + deadCap;
     totalSalaries[rosterId] = total;
 
     logger.debug(`Team ${rosterId} Total: $${total} (Active: $${activeSalary} + Dead Cap: $${deadCap})`);
 
-    // Cap percentage based only on active salary (dead cap excluded)
-    const percentage = (activeSalary / salaryCap) * 100;
+    // Dead cap counts against the cap — it's money already committed to
+    // players no longer on the roster, which is the whole point of a dead
+    // cap penalty. This previously divided by activeSalary only, so a team
+    // pushed over the cap by dead money still reported "under", and the
+    // trade simulator showed a dollar total and a percentage that
+    // disagreed. CommissionerOverview already computed it this way; this
+    // brings the two implementations in line.
+    const percentage = (total / salaryCap) * 100;
     let status: 'over' | 'near' | 'under' = 'under';
 
     if (percentage > 100) status = 'over';
