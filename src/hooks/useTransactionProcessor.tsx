@@ -219,15 +219,33 @@ export const useTransactionProcessor = () => {
           if (updates.length === 0) continue;
 
           // Update salaries for FAAB players (no contracts for FAAB acquisitions)
+          const failedPlayerIds: string[] = [];
           for (const update of updates) {
             const salarySuccess = await updatePlayerSalary(leagueId, update.playerId, update.salary, 'faab');
 
             if (salarySuccess) {
               logger.debug(`Auto-updated FAAB player ${update.playerId}: salary=${update.salary}, acquisition_type=faab (no contract)`);
+            } else {
+              failedPlayerIds.push(update.playerId);
             }
           }
 
-          // Mark transaction as processed
+          // Only record the transaction once its salaries actually landed.
+          //
+          // This previously ran unconditionally, so a failed write was
+          // marked done and never retried — the player kept no salary and
+          // nothing pointed at why. Leaving the transaction unrecorded
+          // means the next session picks it up again; the write itself is
+          // an idempotent upsert, so a partial batch replays safely.
+          if (failedPlayerIds.length > 0) {
+            logger.warn(
+              `Leaving transaction ${transaction.transaction_id} unprocessed — ` +
+              `${failedPlayerIds.length} salary write(s) failed (${failedPlayerIds.join(', ')}). ` +
+              `It will be retried on the next load.`
+            );
+            continue;
+          }
+
           await markTransactionProcessed(leagueId, transaction.transaction_id, updates);
           processedCount++;
 
