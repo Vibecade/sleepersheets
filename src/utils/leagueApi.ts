@@ -3,7 +3,7 @@ import { rateLimiter } from '@/utils/inputValidation';
 import { logger } from '@/utils/logger';
 import { CACHE_TTL, RATE_LIMITS, NFL_SEASON } from '@/utils/constants';
 import type { SleeperLeague, SleeperUser, SleeperRoster, SleeperDraft, SleeperTransaction, SleeperPlayer } from '@/types/sleeper';
-import { getCurrentNFLWeek } from '@/utils/nflWeek';
+import { resolveNflWeek } from '@/utils/nflWeek';
 
 export interface SleeperProjection {
   player_id: string;
@@ -79,31 +79,38 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
   // (transactions, FAAB activity, manager activity) reflect the entire
   // season rather than just the current 2-week slice. Sleeper exposes
   // transactions per (league_id, week); empty weeks return [] cheaply, all
-  // requests run in parallel through cachedFetch (per-league cache prefix
-  // + SHORT TTL), and any single-week failure is isolated by the catch
-  // below — so the worst case is the same as before, only with more
-  // weeks of cache hits steady-state.
+  // requests run in parallel through cachedFetch (per-league cache prefix),
+  // and any single-week failure is isolated by the catch below.
+  //
+  // Cache TTL is tiered by week: a completed week's transaction log is
+  // immutable, so re-fetching week 3 every 2 minutes for the rest of the
+  // season is pure waste. Past weeks get a DAILY TTL; only the live week
+  // (and any future week, which returns [] anyway) stays SHORT. In
+  // steady state this turns ~22 network calls per refresh into ~1.
   //
   // Historical-season history (prior `previous_league_id` rollovers) is
   // still out of scope; that requires walking the chain and is deferred
   // to a future "League History" feature.
 
   const season = league.season || '2024';
-  const currentNFLWeek = getCurrentNFLWeek(season);
-  const leagueWeek = league.settings?.week || 1;
-  const effectiveCurrentWeek = Math.max(currentNFLWeek, leagueWeek);
+  // Sleeper's own week pointer wins; the calendar estimate is the fallback.
+  const effectiveCurrentWeek = resolveNflWeek(league);
 
   logger.debug(`=== TRANSACTION FETCH DEBUG ===`);
   logger.debug(`League: ${league.name} (ID: ${targetLeagueId})`);
-  logger.debug(`Season: ${season}, NFL Week: ${currentNFLWeek}, League Week: ${leagueWeek}, Using Week: ${effectiveCurrentWeek}`);
+  logger.debug(`Season: ${season}, resolved current week: ${effectiveCurrentWeek}`);
 
   const weeksToFetch: number[] = [];
   for (let week = NFL_SEASON.MIN_WEEK; week <= NFL_SEASON.MAX_WEEKS; week++) {
     weeksToFetch.push(week);
   }
 
+  // Completed weeks can't change; only the live week needs a short TTL.
+  const ttlForWeek = (week: number): number =>
+    week < effectiveCurrentWeek ? CACHE_TTL.DAILY : CACHE_TTL.SHORT;
+
   logger.debug(`Fetching transactions for weeks: ${weeksToFetch.join(', ')}`);
-  
+
   // Fetch transactions from all weeks in parallel with league-specific cache keys
   const allTransactions = await Promise.all(
     weeksToFetch.map(async (week) => {
@@ -111,7 +118,7 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
         return await cachedFetch<SleeperTransaction[]>(
           `https://api.sleeper.app/v1/league/${targetLeagueId}/transactions/${week}`,
           {},
-          CACHE_TTL.SHORT,
+          ttlForWeek(week),
           `league-${targetLeagueId}`, // League-specific cache prefix
           'low' // Lower priority for background transaction processing
         );

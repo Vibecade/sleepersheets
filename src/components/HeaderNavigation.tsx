@@ -2,9 +2,11 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileNav } from '@/components/ui/mobile-nav';
-import { NFL_SEASON } from '@/utils/constants';
 import { useAuth } from '@/contexts/auth-context';
 import UserMenu from '@/components/UserMenu';
+// Single shared implementation — this file used to carry its own private
+// copy of the week math, which could drift from src/utils/nflWeek.ts.
+import { getLiveNflWeek } from '@/utils/nflWeek';
 
 const navigationItems = [
   { path: '/', label: 'Home' },
@@ -12,30 +14,6 @@ const navigationItems = [
   { path: '/how-to', label: 'How to Use' },
   { path: '/export', label: 'Export & AI' },
 ];
-
-// Returns the current NFL week if we're in regular season or playoffs;
-// returns null during the offseason (no league data → don't fake "LIVE").
-const getLiveNflWeek = (now: Date = new Date()): number | null => {
-  const month = now.getMonth();
-  const day = now.getDate();
-
-  // In-season window: Sept 1 → Feb 14 (covers regular season + playoffs).
-  const inSeason = month >= 8 || month === 0 || (month === 1 && day <= 14);
-  if (!inSeason) return null;
-
-  // Jan / early Feb belong to the previous calendar year's season.
-  const seasonYear = month <= 1 ? now.getFullYear() - 1 : now.getFullYear();
-  const seasonStart = new Date(
-    seasonYear,
-    NFL_SEASON.SEASON_START_MONTH,
-    NFL_SEASON.SEASON_START_DAY,
-  );
-  const diffDays = Math.floor(
-    (now.getTime() - seasonStart.getTime()) / (1000 * 60 * 60 * 24),
-  );
-  const week = Math.floor((diffDays + 2) / 7) + 1;
-  return Math.min(Math.max(week, NFL_SEASON.MIN_WEEK), NFL_SEASON.MAX_WEEKS);
-};
 
 const Brand: React.FC<{ size?: 'sm' | 'md' }> = ({ size = 'md' }) => {
   const badge = size === 'sm' ? 32 : 40;
