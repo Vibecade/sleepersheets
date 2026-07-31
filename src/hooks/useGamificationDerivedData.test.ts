@@ -6,6 +6,7 @@ import {
   formatPlayerName,
 } from "./useGamificationDerivedData";
 import type { SleeperPlayer, SleeperRoster } from "@/types/sleeper";
+import type { GamificationInsightsPayload } from "./useGamificationInsights";
 
 // Test fixtures use partial shapes for brevity; cast to satisfy the
 // stricter Sleeper types since these tests don't exercise the omitted
@@ -13,7 +14,10 @@ import type { SleeperPlayer, SleeperRoster } from "@/types/sleeper";
 const asRoster = (partial: Partial<SleeperRoster>) => partial as SleeperRoster;
 const asPlayer = (partial: Partial<SleeperPlayer>) => partial as SleeperPlayer;
 
-const emptyInsights = {
+// Annotated so the empty arrays get their element types from the payload
+// contract. Without this, `noImplicitAny` (enabled in #28) rejects each
+// bare `[]` as an implicit any[].
+const emptyInsights: GamificationInsightsPayload = {
   week: 7,
   matchups: [],
   winnersBracket: [],
