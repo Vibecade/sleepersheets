@@ -4,7 +4,7 @@
 // by the vitest suite. Keep this file thin enough to read in one sitting.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.8';
-import { planWaiverWrites } from './waivers.ts';
+import { planWaiverWrites, weeksToSweep } from './waivers.ts';
 
 const SLEEPER_API = 'https://api.sleeper.app/v1';
 
@@ -31,6 +31,7 @@ const SLEEPER_API = 'https://api.sleeper.app/v1';
 interface RunSummary {
   leagueId: string;
   week: number | null;
+  weeksSwept: number;
   planned: number;
   written: number;
   alreadyProcessed: number;
@@ -49,25 +50,16 @@ const fetchJson = async <T>(url: string): Promise<T | null> => {
   return (await res.json()) as T;
 };
 
-/**
- * Which weeks to sweep. Sleeper's own `settings.leg` is the source of
- * truth for the current week (same convention the app adopted). We take
- * that week plus the one before it, because a claim made late in a week
- * can settle after the pointer has already advanced.
- */
-const weeksToSweep = (leg: unknown): number[] => {
-  const current = typeof leg === 'number' && leg >= 1 && leg <= 22 ? leg : 1;
-  return current > 1 ? [current - 1, current] : [current];
-};
-
 const processLeague = async (
   supabase: ReturnType<typeof createClient>,
   leagueId: string,
   apply: boolean,
+  lookback?: number,
 ): Promise<RunSummary> => {
   const summary: RunSummary = {
     leagueId,
     week: null,
+    weeksSwept: 0,
     planned: 0,
     written: 0,
     alreadyProcessed: 0,
@@ -82,8 +74,9 @@ const processLeague = async (
       return summary;
     }
 
-    const weeks = weeksToSweep(league.settings?.leg);
-    summary.week = weeks[weeks.length - 1];
+    const weeks = weeksToSweep(league.settings?.leg, lookback);
+    summary.week = weeks[weeks.length - 1] ?? null;
+    summary.weeksSwept = weeks.length;
 
     const perWeek = await Promise.all(
       weeks.map((week) =>
@@ -159,6 +152,12 @@ Deno.serve(async (req: Request) => {
   const url = new URL(req.url);
   const apply = url.searchParams.get('apply') === 'true';
   const onlyLeague = url.searchParams.get('league_id');
+  // Optional: limit the sweep to the last N weeks. Omitted = whole season
+  // so far, which is what makes first-run and post-outage backfill work.
+  const lookbackParam = Number(url.searchParams.get('lookback'));
+  const lookback = Number.isFinite(lookbackParam) && lookbackParam > 0
+    ? Math.floor(lookbackParam)
+    : undefined;
 
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
@@ -177,11 +176,12 @@ Deno.serve(async (req: Request) => {
 
   const results: RunSummary[] = [];
   for (const leagueId of leagueIds) {
-    results.push(await processLeague(supabase, leagueId, apply));
+    results.push(await processLeague(supabase, leagueId, apply, lookback));
   }
 
   return json({
     mode: apply ? 'apply' : 'dry-run',
+    sweep: lookback ? `last ${lookback} week(s)` : 'full season',
     leagues: leagueIds.length,
     totalPlanned: results.reduce((n, r) => n + r.planned, 0),
     totalWritten: results.reduce((n, r) => n + r.written, 0),

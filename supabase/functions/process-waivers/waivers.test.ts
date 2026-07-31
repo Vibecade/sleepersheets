@@ -3,6 +3,8 @@ import {
   isWaiverTransaction,
   extractWaiverWrites,
   planWaiverWrites,
+  weeksToSweep,
+  MAX_WEEKS,
 } from "./waivers";
 
 /**
@@ -115,12 +117,35 @@ describe("planWaiverWrites", () => {
 
   it("keeps the most recent bid when a player is claimed twice", () => {
     const result = plan([
-      waiver({ transaction_id: "a", settings: { waiver_bid: 5 } }),
-      waiver({ transaction_id: "b", settings: { waiver_bid: 40 } }),
+      waiver({ transaction_id: "a", created: 100, settings: { waiver_bid: 5 } }),
+      waiver({ transaction_id: "b", created: 900, settings: { waiver_bid: 40 } }),
     ]);
     expect(result.writes).toEqual([{ playerId: "p1", rosterId: 3, salary: 40 }]);
     // Both still get recorded so neither is reconsidered next run.
-    expect(result.transactionIds).toEqual(["a", "b"]);
+    expect(result.transactionIds.sort()).toEqual(["a", "b"]);
+  });
+
+  /**
+   * index.ts concatenates several weeks' API responses unchanged, and
+   * Sleeper doesn't guarantee ordering within a week either — so the
+   * winner has to come from an explicit sort, not from array position.
+   * This is unrecoverable if wrong: once both claims are marked
+   * processed, nothing revisits them and the stale salary sticks.
+   */
+  it("picks the latest claim regardless of input order", () => {
+    const older = waiver({ transaction_id: "a", created: 100, settings: { waiver_bid: 5 } });
+    const newer = waiver({ transaction_id: "b", created: 900, settings: { waiver_bid: 40 } });
+
+    expect(plan([older, newer]).writes[0].salary).toBe(40);
+    expect(plan([newer, older]).writes[0].salary).toBe(40);
+  });
+
+  it("falls back to status_updated when created is absent", () => {
+    const result = plan([
+      waiver({ transaction_id: "b", created: null, status_updated: 900, settings: { waiver_bid: 40 } }),
+      waiver({ transaction_id: "a", created: null, status_updated: 100, settings: { waiver_bid: 5 } }),
+    ]);
+    expect(result.writes[0].salary).toBe(40);
   });
 
   it("ignores transactions with no id — they can't be marked processed", () => {
@@ -141,5 +166,45 @@ describe("planWaiverWrites", () => {
       transactions: null as any,
       processedTransactionIds: new Set(),
     }).writes).toEqual([]);
+  });
+});
+
+describe("weeksToSweep", () => {
+  /**
+   * The default sweep covers the whole season so far. A narrow window
+   * would assume the job had run continuously since week 1 — untrue when
+   * it's first enabled midseason, and untrue after any outage longer than
+   * the window. Skipped weeks are never revisited, so those players would
+   * stay unpriced permanently.
+   */
+  it("covers week 1 through the current week by default", () => {
+    expect(weeksToSweep(5)).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it("backfills the whole season when first enabled late", () => {
+    expect(weeksToSweep(14)).toHaveLength(14);
+    expect(weeksToSweep(14)[0]).toBe(1);
+  });
+
+  it("returns just week 1 at the start of the season", () => {
+    expect(weeksToSweep(1)).toEqual([1]);
+  });
+
+  it("narrows to the last N weeks when lookback is given", () => {
+    expect(weeksToSweep(10, 2)).toEqual([9, 10]);
+    expect(weeksToSweep(10, 1)).toEqual([10]);
+  });
+
+  it("clamps a lookback larger than the season so far", () => {
+    expect(weeksToSweep(3, 99)).toEqual([1, 2, 3]);
+  });
+
+  it("sweeps the full season when leg is missing or out of range", () => {
+    // Better to over-fetch than to silently skip weeks — already-processed
+    // transactions cost nothing to re-read.
+    expect(weeksToSweep(undefined)).toHaveLength(MAX_WEEKS);
+    expect(weeksToSweep(0)).toHaveLength(MAX_WEEKS);
+    expect(weeksToSweep(99)).toHaveLength(MAX_WEEKS);
+    expect(weeksToSweep("7" as unknown)).toHaveLength(MAX_WEEKS);
   });
 });

@@ -18,6 +18,9 @@ export interface SleeperTransactionLike {
   status?: string;
   settings?: { waiver_bid?: number } | null;
   adds?: Record<string, unknown> | null;
+  /** Epoch ms. Sleeper populates one or both; used to order claims. */
+  created?: number | null;
+  status_updated?: number | null;
 }
 
 export interface WaiverSalaryWrite {
@@ -34,6 +37,33 @@ export interface WaiverPlan {
   /** Transactions skipped because they were already recorded. */
   alreadyProcessed: number;
 }
+
+export const MAX_WEEKS = 22;
+
+/**
+ * Which weeks a run should sweep, from week 1 up to Sleeper's `leg`.
+ *
+ * Sweeping the whole season so far — rather than just the last week or
+ * two — is what makes the job safe to enable midseason and safe to
+ * recover from an outage. A narrow window silently assumes the job has
+ * run continuously since week 1; when it hasn't, the skipped weeks are
+ * never revisited and those players stay unpriced permanently.
+ *
+ * The cost is Sleeper reads only: already-processed transactions are
+ * filtered against processed_transactions, so a caught-up league plans
+ * zero writes however many weeks are fetched. `lookback` narrows the
+ * range for cheap runs once a league is known to be current.
+ */
+export const weeksToSweep = (leg: unknown, lookback?: number): number[] => {
+  const current =
+    typeof leg === 'number' && leg >= 1 && leg <= MAX_WEEKS
+      ? Math.floor(leg)
+      : MAX_WEEKS;
+  const first = lookback && lookback > 0 ? Math.max(1, current - lookback + 1) : 1;
+  const weeks: number[] = [];
+  for (let week = first; week <= current; week += 1) weeks.push(week);
+  return weeks;
+};
 
 /**
  * A transaction prices players only if it's a completed waiver claim that
@@ -88,12 +118,21 @@ export const planWaiverWrites = ({
   const transactionIds: string[] = [];
   let alreadyProcessed = 0;
 
-  // Oldest first so a later claim overwrites an earlier one for the same
-  // player. Transactions without an id can't be recorded as processed, so
-  // they're skipped rather than risking an endless reprocess loop.
-  const ordered = [...(transactions || [])].filter(
-    (tx): tx is SleeperTransactionLike => Boolean(tx?.transaction_id),
-  );
+  // Sort oldest-first so a later claim overwrites an earlier one for the
+  // same player. This must be an explicit sort, not an assumption about
+  // API order: index.ts concatenates several weeks' responses unchanged,
+  // and Sleeper doesn't guarantee ordering within a week either. Getting
+  // it wrong is unrecoverable — once both claims are marked processed,
+  // nothing revisits them, so a stale salary sticks permanently.
+  //
+  // Transactions without an id can't be recorded as processed, so they're
+  // skipped rather than risking an endless reprocess loop.
+  const timestampOf = (tx: SleeperTransactionLike): number =>
+    tx.created ?? tx.status_updated ?? 0;
+
+  const ordered = [...(transactions || [])]
+    .filter((tx): tx is SleeperTransactionLike => Boolean(tx?.transaction_id))
+    .sort((a, b) => timestampOf(a) - timestampOf(b));
 
   for (const tx of ordered) {
     const id = tx.transaction_id as string;

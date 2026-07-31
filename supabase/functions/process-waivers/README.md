@@ -18,6 +18,8 @@ built to be hard to misuse:
 | **Dry run by default** | Writes nothing unless `?apply=true`. A fresh deploy is inert. |
 | **Fails closed** | Returns 500 if `CRON_SECRET` is unset; 401 if the header doesn't match. |
 | **Idempotent** | Skips anything already in `processed_transactions` (`UNIQUE(league_id, transaction_id)`). Re-running is a no-op. |
+| **Self-healing** | Sweeps the whole season by default, so enabling it midseason or recovering from an outage backfills rather than leaving a permanent hole. |
+| **Deterministic ordering** | Claims are sorted oldest-first by `created`/`status_updated`, so a player claimed twice lands on the later bid regardless of API ordering. |
 | **Ordered writes** | Salaries land *before* transactions are marked processed, so a mid-run failure retries instead of being skipped forever. |
 | **Narrow blast radius** | Only upserts `acquisition_type='faab'` salary rows for players named by a completed waiver claim. Never deletes. Never touches contracts. |
 | **Explicit conflict target** | `onConflict: 'league_id,player_id'` — without it PostgREST inserts duplicates rather than updating. |
@@ -28,8 +30,13 @@ For each league in `league_ownership` where `is_active`:
 
 1. Read the league from Sleeper to get `settings.leg` (same "Sleeper is
    authoritative" convention the app uses for week resolution).
-2. Fetch transactions for that week **and the previous one** — a claim made late
-   in a week can settle after the pointer advances.
+2. Fetch transactions for **week 1 through the current week**. Sweeping the whole
+   season is what makes the job safe to enable midseason and safe to recover
+   from an outage — a narrow window would assume it had run continuously since
+   week 1, and any week it skipped would never be revisited. Pass
+   `?lookback=N` to narrow the range once a league is known to be caught up;
+   the extra cost is Sleeper reads only, since already-processed transactions
+   plan zero writes.
 3. Skip anything already in `processed_transactions`.
 4. Price each added player at the winning bid.
 5. Upsert salaries, then record the transaction ids.
@@ -88,8 +95,10 @@ create extension if not exists pg_net;
 -- Waivers clear early Wednesday; run a few hours after to catch settling
 -- claims. Adjust the cron expression to your league's waiver time.
 select cron.schedule(
-  'process-waivers-hourly',
-  '0 * * * *',
+  'process-waivers',
+  -- Waivers clear once or twice a week; every 6 hours is ample and keeps
+  -- the full-season sweep cheap. Tighten only if you need faster pickup.
+  '0 */6 * * *',
   $$
   select net.http_post(
     url     := 'https://<project-ref>.supabase.co/functions/v1/process-waivers?apply=true',
@@ -103,7 +112,7 @@ To inspect or remove:
 
 ```sql
 select * from cron.job;
-select cron.unschedule('process-waivers-hourly');
+select cron.unschedule('process-waivers');
 ```
 
 ## Relationship to the client processor
