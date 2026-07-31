@@ -5,7 +5,10 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  // Deno entrypoints use Deno globals and remote URL imports that this
+  // browser-targeted config can't resolve. Only the entrypoints are
+  // skipped — the pure logic beside them is still linted and tested.
+  { ignores: ["dist", "supabase/functions/**/index.ts"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

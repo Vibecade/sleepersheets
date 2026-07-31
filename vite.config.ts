@@ -62,7 +62,12 @@ export default defineConfig(({ mode }) => ({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     css: false,
-    include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    // Edge-function logic lives outside src/ but its pure core is plain
+    // TS and worth covering here — it writes salary data on a schedule.
+    include: [
+      "src/**/*.{test,spec}.{ts,tsx}",
+      "supabase/functions/**/*.{test,spec}.ts",
+    ],
     // Keep tests deterministic across machines; avoid the "it works on my box" trap.
     clearMocks: true,
     restoreMocks: true,

@@ -1,1 +1,6 @@
 project_id = "amjdravcumckikfadlwb"
+# Scheduled waiver pricing. Authenticated by a shared secret header
+# (x-cron-secret) rather than a user JWT, since pg_cron calls it with no
+# user context. See supabase/functions/process-waivers/README.md.
+[functions.process-waivers]
+verify_jwt = false
