@@ -164,39 +164,72 @@ describe("calculateOptimizedSalaries — totals vs cap percentage", () => {
   });
 
   /**
-   * KNOWN INCONSISTENCY — pinned deliberately, not endorsed.
+   * Dead cap counts against the cap — money committed to players no longer
+   * on the roster is still committed. `percentage` is therefore computed
+   * from `totalSalaries`, so the dollar figure and the percentage on a
+   * team card always describe the same number.
    *
-   * `totalSalaries` includes dead cap but `capStatus.percentage` does not.
-   * EnhancedTradeSimulator reads BOTH onto the same team card, so a roster
-   * carrying dead cap displays a dollar figure and a percentage that
-   * disagree — e.g. $200,000 of a $200,000 cap rendered as "90% (under)".
-   *
-   * Whether dead cap should count against the cap is a league-policy
-   * decision, so this suite documents the current behavior rather than
-   * changing it. If the policy is "dead cap counts" (the usual dynasty
-   * convention), `percentage` should switch to `total / salaryCap` and
-   * these two tests should be updated together.
+   * This was previously computed from active salary alone, which meant a
+   * roster pushed over the cap by dead money still reported "under" while
+   * its displayed total said otherwise.
    */
-  it("capStatus.percentage EXCLUDES dead cap (see comment above)", () => {
+  it("capStatus.percentage INCLUDES dead cap", () => {
     const result = calculateOptimizedSalaries({
       rosters: [roster(1, { players: ["a"] })],
       deadCapPlayers: [{ roster_id: 1, salary: 400 }], // 100 dead
       getSalaryCapContribution: contributionFrom({ a: 500 }),
       salaryCap: 1000,
     });
-    // 500 active / 1000 cap = 50%, NOT 600/1000 = 60%
-    expect(result.capStatus[1].percentage).toBe(50);
+    // (500 active + 100 dead) / 1000 cap = 60%
+    expect(result.capStatus[1].percentage).toBe(60);
   });
 
-  it("a roster at the cap only once dead cap is counted still reads 'under'", () => {
+  it("percentage always agrees with totalSalaries against the cap", () => {
+    const result = calculateOptimizedSalaries({
+      rosters: [roster(1, { players: ["a"] })],
+      deadCapPlayers: [{ roster_id: 1, salary: 800 }], // 200 dead
+      getSalaryCapContribution: contributionFrom({ a: 500 }),
+      salaryCap: 1000,
+    });
+    const expected = (result.totalSalaries[1] / 1000) * 100;
+    expect(result.capStatus[1].percentage).toBe(expected);
+  });
+
+  it("a roster driven to exactly the cap by dead money reads 'near', not 'under'", () => {
     const result = calculateOptimizedSalaries({
       rosters: [roster(1, { players: ["a"] })],
       deadCapPlayers: [{ roster_id: 1, salary: 400 }], // 100 dead
       getSalaryCapContribution: contributionFrom({ a: 900 }),
       salaryCap: 1000,
     });
-    expect(result.totalSalaries[1]).toBe(1000); // exactly at the cap
-    expect(result.capStatus[1].status).toBe("under"); // ...but reported under
+    expect(result.totalSalaries[1]).toBe(1000);
+    expect(result.capStatus[1].percentage).toBe(100);
+    expect(result.capStatus[1].status).toBe("near");
+  });
+
+  it("a roster pushed OVER the cap by dead money reads 'over'", () => {
+    // Active salary alone is comfortably under; the dead cap is what
+    // breaches it. This is the case the old formula reported as 'under'.
+    const result = calculateOptimizedSalaries({
+      rosters: [roster(1, { players: ["a"] })],
+      deadCapPlayers: [{ roster_id: 1, salary: 1200 }], // 300 dead
+      getSalaryCapContribution: contributionFrom({ a: 800 }),
+      salaryCap: 1000,
+    });
+    expect(result.teamSalaries[1]).toBe(800); // 80% on active alone
+    expect(result.totalSalaries[1]).toBe(1100);
+    expect(result.capStatus[1].status).toBe("over");
+  });
+
+  it("leaves a roster with no dead cap unaffected", () => {
+    const result = calculateOptimizedSalaries({
+      rosters: [roster(1, { players: ["a"] })],
+      deadCapPlayers: [],
+      getSalaryCapContribution: contributionFrom({ a: 500 }),
+      salaryCap: 1000,
+    });
+    expect(result.capStatus[1].percentage).toBe(50);
+    expect(result.capStatus[1].status).toBe("under");
   });
 });
 
