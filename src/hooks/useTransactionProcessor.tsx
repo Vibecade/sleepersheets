@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 import { securityLogger } from '@/utils/securityLogger';
 import { logger } from '@/utils/logger';
+import { sortWaiversOldestFirst } from '@/utils/waiverOrdering';
 
 interface WaiverUpdate {
   playerId: string;
@@ -211,12 +212,37 @@ export const useTransactionProcessor = () => {
 
       logger.debug(`Processing ${unprocessedWaivers.length} new waiver transactions for league ${leagueId}`);
 
+      // Oldest first. Salary writes are last-write-wins per player, and
+      // fetchLeagueData concatenates weeks without sorting within a week,
+      // so array order can't be trusted to decide the final value.
+      const orderedWaivers = sortWaiversOldestFirst(unprocessedWaivers);
+
+      // Players whose pricing chain is stalled because an earlier claim
+      // for them failed (or was itself deferred). A later claim for such a
+      // player must NOT be recorded as processed: if it were, the pending
+      // older claim would be retried on the next load and its stale bid
+      // would overwrite the newer salary. Deferring the whole chain keeps
+      // retries in order.
+      const blockedPlayerIds = new Set<string>();
+
       // Process each transaction
-      for (const transaction of unprocessedWaivers) {
+      for (const transaction of orderedWaivers) {
         try {
           const updates = extractWaiverUpdates(transaction);
-          
+
           if (updates.length === 0) continue;
+
+          const playerIds = updates.map(update => update.playerId);
+
+          if (playerIds.some(playerId => blockedPlayerIds.has(playerId))) {
+            playerIds.forEach(playerId => blockedPlayerIds.add(playerId));
+            logger.warn(
+              `Deferring transaction ${transaction.transaction_id} — an earlier claim ` +
+              `for one of its players is still pending. Processing it now would let ` +
+              `that retry overwrite this newer bid.`
+            );
+            continue;
+          }
 
           // Update salaries for FAAB players (no contracts for FAAB acquisitions)
           const failedPlayerIds: string[] = [];
@@ -238,6 +264,10 @@ export const useTransactionProcessor = () => {
           // means the next session picks it up again; the write itself is
           // an idempotent upsert, so a partial batch replays safely.
           if (failedPlayerIds.length > 0) {
+            // Block every player this transaction touches, not just the
+            // ones that failed: the retry rewrites all of them, so a later
+            // claim for any of them must wait too.
+            playerIds.forEach(playerId => blockedPlayerIds.add(playerId));
             logger.warn(
               `Leaving transaction ${transaction.transaction_id} unprocessed — ` +
               `${failedPlayerIds.length} salary write(s) failed (${failedPlayerIds.join(', ')}). ` +
