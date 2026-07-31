@@ -19,15 +19,25 @@ interface CommissionerDashboardProps {
 export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDashboardProps) => {
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Outstanding pricing work, surfaced on the Pricing tab so the
-  // commissioner can see it without opening the tab.
+  // Salary state is owned HERE, not inside PlayerPricingPanel, and handed
+  // down. usePlayerSalaries keeps `salaries` in local useState and its
+  // loader early-returns for an already-seen league, so two instances of
+  // the hook for the same league never converge: an edit made in the
+  // panel would update the panel's copy while the badge kept rendering
+  // the original backlog — the panel could read "0 left" next to a badge
+  // still showing 12. One instance, one source of truth.
   //
-  // Waiver pickups auto-price from the FAAB bid, but only while someone
-  // with `canModifyLeague` has the app open. Waivers clear Wednesday, so
-  // between then and the commissioner's next visit those players carry no
-  // salary and every manager's cap figure is short. Drafted and traded
-  // players never auto-price at all. This count is that backlog.
-  const { salaries, loading: salariesLoading } = usePlayerSalaries(leagueId);
+  // Why the badge exists: waiver pickups auto-price from the FAAB bid,
+  // but only while someone with `canModifyLeague` has the app open.
+  // Waivers clear Wednesday, so between then and the commissioner's next
+  // visit those players carry no salary and every manager's cap figure is
+  // short. Drafted and traded players never auto-price at all. This count
+  // is that backlog.
+  const {
+    salaries,
+    updateSalary,
+    loading: salariesLoading,
+  } = usePlayerSalaries(leagueId);
   const unpricedCount = useMemo(
     () => selectUnpricedPlayerIds(leagueData?.rosters || [], salaries).size,
     [leagueData?.rosters, salaries],
@@ -90,7 +100,13 @@ export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDash
         </TabsContent>
 
         <TabsContent value="pricing">
-          <PlayerPricingPanel leagueId={leagueId} leagueData={leagueData} />
+          <PlayerPricingPanel
+            leagueId={leagueId}
+            leagueData={leagueData}
+            salaries={salaries}
+            updateSalary={updateSalary}
+            salariesLoading={salariesLoading}
+          />
         </TabsContent>
 
         <TabsContent value="waivers">

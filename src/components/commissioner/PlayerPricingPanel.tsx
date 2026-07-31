@@ -11,7 +11,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useReadOnly } from '@/contexts/read-only-context';
-import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { usePlayerContracts } from '@/hooks/usePlayerContracts';
 import {
   usePlayerAcquisitions,
@@ -28,6 +27,17 @@ import type { CommissionerLeagueData } from '@/types/sleeper';
 interface PlayerPricingPanelProps {
   leagueId: string;
   leagueData: CommissionerLeagueData;
+  /**
+   * Salary state is owned by CommissionerDashboard and passed down rather
+   * than pulled from usePlayerSalaries here. The hook keeps `salaries` in
+   * local useState and skips reloading a league it has already seen, so a
+   * second instance would never see edits made through the first — the
+   * Pricing tab badge and this list would drift apart after the first
+   * save. Sharing one instance keeps them identical by construction.
+   */
+  salaries: Record<string, number | null>;
+  updateSalary: (playerId: string, salary: number | null) => Promise<boolean>;
+  salariesLoading: boolean;
 }
 
 interface UnpricedPlayer {
@@ -112,6 +122,9 @@ const SOURCE_META: Record<AcquisitionSource, { label: string; blurb: string }> =
 export const PlayerPricingPanel = ({
   leagueId,
   leagueData,
+  salaries,
+  updateSalary,
+  salariesLoading,
 }: PlayerPricingPanelProps) => {
   const { readOnly } = useReadOnly();
 
@@ -133,8 +146,8 @@ export const PlayerPricingPanel = ({
     [leagueData?.users],
   );
 
-  const { salaries, updateSalary, loading: salariesLoading } =
-    usePlayerSalaries(leagueId);
+  // salaries / updateSalary / salariesLoading arrive as props — see the
+  // note on PlayerPricingPanelProps for why they aren't pulled here.
   const { contracts, updateContract, loading: contractsLoading } =
     usePlayerContracts(leagueId);
   const { byPlayer } = usePlayerAcquisitions({ rosters, transactions, draftPicks });
