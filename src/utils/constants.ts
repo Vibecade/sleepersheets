@@ -26,7 +26,11 @@ export const NFL_SEASON = {
   // September), so the date moves year to year. Deriving it beats pinning
   // a fixed day — the old hardcoded Sept 5 was right for 2024 but would
   // have reported Week 2 during the real Week 1 of 2026.
-  WEEK1_OFFSET_FROM_LABOR_DAY: 3
+  WEEK1_OFFSET_FROM_LABOR_DAY: 3,
+  // Fantasy weeks roll on Tuesday, after Monday-night football is final
+  // and waivers process — not at Thursday kickoff. The week window
+  // therefore starts two days before kickoff.
+  WEEK_ROLLOVER_DAYS_BEFORE_KICKOFF: 2
 } as const;
 
 // Query configuration

@@ -15,6 +15,12 @@ export interface SleeperProjection {
   [key: string]: any;
 }
 
+/**
+ * How many just-completed weeks keep a short cache TTL because pending
+ * trades / waivers from them can still settle after `leg` advances.
+ */
+const WEEKS_STILL_SETTLING = 1;
+
 export interface CombinedLeagueData {
   league: SleeperLeague;
   rosters: SleeperRoster[];
@@ -105,9 +111,19 @@ export const fetchLeagueData = async (targetLeagueId: string): Promise<CombinedL
     weeksToFetch.push(week);
   }
 
-  // Completed weeks can't change; only the live week needs a short TTL.
-  const ttlForWeek = (week: number): number =>
-    week < effectiveCurrentWeek ? CACHE_TTL.DAILY : CACHE_TTL.SHORT;
+  // TTL by how settled a week is.
+  //
+  // A week isn't immutable the instant `leg` advances: a trade created
+  // late in week N can sit pending review, and waivers process after
+  // rollover, so the week-N endpoint keeps changing for a while. Dropping
+  // it straight to a daily TTL would pin the stale pending state for up to
+  // 24 hours. The week just gone therefore keeps a short-ish TTL as a
+  // grace window; only weeks behind that are treated as settled.
+  const ttlForWeek = (week: number): number => {
+    if (week >= effectiveCurrentWeek) return CACHE_TTL.SHORT; // live (or future — returns [])
+    if (week >= effectiveCurrentWeek - WEEKS_STILL_SETTLING) return CACHE_TTL.MEDIUM;
+    return CACHE_TTL.DAILY; // settled — cannot change again
+  };
 
   logger.debug(`Fetching transactions for weeks: ${weeksToFetch.join(', ')}`);
 

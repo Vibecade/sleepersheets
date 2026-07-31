@@ -24,9 +24,23 @@ import { NFL_SEASON } from './constants';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
-/** Midnight local time for the given date — avoids partial-day drift. */
-const startOfDay = (date: Date): Date =>
-  new Date(date.getFullYear(), date.getMonth(), date.getDate());
+/**
+ * Calendar-day index for a date, computed in UTC from its *local* Y/M/D.
+ *
+ * Subtracting two local midnights and dividing by a fixed 24h is wrong
+ * across a DST transition — the elapsed time between them isn't a whole
+ * number of days. In Australia/Sydney, for example, Sep 10 → Oct 8 2026
+ * spans a spring-forward and measures 27.958 days, so a floor() would
+ * report week 4 for the whole of real week 5. Projecting the local
+ * calendar date onto UTC removes the offset entirely, so the difference
+ * is always an exact multiple of a day in every timezone.
+ */
+const toCalendarDay = (date: Date): number =>
+  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+
+/** Whole calendar days from `from` to `to`. DST-safe. */
+const daysBetween = (from: Date, to: Date): number =>
+  Math.round((toCalendarDay(to) - toCalendarDay(from)) / MS_PER_DAY);
 
 /** First Monday of September for the given year. */
 const getLaborDay = (seasonYear: number): Date => {
@@ -49,6 +63,24 @@ export const getSeasonStartDate = (seasonYear: number): Date => {
 };
 
 /**
+ * Start of the *fantasy* week-1 window — the Tuesday before kickoff.
+ *
+ * Fantasy weeks don't run Thursday→Wednesday alongside the NFL schedule.
+ * Sleeper advances `settings.leg` on Tuesday, once the previous week's
+ * Monday-night game is final and waivers roll. Anchoring the calendar
+ * fallback to that Tuesday keeps it in step with `resolveNflWeek(league)`;
+ * anchoring to kickoff instead left the two disagreeing every Tuesday and
+ * Wednesday, so callers without a league object (the marketing header,
+ * standalone analytics) would label and fetch the previous week.
+ */
+const getWeekWindowStart = (seasonYear: number): Date => {
+  const kickoff = getSeasonStartDate(seasonYear);
+  const tuesday = new Date(kickoff);
+  tuesday.setDate(kickoff.getDate() - NFL_SEASON.WEEK_ROLLOVER_DAYS_BEFORE_KICKOFF);
+  return tuesday;
+};
+
+/**
  * Calendar-derived NFL week for a season. Falls back to the current
  * calendar year when no season is supplied.
  *
@@ -58,15 +90,13 @@ export const getSeasonStartDate = (seasonYear: number): Date => {
 export const getCurrentNFLWeek = (season?: string, now: Date = new Date()): number => {
   const fallbackYear = now.getFullYear();
   const seasonYear = Number.parseInt(season ?? `${fallbackYear}`, 10) || fallbackYear;
-  const seasonStart = getSeasonStartDate(seasonYear);
+  const windowStart = getWeekWindowStart(seasonYear);
 
-  if (startOfDay(now) < startOfDay(seasonStart)) {
+  const diffDays = daysBetween(windowStart, now);
+  if (diffDays < 0) {
     return NFL_SEASON.MIN_WEEK;
   }
 
-  const diffDays = Math.floor(
-    (startOfDay(now).getTime() - startOfDay(seasonStart).getTime()) / MS_PER_DAY,
-  );
   const weekNumber = Math.floor(diffDays / 7) + 1;
 
   return Math.min(Math.max(weekNumber, NFL_SEASON.MIN_WEEK), NFL_SEASON.MAX_WEEKS);

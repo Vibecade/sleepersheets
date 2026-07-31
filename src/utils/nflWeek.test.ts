@@ -53,12 +53,26 @@ describe("getCurrentNFLWeek", () => {
     expect(getCurrentNFLWeek("2026")).toBe(1);
   });
 
-  it("holds week 1 through the Wednesday before week 2", () => {
-    vi.setSystemTime(at(2026, 9, 16));
+  it("holds week 1 through Monday night", () => {
+    vi.setSystemTime(at(2026, 9, 14)); // Monday of week 1
     expect(getCurrentNFLWeek("2026")).toBe(1);
   });
 
-  it("rolls to week 2 on the next Thursday", () => {
+  // Fantasy weeks roll on Tuesday once MNF is final and waivers process —
+  // that's when Sleeper advances settings.leg. Anchoring to Thursday
+  // kickoff instead left the calendar fallback a week behind every
+  // Tuesday and Wednesday.
+  it("rolls to week 2 on Tuesday, not Thursday", () => {
+    vi.setSystemTime(at(2026, 9, 15)); // Tuesday
+    expect(getCurrentNFLWeek("2026")).toBe(2);
+  });
+
+  it("is already week 2 by Wednesday", () => {
+    vi.setSystemTime(at(2026, 9, 16));
+    expect(getCurrentNFLWeek("2026")).toBe(2);
+  });
+
+  it("stays week 2 through that week's Thursday kickoff", () => {
     vi.setSystemTime(at(2026, 9, 17));
     expect(getCurrentNFLWeek("2026")).toBe(2);
   });
@@ -83,6 +97,30 @@ describe("getCurrentNFLWeek", () => {
     const week = getCurrentNFLWeek();
     expect(week).toBeGreaterThanOrEqual(NFL_SEASON.MIN_WEEK);
     expect(week).toBeLessThanOrEqual(NFL_SEASON.MAX_WEEKS);
+  });
+
+  // Guards the DST bug: subtracting local midnights and dividing by a
+  // fixed 24h undercounts across a spring-forward, which reported week 4
+  // for the whole of real week 5 in southern-hemisphere timezones. The
+  // calculation now projects local calendar dates onto UTC, so time of
+  // day is irrelevant and no offset can creep in.
+  it("is independent of time of day", () => {
+    const hours = [0, 1, 6, 12, 18, 23];
+    const weeks = hours.map((h) => {
+      vi.setSystemTime(at(2026, 10, 8, h));
+      return getCurrentNFLWeek("2026");
+    });
+    expect(new Set(weeks).size).toBe(1);
+  });
+
+  it("counts whole weeks across a DST transition", () => {
+    // Oct 6 and Nov 3 2026 are both Tuesdays, exactly 4 weeks apart, and
+    // most northern-hemisphere zones change clocks between them.
+    vi.setSystemTime(at(2026, 10, 6));
+    const before = getCurrentNFLWeek("2026");
+    vi.setSystemTime(at(2026, 11, 3));
+    const after = getCurrentNFLWeek("2026");
+    expect(after - before).toBe(4);
   });
 });
 
