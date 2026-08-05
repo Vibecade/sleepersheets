@@ -4,7 +4,7 @@ import { useUrlParams } from '@/hooks/useUrlParams';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeInput, validateLeagueId } from '@/utils/inputValidation';
 import { useDemo } from '@/contexts/demo-context';
-import { DEMO_LEAGUE_ID } from '@/utils/demoData';
+import { isDemoLeagueId } from '@/utils/demoData';
 
 interface UseUrlLeagueLoaderProps {
     leagueIdFromState: string;
@@ -26,7 +26,7 @@ export const useUrlLeagueLoader = ({
             const sanitizedLeagueId = sanitizeInput(urlLeagueId);
             
             // Skip validation for demo mode or demo league ID
-            if (isDemoMode || sanitizedLeagueId === DEMO_LEAGUE_ID) {
+            if (isDemoMode || isDemoLeagueId(sanitizedLeagueId)) {
                 setLeagueId(sanitizedLeagueId);
                 return;
             }

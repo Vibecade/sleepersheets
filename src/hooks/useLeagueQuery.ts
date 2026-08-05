@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { fetchLeagueData, type CombinedLeagueData } from '@/utils/leagueApi';
 import { validateLeagueId, sanitizeInput } from '@/utils/inputValidation';
-import { createDemoLeagueData, DEMO_LEAGUE_ID } from '@/utils/demoData';
+import { createDemoLeagueData, isDemoLeagueId } from '@/utils/demoData';
 import { useDemo } from '@/contexts/demo-context';
 import { performanceMonitor } from '@/utils/performanceMonitor';
 import { CACHE_TTL, QUERY_CONFIG } from '@/utils/constants';
@@ -14,7 +14,7 @@ export const useLeagueQuery = (leagueId: string | null) => {
   const { isValid } = sanitizedLeagueId ? validateLeagueId(sanitizedLeagueId) : { isValid: false };
 
   // Handle demo mode
-  const isDemo = isDemoMode || sanitizedLeagueId === DEMO_LEAGUE_ID;
+  const isDemo = isDemoMode || isDemoLeagueId(sanitizedLeagueId);
 
   // Optimized query function with performance monitoring
   const optimizedQueryFn = useCallback(() => {

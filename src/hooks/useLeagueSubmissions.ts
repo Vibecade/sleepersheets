@@ -2,6 +2,7 @@
 import { useCallback, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { validateLeagueId, validateUsername, sanitizeInput } from '@/utils/inputValidation';
+import { isDemoLeagueId } from '@/utils/demoData';
 import { cachedFetch } from '@/utils/apiCache';
 import type { SleeperUser, SleeperLeague } from '@/types/sleeper';
 import { useMutation } from '@tanstack/react-query';
@@ -82,8 +83,17 @@ export const useLeagueSubmissions = ({
   const handleLeagueSubmit = useCallback(async (inputLeagueId?: string) => {
     const leagueIdValue = inputLeagueId || leagueIdFromInput;
     const sanitizedLeagueId = sanitizeInput(leagueIdValue);
+
+    // The demo league is not a Sleeper ID and never passes the 15-20 digit
+    // check, so entering demo mode used to greet the user with a red
+    // "Invalid League ID" toast before the sample data loaded anyway.
+    if (isDemoLeagueId(sanitizedLeagueId)) {
+      setLeagueId(sanitizedLeagueId);
+      return;
+    }
+
     const validation = validateLeagueId(sanitizedLeagueId);
-    
+
     if (!validation.isValid) {
       toast({
         title: "Invalid League ID",

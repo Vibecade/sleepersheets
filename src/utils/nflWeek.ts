@@ -144,3 +144,61 @@ export const getLiveNflWeek = (now: Date = new Date()): number | null => {
   const seasonYear = month <= 1 ? now.getFullYear() - 1 : now.getFullYear();
   return getCurrentNFLWeek(String(seasonYear), now);
 };
+
+export interface LeagueWeekDescription {
+  week: number;
+  /** Regular-season length. Playoff weeks are not counted. */
+  totalWeeks: number;
+  isPlayoffs: boolean;
+  isPreseason: boolean;
+  /** Ready to render, e.g. "WEEK 5 OF 14" or "WEEK 15 · PLAYOFFS". */
+  label: string;
+}
+
+/**
+ * Describes where a league sits in its season, for header display.
+ *
+ * The subtlety this exists for: `playoff_week_start` is the first *playoff*
+ * week, so the regular season is `playoff_week_start - 1` weeks long. Once
+ * the league reaches the postseason, the naive "WEEK {week} OF {totalWeeks}"
+ * reads "WEEK 15 OF 14" — which every league hits, every year, and which
+ * looks like a bug to anyone who sees it. Past the cutoff the phrasing has to
+ * change rather than the arithmetic.
+ */
+export const describeLeagueWeek = (league: any): LeagueWeekDescription => {
+  const rawWeek = league?.settings?.leg ?? league?.settings?.week ?? 0;
+  const week = Number.isFinite(Number(rawWeek)) ? Math.max(0, Math.trunc(Number(rawWeek))) : 0;
+
+  const playoffStart = Number(league?.settings?.playoff_week_start) || 0;
+  const hasPlayoffInfo = playoffStart > 1;
+  const totalWeeks = hasPlayoffInfo ? playoffStart - 1 : NFL_SEASON.REGULAR_SEASON_WEEKS;
+
+  // Week 0 is Sleeper's pre-kickoff state. "WEEK 0 OF 14" is meaningless.
+  if (week < NFL_SEASON.MIN_WEEK) {
+    return { week, totalWeeks, isPlayoffs: false, isPreseason: true, label: 'PRESEASON' };
+  }
+
+  if (hasPlayoffInfo && week >= playoffStart) {
+    return {
+      week,
+      totalWeeks,
+      isPlayoffs: true,
+      isPreseason: false,
+      label: `WEEK ${week} · PLAYOFFS`,
+    };
+  }
+
+  // No playoff bracket configured and we're past the default regular season:
+  // drop the denominator rather than assert a total we can't back up.
+  if (week > totalWeeks) {
+    return { week, totalWeeks, isPlayoffs: false, isPreseason: false, label: `WEEK ${week}` };
+  }
+
+  return {
+    week,
+    totalWeeks,
+    isPlayoffs: false,
+    isPreseason: false,
+    label: `WEEK ${week} OF ${totalWeeks}`,
+  };
+};

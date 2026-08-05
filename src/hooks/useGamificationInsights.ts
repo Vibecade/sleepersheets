@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { cachedFetch } from '@/utils/apiCache';
 import { CACHE_TTL } from '@/utils/constants';
 import { getCurrentNFLWeek } from '@/utils/nflWeek';
+import { isDemoLeagueId } from '@/utils/demoData';
 
 interface UseGamificationInsightsParams {
   leagueId?: string;
@@ -85,7 +86,8 @@ export const useGamificationInsights = ({
 
   const query = useQuery<GamificationInsightsPayload>({
     queryKey: ['gamification-insights', leagueId, effectiveWeek],
-    enabled: Boolean(leagueId),
+    // DEMO_LEAGUE has no Sleeper counterpart; querying it only produces 404s.
+    enabled: Boolean(leagueId) && !isDemoLeagueId(leagueId),
     staleTime: CACHE_TTL.SHORT,
     gcTime: CACHE_TTL.LONG,
     queryFn: async () => {

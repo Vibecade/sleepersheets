@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { cachedFetch } from '@/utils/apiCache';
 import { CACHE_TTL } from '@/utils/constants';
+import { isDemoLeagueId } from '@/utils/demoData';
 import { getCurrentNFLWeek } from '@/utils/nflWeek';
 import { logger } from '@/utils/logger';
 
@@ -32,7 +33,8 @@ export const useMatchups = (leagueId: string, week: number, currentWeek?: number
 
   const query = useQuery<Matchup[], Error>({
     queryKey: ['matchups', leagueId, week],
-    enabled: Boolean(leagueId && week),
+    // DEMO_LEAGUE has no Sleeper counterpart; querying it only produces 404s.
+    enabled: Boolean(leagueId && week) && !isDemoLeagueId(leagueId),
     staleTime: cacheTTL,
     gcTime: CACHE_TTL.LONG,
     queryFn: async () => {
