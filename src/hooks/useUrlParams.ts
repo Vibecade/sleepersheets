@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { useCallback, useEffect, useRef } from 'react';
 
 export const useUrlParams = () => {

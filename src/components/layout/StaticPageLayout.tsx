@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import PageHead from '@/components/PageHead';
 import { cn } from '@/lib/utils';

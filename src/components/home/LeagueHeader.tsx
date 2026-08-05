@@ -3,7 +3,7 @@ import React from 'react';
 import { Trophy, Lock, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useIsMobile } from '@/hooks/use-mobile';
 import UserMenu from '@/components/UserMenu';
 
