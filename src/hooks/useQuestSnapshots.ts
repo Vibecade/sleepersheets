@@ -4,6 +4,7 @@ import type { Json } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/auth-context';
 import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 import { logger } from '@/utils/logger';
+import { isMissingTableError } from '@/utils/supabaseErrors';
 
 export interface QuestProgressInput {
   id: string;
@@ -69,6 +70,10 @@ export const useQuestSnapshots = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Set when the backing table isn't deployed. Snapshot history is an
+  // enhancement on top of quests, which are computed client-side and work
+  // fine without it, so the feature turns itself off instead of erroring.
+  const [isUnavailable, setIsUnavailable] = useState(false);
 
   const lastPersistedSignatureRef = useRef<string>('');
 
@@ -111,7 +116,16 @@ export const useQuestSnapshots = ({
           lastPersistedSignatureRef.current = signature;
         }
       } catch (error) {
-        logger.error('Failed to load quest snapshots:', error);
+        if (!active) return;
+        if (isMissingTableError(error)) {
+          // Deploy gap, not a fault. Disable the feature quietly — logging
+          // this on every load would drown out errors worth reading.
+          setIsUnavailable(true);
+          setHistory([]);
+          logger.debug('Quest snapshots table is not deployed; skipping history.');
+        } else {
+          logger.error('Failed to load quest snapshots:', error);
+        }
       } finally {
         if (active) {
           setIsLoading(false);
@@ -126,7 +140,14 @@ export const useQuestSnapshots = ({
   }, [leagueId, season, week]);
 
   useEffect(() => {
-    if (!canPersist || !leagueId || !season || typeof week !== 'number' || normalizedSnapshot.length === 0) {
+    if (
+      !canPersist ||
+      isUnavailable ||
+      !leagueId ||
+      !season ||
+      typeof week !== 'number' ||
+      normalizedSnapshot.length === 0
+    ) {
       return;
     }
 
@@ -174,15 +195,20 @@ export const useQuestSnapshots = ({
 
         lastPersistedSignatureRef.current = signature;
       } catch (error) {
-        logger.error('Failed to save quest snapshot:', error);
-        setSaveError('Unable to persist quest snapshot.');
+        if (isMissingTableError(error)) {
+          setIsUnavailable(true);
+          logger.debug('Quest snapshots table is not deployed; skipping save.');
+        } else {
+          logger.error('Failed to save quest snapshot:', error);
+          setSaveError('Unable to persist quest snapshot.');
+        }
       } finally {
         setIsSaving(false);
       }
     }, 1500);
 
     return () => window.clearTimeout(timeoutId);
-  }, [canPersist, leagueId, season, week, normalizedSnapshot, questPoints, user?.id]);
+  }, [canPersist, isUnavailable, leagueId, season, week, normalizedSnapshot, questPoints, user?.id]);
 
   const currentSnapshot = useMemo(() => {
     if (typeof week !== 'number') {
@@ -197,7 +223,8 @@ export const useQuestSnapshots = ({
     isSaving,
     isLoading,
     saveError,
-    canPersist,
+    canPersist: canPersist && !isUnavailable,
+    isUnavailable,
     questPoints,
     normalizedSnapshot,
   };
