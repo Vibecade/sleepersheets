@@ -43,18 +43,32 @@ export const calculateOptimizedSalaries = ({
   rosters.forEach((roster) => {
     const rosterId = roster.roster_id;
 
-    // Calculate active salaries for each team (exclude IR/reserve players)
-    const allPlayerIds = [
+    // Active players = (players ∪ taxi) \ reserve.
+    //
+    // Written as set operations on purpose. Sleeper's `taxi` and `reserve`
+    // arrays are subsets of `players` — the demo fixture reflects this, with
+    // every taxi id also appearing in `players`. Concatenating the arrays
+    // instead of unioning them therefore counted every taxi player's salary
+    // twice, inflating that team's cap number.
+    //
+    // Union-then-subtract is correct under either reading: if the arrays are
+    // nested, the union collapses the duplicates and the subtraction drops
+    // IR; if they are disjoint, the union is a plain concatenation and the
+    // subtraction is a no-op. That matters because whether Sleeper nests them
+    // is a property of their API, not of this code, and this way we don't
+    // have to be right about it.
+    const activeIds = new Set<string>([
       ...(roster.players || []),
-      ...(roster.taxi || [])
-    ];
-    
-    const activeSalary = allPlayerIds.reduce((total, playerId) => {
+      ...(roster.taxi || []),
+    ]);
+    (roster.reserve || []).forEach((playerId: string) => activeIds.delete(playerId));
+
+    const activeSalary = [...activeIds].reduce((total, playerId) => {
       const contribution = getSalaryCapContribution(playerId);
       return total + contribution;
     }, 0);
 
-    logger.debug(`Team ${rosterId}: ${allPlayerIds.length} players, Active Salary: $${activeSalary}`);
+    logger.debug(`Team ${rosterId}: ${activeIds.size} players, Active Salary: $${activeSalary}`);
     teamSalaries[rosterId] = activeSalary;
     
     // Get pre-calculated dead cap

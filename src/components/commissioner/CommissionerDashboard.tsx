@@ -9,6 +9,8 @@ import { CommissionerOverview } from './CommissionerOverview';
 import { WaiverAcquisitionsPanel } from './WaiverAcquisitionsPanel';
 import { WalkYearPanel } from './WalkYearPanel';
 import { PlayerPricingPanel } from './PlayerPricingPanel';
+import { ReviewQueuePanel } from './ReviewQueuePanel';
+import { useComplianceFindings } from '@/hooks/useComplianceFindings';
 import type { CommissionerLeagueData } from '@/types/sleeper';
 
 interface CommissionerDashboardProps {
@@ -36,6 +38,7 @@ export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDash
   const {
     salaries,
     updateSalary,
+    getSalaryCapContribution,
     loading: salariesLoading,
   } = usePlayerSalaries(leagueId);
   const unpricedCount = useMemo(
@@ -43,6 +46,29 @@ export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDash
     [leagueData?.rosters, salaries],
   );
   const showPricingBadge = !salariesLoading && unpricedCount > 0;
+
+  // Hoisted for the same reason as salaries above: the tab badge and the
+  // panel must count the same findings, and evaluating twice would mean two
+  // independent loads that can disagree mid-flight.
+  const {
+    findings,
+    converged,
+    anomalies,
+    loading: complianceLoading,
+  } = useComplianceFindings({
+    leagueId,
+    leagueData,
+    getSalaryCapContribution,
+    salariesLoading,
+  });
+  // Only violations drive the badge. Warnings are worth reading but not worth
+  // a red count that never clears — IR designations lag real life, so a
+  // standing warning would train the commissioner to ignore the badge.
+  const violationCount = useMemo(
+    () => findings.filter((finding) => finding.severity === 'violation').length,
+    [findings],
+  );
+  const showReviewBadge = !complianceLoading && violationCount > 0;
 
   return (
     <div className="space-y-6">
@@ -66,7 +92,7 @@ export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDash
             at the bottom of Overview) and Pricing (players whose salary is null
             or 0 — i.e. drafted/traded/FA acquisitions where Sleeper doesn't
             give us a cost; waivers auto-price via the FAAB-bid processor). */}
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-8">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="walk-year">Walk Year</TabsTrigger>
           <TabsTrigger value="pricing" className="gap-1.5">
@@ -82,6 +108,19 @@ export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDash
                 title={`${unpricedCount} rostered player${unpricedCount === 1 ? '' : 's'} still need a salary set`}
               >
                 {unpricedCount > 99 ? '99+' : unpricedCount}
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="review" className="gap-1.5">
+            Review
+            {showReviewBadge && (
+              <span
+                className="inline-flex items-center justify-center rounded-full bg-secondary/20 text-secondary font-mono font-semibold min-w-[1.25rem] px-1 leading-none"
+                style={{ fontSize: 10, paddingTop: 2, paddingBottom: 2 }}
+                aria-label={`${violationCount} rule violation${violationCount === 1 ? '' : 's'} need review`}
+                title={`${violationCount} rule violation${violationCount === 1 ? '' : 's'} need commissioner review`}
+              >
+                {violationCount > 99 ? '99+' : violationCount}
               </span>
             )}
           </TabsTrigger>
@@ -106,6 +145,15 @@ export const CommissionerDashboard = ({ leagueId, leagueData }: CommissionerDash
             salaries={salaries}
             updateSalary={updateSalary}
             salariesLoading={salariesLoading}
+          />
+        </TabsContent>
+
+        <TabsContent value="review">
+          <ReviewQueuePanel
+            findings={findings}
+            converged={converged}
+            anomalies={anomalies}
+            loading={complianceLoading}
           />
         </TabsContent>
 

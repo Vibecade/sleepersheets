@@ -11,6 +11,7 @@ import { useLeagueSettings } from '@/hooks/useLeagueSettings';
 import { getTeamName } from '@/utils/leagueDataUtils';
 import { formatPlayerName } from '@/utils/csvExport';
 import { calculateOptimizedSalaries } from '@/utils/salaryCalculations';
+import { evaluateTradeCap, projectTotalAfterTrade } from '@/utils/compliance/capProjection';
 import { useDeadCapPlayers } from '@/hooks/useDeadCapPlayers';
 
 interface EnhancedTradeSimulatorProps {
@@ -186,16 +187,29 @@ const EnhancedTradeSimulator: React.FC<EnhancedTradeSimulatorProps> = ({
     });
   };
 
-  // Calculate trade impact
-  const calculateTradeImpact = (rosterId: string) => {
+  /** The salaries moving each way for one side of the trade. */
+  const tradeSideFor = (rosterId: string) => {
     const team = teams[rosterId];
-    if (!team) return team?.currentSalary || 0;
-    
-    const salaryOut = team.playersOut.reduce((total, player) => total + getSalaryCapContribution(player.playerId), 0);
-    const salaryIn = team.playersIn.reduce((total, player) => total + getSalaryCapContribution(player.playerId), 0);
-    
-    return team.currentSalary - salaryOut + salaryIn;
+    return {
+      rosterId: Number(rosterId),
+      teamName: team?.teamName ?? '',
+      currentTotal: team?.currentSalary || 0,
+      salaryOut: (team?.playersOut || []).reduce(
+        (total, player) => total + getSalaryCapContribution(player.playerId),
+        0,
+      ),
+      salaryIn: (team?.playersIn || []).reduce(
+        (total, player) => total + getSalaryCapContribution(player.playerId),
+        0,
+      ),
+    };
   };
+
+  // The projected total shown on screen and the number the cap verdict is
+  // made from come from the same function, so the UI can't display a figure
+  // that disagrees with the pass/fail beside it.
+  const calculateTradeImpact = (rosterId: string) =>
+    projectTotalAfterTrade(tradeSideFor(rosterId));
 
   // Validate trade
   const validateTrade = () => {
@@ -213,16 +227,22 @@ const EnhancedTradeSimulator: React.FC<EnhancedTradeSimulatorProps> = ({
       return { valid: false, message: 'Each team must trade away or receive players' };
     }
 
-    // Check salary cap compliance
-    const overCapTeams = teamList.filter(team => calculateTradeImpact(team.rosterId) > salaryCap);
-    
-    if (overCapTeams.length > 0) {
-      return { 
-        valid: false, 
-        message: `Trade would put ${overCapTeams.map(t => t.teamName).join(', ')} over the salary cap`
+    // Cap compliance is decided by the shared rule in utils/compliance, not
+    // re-derived here. The compliance engine judges completed trades with the
+    // same predicate, so a trade this simulator calls legal can't turn into a
+    // violation the moment it's actually made.
+    const { valid, overCapTeams } = evaluateTradeCap(
+      teamList.map((team) => tradeSideFor(team.rosterId)),
+      salaryCap,
+    );
+
+    if (!valid) {
+      return {
+        valid: false,
+        message: `Trade would put ${overCapTeams.map((t) => t.teamName).join(', ')} over the salary cap`,
       };
     }
-    
+
     return { valid: true, message: 'Trade is valid!' };
   };
 

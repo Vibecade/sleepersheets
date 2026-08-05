@@ -46,6 +46,54 @@ describe("calculateOptimizedSalaries — active salary", () => {
     expect(result.teamSalaries[1]).toBe(100);
   });
 
+  /**
+   * Sleeper nests `taxi` and `reserve` inside `players` — every taxi id in
+   * the demo fixture also appears in `players`. These cases pin the union
+   * semantics so the aggregation is right under either reading, rather than
+   * depending on us being right about someone else's API shape.
+   */
+  it("counts a taxi player once when taxi is nested inside players", () => {
+    const result = calculateOptimizedSalaries({
+      rosters: [roster(1, { players: ["a", "b", "c"], taxi: ["c"] })],
+      deadCapPlayers: [],
+      getSalaryCapContribution: contributionFrom({ a: 100, b: 250, c: 50 }),
+      salaryCap: 1000,
+    });
+    // 400, not 450 — "c" is one player, not two.
+    expect(result.teamSalaries[1]).toBe(400);
+  });
+
+  it("excludes IR when reserve is nested inside players", () => {
+    const result = calculateOptimizedSalaries({
+      rosters: [roster(1, { players: ["a", "ir1"], reserve: ["ir1"] })],
+      deadCapPlayers: [],
+      getSalaryCapContribution: contributionFrom({ a: 100, ir1: 9999 }),
+      salaryCap: 1000,
+    });
+    expect(result.teamSalaries[1]).toBe(100);
+  });
+
+  it("subtracts reserve even when a player is also on taxi", () => {
+    // Degenerate but cheap to be right about: IR wins over taxi.
+    const result = calculateOptimizedSalaries({
+      rosters: [roster(1, { players: ["a", "x"], taxi: ["x"], reserve: ["x"] })],
+      deadCapPlayers: [],
+      getSalaryCapContribution: contributionFrom({ a: 100, x: 500 }),
+      salaryCap: 1000,
+    });
+    expect(result.teamSalaries[1]).toBe(100);
+  });
+
+  it("is unchanged when the arrays are fully disjoint", () => {
+    const result = calculateOptimizedSalaries({
+      rosters: [roster(1, { players: ["a"], taxi: ["t"], reserve: ["ir"] })],
+      deadCapPlayers: [],
+      getSalaryCapContribution: contributionFrom({ a: 100, t: 25, ir: 9999 }),
+      salaryCap: 1000,
+    });
+    expect(result.teamSalaries[1]).toBe(125);
+  });
+
   it("treats missing roster arrays as empty", () => {
     const result = calculateOptimizedSalaries({
       rosters: [{ roster_id: 1 }],
