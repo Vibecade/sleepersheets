@@ -1,10 +1,22 @@
-// @ts-nocheck — Deno runtime. Not compiled by tsconfig.app.json (which
-// only includes src/) and not linted; see eslint.config.js ignores. All
-// decision logic lives in ./waivers.ts, which IS plain TS and IS covered
-// by the vitest suite. Keep this file thin enough to read in one sitting.
+// Deno runtime. Not compiled by tsconfig.app.json (which only includes
+// src/) and not linted by eslint — see eslint.config.js ignores. It IS
+// type-checked, by `npm run check:edge` (deno check) in CI.
+//
+// All decision logic lives in ./waivers.ts, which is plain TS covered by
+// the vitest suite. Keep this file thin enough to read in one sitting.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.8';
-import { planWaiverWrites, weeksToSweep } from './waivers.ts';
+import {
+  planWaiverWrites,
+  weeksToSweep,
+  type SleeperTransactionLike,
+} from './waivers.ts';
+
+const createDb = (url: string, serviceRoleKey: string) =>
+  createClient(url, serviceRoleKey, { auth: { persistSession: false } });
+
+/** Exactly the client `createDb` returns — avoids a generics mismatch. */
+type Db = ReturnType<typeof createDb>;
 
 const SLEEPER_API = 'https://api.sleeper.app/v1';
 
@@ -51,7 +63,7 @@ const fetchJson = async <T>(url: string): Promise<T | null> => {
 };
 
 const processLeague = async (
-  supabase: ReturnType<typeof createClient>,
+  supabase: Db,
   leagueId: string,
   apply: boolean,
   lookback?: number,
@@ -80,7 +92,7 @@ const processLeague = async (
 
     const perWeek = await Promise.all(
       weeks.map((week) =>
-        fetchJson<unknown[]>(`${SLEEPER_API}/league/${leagueId}/transactions/${week}`),
+        fetchJson<SleeperTransactionLike[]>(`${SLEEPER_API}/league/${leagueId}/transactions/${week}`),
       ),
     );
     const transactions = perWeek.flatMap((list) => list ?? []);
@@ -94,7 +106,7 @@ const processLeague = async (
     const plan = planWaiverWrites({
       transactions,
       processedTransactionIds: new Set(
-        (processedRows ?? []).map((r: { transaction_id: string }) => r.transaction_id),
+        (processedRows ?? []).map((row) => String(row.transaction_id)),
       ),
     });
 
@@ -159,10 +171,9 @@ Deno.serve(async (req: Request) => {
     ? Math.floor(lookbackParam)
     : undefined;
 
-  const supabase = createClient(
+  const supabase = createDb(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    { auth: { persistSession: false } },
   );
 
   // Claimed leagues are the ones with an owner who expects this to run.
@@ -172,7 +183,7 @@ Deno.serve(async (req: Request) => {
   const { data: owned, error } = await query;
   if (error) return json({ error: error.message }, 500);
 
-  const leagueIds = [...new Set((owned ?? []).map((r: { league_id: string }) => r.league_id))];
+  const leagueIds = [...new Set((owned ?? []).map((row) => String(row.league_id)))];
 
   const results: RunSummary[] = [];
   for (const leagueId of leagueIds) {
