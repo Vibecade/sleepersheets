@@ -30,24 +30,32 @@ const fetchLeaguesForYears = async (userId: string): Promise<{ leagues: SleeperL
     throw new Error(`No NFL leagues found for ${currentYear} or ${currentYear - 1}`);
 };
 
-const fetchUserLeaguesAndGetFirstId = async (username: string): Promise<string> => {
+// Sleeper answers an unknown username with 200 and a JSON `null` body rather
+// than a 404, so cachedFetch resolves instead of throwing and the miss only
+// surfaces later as a null dereference. Turn it into a real error here.
+const fetchSleeperUser = async (username: string): Promise<SleeperUser> => {
     const sanitizedUsername = sanitizeInput(username);
     const validation = validateUsername(sanitizedUsername);
     if (!validation.isValid) {
         throw new Error(validation.error);
     }
-    const userData = await cachedFetch<SleeperUser>(`https://api.sleeper.app/v1/user/${sanitizedUsername}`, {}, 10 * 60 * 1000);
+    const userData = await cachedFetch<SleeperUser | null>(
+        `https://api.sleeper.app/v1/user/${sanitizedUsername}`, {}, 10 * 60 * 1000
+    );
+    if (!userData?.user_id) {
+        throw new Error(`No Sleeper user found with the username "${sanitizedUsername}".`);
+    }
+    return userData;
+};
+
+const fetchUserLeaguesAndGetFirstId = async (username: string): Promise<string> => {
+    const userData = await fetchSleeperUser(username);
     const { leagues } = await fetchLeaguesForYears(userData.user_id);
     return leagues[0].league_id;
 };
 
 const fetchUserLeaguesData = async (username: string): Promise<UserLeaguesData> => {
-    const sanitizedUsername = sanitizeInput(username);
-    const validation = validateUsername(sanitizedUsername);
-    if (!validation.isValid) {
-        throw new Error(validation.error);
-    }
-    const userData = await cachedFetch<SleeperUser>(`https://api.sleeper.app/v1/user/${sanitizedUsername}`, {}, 10 * 60 * 1000);
+    const userData = await fetchSleeperUser(username);
     const { leagues } = await fetchLeaguesForYears(userData.user_id);
     
     const sortedLeagues = leagues.sort((a, b) => {
@@ -100,7 +108,7 @@ export const useLeagueSubmissions = ({
       },
       onError: (error: Error) => {
           toast({
-              title: "Error",
+              title: "Couldn't load leagues",
               description: error.message,
               variant: "destructive"
           });
@@ -120,21 +128,28 @@ export const useLeagueSubmissions = ({
       },
       onError: (error: Error) => {
           toast({
-              title: "Error",
+              title: "Couldn't load leagues",
               description: error.message,
               variant: "destructive"
           });
       }
   });
 
+  // Each mutation reports failures to the user from its own onError handler,
+  // so swallow the rejection here rather than letting it surface as an
+  // unhandled promise rejection in the console.
   const handleUsernameSubmit = async (inputUsername?: string) => {
       const usernameValue = inputUsername || usernameFromInput;
-      await fetchLeaguesData(usernameValue);
+      await fetchLeaguesData(usernameValue).catch(() => {
+          // Reported by the mutation's onError handler.
+      });
   };
 
   const handleQuickLoadFirstLeague = async (inputUsername?: string) => {
       const usernameValue = inputUsername || usernameFromInput;
-      await fetchFirstLeague(usernameValue);
+      await fetchFirstLeague(usernameValue).catch(() => {
+          // Reported by the mutation's onError handler.
+      });
   };
 
   const handleSelectLeague = (leagueId: string) => {
@@ -151,7 +166,9 @@ export const useLeagueSubmissions = ({
   const handleRefreshLeagues = async (inputUsername?: string) => {
       const usernameValue = inputUsername || usernameFromInput;
       if (usernameValue) {
-          await fetchLeaguesData(usernameValue);
+          await fetchLeaguesData(usernameValue).catch(() => {
+              // Reported by the mutation's onError handler.
+          });
       }
   };
 
