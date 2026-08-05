@@ -82,12 +82,56 @@ reproducible. If you do push it, note that its `00000000000000` version sorts
 before every already-applied migration, so the Supabase CLI may skip it as
 out-of-order; `supabase db push --include-all` applies it, harmlessly.
 
+## Change history
+
+`20260810000000_player_change_history.sql` records every salary and contract
+change in `player_change_history`, via an `AFTER INSERT OR UPDATE OR DELETE`
+trigger on `player_salaries` and `player_contracts`.
+
+A trigger rather than application code, because auditing written by hand has
+already proven unreliable here: `commissioner_actions` covers five write
+paths and misses the rest — including `usePlayerSalaries`, the main one — and
+the calls that exist are fire-and-forget, so a mutation can succeed while its
+audit row silently disappears. The scheduled waiver function bypasses the
+client entirely. A trigger is the only place that sees every writer.
+
+**`source` is derived, not trusted.** A caller may declare intent by setting
+`app.change_source`, but when unset it falls back to whether the write carried
+an authenticated user — service-role writes have no `auth.uid()`. An automated
+change therefore cannot be mistaken for a human one just because a job forgot
+to announce itself.
+
+```sql
+-- A job announcing itself, and grouping its writes so they can be reversed
+-- together. This is how the season rollover will become undoable.
+SET LOCAL app.change_source = 'rollover';
+SET LOCAL app.change_batch  = '...uuid...';
+```
+
+**It watches every column that feeds the cap, not just `salary`.**
+`getSalaryCapContribution()` charges $0 for an `acquisition_type` of `'faab'`
+and 25% for a `taxi_squad` player, so flipping either moves a team's cap
+number while the salary column sits still — and `updateTaxiSquadStatus()`
+writes exactly that shape. Watching only `salary` would have left the most
+common cap change with no explanation, which is the gap this table exists to
+close. A write that moves two tracked columns records one row for each.
+
+Values are stored as text because the tracked columns aren't all numbers
+(`taxi_squad` is boolean, `acquisition_type` a string); callers reversing a
+rollover cast back.
+
+**No-op updates are not recorded.** The app upserts salaries on load, so most
+writes leave a given column untouched; logging those would bury the real
+changes.
+
+The table is append-only from outside the database. Read access is limited to
+league owners (it carries `changed_by` user ids); there are no INSERT, UPDATE
+or DELETE policies at all, so the only writer is the `SECURITY DEFINER`
+trigger. Verified: a league owner can read their league's history but cannot
+delete, alter, or forge a row.
+
 ## Still outstanding
 
-- **No change history.** Nothing records who changed a salary or contract, or
-  what the previous value was, so "why did my cap change?" has no answer. The
-  scheduled waiver function writes with the service-role key and logs no audit
-  row at all.
 - **`league_settings` INSERT is open.** `20250904221709` creates
   "Allow creation of default league settings" with `WITH CHECK (true)`, so
   anyone can seed cap settings for any unclaimed league. `useLeagueSettings`

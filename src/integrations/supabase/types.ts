@@ -582,6 +582,48 @@ export type Database = {
         }
         Relationships: []
       }
+      player_change_history: {
+        Row: {
+          batch_id: string | null
+          changed_by: string | null
+          created_at: string
+          field: string
+          id: number
+          league_id: string
+          new_value: string | null
+          operation: string
+          player_id: string
+          previous_value: string | null
+          source: string
+        }
+        Insert: {
+          batch_id?: string | null
+          changed_by?: string | null
+          created_at?: string
+          field: string
+          id?: number
+          league_id: string
+          new_value?: string | null
+          operation: string
+          player_id: string
+          previous_value?: string | null
+          source: string
+        }
+        Update: {
+          batch_id?: string | null
+          changed_by?: string | null
+          created_at?: string
+          field?: string
+          id?: number
+          league_id?: string
+          new_value?: string | null
+          operation?: string
+          player_id?: string
+          previous_value?: string | null
+          source?: string
+        }
+        Relationships: []
+      }
       player_contracts: {
         Row: {
           contract_length: number | null
