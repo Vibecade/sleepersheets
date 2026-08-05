@@ -1,37 +1,14 @@
--- Fix FAAB classification issue for existing data
--- Team defenses (like LAR, MIN) are commonly acquired via FAAB and should not count toward salary cap
-
--- First, let's identify and fix team defenses that should be FAAB acquisitions
--- Team defenses typically have player_ids that are team abbreviations
-UPDATE player_salaries 
-SET acquisition_type = 'faab'
-WHERE acquisition_type = 'contract' 
-  AND (
-    -- Team defense abbreviations (common ones)
-    player_id IN ('LAR', 'MIN', 'KC', 'BUF', 'PHI', 'SF', 'DAL', 'MIA', 'BAL', 'CIN', 
-                  'JAX', 'TEN', 'IND', 'HOU', 'CLE', 'PIT', 'DEN', 'LV', 'LAC', 'NYJ',
-                  'NE', 'GB', 'CHI', 'DET', 'TB', 'NO', 'ATL', 'CAR', 'WAS', 'NYG',
-                  'SEA', 'ARI', 'LAC')
-    -- Or player_ids that look like team abbreviations (2-3 letter codes)
-    OR (LENGTH(player_id) <= 3 AND player_id ~ '^[A-Z]+$')
-  );
-
--- Remove any contract records for players with FAAB acquisition type
-DELETE FROM player_contracts 
-WHERE player_id IN (
-  SELECT DISTINCT player_id 
-  FROM player_salaries 
-  WHERE acquisition_type = 'faab'
-);
-
--- Log the changes made
-DO $$
-DECLARE
-    faab_count integer;
-    contract_count integer;
-BEGIN
-    SELECT COUNT(*) INTO faab_count FROM player_salaries WHERE acquisition_type = 'faab';
-    SELECT COUNT(*) INTO contract_count FROM player_contracts;
-    
-    RAISE NOTICE 'FAAB classification fix completed. FAAB players: %, Contract records: %', faab_count, contract_count;
-END $$;
+-- No-op: exact duplicate of 20250910050447.
+--
+-- This file was byte-for-byte identical to the migration 11 seconds before
+-- it. Its statements are a data backfill (reclassifying team defenses as FAAB
+-- acquisitions and deleting the matching contract rows), so running them a
+-- second time changed nothing in production — the first run had already made
+-- the predicates false.
+--
+-- The body is removed rather than kept, because on a database being built
+-- from scratch the pair is not harmless: both files are recorded as applied
+-- in production, so deleting this file outright would leave a version in
+-- supabase_migrations.schema_migrations with no corresponding migration.
+-- Keeping the file and emptying it preserves that record while letting a
+-- fresh `supabase db reset` succeed.
