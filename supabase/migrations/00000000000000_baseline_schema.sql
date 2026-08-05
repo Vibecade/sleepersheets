@@ -71,8 +71,7 @@ BEGIN
     league_id TEXT NOT NULL,
     user_id UUID NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT true,
-    claimed_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    UNIQUE (league_id, user_id)
+    claimed_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
   );
 
   ALTER TABLE public.league_ownership ENABLE ROW LEVEL SECURITY;
@@ -86,6 +85,23 @@ BEGIN
     ON public.league_ownership FOR UPDATE USING (auth.uid() = user_id);
   CREATE POLICY "Users can release their own league claims"
     ON public.league_ownership FOR DELETE USING (auth.uid() = user_id);
+
+  -- One ACTIVE owner per league, which is the rule the app already assumes.
+  --
+  -- `claimLeague` inserts and reads a 23505 as "league already claimed by
+  -- another user", and `checkOwnershipStatus` selects active rows for a
+  -- league with `.maybeSingle()`. Both are only correct if a second active
+  -- claim is impossible. A plain UNIQUE (league_id, user_id) would not
+  -- deliver that: it stops one user claiming twice, but lets two different
+  -- users hold active claims on the same league — at which point both pass
+  -- the owner-only RLS policies below and can write to the same league,
+  -- while `.maybeSingle()` starts failing outright.
+  --
+  -- Partial, so releasing a claim (is_active = false) and re-claiming stays
+  -- possible. Nothing deactivates ownership today, but a UNIQUE across all
+  -- rows would make adding that flow quietly impossible.
+  CREATE UNIQUE INDEX idx_league_ownership_one_active_owner
+    ON public.league_ownership (league_id) WHERE is_active;
 
   CREATE INDEX idx_league_ownership_league ON public.league_ownership (league_id, is_active);
   CREATE INDEX idx_league_ownership_user ON public.league_ownership (user_id);
