@@ -8,7 +8,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.8';
 import {
   planWaiverWrites,
+  selectAutomatedLeagues,
   weeksToSweep,
+  type AutomationSettingsLike,
   type SleeperTransactionLike,
 } from './waivers.ts';
 
@@ -33,6 +35,9 @@ const SLEEPER_API = 'https://api.sleeper.app/v1';
  *
  *   - Dry run unless `?apply=true`. A fresh deploy cannot write.
  *   - Requires a shared secret; fails closed if CRON_SECRET is unset.
+ *   - Per-league opt-in. Ownership is no longer consent: a league must have
+ *     `auto_waiver_pricing` enabled and must not be paused. Absence of a
+ *     settings row means off.
  *   - Idempotent via processed_transactions (UNIQUE league_id,
  *     transaction_id). Re-running is a no-op.
  *   - Only ever writes acquisition_type='faab' salary rows for players
@@ -176,14 +181,26 @@ Deno.serve(async (req: Request) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
 
-  // Claimed leagues are the ones with an owner who expects this to run.
+  // Ownership establishes who the league belongs to; it does not by itself
+  // grant permission to write to it. That is what the automation settings are
+  // for — see selectAutomatedLeagues.
   let query = supabase.from('league_ownership').select('league_id').eq('is_active', true);
   if (onlyLeague) query = query.eq('league_id', onlyLeague);
 
   const { data: owned, error } = await query;
   if (error) return json({ error: error.message }, 500);
 
-  const leagueIds = [...new Set((owned ?? []).map((row) => String(row.league_id)))];
+  const ownedLeagueIds = (owned ?? []).map((row) => String(row.league_id));
+
+  const { data: automation, error: automationError } = await supabase
+    .from('league_automation_settings')
+    .select('league_id, auto_waiver_pricing, paused_at');
+  if (automationError) return json({ error: automationError.message }, 500);
+
+  const { enabled: leagueIds, skipped } = selectAutomatedLeagues(
+    ownedLeagueIds,
+    (automation ?? []) as AutomationSettingsLike[],
+  );
 
   const results: RunSummary[] = [];
   for (const leagueId of leagueIds) {
@@ -194,6 +211,9 @@ Deno.serve(async (req: Request) => {
     mode: apply ? 'apply' : 'dry-run',
     sweep: lookback ? `last ${lookback} week(s)` : 'full season',
     leagues: leagueIds.length,
+    // Reported, not dropped. A run that declined every league otherwise looks
+    // exactly like a run that is broken.
+    skipped,
     totalPlanned: results.reduce((n, r) => n + r.planned, 0),
     totalWritten: results.reduce((n, r) => n + r.written, 0),
     errors: results.filter((r) => r.error).length,

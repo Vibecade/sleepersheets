@@ -16,6 +16,7 @@ built to be hard to misuse:
 | Guard | Behaviour |
 |---|---|
 | **Dry run by default** | Writes nothing unless `?apply=true`. A fresh deploy is inert. |
+| **Per-league opt-in** | Ownership is not consent. A league is skipped unless it has `auto_waiver_pricing` enabled in `league_automation_settings`, and skipped again if `paused_at` is set. No settings row means off. |
 | **Fails closed** | Returns 500 if `CRON_SECRET` is unset; 401 if the header doesn't match. |
 | **Idempotent** | Skips anything already in `processed_transactions` (`UNIQUE(league_id, transaction_id)`). Re-running is a no-op. |
 | **Self-healing** | Sweeps the whole season by default, so enabling it midseason or recovering from an outage backfills rather than leaving a permanent hole. |
@@ -24,9 +25,36 @@ built to be hard to misuse:
 | **Narrow blast radius** | Only upserts `acquisition_type='faab'` salary rows for players named by a completed waiver claim. Never deletes. Never touches contracts. |
 | **Explicit conflict target** | `onConflict: 'league_id,player_id'` — without it PostgREST inserts duplicates rather than updating. |
 
+## Which leagues it touches
+
+Owned **and** opted in. Claiming a league used to be the entire test, which
+meant claiming enrolled you in having a background job write to your salary
+table without ever being asked. A league is now only eligible when it has a
+row in `league_automation_settings` with `auto_waiver_pricing = true` and
+`paused_at IS NULL`.
+
+Commissioners control this from the Settings tab of the commissioner
+dashboard. `paused_at` is the kill switch: it stops every capability for a
+league while leaving the individual flags as they are, so resuming doesn't
+mean remembering what was switched on.
+
+**Leagues that are skipped are reported, not dropped.** The run summary lists
+each one with a reason (`automation not configured`, `waiver pricing not
+enabled`, `automation paused`) — a job that quietly does nothing looks
+identical to a job that is broken.
+
+```json
+{
+  "mode": "dry-run",
+  "leagues": 1,
+  "skipped": [{ "leagueId": "9876...", "reason": "automation not configured" }],
+  ...
+}
+```
+
 ## What it does
 
-For each league in `league_ownership` where `is_active`:
+For each eligible league:
 
 1. Read the league from Sleeper to get `settings.leg` (same "Sleeper is
    authoritative" convention the app uses for week resolution).

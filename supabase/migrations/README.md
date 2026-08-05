@@ -130,6 +130,35 @@ or DELETE policies at all, so the only writer is the `SECURITY DEFINER`
 trigger. Verified: a league owner can read their league's history but cannot
 delete, alter, or forge a row.
 
+## Automation opt-in and kill switch
+
+`20260812000000_league_automation_settings.sql` adds per-league consent for
+background writes. Before it, the scheduled waiver job selected its work from
+`league_ownership.is_active` alone — so claiming a league silently enrolled it
+in having a job write to the salary table.
+
+`auto_waiver_pricing` is **off by default** and there is no backfill. Enabling
+existing leagues automatically would preserve current behaviour at the cost of
+re-creating the exact thing this removes. Commissioners opt in from the
+Settings tab; an operator can enable one directly:
+
+```sql
+INSERT INTO public.league_automation_settings (league_id, auto_waiver_pricing)
+VALUES ('<league_id>', true)
+ON CONFLICT (league_id) DO UPDATE SET auto_waiver_pricing = true;
+```
+
+`paused_at` is the kill switch — it stops every capability for a league
+regardless of the individual flags, and leaves those flags intact so resuming
+doesn't require remembering what was on.
+
+**Why not columns on `league_settings`:** that table is created through a
+policy with `WITH CHECK (true)`, so anyone can insert a row for any league —
+the app depends on it to seed defaults on first view. A control whose whole
+purpose is consent cannot inherit an open INSERT. Verified against a rebuilt
+schema: a user who owns nothing can create a `league_settings` row for someone
+else's league, and cannot create a `league_automation_settings` row for it.
+
 ## Still outstanding
 
 - **`league_settings` INSERT is open.** `20250904221709` creates

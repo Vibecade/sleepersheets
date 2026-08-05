@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useReadOnly } from '@/contexts/read-only-context';
 import { Save, Settings } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AutomationSettingsCard } from './AutomationSettingsCard';
 import type { CommissionerLeagueData } from '@/types/sleeper';
 
 interface LeagueConfigurationPanelProps {
@@ -92,6 +93,8 @@ export const LeagueConfigurationPanel = ({ leagueId, leagueData }: LeagueConfigu
           </p>
         </div>
       </div>
+
+      <AutomationSettingsCard leagueId={leagueId} />
 
       <Card>
         <CardHeader>

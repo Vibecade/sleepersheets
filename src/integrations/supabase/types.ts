@@ -295,6 +295,39 @@ export type Database = {
         }
         Relationships: []
       }
+      league_automation_settings: {
+        Row: {
+          auto_waiver_pricing: boolean
+          created_at: string
+          id: string
+          league_id: string
+          paused_at: string | null
+          paused_reason: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          auto_waiver_pricing?: boolean
+          created_at?: string
+          id?: string
+          league_id: string
+          paused_at?: string | null
+          paused_reason?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          auto_waiver_pricing?: boolean
+          created_at?: string
+          id?: string
+          league_id?: string
+          paused_at?: string | null
+          paused_reason?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       league_comments: {
         Row: {
           comment_type: string | null
