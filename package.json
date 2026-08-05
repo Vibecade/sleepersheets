@@ -17,6 +17,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
+    "check:edge": "deno check supabase/functions/**/index.ts",
     "check:bundle": "node scripts/check-bundle-size.mjs",
     "smoke:routes": "bash scripts/smoke-routes.sh"
   },

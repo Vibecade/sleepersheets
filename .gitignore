@@ -23,3 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Supabase CLI scratch + Deno lockfile for edge functions
+supabase/.temp/
+supabase/functions/deno.lock
+deno.lock

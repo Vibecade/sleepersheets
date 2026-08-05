@@ -28,6 +28,16 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      # The edge function runs on Deno, so tsc never sees it. Without this
+      # it was the one file in the repo with no type checking at all.
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Typecheck edge functions
+        run: npm run check:edge
+
       - name: Test
         run: npm run test:run
 
