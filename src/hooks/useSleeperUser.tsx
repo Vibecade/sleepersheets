@@ -72,7 +72,13 @@ export const useSleeperUser = () => {
       // Fetch user data
       const userResponse = await fetch(`https://api.sleeper.app/v1/user/${username}`);
       if (userResponse.ok) {
+        // Sleeper returns 200 with a JSON `null` body for an unknown username,
+        // so response.ok alone does not mean a user came back.
         const userData = await userResponse.json();
+        if (!userData?.user_id) {
+          logger.error('Sleeper returned no user for username:', username);
+          return;
+        }
         setSleeperUser(userData);
         await fetchSleeperLeagues(userData.user_id);
       }
@@ -123,7 +129,12 @@ export const useSleeperUser = () => {
       // First validate the username by fetching user data
       const userResponse = await fetch(`https://api.sleeper.app/v1/user/${username}`);
       
-      if (!userResponse.ok) {
+      const userData = userResponse.ok ? await userResponse.json() : null;
+
+      // Sleeper answers an unknown username with 200 and a JSON `null` body, so
+      // the parsed result has to be checked too -- otherwise a typo was saved to
+      // the profile and then crashed on userData.user_id below.
+      if (!userData?.user_id) {
         toast({
           title: "Invalid Username",
           description: "Could not find a Sleeper user with that username",
@@ -132,8 +143,6 @@ export const useSleeperUser = () => {
         return false;
       }
 
-      const userData = await userResponse.json();
-      
       // Save to database
       const { error } = await supabase
         .from('profiles')

@@ -71,17 +71,44 @@ export const useLeagueSettings = (leagueId: string) => {
           reserve_limit: 100,
         };
         
+        // Every consumer of this hook loads independently, so on a league's
+        // first visit several of them miss the select above at once and race to
+        // create the row. A plain insert let the first one win and handed the
+        // rest a duplicate-key 409, leaving them with null settings even though
+        // a row now existed.
+        //
+        // ignoreDuplicates keeps this a pure create: a caller that loses the
+        // race writes nothing and gets no row back, so a league's customised
+        // cap can never be reset to these defaults by a stale read.
         const { data: newSettings, error: createError } = await supabase
           .from('league_settings')
-          .insert(defaultSettings)
+          .upsert(defaultSettings, { onConflict: 'league_id', ignoreDuplicates: true })
           .select()
-          .single();
+          .maybeSingle();
 
         if (createError) {
           logger.error('Error creating default league settings:', createError);
         } else {
-          setSettings(newSettings);
-          settingsCache.set(cacheKey, { data: newSettings, timestamp: Date.now() });
+          // No row back means someone else created it first; read theirs.
+          let created = newSettings;
+
+          if (!created) {
+            const { data: existing, error: rereadError } = await supabase
+              .from('league_settings')
+              .select('*')
+              .eq('league_id', currentLeagueId)
+              .maybeSingle();
+
+            if (rereadError) {
+              logger.error('Error re-reading league settings:', rereadError);
+            }
+            created = existing;
+          }
+
+          if (created) {
+            setSettings(created);
+            settingsCache.set(cacheKey, { data: created, timestamp: Date.now() });
+          }
         }
       }
       
