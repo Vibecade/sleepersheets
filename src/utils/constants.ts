@@ -21,6 +21,11 @@ export const RATE_LIMITS = {
 export const NFL_SEASON = {
   MAX_WEEKS: 22,
   MIN_WEEK: 1,
+  // Fallback regular-season length for leagues whose payload omits
+  // playoff_week_start. The NFL regular season is 18 weeks, but fantasy
+  // leagues almost universally end the regular season before it, so this
+  // is only ever a last resort — a real playoff_week_start always wins.
+  REGULAR_SEASON_WEEKS: 17,
   SEASON_START_MONTH: 8, // September (0-indexed)
   // Week 1 kicks off the Thursday after Labor Day (first Monday in
   // September), so the date moves year to year. Deriving it beats pinning

@@ -1,4 +1,5 @@
 import React from 'react';
+import { describeLeagueWeek } from '@/utils/nflWeek';
 
 interface LeagueHeaderProps {
   league: any;
@@ -87,9 +88,7 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
   compact = false,
 }) => {
   const [headLine, tailLine] = splitLeagueName(league?.name || 'LEAGUE');
-  const week = league?.settings?.leg ?? league?.settings?.week ?? 0;
-  const playoffStart = Number(league?.settings?.playoff_week_start) || 0;
-  const totalWeeks = playoffStart > 1 ? playoffStart - 1 : 17;
+  const { week, label: weekLabel, isPreseason } = describeLeagueWeek(league);
 
   // Compact mobile pill (kept simple — used inline above the bottom-nav)
   if (compact) {
@@ -99,7 +98,7 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
           className="font-mono text-[9px] text-primary font-semibold mb-1"
           style={{ letterSpacing: '0.2em' }}
         >
-          ● WK {week} · LIVE
+          {isPreseason ? '● PRESEASON' : `● WK ${week} · LIVE`}
         </div>
         <h2
           className="font-headline font-bold uppercase text-foreground m-0 truncate"
@@ -130,7 +129,7 @@ const LeagueHeader: React.FC<LeagueHeaderProps> = ({
           className="font-mono font-semibold text-primary mb-2"
           style={{ fontSize: 11, letterSpacing: '0.25em' }}
         >
-          ● COMMISSIONER VIEW / SEASON {league?.season} / WEEK {week} OF {totalWeeks}
+          ● COMMISSIONER VIEW / SEASON {league?.season} / {weekLabel}
         </div>
         <h1
           className="font-headline font-bold uppercase text-foreground m-0"

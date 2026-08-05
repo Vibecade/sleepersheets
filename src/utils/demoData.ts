@@ -2,16 +2,34 @@ import type { CombinedLeagueData } from '@/utils/leagueApi';
 
 export const DEMO_LEAGUE_ID = 'DEMO_LEAGUE';
 
+/**
+ * True for the sample league.
+ *
+ * `DEMO_LEAGUE` is not a Sleeper league ID, so anything that validates IDs or
+ * calls Sleeper has to opt out of doing so — otherwise the demo throws a
+ * validation toast on entry and 404s its way through the network tab. Use
+ * this rather than comparing to the constant by hand, so the exceptions are
+ * greppable.
+ */
+export const isDemoLeagueId = (leagueId?: string | null): boolean =>
+  leagueId === DEMO_LEAGUE_ID;
+
 export const createDemoLeagueData = (): CombinedLeagueData => {
   return {
     league: {
       league_id: DEMO_LEAGUE_ID,
       name: "Dynasty Demo League",
       season: "2024",
+      // Three sample rosters are defined below. This has to agree with them:
+      // the header renders `total_rosters` directly, so leaving it out
+      // printed "TEAMS 0", and the previous num_teams of 12 contradicted the
+      // three roster cards actually on screen. demoData.test.ts holds these
+      // in sync if rosters are ever added.
+      total_rosters: 3,
       settings: {
-        week: 15,
+        week: 14,
         playoff_week_start: 15,
-        num_teams: 12,
+        num_teams: 3,
         roster_positions: ['QB', 'RB', 'RB', 'WR', 'WR', 'TE', 'FLEX', 'FLEX', 'SUPER_FLEX', 'BN', 'BN', 'BN', 'BN', 'BN', 'BN', 'BN', 'BN', 'BN', 'BN', 'BN', 'BN', 'BN', 'BN', 'BN', 'BN', 'TAXI', 'TAXI', 'TAXI', 'TAXI', 'TAXI']
       },
       scoring_settings: {

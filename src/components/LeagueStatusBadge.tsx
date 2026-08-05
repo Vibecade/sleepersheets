@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { logger } from '@/utils/logger';
+import { isDemoLeagueId } from '@/utils/demoData';
 
 interface OwnershipStatus {
   isOwned: boolean;
@@ -73,6 +74,12 @@ const LeagueStatusBadge: React.FC<LeagueStatusBadgeProps> = ({ leagueId, onOwner
         }
         await fetchStatus();
     };
+
+    // The sample league isn't claimable — it doesn't exist on Sleeper and
+    // has no ownership row. Offering "Claim League" there is a dead end.
+    if (isDemoLeagueId(leagueId)) {
+        return null;
+    }
 
     if (checkingStatus || !status) {
         return null;
