@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Copy, CheckCircle, Sparkles, FileSpreadsheet, Bot } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useToast } from '@/hooks/use-toast';
 import StaticPageLayout from '@/components/layout/StaticPageLayout';
 

@@ -22,6 +22,13 @@ export default defineConfig(({ mode }) => ({
             return undefined;
           }
 
+          // React and the router are on the critical path but change rarely.
+          // Splitting them out keeps them cached across app deploys and keeps
+          // the entry chunk near its pre-React-19 size.
+          if (/[\\/]node_modules[\\/](react|react-dom|scheduler|react-router)[\\/]/.test(id)) {
+            return "react-vendor";
+          }
+
           if (id.includes("@supabase")) {
             return "supabase-vendor";
           }

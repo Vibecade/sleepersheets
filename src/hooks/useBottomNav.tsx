@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { useLocation } from "react-router-dom"
+import { useLocation } from "react-router"
 import { Trophy, Settings, Calendar, Sparkles, Menu } from "lucide-react"
 import { BottomNavItem } from "@/components/ui/bottom-nav"
 

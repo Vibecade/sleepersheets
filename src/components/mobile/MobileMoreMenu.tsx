@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Shield, Download, Info, HelpCircle, FileText, Calendar, LogOut, LogIn } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import MinimizablePendingFreeAgents from '@/components/MinimizablePendingFreeAgents';
 import { usePlayerSalaries } from '@/hooks/usePlayerSalaries';
 import { useLeagueSettings } from '@/hooks/useLeagueSettings';

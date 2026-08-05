@@ -19,7 +19,7 @@ import SocialProofSection from '@/components/landing/SocialProofSection';
 import GetStartedModal from '@/components/landing/GetStartedModal';
 import ReturningUserPrompt from '@/components/landing/ReturningUserPrompt';
 import { DEMO_LEAGUE_ID } from '@/utils/demoData';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import {
   LazyLeagueConnectionForm,
   LazyLeagueData,
