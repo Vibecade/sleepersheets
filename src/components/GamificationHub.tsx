@@ -70,6 +70,7 @@ const GamificationHub: React.FC<GamificationHubProps> = ({
     isSaving: isSavingSnapshot,
     saveError: questSnapshotError,
     canPersist: canPersistSnapshots,
+    isUnavailable: snapshotsUnavailable,
   } = useQuestSnapshots({
     leagueId,
     season: league?.season || String(new Date().getFullYear()),
@@ -462,7 +463,11 @@ const GamificationHub: React.FC<GamificationHubProps> = ({
         {questSnapshotError && (
           <p className="text-[11px] text-destructive mt-3">{questSnapshotError}</p>
         )}
-        {!canPersistSnapshots && (
+        {/* Only an ownership problem is the user's to fix. When the snapshot
+            table isn't deployed, telling a commissioner to claim a league they
+            already own would send them chasing the wrong thing — quests still
+            work, so say nothing. */}
+        {!canPersistSnapshots && !snapshotsUnavailable && (
           <p className="text-[11px] text-muted-foreground mt-3">
             Claim league ownership to persist weekly quest snapshots.
           </p>
