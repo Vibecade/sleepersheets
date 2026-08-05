@@ -27,11 +27,23 @@ CREATE TABLE IF NOT EXISTS public.player_change_history (
   id BIGSERIAL PRIMARY KEY,
   league_id TEXT NOT NULL,
   player_id TEXT NOT NULL,
-  -- Which value changed. Both tables funnel into one history so that
+  -- Which column changed. Both tables funnel into one history so that
   -- "what happened to this player" is a single query rather than a union.
-  field TEXT NOT NULL CHECK (field IN ('salary', 'contract_length')),
-  previous_value INTEGER,
-  new_value INTEGER,
+  --
+  -- `salary` is not the only thing that moves a cap number.
+  -- getSalaryCapContribution() charges $0 for an acquisition_type of 'faab'
+  -- and 25% for a taxi_squad player, so flipping either changes a team's cap
+  -- hit while the salary column sits still. updateTaxiSquadStatus() writes
+  -- exactly that — same salary, different flag — and it would be the most
+  -- common cap change with no explanation if this only watched `salary`.
+  field TEXT NOT NULL CHECK (
+    field IN ('salary', 'taxi_squad', 'acquisition_type', 'contract_length')
+  ),
+  -- Text rather than integer because the tracked columns aren't all numbers:
+  -- taxi_squad is boolean and acquisition_type is an enum-ish string. Callers
+  -- reversing a rollover cast back.
+  previous_value TEXT,
+  new_value TEXT,
   operation TEXT NOT NULL CHECK (operation IN ('insert', 'update', 'delete')),
   -- Who or what made the change. Derived, not trusted from the caller:
   -- see public.record_player_change().
@@ -79,10 +91,11 @@ CREATE INDEX IF NOT EXISTS idx_player_change_history_batch
   ON public.player_change_history (batch_id) WHERE batch_id IS NOT NULL;
 
 /**
- * Records one salary or contract change.
+ * Records every change to the columns it is asked to watch.
  *
- * Attached with the changing column's name as the first trigger argument,
- * so one function serves both tables.
+ * The columns are passed as trigger arguments, so one function serves both
+ * tables, and a write that moves two of them at once produces one row each
+ * rather than collapsing into a single ambiguous entry.
  *
  * `source` is derived rather than taken on trust. A caller may declare intent
  * by setting `app.change_source` (the rollover job sets 'rollover', the
@@ -98,41 +111,19 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_field TEXT := TG_ARGV[0];
-  v_previous INTEGER;
-  v_new INTEGER;
-  v_league TEXT;
-  v_player TEXT;
+  -- NULL on the side that doesn't exist for this operation, which makes the
+  -- comparison below handle insert and delete without special cases.
+  v_old JSONB := CASE WHEN TG_OP = 'INSERT' THEN NULL ELSE to_jsonb(OLD) END;
+  v_new JSONB := CASE WHEN TG_OP = 'DELETE' THEN NULL ELSE to_jsonb(NEW) END;
+  v_row JSONB := COALESCE(v_new, v_old);
+  v_field TEXT;
+  v_previous TEXT;
+  v_next TEXT;
   v_actor UUID := auth.uid();
   v_source TEXT;
   v_batch UUID;
-  v_operation TEXT;
+  v_operation TEXT := lower(TG_OP);
 BEGIN
-  IF TG_OP = 'DELETE' THEN
-    v_operation := 'delete';
-    v_previous  := (to_jsonb(OLD) ->> v_field)::INTEGER;
-    v_new       := NULL;
-    v_league    := OLD.league_id;
-    v_player    := OLD.player_id;
-  ELSIF TG_OP = 'UPDATE' THEN
-    v_operation := 'update';
-    v_previous  := (to_jsonb(OLD) ->> v_field)::INTEGER;
-    v_new       := (to_jsonb(NEW) ->> v_field)::INTEGER;
-    v_league    := NEW.league_id;
-    v_player    := NEW.player_id;
-    -- The app upserts salaries on load, so most updates change nothing.
-    -- Recording those would bury the real changes in noise.
-    IF v_previous IS NOT DISTINCT FROM v_new THEN
-      RETURN NEW;
-    END IF;
-  ELSE
-    v_operation := 'insert';
-    v_previous  := NULL;
-    v_new       := (to_jsonb(NEW) ->> v_field)::INTEGER;
-    v_league    := NEW.league_id;
-    v_player    := NEW.player_id;
-  END IF;
-
   v_source := COALESCE(
     NULLIF(current_setting('app.change_source', true), ''),
     CASE WHEN v_actor IS NULL THEN 'service_role' ELSE 'user' END
@@ -145,22 +136,33 @@ BEGIN
     v_batch := NULL;
   END;
 
-  INSERT INTO public.player_change_history (
-    league_id, player_id, field, previous_value, new_value,
-    operation, source, changed_by, batch_id
-  ) VALUES (
-    v_league, v_player, v_field, v_previous, v_new,
-    v_operation, v_source, v_actor, v_batch
-  );
+  FOREACH v_field IN ARRAY TG_ARGV LOOP
+    v_previous := v_old ->> v_field;
+    v_next     := v_new ->> v_field;
+
+    -- The app upserts salaries on load, so most writes leave a given column
+    -- untouched. Recording those would bury the real changes in noise.
+    CONTINUE WHEN v_previous IS NOT DISTINCT FROM v_next;
+
+    INSERT INTO public.player_change_history (
+      league_id, player_id, field, previous_value, new_value,
+      operation, source, changed_by, batch_id
+    ) VALUES (
+      v_row ->> 'league_id', v_row ->> 'player_id', v_field, v_previous, v_next,
+      v_operation, v_source, v_actor, v_batch
+    );
+  END LOOP;
 
   IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
   RETURN NEW;
 END $$;
 
+-- Every column that feeds getSalaryCapContribution(), not just `salary`.
 DROP TRIGGER IF EXISTS record_salary_change ON public.player_salaries;
 CREATE TRIGGER record_salary_change
   AFTER INSERT OR UPDATE OR DELETE ON public.player_salaries
-  FOR EACH ROW EXECUTE FUNCTION public.record_player_change('salary');
+  FOR EACH ROW EXECUTE FUNCTION
+    public.record_player_change('salary', 'taxi_squad', 'acquisition_type');
 
 DROP TRIGGER IF EXISTS record_contract_change ON public.player_contracts;
 CREATE TRIGGER record_contract_change

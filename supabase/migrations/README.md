@@ -108,8 +108,21 @@ SET LOCAL app.change_source = 'rollover';
 SET LOCAL app.change_batch  = '...uuid...';
 ```
 
+**It watches every column that feeds the cap, not just `salary`.**
+`getSalaryCapContribution()` charges $0 for an `acquisition_type` of `'faab'`
+and 25% for a `taxi_squad` player, so flipping either moves a team's cap
+number while the salary column sits still — and `updateTaxiSquadStatus()`
+writes exactly that shape. Watching only `salary` would have left the most
+common cap change with no explanation, which is the gap this table exists to
+close. A write that moves two tracked columns records one row for each.
+
+Values are stored as text because the tracked columns aren't all numbers
+(`taxi_squad` is boolean, `acquisition_type` a string); callers reversing a
+rollover cast back.
+
 **No-op updates are not recorded.** The app upserts salaries on load, so most
-updates change nothing; logging those would bury the real changes.
+writes leave a given column untouched; logging those would bury the real
+changes.
 
 The table is append-only from outside the database. Read access is limited to
 league owners (it carries `changed_by` user ids); there are no INSERT, UPDATE

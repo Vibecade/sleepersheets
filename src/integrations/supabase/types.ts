@@ -590,10 +590,10 @@ export type Database = {
           field: string
           id: number
           league_id: string
-          new_value: number | null
+          new_value: string | null
           operation: string
           player_id: string
-          previous_value: number | null
+          previous_value: string | null
           source: string
         }
         Insert: {
@@ -603,10 +603,10 @@ export type Database = {
           field: string
           id?: number
           league_id: string
-          new_value?: number | null
+          new_value?: string | null
           operation: string
           player_id: string
-          previous_value?: number | null
+          previous_value?: string | null
           source: string
         }
         Update: {
@@ -616,10 +616,10 @@ export type Database = {
           field?: string
           id?: number
           league_id?: string
-          new_value?: number | null
+          new_value?: string | null
           operation?: string
           player_id?: string
-          previous_value?: number | null
+          previous_value?: string | null
           source?: string
         }
         Relationships: []
