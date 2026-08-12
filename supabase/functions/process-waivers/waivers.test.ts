@@ -211,11 +211,14 @@ describe("weeksToSweep", () => {
 });
 
 describe("selectAutomatedLeagues", () => {
-  const on = (league_id: string) => ({ league_id, auto_waiver_pricing: true, paused_at: null });
+  const on = (league_id: string, extra: Record<string, unknown> = {}) =>
+    ({ league_id, auto_waiver_pricing: true, paused_at: null, ...extra });
+  const ids = (r: ReturnType<typeof selectAutomatedLeagues>) =>
+    r.enabled.map((e) => e.leagueId);
 
   it("runs for a league that opted in", () => {
     const result = selectAutomatedLeagues(["L1"], [on("L1")]);
-    expect(result.enabled).toEqual(["L1"]);
+    expect(ids(result)).toEqual(["L1"]);
     expect(result.skipped).toEqual([]);
   });
 
@@ -227,29 +230,51 @@ describe("selectAutomatedLeagues", () => {
     expect(result.skipped).toEqual([{ leagueId: "L1", reason: "automation not configured" }]);
   });
 
-  it("does not run for a league that opted out", () => {
+  it("does not run for a league with every capability off", () => {
     const result = selectAutomatedLeagues(
       ["L1"],
-      [{ league_id: "L1", auto_waiver_pricing: false, paused_at: null }],
+      [{ league_id: "L1", auto_waiver_pricing: false, auto_dead_cap: false, paused_at: null }],
     );
     expect(result.enabled).toEqual([]);
-    expect(result.skipped[0].reason).toBe("waiver pricing not enabled");
+    expect(result.skipped[0].reason).toBe("no capabilities enabled");
   });
 
-  it("pause overrides an enabled flag", () => {
+  it("pause overrides enabled capabilities", () => {
     // The whole point of the kill switch: it stops things without needing the
     // individual capabilities to be found and switched off first.
     const result = selectAutomatedLeagues(
       ["L1"],
-      [{ league_id: "L1", auto_waiver_pricing: true, paused_at: "2026-08-01T00:00:00Z" }],
+      [{ league_id: "L1", auto_waiver_pricing: true, auto_dead_cap: true, paused_at: "2026-08-01T00:00:00Z" }],
     );
     expect(result.enabled).toEqual([]);
     expect(result.skipped[0].reason).toBe("automation paused");
   });
 
+  it("carries each league's capabilities, so one run can do different work per league", () => {
+    const result = selectAutomatedLeagues(
+      ["L1", "L2"],
+      [
+        on("L1", { auto_dead_cap: false }),
+        { league_id: "L2", auto_waiver_pricing: false, auto_dead_cap: true, paused_at: null },
+      ],
+    );
+    expect(result.enabled).toEqual([
+      { leagueId: "L1", capabilities: { waiverPricing: true, deadCap: false } },
+      { leagueId: "L2", capabilities: { waiverPricing: false, deadCap: true } },
+    ]);
+  });
+
+  it("runs a league that enabled only dead cap", () => {
+    const result = selectAutomatedLeagues(
+      ["L1"],
+      [{ league_id: "L1", auto_waiver_pricing: false, auto_dead_cap: true, paused_at: null }],
+    );
+    expect(ids(result)).toEqual(["L1"]);
+  });
+
   it("ignores settings for leagues this run does not own", () => {
     const result = selectAutomatedLeagues(["L1"], [on("L1"), on("L2")]);
-    expect(result.enabled).toEqual(["L1"]);
+    expect(ids(result)).toEqual(["L1"]);
   });
 
   it("partitions a mixed set and reports every skip", () => {
@@ -261,13 +286,13 @@ describe("selectAutomatedLeagues", () => {
         { league_id: "L3", auto_waiver_pricing: true, paused_at: "2026-08-01T00:00:00Z" },
       ],
     );
-    expect(result.enabled).toEqual(["L1"]);
+    expect(ids(result)).toEqual(["L1"]);
     expect(result.skipped.map((s) => s.leagueId).sort()).toEqual(["L2", "L3", "L4"]);
   });
 
   it("de-duplicates repeated ownership rows", () => {
     const result = selectAutomatedLeagues(["L1", "L1"], [on("L1")]);
-    expect(result.enabled).toEqual(["L1"]);
+    expect(ids(result)).toEqual(["L1"]);
   });
 
   it("survives empty and malformed input", () => {
@@ -278,14 +303,6 @@ describe("selectAutomatedLeagues", () => {
   });
 });
 
-/**
- * These rules are now imported by BOTH the scheduled job and
- * src/hooks/useTransactionProcessor, so there is no second implementation to
- * disagree with. The cases below pin the ones that used to: the client copy
- * tested `settings?.waiver_bid` for truthiness, which accepted a negative bid
- * and wrote it through as a negative salary, while this copy required
- * `typeof === 'number' && > 0` and skipped it.
- */
 describe("pricing rules that the two implementations used to disagree on", () => {
   const claim = (waiver_bid: unknown) => ({
     transaction_id: "t1",

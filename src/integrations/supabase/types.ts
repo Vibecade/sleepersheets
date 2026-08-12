@@ -297,6 +297,7 @@ export type Database = {
       }
       league_automation_settings: {
         Row: {
+          auto_dead_cap: boolean
           auto_waiver_pricing: boolean
           created_at: string
           id: string
@@ -307,6 +308,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          auto_dead_cap?: boolean
           auto_waiver_pricing?: boolean
           created_at?: string
           id?: string
@@ -317,6 +319,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          auto_dead_cap?: boolean
           auto_waiver_pricing?: boolean
           created_at?: string
           id?: string

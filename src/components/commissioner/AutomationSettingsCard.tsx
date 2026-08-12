@@ -42,20 +42,22 @@ export const AutomationSettingsCard = ({ leagueId }: AutomationSettingsCardProps
 
   const disabled = readOnly || saving;
 
-  const handleToggle = async (enabled: boolean) => {
-    const ok = await update({ auto_waiver_pricing: enabled });
+  const handleToggle = async (
+    capability: 'auto_waiver_pricing' | 'auto_dead_cap',
+    enabled: boolean,
+    copy: { label: string; on: string; off: string },
+  ) => {
+    const ok = await update({ [capability]: enabled });
     if (!ok) return;
     void logAction({
       action_type: enabled ? 'automation_enabled' : 'automation_disabled',
       target_type: 'league_automation_settings',
-      description: `${enabled ? 'Enabled' : 'Disabled'} automated waiver pricing`,
-      metadata: { capability: 'auto_waiver_pricing', enabled, surface: 'settings-panel' },
+      description: `${enabled ? 'Enabled' : 'Disabled'} ${copy.label}`,
+      metadata: { capability, enabled, surface: 'settings-panel' },
     });
     toast({
-      title: enabled ? 'Automated pricing on' : 'Automated pricing off',
-      description: enabled
-        ? 'Waiver claims will be priced from their FAAB bid without anyone opening the app.'
-        : 'Waiver claims will only be priced while a commissioner has the app open.',
+      title: enabled ? `${copy.label} on` : `${copy.label} off`,
+      description: enabled ? copy.on : copy.off,
     });
   };
 
@@ -124,7 +126,39 @@ export const AutomationSettingsCard = ({ leagueId }: AutomationSettingsCardProps
           <Switch
             id="auto_waiver_pricing"
             checked={automation.auto_waiver_pricing}
-            onCheckedChange={handleToggle}
+            onCheckedChange={(next) =>
+              handleToggle('auto_waiver_pricing', next, {
+                label: 'automated waiver pricing',
+                on: 'Waiver claims will be priced from their FAAB bid without anyone opening the app.',
+                off: 'Waiver claims will only be priced while a commissioner has the app open.',
+              })
+            }
+            disabled={disabled || isPaused}
+          />
+        </div>
+
+        <Separator />
+
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <Label htmlFor="auto_dead_cap">Charge dead cap on drops</Label>
+            <p className="text-xs text-muted-foreground">
+              When a player carrying a salary is dropped, record the dead cap penalty
+              automatically. Players acquired with FAAB are skipped — they cost nothing against
+              the cap while rostered, so dropping them costs nothing. Entries appear in the Dead
+              Cap manager and can be edited or removed there.
+            </p>
+          </div>
+          <Switch
+            id="auto_dead_cap"
+            checked={automation.auto_dead_cap}
+            onCheckedChange={(next) =>
+              handleToggle('auto_dead_cap', next, {
+                label: 'automated dead cap',
+                on: 'Dropped players carrying a salary will be charged dead cap automatically.',
+                off: 'Dead cap will only be recorded when a commissioner adds it by hand.',
+              })
+            }
             disabled={disabled || isPaused}
           />
         </div>

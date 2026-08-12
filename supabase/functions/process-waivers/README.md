@@ -16,7 +16,8 @@ built to be hard to misuse:
 | Guard | Behaviour |
 |---|---|
 | **Dry run by default** | Writes nothing unless `?apply=true`. A fresh deploy is inert. |
-| **Per-league opt-in** | Ownership is not consent. A league is skipped unless it has `auto_waiver_pricing` enabled in `league_automation_settings`, and skipped again if `paused_at` is set. No settings row means off. |
+| **Per-league opt-in** | Ownership is not consent. A league is skipped unless it has enabled at least one capability (`auto_waiver_pricing`, `auto_dead_cap`) in `league_automation_settings`, and skipped again if `paused_at` is set. No settings row means off. |
+| **Dead cap cannot double-charge** | Idempotency comes from the `dead_cap_players` rows themselves, not `processed_transactions` — so a re-run, or enabling dead cap long after waivers, never charges a team twice. |
 | **Fails closed** | Returns 500 if `CRON_SECRET` is unset; 401 if the header doesn't match. |
 | **Idempotent** | Skips anything already in `processed_transactions` (`UNIQUE(league_id, transaction_id)`). Re-running is a no-op. |
 | **Self-healing** | Sweeps the whole season by default, so enabling it midseason or recovering from an outage backfills rather than leaving a permanent hole. |
@@ -30,8 +31,9 @@ built to be hard to misuse:
 Owned **and** opted in. Claiming a league used to be the entire test, which
 meant claiming enrolled you in having a background job write to your salary
 table without ever being asked. A league is now only eligible when it has a
-row in `league_automation_settings` with `auto_waiver_pricing = true` and
-`paused_at IS NULL`.
+row in `league_automation_settings` with at least one capability enabled and
+`paused_at IS NULL`. Capabilities travel with the league, so one run can price
+waivers for one league and charge dead cap for another.
 
 Commissioners control this from the Settings tab of the commissioner
 dashboard. `paused_at` is the kill switch: it stops every capability for a
@@ -51,6 +53,40 @@ identical to a job that is broken.
   ...
 }
 ```
+
+## Dead cap
+
+Enabled separately, with `auto_dead_cap`. When a player carrying a salary is
+dropped, a `dead_cap_players` row is written holding the player's
+**undiscounted** salary — `calculateOptimizedSalaries` applies
+`max(1, round(salary * 0.25))` when reading, so storing a pre-discounted
+figure would charge the penalty twice.
+
+Who is charged, and why that rule: nothing in this codebase encoded dead cap
+eligibility before — `DeadCapManager` asks a commissioner to pick a player and
+type a number. The rule here follows what the app already agrees a player was
+costing:
+
+| Dropped player | Charged? |
+|---|---|
+| Carries a salary | Yes, on the full salary |
+| Acquired with FAAB | No — contributes $0 to the cap while rostered, so dropping costs nothing |
+| No salary on record | No |
+
+It is deliberately **not** conditioned on `player_contracts`. Contract rows
+are optional here — the pricing panel writes them only when a commissioner
+sets a term, and the client processor skips them for FAAB — so requiring one
+would make the feature silently do nothing for most drops.
+
+Idempotency comes from the existing `dead_cap_players` rows, not from
+`processed_transactions`. A waiver claim usually drops a player too, so
+sharing that key would let whichever capability ran first mark the transaction
+done and starve the other — and enabling dead cap later would skip everything
+already processed for waivers. One consequence, stated rather than hidden: a
+player dropped twice by the same roster is charged once.
+
+Every row is visible and editable in the Dead Cap manager, so a charge the
+commissioner disagrees with can be corrected or removed.
 
 ## What it does
 
