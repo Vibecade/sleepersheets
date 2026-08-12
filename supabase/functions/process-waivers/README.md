@@ -142,6 +142,16 @@ and never read or written by a line of application code:
   the feed is now unforgeable through PostgREST. Verified: neither a stranger
   nor the league's own owner can insert a row.
 
+Each capability records its entry as soon as its own writes land, not once at
+the end of the run. Dead cap commits first and `dead_cap_charges` suppresses it
+on every future sweep, so a later waiver write throwing would otherwise lose
+that entry permanently — for a charge that did happen.
+
+Entries count players and carry their ids; the dashboard resolves names when it
+renders. Naming them in the job would mean downloading Sleeper's ~5MB player
+file on every run that writes anything, and a name baked in at write time
+freezes while the rest of the app moves on.
+
 Recording failures are swallowed deliberately. By that point the salaries and
 dead cap are committed, and throwing would mark the run errored and leave the
 transactions unprocessed — so the next sweep would try to write them again.

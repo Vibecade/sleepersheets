@@ -8,6 +8,13 @@
  * the job sweeps every enabled league on a six-hourly schedule, so recording
  * "nothing to do" would bury the handful of entries that matter under
  * thousands that don't, and a feed nobody can skim is a feed nobody reads.
+ *
+ * Titles count players rather than naming them, and metadata carries the
+ * player ids. Naming them here would mean this job downloading Sleeper's
+ * ~5MB player file on every run that writes anything, purely to bake a name
+ * into a string — and baking it in freezes it, so a later name change would
+ * leave the feed disagreeing with the rest of the app. The dashboard already
+ * holds the player map and resolves the ids when it renders.
  */
 
 export interface WaiverSalaryWriteLike {
@@ -36,38 +43,15 @@ const money = (amount: number): string => `$${Math.round(amount)}`;
 const plural = (count: number, one: string, many: string): string =>
   `${count} ${count === 1 ? one : many}`;
 
-/**
- * Names a player if the run touched exactly one, otherwise counts them.
- *
- * A single-player entry reading "priced 1 waiver claim" makes the
- * commissioner open the metadata to learn something the title had room for.
- */
-const nameOrCount = (
-  writes: Array<{ playerId: string }>,
-  playerNames: Map<string, string>,
-  one: string,
-  many: string,
-): string => {
-  if (writes.length === 1) {
-    const name = playerNames.get(writes[0].playerId);
-    if (name) return name;
-  }
-  return plural(writes.length, one, many);
-};
-
 export const buildActivityRows = ({
   leagueId,
   waiverWrites,
   deadCapWrites,
-  playerNames,
 }: {
   leagueId: string;
   waiverWrites: WaiverSalaryWriteLike[];
   deadCapWrites: DeadCapWriteLike[];
-  /** player_id -> display name, for readable titles. Optional. */
-  playerNames?: Map<string, string>;
 }): ActivityRow[] => {
-  const names = playerNames ?? new Map<string, string>();
   const rows: ActivityRow[] = [];
 
   const waivers = waiverWrites ?? [];
@@ -76,15 +60,11 @@ export const buildActivityRows = ({
     rows.push({
       league_id: leagueId,
       activity_type: 'automation_waiver_pricing',
-      title: `Priced ${nameOrCount(waivers, names, 'waiver claim', 'waiver claims')}`,
+      title: `Priced ${plural(waivers.length, 'waiver claim', 'waiver claims')}`,
       description: `${plural(waivers.length, 'player', 'players')} priced from their winning FAAB bid, totalling ${money(total)}.`,
       metadata: {
         totalSalary: total,
-        players: waivers.map((w) => ({
-          playerId: w.playerId,
-          name: names.get(w.playerId) ?? null,
-          salary: w.salary,
-        })),
+        players: waivers.map((w) => ({ playerId: w.playerId, salary: w.salary })),
       },
       user_id: null,
     });
@@ -96,7 +76,7 @@ export const buildActivityRows = ({
     rows.push({
       league_id: leagueId,
       activity_type: 'automation_dead_cap',
-      title: `Dead cap — ${nameOrCount(deadCap, names, 'player released', 'players released')}`,
+      title: `Dead cap — ${plural(deadCap.length, 'player released', 'players released')}`,
       description:
         `${plural(deadCap.length, 'released player', 'released players')} charged dead cap on ` +
         `${money(total)} of salary. The cap engine applies the penalty percentage to that figure.`,
@@ -104,11 +84,7 @@ export const buildActivityRows = ({
         // The salary charged against, NOT the penalty. Stored this way
         // everywhere so the discount is applied exactly once, at read time.
         totalSalaryCharged: total,
-        players: deadCap.map((w) => ({
-          playerId: w.playerId,
-          name: names.get(w.playerId) ?? null,
-          salary: w.salary,
-        })),
+        players: deadCap.map((w) => ({ playerId: w.playerId, salary: w.salary })),
       },
       user_id: null,
     });

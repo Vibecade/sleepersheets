@@ -376,7 +376,7 @@ export const CommissionerOverview = ({ leagueId, leagueData }: CommissionerOverv
       {/* What the scheduled job did while nobody was watching. Sits above the
           commissioner audit log because it is the half nobody witnessed. */}
       <TurfPanel kicker="AUTOPILOT / RECENT" title="Automated Changes">
-        <AutopilotActivityFeed leagueId={leagueId} />
+        <AutopilotActivityFeed leagueId={leagueId} players={leagueData?.players || {}} />
       </TurfPanel>
 
       {/* Recent commissioner actions (audit trail) */}

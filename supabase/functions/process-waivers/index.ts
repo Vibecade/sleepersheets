@@ -228,12 +228,16 @@ const processLeague = async (
       );
       if (deadCapWriteError) throw deadCapWriteError;
       summary.deadCapWritten = deadCapPlan.writes.length;
+
+      // Recorded here, not at the end of the run. The charge is committed and
+      // dead_cap_charges will suppress it on every future sweep, so if a later
+      // waiver write throws and we bail out, this is the only chance to record
+      // it — the entry would otherwise be lost permanently for a charge that
+      // did happen.
+      await recordActivity(supabase, leagueId, [], deadCapPlan.writes);
     }
 
-    if (plan.writes.length === 0) {
-      await recordActivity(supabase, leagueId, [], deadCapPlan.writes);
-      return summary;
-    }
+    if (plan.writes.length === 0) return summary;
 
     // onConflict is required: without it PostgREST inserts a new row
     // instead of updating, which would duplicate salary rows on every
@@ -264,7 +268,8 @@ const processLeague = async (
 
     summary.written = plan.writes.length;
 
-    await recordActivity(supabase, leagueId, plan.writes, deadCapPlan.writes);
+    // Dead cap already recorded its own entry above, if it wrote anything.
+    await recordActivity(supabase, leagueId, plan.writes, []);
     return summary;
   } catch (error) {
     summary.error = error instanceof Error ? error.message : String(error);

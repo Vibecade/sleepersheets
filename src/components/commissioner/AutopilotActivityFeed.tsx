@@ -9,6 +9,13 @@ import { formatCurrency } from '@/utils/csvExport';
 
 interface AutopilotActivityFeedProps {
   leagueId: string;
+  /**
+   * Sleeper's player map, already loaded by the dashboard. Names are resolved
+   * here rather than stored on the entry: the job would have to download
+   * Sleeper's ~5MB player file to bake one in, and a stored name freezes at
+   * write time while this stays current.
+   */
+  players: Record<string, { full_name?: string; first_name?: string; last_name?: string }>;
 }
 
 const LABEL: Record<string, string> = {
@@ -22,9 +29,28 @@ const amountOf = (entry: AutopilotActivity): number | null => {
   return typeof value === 'number' ? value : null;
 };
 
-const Row = ({ entry }: { entry: AutopilotActivity }) => {
+const playerName = (
+  players: AutopilotActivityFeedProps['players'],
+  playerId: string,
+): string => {
+  const player = players?.[playerId];
+  if (!player) return `Player ${playerId}`;
+  return (
+    player.full_name ||
+    [player.first_name, player.last_name].filter(Boolean).join(' ') ||
+    `Player ${playerId}`
+  );
+};
+
+const Row = ({
+  entry,
+  players,
+}: {
+  entry: AutopilotActivity;
+  players: AutopilotActivityFeedProps['players'];
+}) => {
   const amount = amountOf(entry);
-  const playerCount = entry.metadata?.players?.length ?? 0;
+  const affected = entry.metadata?.players ?? [];
 
   return (
     <div
@@ -44,10 +70,27 @@ const Row = ({ entry }: { entry: AutopilotActivity }) => {
         >
           {LABEL[entry.activity_type] ?? 'AUTOPILOT'}
           {amount !== null && ` · ${formatCurrency(amount)}`}
-          {playerCount > 1 && ` · ${playerCount} PLAYERS`}
           {' · '}
           {formatDistanceToNow(new Date(entry.created_at), { addSuffix: true }).toUpperCase()}
         </div>
+
+        {/* Who it actually affected. Without this the entry says how many
+            players moved but never which, which is the first thing a
+            commissioner wants to know. */}
+        {affected.length > 0 && (
+          <ul className="mt-1.5 space-y-0.5">
+            {affected.map((player) => (
+              <li
+                key={player.playerId}
+                className="font-mono text-muted-foreground"
+                style={{ fontSize: 10, letterSpacing: '0.05em' }}
+              >
+                {playerName(players, player.playerId)} · {formatCurrency(player.salary || 0)}
+              </li>
+            ))}
+          </ul>
+        )}
+
         {entry.description && (
           <p className="text-xs text-muted-foreground mt-1.5">{entry.description}</p>
         )}
@@ -74,7 +117,7 @@ const Row = ({ entry }: { entry: AutopilotActivity }) => {
  * This is a pull, not a push: it tells you what happened once you look. Real
  * notification needs an outbound channel, which this app has none of.
  */
-export const AutopilotActivityFeed = ({ leagueId }: AutopilotActivityFeedProps) => {
+export const AutopilotActivityFeed = ({ leagueId, players }: AutopilotActivityFeedProps) => {
   const { activity, loading, isUnavailable } = useAutopilotActivity(leagueId);
 
   // Ships with a migration; nothing useful to show before it's applied.
@@ -106,7 +149,7 @@ export const AutopilotActivityFeed = ({ leagueId }: AutopilotActivityFeedProps) 
   return (
     <div className="flex flex-col gap-1.5">
       {activity.map((entry) => (
-        <Row key={entry.id} entry={entry} />
+        <Row key={entry.id} entry={entry} players={players} />
       ))}
     </div>
   );

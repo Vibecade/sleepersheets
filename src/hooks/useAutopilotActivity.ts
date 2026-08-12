@@ -19,7 +19,7 @@ export interface AutopilotActivity {
   metadata: {
     totalSalary?: number;
     totalSalaryCharged?: number;
-    players?: Array<{ playerId: string; name: string | null; salary: number }>;
+    players?: Array<{ playerId: string; salary: number }>;
   } | null;
   created_at: string;
 }

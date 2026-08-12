@@ -4,14 +4,7 @@ import { buildActivityRows } from "./activity";
 const build = (
   waiverWrites: Array<{ playerId: string; salary: number }> = [],
   deadCapWrites: Array<{ playerId: string; salary: number }> = [],
-  names?: Record<string, string>,
-) =>
-  buildActivityRows({
-    leagueId: "L1",
-    waiverWrites,
-    deadCapWrites,
-    playerNames: names ? new Map(Object.entries(names)) : undefined,
-  });
+) => buildActivityRows({ leagueId: "L1", waiverWrites, deadCapWrites });
 
 describe("buildActivityRows", () => {
   it("records nothing when a run wrote nothing", () => {
@@ -33,26 +26,38 @@ describe("buildActivityRows", () => {
     expect(row.metadata.totalSalary).toBe(47);
   });
 
-  it("names the player when a run touched exactly one", () => {
-    // "Priced 1 waiver claim" makes you open the metadata to learn something
-    // the title had room for.
-    const [row] = build([{ playerId: "p1", salary: 20 }], [], { p1: "Jaylen Waddle" });
-    expect(row.title).toBe("Priced Jaylen Waddle");
-  });
-
-  it("falls back to a count when the single player's name is unknown", () => {
+  it("counts rather than naming, and carries ids for the reader to resolve", () => {
+    // An earlier version tried to name the player in the title. It could
+    // never work: naming here would mean this job downloading Sleeper's ~5MB
+    // player file on every run that writes, and a baked-in name freezes while
+    // the rest of the app moves on. The dashboard already holds the player
+    // map, so the ids travel and it resolves them at render time.
     const [row] = build([{ playerId: "p1", salary: 20 }]);
     expect(row.title).toBe("Priced 1 waiver claim");
+    expect(row.metadata.players).toEqual([{ playerId: "p1", salary: 20 }]);
+  });
+
+  it("carries an id and salary for every affected player", () => {
+    // The feed lists them individually, so an entry missing a player is a
+    // player whose change nobody can see.
+    const [row] = build([], [
+      { playerId: "p1", salary: 30 },
+      { playerId: "p2", salary: 50 },
+    ]);
+    expect(row.metadata.players).toEqual([
+      { playerId: "p1", salary: 30 },
+      { playerId: "p2", salary: 50 },
+    ]);
   });
 
   it("records dead cap against the salary charged, not the penalty", () => {
     // The cap engine applies max(1, round(salary * 0.25)) at read time.
     // Reporting the discounted figure here would imply it had been applied
     // twice.
-    const [row] = build([], [{ playerId: "p9", salary: 80 }], { p9: "D. Swift" });
+    const [row] = build([], [{ playerId: "p9", salary: 80 }]);
 
     expect(row.activity_type).toBe("automation_dead_cap");
-    expect(row.title).toBe("Dead cap — D. Swift");
+    expect(row.title).toBe("Dead cap — 1 player released");
     expect(row.metadata.totalSalaryCharged).toBe(80);
     expect(row.description).toContain("$80");
   });
@@ -70,7 +75,7 @@ describe("buildActivityRows", () => {
     expect(rows.every((r) => r.user_id === null)).toBe(true);
   });
 
-  it("keeps every player in metadata even when the title summarises", () => {
+  it("keeps every player in metadata when the title summarises", () => {
     const [row] = build([
       { playerId: "p1", salary: 10 },
       { playerId: "p2", salary: 20 },
