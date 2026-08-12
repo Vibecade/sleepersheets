@@ -110,38 +110,51 @@ curl -s -H "x-cron-secret: $CRON_SECRET" \
 
 **4. Dry run across all leagues** before enabling the schedule.
 
-## Schedule (only after the steps above)
+## Schedule
 
-Deliberately **not** shipped as a migration — a migration would start writing on
-the next deploy, before anyone has verified a run. Apply this by hand once you're
-satisfied:
+Committed, in `supabase/migrations/20260813000000_schedule_process_waivers.sql`.
+It runs `process-waivers` every six hours with `apply=true`.
 
-```sql
-create extension if not exists pg_cron;
-create extension if not exists pg_net;
+This used to be a snippet here that you applied by hand, deliberately: a
+migration "would start writing on the next deploy, before anyone has verified
+a run." That was right while ownership was the only gate. It no longer is —
+since `20260812000000` a league is eligible only when its commissioner has
+switched on `auto_waiver_pricing`, so a freshly scheduled job on a new deploy
+writes to nothing and reports every league as skipped. Consent replaced
+"don't schedule it", which is what makes the schedule safe to reproduce.
 
--- Waivers clear early Wednesday; run a few hours after to catch settling
--- claims. Adjust the cron expression to your league's waiver time.
-select cron.schedule(
-  'process-waivers',
-  -- Waivers clear once or twice a week; every 6 hours is ample and keeps
-  -- the full-season sweep cheap. Tighten only if you need faster pickup.
-  '0 */6 * * *',
-  $$
-  select net.http_post(
-    url     := 'https://<project-ref>.supabase.co/functions/v1/process-waivers?apply=true',
-    headers := jsonb_build_object('x-cron-secret', '<CRON_SECRET>')
-  );
-  $$
-);
-```
+### Before it can run: two Vault secrets
 
-To inspect or remove:
+The job needs the project URL and the shared secret, and neither belongs in
+git, so the migration reads them from Vault. Create them once, then re-run the
+migration:
 
 ```sql
-select * from cron.job;
-select cron.unschedule('process-waivers');
+SELECT vault.create_secret('https://<project-ref>.supabase.co', 'project_url');
+SELECT vault.create_secret('<the CRON_SECRET value>', 'cron_secret');
 ```
+
+Until they exist the migration skips with a notice telling you this. It also
+skips wherever `pg_cron`, `pg_net` or Vault are absent, so local development
+and CI are unaffected — a scheduler is not a prerequisite for having a
+database.
+
+Re-running updates the job rather than duplicating it.
+
+### Verifying before you enable a league
+
+The steps above still apply, and they matter more than the schedule does. The
+schedule existing does not mean anything gets written: nothing happens until a
+commissioner enables `auto_waiver_pricing` for a specific league. Work through
+the dry runs first, enable one league, confirm the numbers, then widen.
+
+```sql
+SELECT jobname, schedule FROM cron.job;
+SELECT cron.unschedule('process-waivers');   -- to stop it entirely
+```
+
+To stop automation for a single league without touching the schedule, use the
+Pause switch on that league's commissioner Settings tab.
 
 ## Relationship to the client processor
 

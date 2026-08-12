@@ -159,6 +159,25 @@ purpose is consent cannot inherit an open INSERT. Verified against a rebuilt
 schema: a user who owns nothing can create a `league_settings` row for someone
 else's league, and cannot create a `league_automation_settings` row for it.
 
+## The waiver schedule
+
+`20260813000000_schedule_process_waivers.sql` puts the job's cron entry under
+version control. It previously existed only as a snippet in the edge
+function's README, so whether the job ran, how often, and against which
+project were all unknowable from the repo.
+
+The project URL and `CRON_SECRET` are read from Supabase Vault at schedule
+time, so the migration references them without containing them:
+
+```sql
+SELECT vault.create_secret('https://<project-ref>.supabase.co', 'project_url');
+SELECT vault.create_secret('<the CRON_SECRET value>', 'cron_secret');
+```
+
+It skips with a notice — rather than failing — wherever `pg_cron`, `pg_net` or
+Vault are absent, or the secrets are unset. That keeps `supabase db reset`,
+local development and the CI migration check working without a scheduler.
+
 ## Still outstanding
 
 - **`league_settings` INSERT is open.** `20250904221709` creates
@@ -166,5 +185,3 @@ else's league, and cannot create a `league_automation_settings` row for it.
   anyone can seed cap settings for any unclaimed league. `useLeagueSettings`
   depends on this to create defaults on first view, so tightening it needs a
   matching client change rather than a policy edit alone.
-- **The waiver job's schedule is not in version control.** It exists only as a
-  fenced SQL snippet in `supabase/functions/process-waivers/README.md`.
