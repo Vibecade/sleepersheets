@@ -11,8 +11,10 @@ import {
   selectAutomatedLeagues,
   weeksToSweep,
   type AutomationSettingsLike,
+  type LeagueCapabilities,
   type SleeperTransactionLike,
 } from './waivers.ts';
+import { planDeadCapWrites } from './deadCap.ts';
 
 const createDb = (url: string, serviceRoleKey: string) =>
   createClient(url, serviceRoleKey, { auth: { persistSession: false } });
@@ -23,7 +25,11 @@ type Db = ReturnType<typeof createDb>;
 const SLEEPER_API = 'https://api.sleeper.app/v1';
 
 /**
- * Scheduled waiver pricing.
+ * Scheduled league bookkeeping.
+ *
+ * Named process-waivers because that is all it did originally, and renaming a
+ * deployed function means redeploying under a new name and rewriting the cron
+ * entry — not worth doing mid-season. It now also charges dead cap.
  *
  * Waiver pickups are priced from their FAAB bid. On the client that only
  * happens while someone with `canModifyLeague` has the app open, so
@@ -40,8 +46,11 @@ const SLEEPER_API = 'https://api.sleeper.app/v1';
  *     settings row means off.
  *   - Idempotent via processed_transactions (UNIQUE league_id,
  *     transaction_id). Re-running is a no-op.
- *   - Only ever writes acquisition_type='faab' salary rows for players
- *     named by a completed waiver claim.
+ *   - Writes only two things: acquisition_type='faab' salary rows for
+ *     players named by a completed waiver claim, and dead_cap_players rows
+ *     for players dropped while carrying a salary.
+ *   - Dead cap is idempotent through the dead_cap_players rows themselves,
+ *     so a re-run cannot charge a team twice.
  *   - Never deletes, and never touches contracts.
  */
 
@@ -52,6 +61,9 @@ interface RunSummary {
   planned: number;
   written: number;
   alreadyProcessed: number;
+  /** Dead cap rows this run would write, and did. */
+  deadCapPlanned: number;
+  deadCapWritten: number;
   error?: string;
 }
 
@@ -70,6 +82,7 @@ const fetchJson = async <T>(url: string): Promise<T | null> => {
 const processLeague = async (
   supabase: Db,
   leagueId: string,
+  capabilities: LeagueCapabilities,
   apply: boolean,
   lookback?: number,
 ): Promise<RunSummary> => {
@@ -80,6 +93,8 @@ const processLeague = async (
     planned: 0,
     written: 0,
     alreadyProcessed: 0,
+    deadCapPlanned: 0,
+    deadCapWritten: 0,
   };
 
   try {
@@ -108,17 +123,89 @@ const processLeague = async (
       .eq('league_id', leagueId);
     if (processedError) throw processedError;
 
-    const plan = planWaiverWrites({
-      transactions,
-      processedTransactionIds: new Set(
-        (processedRows ?? []).map((row) => String(row.transaction_id)),
-      ),
-    });
+    const plan = capabilities.waiverPricing
+      ? planWaiverWrites({
+          transactions,
+          processedTransactionIds: new Set(
+            (processedRows ?? []).map((row) => String(row.transaction_id)),
+          ),
+        })
+      : { writes: [], transactionIds: [], alreadyProcessed: 0 };
 
     summary.planned = plan.writes.length;
     summary.alreadyProcessed = plan.alreadyProcessed;
 
-    if (!apply || plan.writes.length === 0) return summary;
+    // Dead cap is planned against the same transaction sweep but tracked
+    // separately: its idempotency comes from the dead_cap_players rows
+    // themselves, not processed_transactions. A waiver claim usually drops a
+    // player too, so sharing that key would let whichever capability ran
+    // first mark the transaction done and starve the other.
+    let deadCapPlan: {
+      writes: Array<{ transactionId: string; playerId: string; rosterId: number; salary: number }>;
+    } = { writes: [] };
+
+    if (capabilities.deadCap) {
+      const [{ data: salaryRows, error: salaryError }, { data: chargeRows, error: chargeError }] =
+        await Promise.all([
+          supabase
+            .from('player_salaries')
+            .select('player_id, salary, acquisition_type')
+            .eq('league_id', leagueId),
+          // The charge ledger, NOT dead_cap_players. A commissioner who
+          // deletes an entry they disagree with must not have it re-created
+          // on the next sweep.
+          supabase
+            .from('dead_cap_charges')
+            .select('transaction_id, player_id')
+            .eq('league_id', leagueId),
+        ]);
+      if (salaryError) throw salaryError;
+      if (chargeError) throw chargeError;
+
+      deadCapPlan = planDeadCapWrites({
+        transactions,
+        salariesByPlayer: new Map(
+          (salaryRows ?? []).map((row) => [String(row.player_id), row]),
+        ),
+        chargedKeys: new Set(
+          (chargeRows ?? []).map((row) => `${row.transaction_id}:${row.player_id}`),
+        ),
+      });
+      summary.deadCapPlanned = deadCapPlan.writes.length;
+    }
+
+    if (!apply) return summary;
+
+    if (deadCapPlan.writes.length > 0) {
+      // Ledger first, then the visible penalty. Ordered this way on purpose:
+      // if the run dies between the two, the league is under-charged and a
+      // commissioner adds it by hand. The other order would re-charge every
+      // sweep until someone noticed.
+      const { error: chargeWriteError } = await supabase.from('dead_cap_charges').insert(
+        deadCapPlan.writes.map((w) => ({
+          league_id: leagueId,
+          transaction_id: w.transactionId,
+          player_id: w.playerId,
+          roster_id: w.rosterId,
+          salary: w.salary,
+        })),
+      );
+      if (chargeWriteError) throw chargeWriteError;
+
+      const { error: deadCapWriteError } = await supabase.from('dead_cap_players').insert(
+        deadCapPlan.writes.map((w) => ({
+          league_id: leagueId,
+          player_id: w.playerId,
+          roster_id: w.rosterId,
+          // Undiscounted. calculateOptimizedSalaries applies the penalty.
+          salary: w.salary,
+        })),
+      );
+      if (deadCapWriteError) throw deadCapWriteError;
+      summary.deadCapWritten = deadCapPlan.writes.length;
+    }
+
+    if (plan.writes.length === 0) return summary;
 
     // onConflict is required: without it PostgREST inserts a new row
     // instead of updating, which would duplicate salary rows on every
@@ -194,7 +281,7 @@ Deno.serve(async (req: Request) => {
 
   const { data: automation, error: automationError } = await supabase
     .from('league_automation_settings')
-    .select('league_id, auto_waiver_pricing, paused_at');
+    .select('league_id, auto_waiver_pricing, auto_dead_cap, paused_at');
   if (automationError) return json({ error: automationError.message }, 500);
 
   const { enabled: leagueIds, skipped } = selectAutomatedLeagues(
@@ -203,8 +290,8 @@ Deno.serve(async (req: Request) => {
   );
 
   const results: RunSummary[] = [];
-  for (const leagueId of leagueIds) {
-    results.push(await processLeague(supabase, leagueId, apply, lookback));
+  for (const { leagueId, capabilities } of leagueIds) {
+    results.push(await processLeague(supabase, leagueId, capabilities, apply, lookback));
   }
 
   return json({
@@ -216,6 +303,8 @@ Deno.serve(async (req: Request) => {
     skipped,
     totalPlanned: results.reduce((n, r) => n + r.planned, 0),
     totalWritten: results.reduce((n, r) => n + r.written, 0),
+    totalDeadCapPlanned: results.reduce((n, r) => n + r.deadCapPlanned, 0),
+    totalDeadCapWritten: results.reduce((n, r) => n + r.deadCapWritten, 0),
     errors: results.filter((r) => r.error).length,
     results,
   });

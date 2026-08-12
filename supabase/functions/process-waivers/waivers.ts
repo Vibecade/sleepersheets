@@ -163,12 +163,19 @@ export const planWaiverWrites = ({
 export interface AutomationSettingsLike {
   league_id?: string | null;
   auto_waiver_pricing?: boolean | null;
+  auto_dead_cap?: boolean | null;
   paused_at?: string | null;
 }
 
+/** Capabilities a league may have switched on, resolved per run. */
+export interface LeagueCapabilities {
+  waiverPricing: boolean;
+  deadCap: boolean;
+}
+
 export interface LeagueSelection {
-  /** Leagues this run may write to. */
-  enabled: string[];
+  /** Leagues this run may write to, with what each has enabled. */
+  enabled: Array<{ leagueId: string; capabilities: LeagueCapabilities }>;
   /** Leagues deliberately left alone, and why. */
   skipped: Array<{ leagueId: string; reason: string }>;
 }
@@ -178,7 +185,9 @@ export interface LeagueSelection {
  *
  * Ownership alone used to be the whole test, which meant claiming a league
  * silently enrolled it in automated salary writes. Now a league must have
- * opted in, and must not be paused.
+ * opted into at least one capability, and must not be paused. Which
+ * capabilities are on travels with the league, so a run can price waivers for
+ * one league and charge dead cap for another.
  *
  * Absence of a settings row means off, not on: a league nobody has configured
  * is exactly the league that should not be written to unattended.
@@ -196,7 +205,7 @@ export const selectAutomatedLeagues = (
     if (row?.league_id) settingsByLeague.set(String(row.league_id), row);
   }
 
-  const enabled: string[] = [];
+  const enabled: Array<{ leagueId: string; capabilities: LeagueCapabilities }> = [];
   const skipped: Array<{ leagueId: string; reason: string }> = [];
 
   for (const leagueId of [...new Set(ownedLeagueIds || [])]) {
@@ -210,11 +219,16 @@ export const selectAutomatedLeagues = (
       skipped.push({ leagueId, reason: 'automation paused' });
       continue;
     }
-    if (!settings.auto_waiver_pricing) {
-      skipped.push({ leagueId, reason: 'waiver pricing not enabled' });
+    const capabilities: LeagueCapabilities = {
+      waiverPricing: Boolean(settings.auto_waiver_pricing),
+      deadCap: Boolean(settings.auto_dead_cap),
+    };
+
+    if (!capabilities.waiverPricing && !capabilities.deadCap) {
+      skipped.push({ leagueId, reason: 'no capabilities enabled' });
       continue;
     }
-    enabled.push(leagueId);
+    enabled.push({ leagueId, capabilities });
   }
 
   return { enabled, skipped };

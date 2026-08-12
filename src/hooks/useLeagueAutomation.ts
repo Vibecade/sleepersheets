@@ -7,6 +7,7 @@ import { isMissingTableError } from '@/utils/supabaseErrors';
 
 export interface LeagueAutomation {
   auto_waiver_pricing: boolean;
+  auto_dead_cap: boolean;
   paused_at: string | null;
   paused_reason: string | null;
 }
@@ -18,6 +19,7 @@ export interface LeagueAutomation {
  */
 const DEFAULTS: LeagueAutomation = {
   auto_waiver_pricing: false,
+  auto_dead_cap: false,
   paused_at: null,
   paused_reason: null,
 };
@@ -53,7 +55,7 @@ export const useLeagueAutomation = (leagueId: string) => {
       try {
         const { data, error } = await supabase
           .from('league_automation_settings')
-          .select('auto_waiver_pricing, paused_at, paused_reason')
+          .select('auto_waiver_pricing, auto_dead_cap, paused_at, paused_reason')
           .eq('league_id', leagueId)
           .maybeSingle();
 
@@ -91,6 +93,7 @@ export const useLeagueAutomation = (leagueId: string) => {
           {
             league_id: leagueId,
             auto_waiver_pricing: next.auto_waiver_pricing,
+            auto_dead_cap: next.auto_dead_cap,
             paused_at: next.paused_at,
             paused_reason: next.paused_reason,
             updated_by: user?.id ?? null,
