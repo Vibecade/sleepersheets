@@ -6,12 +6,26 @@ import { useLeagueOwnership } from '@/hooks/useLeagueOwnership';
 import { securityLogger } from '@/utils/securityLogger';
 import { logger } from '@/utils/logger';
 import { sortWaiversOldestFirst } from '@/utils/waiverOrdering';
+import {
+  isWaiverTransaction,
+  extractWaiverWrites,
+  type SleeperTransactionLike,
+} from '@edge/process-waivers/waivers';
 
-interface WaiverUpdate {
-  playerId: string;
-  salary: number;
-  rosterId: number;
-}
+/**
+ * Salary rows implied by a waiver claim.
+ *
+ * The pricing rules themselves are NOT defined here. They live in
+ * supabase/functions/process-waivers/waivers.ts and are imported above, so
+ * this hook and the scheduled job cannot disagree about what a claim is
+ * worth. They used to be written out twice and had already drifted: the
+ * copy here tested `settings?.waiver_bid` for truthiness, which accepts a
+ * negative bid and wrote it through as a negative salary, while the job
+ * required `typeof === 'number' && > 0` and skipped it. The same claim was
+ * priced differently depending on whether a commissioner happened to have
+ * the app open.
+ */
+type WaiverUpdate = ReturnType<typeof extractWaiverWrites>[number];
 
 interface ProcessedTransaction {
   id?: string;
@@ -27,37 +41,6 @@ export const useTransactionProcessor = () => {
   const { user } = useAuth();
   const { canModifyLeague } = useLeagueOwnership();
   const processedOnceRef = useRef<Set<string>>(new Set());
-
-  const isWaiverTransaction = useCallback((transaction: any): boolean => {
-    return transaction.type === 'waiver' && 
-           transaction.status === 'complete' && 
-           transaction.settings?.waiver_bid;
-  }, []);
-
-  const extractWaiverUpdates = useCallback((transaction: any): WaiverUpdate[] => {
-    if (!isWaiverTransaction(transaction)) return [];
-
-    const updates: WaiverUpdate[] = [];
-    const waiverBid = transaction.settings.waiver_bid;
-    const adds = transaction.adds || {};
-    
-    // waiver_bid is a single number representing the FAAB bid amount
-    if (typeof waiverBid === 'number') {
-      // Process each added player - the value in adds should be the roster_id
-      Object.entries(adds).forEach(([playerId, rosterId]) => {
-        if (typeof rosterId === 'number') {
-          updates.push({
-            playerId,
-            salary: waiverBid,
-            rosterId: rosterId as number
-          });
-          logger.debug(`Extracted waiver update: Player ${playerId}, FAAB: $${waiverBid}, Roster: ${rosterId}`);
-        }
-      });
-    }
-
-    return updates;
-  }, [isWaiverTransaction]);
 
   const getProcessedTransactions = async (leagueId: string): Promise<Set<string>> => {
     try {
@@ -201,9 +184,9 @@ export const useTransactionProcessor = () => {
       const processedTransactionIds = await getProcessedTransactions(leagueId);
 
       // Filter to unprocessed waiver transactions
-      const unprocessedWaivers = transactions.filter(transaction => 
-        !processedTransactionIds.has(transaction.transaction_id) && 
-        isWaiverTransaction(transaction)
+      const unprocessedWaivers = transactions.filter((transaction) =>
+        !processedTransactionIds.has(transaction.transaction_id) &&
+        isWaiverTransaction(transaction as SleeperTransactionLike)
       );
 
       if (unprocessedWaivers.length === 0) {
@@ -228,7 +211,7 @@ export const useTransactionProcessor = () => {
       // Process each transaction
       for (const transaction of orderedWaivers) {
         try {
-          const updates = extractWaiverUpdates(transaction);
+          const updates = extractWaiverWrites(transaction as SleeperTransactionLike);
 
           if (updates.length === 0) continue;
 
@@ -304,7 +287,7 @@ export const useTransactionProcessor = () => {
     } finally {
       setProcessing(false);
     }
-  }, [toast, user, canModifyLeague, isWaiverTransaction, extractWaiverUpdates]);
+  }, [toast, user, canModifyLeague]);
 
   return {
     processWaiverTransactions,

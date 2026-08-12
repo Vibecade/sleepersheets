@@ -24,8 +24,10 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@edge/*": ["./supabase/functions/*"]
     }
   },
+  "//": "include stays src-only. The shared waiver rules are type-checked transitively via the import in useTransactionProcessor; adding supabase/functions here would also drag in the Deno shell, which only `deno check` can type.",
   "include": ["src"]
 }
