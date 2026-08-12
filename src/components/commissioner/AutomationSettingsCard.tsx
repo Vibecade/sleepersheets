@@ -143,10 +143,11 @@ export const AutomationSettingsCard = ({ leagueId }: AutomationSettingsCardProps
           <div className="space-y-1">
             <Label htmlFor="auto_dead_cap">Charge dead cap on drops</Label>
             <p className="text-xs text-muted-foreground">
-              When a player carrying a salary is dropped, record the dead cap penalty
-              automatically. Players acquired with FAAB are skipped — they cost nothing against
-              the cap while rostered, so dropping them costs nothing. Entries appear in the Dead
-              Cap manager and can be edited or removed there.
+              When a player carrying a salary is released, record the dead cap penalty
+              automatically. Trades are not releases and are never charged. Players acquired
+              with FAAB are skipped — they cost nothing against the cap while rostered, so
+              releasing them costs nothing. Entries appear in the Dead Cap manager; removing one
+              there is permanent, and automation will not add it back.
             </p>
           </div>
           <Switch

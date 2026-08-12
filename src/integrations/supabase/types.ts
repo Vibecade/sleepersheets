@@ -115,6 +115,36 @@ export type Database = {
         }
         Relationships: []
       }
+      dead_cap_charges: {
+        Row: {
+          charged_at: string
+          id: number
+          league_id: string
+          player_id: string
+          roster_id: number
+          salary: number
+          transaction_id: string
+        }
+        Insert: {
+          charged_at?: string
+          id?: number
+          league_id: string
+          player_id: string
+          roster_id: number
+          salary: number
+          transaction_id: string
+        }
+        Update: {
+          charged_at?: string
+          id?: number
+          league_id?: string
+          player_id?: string
+          roster_id?: number
+          salary?: number
+          transaction_id?: string
+        }
+        Relationships: []
+      }
       dead_cap_players: {
         Row: {
           created_at: string

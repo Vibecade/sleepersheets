@@ -140,28 +140,36 @@ const processLeague = async (
     // themselves, not processed_transactions. A waiver claim usually drops a
     // player too, so sharing that key would let whichever capability ran
     // first mark the transaction done and starve the other.
-    let deadCapPlan: { writes: Array<{ playerId: string; rosterId: number; salary: number }> } = {
-      writes: [],
-    };
+    let deadCapPlan: {
+      writes: Array<{ transactionId: string; playerId: string; rosterId: number; salary: number }>;
+    } = { writes: [] };
 
     if (capabilities.deadCap) {
-      const [{ data: salaryRows, error: salaryError }, { data: existingDeadCap, error: deadCapError }] =
+      const [{ data: salaryRows, error: salaryError }, { data: chargeRows, error: chargeError }] =
         await Promise.all([
           supabase
             .from('player_salaries')
             .select('player_id, salary, acquisition_type')
             .eq('league_id', leagueId),
-          supabase.from('dead_cap_players').select('player_id, roster_id').eq('league_id', leagueId),
+          // The charge ledger, NOT dead_cap_players. A commissioner who
+          // deletes an entry they disagree with must not have it re-created
+          // on the next sweep.
+          supabase
+            .from('dead_cap_charges')
+            .select('transaction_id, player_id')
+            .eq('league_id', leagueId),
         ]);
       if (salaryError) throw salaryError;
-      if (deadCapError) throw deadCapError;
+      if (chargeError) throw chargeError;
 
       deadCapPlan = planDeadCapWrites({
         transactions,
         salariesByPlayer: new Map(
           (salaryRows ?? []).map((row) => [String(row.player_id), row]),
         ),
-        existingDeadCap: existingDeadCap ?? [],
+        chargedKeys: new Set(
+          (chargeRows ?? []).map((row) => `${row.transaction_id}:${row.player_id}`),
+        ),
       });
       summary.deadCapPlanned = deadCapPlan.writes.length;
     }
@@ -169,8 +177,21 @@ const processLeague = async (
     if (!apply) return summary;
 
     if (deadCapPlan.writes.length > 0) {
-      // Plain insert, not upsert: planDeadCapWrites has already excluded
-      // players who carry a row, so anything reaching here is genuinely new.
+      // Ledger first, then the visible penalty. Ordered this way on purpose:
+      // if the run dies between the two, the league is under-charged and a
+      // commissioner adds it by hand. The other order would re-charge every
+      // sweep until someone noticed.
+      const { error: chargeWriteError } = await supabase.from('dead_cap_charges').insert(
+        deadCapPlan.writes.map((w) => ({
+          league_id: leagueId,
+          transaction_id: w.transactionId,
+          player_id: w.playerId,
+          roster_id: w.rosterId,
+          salary: w.salary,
+        })),
+      );
+      if (chargeWriteError) throw chargeWriteError;
+
       const { error: deadCapWriteError } = await supabase.from('dead_cap_players').insert(
         deadCapPlan.writes.map((w) => ({
           league_id: leagueId,
@@ -260,7 +281,7 @@ Deno.serve(async (req: Request) => {
 
   const { data: automation, error: automationError } = await supabase
     .from('league_automation_settings')
-    .select('league_id, auto_waiver_pricing, paused_at');
+    .select('league_id, auto_waiver_pricing, auto_dead_cap, paused_at');
   if (automationError) return json({ error: automationError.message }, 500);
 
   const { enabled: leagueIds, skipped } = selectAutomatedLeagues(

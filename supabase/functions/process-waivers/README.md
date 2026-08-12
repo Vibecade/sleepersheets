@@ -57,36 +57,66 @@ identical to a job that is broken.
 ## Dead cap
 
 Enabled separately, with `auto_dead_cap`. When a player carrying a salary is
-dropped, a `dead_cap_players` row is written holding the player's
+**released**, a `dead_cap_players` row is written holding the player's
 **undiscounted** salary — `calculateOptimizedSalaries` applies
 `max(1, round(salary * 0.25))` when reading, so storing a pre-discounted
 figure would charge the penalty twice.
 
-Who is charged, and why that rule: nothing in this codebase encoded dead cap
-eligibility before — `DeadCapManager` asks a commissioner to pick a player and
-type a number. The rule here follows what the app already agrees a player was
-costing:
+### A release, not a drop
 
-| Dropped player | Charged? |
+Sleeper models a trade as the traded player appearing in `drops` for the
+sending roster and `adds` for the receiver — the same shape a release has from
+the sender's side. Charging every drop bills a manager for trading a player
+away. A drop only counts when the player is not re-added by the same
+transaction, and `type: 'trade'` is excluded outright.
+
+### Who is charged
+
+Nothing in this codebase encoded dead cap eligibility before — `DeadCapManager`
+asks a commissioner to pick a player and type a number. The rule follows what
+the app already agrees a player was costing:
+
+| Released player | Charged? |
 |---|---|
 | Carries a salary | Yes, on the full salary |
-| Acquired with FAAB | No — contributes $0 to the cap while rostered, so dropping costs nothing |
+| Acquired with FAAB | No — contributes $0 to the cap while rostered, so releasing costs nothing |
 | No salary on record | No |
+| Traded away | No — not a release |
+| Re-acquired since | No — see below |
 
-It is deliberately **not** conditioned on `player_contracts`. Contract rows
-are optional here — the pricing panel writes them only when a commissioner
-sets a term, and the client processor skips them for FAAB — so requiring one
-would make the feature silently do nothing for most drops.
+It is deliberately **not** conditioned on `player_contracts`. Contract rows are
+optional here — the pricing panel writes them only when a commissioner sets a
+term, and the client processor skips them for FAAB — so requiring one would
+make the feature silently do nothing for most releases.
 
-Idempotency comes from the existing `dead_cap_players` rows, not from
-`processed_transactions`. A waiver claim usually drops a player too, so
-sharing that key would let whichever capability ran first mark the transaction
-done and starve the other — and enabling dead cap later would skip everything
-already processed for waivers. One consequence, stated rather than hidden: a
-player dropped twice by the same roster is charged once.
+### Salary state at the time of release
 
-Every row is visible and editable in the Dead Cap manager, so a charge the
-commissioner disagrees with can be corrected or removed.
+`player_salaries` is overwritten in place, so there is no historical salary to
+read. The current row is only a sound basis while it still describes the player
+as they were released, which is why a release is skipped when the player was
+re-acquired afterwards. A contract player released in week 1 and re-signed via
+FAAB in week 4 would otherwise be judged against the FAAB row — and the job
+sweeps the whole season on every run, so this is the normal case, not an edge
+one.
+
+That under-charges exactly where the data cannot support a charge, and the
+commissioner can add those by hand. Billing a manager on a number that was
+never true is much worse.
+
+### What stops it double-charging
+
+`dead_cap_charges` — a record of every charge automation has made, kept
+separately from the `dead_cap_players` rows it produces. Deriving idempotency
+from those rows instead is wrong twice over: a commissioner who deletes an
+entry they disagree with would have it silently re-created on the next sweep,
+and there would be no way to tell an automatic charge from a manual one.
+
+It is keyed by transaction as well as player, so a genuine second release of
+the same player is charged again while a re-run of the same sweep is not.
+
+The ledger row is written **before** the visible penalty. If a run dies between
+the two, the league is under-charged and a commissioner adds it by hand; the
+other order would re-charge on every sweep until someone noticed.
 
 ## What it does
 
