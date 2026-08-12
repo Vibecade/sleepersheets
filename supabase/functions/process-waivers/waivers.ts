@@ -158,3 +158,64 @@ export const planWaiverWrites = ({
     alreadyProcessed,
   };
 };
+
+/** A row of `league_automation_settings`, as the job reads it. */
+export interface AutomationSettingsLike {
+  league_id?: string | null;
+  auto_waiver_pricing?: boolean | null;
+  paused_at?: string | null;
+}
+
+export interface LeagueSelection {
+  /** Leagues this run may write to. */
+  enabled: string[];
+  /** Leagues deliberately left alone, and why. */
+  skipped: Array<{ leagueId: string; reason: string }>;
+}
+
+/**
+ * Decides which owned leagues this run is allowed to touch.
+ *
+ * Ownership alone used to be the whole test, which meant claiming a league
+ * silently enrolled it in automated salary writes. Now a league must have
+ * opted in, and must not be paused.
+ *
+ * Absence of a settings row means off, not on: a league nobody has configured
+ * is exactly the league that should not be written to unattended.
+ *
+ * Skips are returned rather than dropped so the run summary can say what it
+ * declined to do. A job that quietly does nothing looks identical to a job
+ * that is broken.
+ */
+export const selectAutomatedLeagues = (
+  ownedLeagueIds: string[],
+  automationRows: AutomationSettingsLike[],
+): LeagueSelection => {
+  const settingsByLeague = new Map<string, AutomationSettingsLike>();
+  for (const row of automationRows || []) {
+    if (row?.league_id) settingsByLeague.set(String(row.league_id), row);
+  }
+
+  const enabled: string[] = [];
+  const skipped: Array<{ leagueId: string; reason: string }> = [];
+
+  for (const leagueId of [...new Set(ownedLeagueIds || [])]) {
+    const settings = settingsByLeague.get(leagueId);
+
+    if (!settings) {
+      skipped.push({ leagueId, reason: 'automation not configured' });
+      continue;
+    }
+    if (settings.paused_at) {
+      skipped.push({ leagueId, reason: 'automation paused' });
+      continue;
+    }
+    if (!settings.auto_waiver_pricing) {
+      skipped.push({ leagueId, reason: 'waiver pricing not enabled' });
+      continue;
+    }
+    enabled.push(leagueId);
+  }
+
+  return { enabled, skipped };
+};

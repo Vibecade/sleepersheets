@@ -4,6 +4,7 @@ import {
   extractWaiverWrites,
   planWaiverWrites,
   weeksToSweep,
+  selectAutomatedLeagues,
   MAX_WEEKS,
 } from "./waivers";
 
@@ -206,5 +207,73 @@ describe("weeksToSweep", () => {
     expect(weeksToSweep(0)).toHaveLength(MAX_WEEKS);
     expect(weeksToSweep(99)).toHaveLength(MAX_WEEKS);
     expect(weeksToSweep("7" as unknown)).toHaveLength(MAX_WEEKS);
+  });
+});
+
+describe("selectAutomatedLeagues", () => {
+  const on = (league_id: string) => ({ league_id, auto_waiver_pricing: true, paused_at: null });
+
+  it("runs for a league that opted in", () => {
+    const result = selectAutomatedLeagues(["L1"], [on("L1")]);
+    expect(result.enabled).toEqual(["L1"]);
+    expect(result.skipped).toEqual([]);
+  });
+
+  it("treats a league with no settings row as off", () => {
+    // Absence must mean off. A league nobody configured is exactly the one
+    // that should not be written to unattended.
+    const result = selectAutomatedLeagues(["L1"], []);
+    expect(result.enabled).toEqual([]);
+    expect(result.skipped).toEqual([{ leagueId: "L1", reason: "automation not configured" }]);
+  });
+
+  it("does not run for a league that opted out", () => {
+    const result = selectAutomatedLeagues(
+      ["L1"],
+      [{ league_id: "L1", auto_waiver_pricing: false, paused_at: null }],
+    );
+    expect(result.enabled).toEqual([]);
+    expect(result.skipped[0].reason).toBe("waiver pricing not enabled");
+  });
+
+  it("pause overrides an enabled flag", () => {
+    // The whole point of the kill switch: it stops things without needing the
+    // individual capabilities to be found and switched off first.
+    const result = selectAutomatedLeagues(
+      ["L1"],
+      [{ league_id: "L1", auto_waiver_pricing: true, paused_at: "2026-08-01T00:00:00Z" }],
+    );
+    expect(result.enabled).toEqual([]);
+    expect(result.skipped[0].reason).toBe("automation paused");
+  });
+
+  it("ignores settings for leagues this run does not own", () => {
+    const result = selectAutomatedLeagues(["L1"], [on("L1"), on("L2")]);
+    expect(result.enabled).toEqual(["L1"]);
+  });
+
+  it("partitions a mixed set and reports every skip", () => {
+    const result = selectAutomatedLeagues(
+      ["L1", "L2", "L3", "L4"],
+      [
+        on("L1"),
+        { league_id: "L2", auto_waiver_pricing: false, paused_at: null },
+        { league_id: "L3", auto_waiver_pricing: true, paused_at: "2026-08-01T00:00:00Z" },
+      ],
+    );
+    expect(result.enabled).toEqual(["L1"]);
+    expect(result.skipped.map((s) => s.leagueId).sort()).toEqual(["L2", "L3", "L4"]);
+  });
+
+  it("de-duplicates repeated ownership rows", () => {
+    const result = selectAutomatedLeagues(["L1", "L1"], [on("L1")]);
+    expect(result.enabled).toEqual(["L1"]);
+  });
+
+  it("survives empty and malformed input", () => {
+    expect(selectAutomatedLeagues([], []).enabled).toEqual([]);
+    expect(
+      selectAutomatedLeagues(["L1"], [{ auto_waiver_pricing: true } as never]).enabled,
+    ).toEqual([]);
   });
 });
