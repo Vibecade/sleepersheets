@@ -277,3 +277,46 @@ describe("selectAutomatedLeagues", () => {
     ).toEqual([]);
   });
 });
+
+/**
+ * These rules are now imported by BOTH the scheduled job and
+ * src/hooks/useTransactionProcessor, so there is no second implementation to
+ * disagree with. The cases below pin the ones that used to: the client copy
+ * tested `settings?.waiver_bid` for truthiness, which accepted a negative bid
+ * and wrote it through as a negative salary, while this copy required
+ * `typeof === 'number' && > 0` and skipped it.
+ */
+describe("pricing rules that the two implementations used to disagree on", () => {
+  const claim = (waiver_bid: unknown) => ({
+    transaction_id: "t1",
+    type: "waiver",
+    status: "complete",
+    settings: { waiver_bid },
+    adds: { p1: 3 },
+  }) as never;
+
+  it("refuses a negative bid rather than writing a negative salary", () => {
+    // The old client path priced this at -5. A manager's cap would have gone
+    // UP from a waiver claim.
+    expect(isWaiverTransaction(claim(-5))).toBe(false);
+    expect(extractWaiverWrites(claim(-5))).toEqual([]);
+  });
+
+  it("refuses a zero bid, leaving it for the Pricing panel", () => {
+    expect(isWaiverTransaction(claim(0))).toBe(false);
+    expect(extractWaiverWrites(claim(0))).toEqual([]);
+  });
+
+  it("refuses a bid that arrives as a string", () => {
+    expect(isWaiverTransaction(claim("5"))).toBe(false);
+    expect(extractWaiverWrites(claim("5"))).toEqual([]);
+  });
+
+  it("refuses NaN", () => {
+    expect(isWaiverTransaction(claim(Number.NaN))).toBe(false);
+  });
+
+  it("prices a normal bid", () => {
+    expect(extractWaiverWrites(claim(5))).toEqual([{ playerId: "p1", rosterId: 3, salary: 5 }]);
+  });
+});

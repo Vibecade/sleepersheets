@@ -57,6 +57,10 @@ export default defineConfig(() => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Waiver pricing rules are shared with the scheduled edge function.
+      // The canonical copy lives with the function so that deploying it
+      // never has to reach outside supabase/functions; the app reaches in.
+      "@edge": path.resolve(__dirname, "./supabase/functions"),
     },
   },
   test: {

@@ -145,10 +145,22 @@ select cron.unschedule('process-waivers');
 
 ## Relationship to the client processor
 
-Both paths must price a waiver identically — otherwise the same claim gets a
-different salary depending on whether a commissioner happened to have the app
-open. The rules that matter (completed waivers only, bid must be > 0, every added
-player priced at the winning bid) are pinned in `waivers.test.ts`.
+There is one implementation. `waivers.ts` is it, and
+`src/hooks/useTransactionProcessor.tsx` imports from here via the `@edge`
+alias — so a rule change lands in both paths at once and they cannot drift.
 
-If you change pricing rules, change them in **both**
-`src/hooks/useTransactionProcessor.tsx` and `waivers.ts`, and update those tests.
+It used to be written out twice, with instructions in this file to keep the
+copies in step by hand. They drifted anyway: the client tested
+`settings?.waiver_bid` for truthiness, which accepts a **negative** bid and
+wrote it through as a negative salary, while this file required
+`typeof === 'number' && > 0` and skipped it. The same claim was priced
+differently depending on whether a commissioner had the app open.
+
+The direction of the dependency is deliberate. The canonical copy stays inside
+`supabase/functions/` so that deploying the function never depends on files
+outside it; the app reaches in, not the other way around. Keep this module free
+of imports — it has to be loadable by both Deno and Vite.
+
+The rules that matter (completed waivers only, bid must be a number greater
+than zero, every added player priced at the winning bid) are pinned in
+`waivers.test.ts`, which runs in the project's normal vitest suite.
