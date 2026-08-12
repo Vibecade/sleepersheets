@@ -15,6 +15,7 @@ import {
   type SleeperTransactionLike,
 } from './waivers.ts';
 import { planDeadCapWrites } from './deadCap.ts';
+import { buildActivityRows } from './activity.ts';
 
 const createDb = (url: string, serviceRoleKey: string) =>
   createClient(url, serviceRoleKey, { auth: { persistSession: false } });
@@ -77,6 +78,30 @@ const fetchJson = async <T>(url: string): Promise<T | null> => {
   const res = await fetch(url);
   if (!res.ok) return null;
   return (await res.json()) as T;
+};
+
+/**
+ * Writes the feed entries for what a run actually did.
+ *
+ * Deliberately swallows its own failures. The salaries and dead cap are
+ * already committed by this point, and throwing here would mark the run
+ * errored and — worse — leave the transactions unprocessed, so the next sweep
+ * would try to write them again. Losing a feed entry is a far smaller problem
+ * than re-running a money write because the note about it failed.
+ */
+const recordActivity = async (
+  supabase: Db,
+  leagueId: string,
+  waiverWrites: Array<{ playerId: string; salary: number }>,
+  deadCapWrites: Array<{ playerId: string; salary: number }>,
+): Promise<void> => {
+  const rows = buildActivityRows({ leagueId, waiverWrites, deadCapWrites });
+  if (rows.length === 0) return;
+
+  const { error } = await supabase.from('league_activities').insert(rows);
+  if (error) {
+    console.error(`league_activities insert failed for ${leagueId}: ${error.message}`);
+  }
 };
 
 const processLeague = async (
@@ -203,6 +228,13 @@ const processLeague = async (
       );
       if (deadCapWriteError) throw deadCapWriteError;
       summary.deadCapWritten = deadCapPlan.writes.length;
+
+      // Recorded here, not at the end of the run. The charge is committed and
+      // dead_cap_charges will suppress it on every future sweep, so if a later
+      // waiver write throws and we bail out, this is the only chance to record
+      // it — the entry would otherwise be lost permanently for a charge that
+      // did happen.
+      await recordActivity(supabase, leagueId, [], deadCapPlan.writes);
     }
 
     if (plan.writes.length === 0) return summary;
@@ -235,6 +267,9 @@ const processLeague = async (
     if (markError) throw markError;
 
     summary.written = plan.writes.length;
+
+    // Dead cap already recorded its own entry above, if it wrote anything.
+    await recordActivity(supabase, leagueId, plan.writes, []);
     return summary;
   } catch (error) {
     summary.error = error instanceof Error ? error.message : String(error);
