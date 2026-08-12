@@ -40,15 +40,27 @@ npm run smoke:routes
 
 ## CI Expectations
 
-Before pushing changes, the repo should pass:
+Run the whole gate in one command:
 
 ```sh
-npm run lint
-npm run typecheck
-npm run build
-npm run check:bundle
-npm run smoke:routes
+npm run verify
 ```
+
+That is every check `.github/workflows/ci.yml` runs, in the same order: lint,
+typecheck, edge typecheck, tests, build, bundle budget, route smoke, and
+migrations-apply-from-empty. It stands up a throwaway Postgres for the
+migration check and tears it down afterwards, and warns if a step exists in
+`ci.yml` but not in the script.
+
+```sh
+npm run verify -- --fast   # skips build/bundle/smoke
+```
+
+> **GitHub Actions is unavailable to this repo until 2026-09-01** (billing).
+> Jobs fail in a few seconds with no steps recorded and the annotation
+> *"The job was not started because recent account payments have failed..."*.
+> That is not a signal about your branch. Until it's restored, `npm run verify`
+> is the gate — run it before merging, because nothing else will.
 
 ## Notes
 
