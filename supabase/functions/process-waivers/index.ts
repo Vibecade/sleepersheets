@@ -15,6 +15,7 @@ import {
   type SleeperTransactionLike,
 } from './waivers.ts';
 import { planDeadCapWrites } from './deadCap.ts';
+import { buildActivityRows } from './activity.ts';
 
 const createDb = (url: string, serviceRoleKey: string) =>
   createClient(url, serviceRoleKey, { auth: { persistSession: false } });
@@ -77,6 +78,30 @@ const fetchJson = async <T>(url: string): Promise<T | null> => {
   const res = await fetch(url);
   if (!res.ok) return null;
   return (await res.json()) as T;
+};
+
+/**
+ * Writes the feed entries for what a run actually did.
+ *
+ * Deliberately swallows its own failures. The salaries and dead cap are
+ * already committed by this point, and throwing here would mark the run
+ * errored and — worse — leave the transactions unprocessed, so the next sweep
+ * would try to write them again. Losing a feed entry is a far smaller problem
+ * than re-running a money write because the note about it failed.
+ */
+const recordActivity = async (
+  supabase: Db,
+  leagueId: string,
+  waiverWrites: Array<{ playerId: string; salary: number }>,
+  deadCapWrites: Array<{ playerId: string; salary: number }>,
+): Promise<void> => {
+  const rows = buildActivityRows({ leagueId, waiverWrites, deadCapWrites });
+  if (rows.length === 0) return;
+
+  const { error } = await supabase.from('league_activities').insert(rows);
+  if (error) {
+    console.error(`league_activities insert failed for ${leagueId}: ${error.message}`);
+  }
 };
 
 const processLeague = async (
@@ -205,7 +230,10 @@ const processLeague = async (
       summary.deadCapWritten = deadCapPlan.writes.length;
     }
 
-    if (plan.writes.length === 0) return summary;
+    if (plan.writes.length === 0) {
+      await recordActivity(supabase, leagueId, [], deadCapPlan.writes);
+      return summary;
+    }
 
     // onConflict is required: without it PostgREST inserts a new row
     // instead of updating, which would duplicate salary rows on every
@@ -235,6 +263,8 @@ const processLeague = async (
     if (markError) throw markError;
 
     summary.written = plan.writes.length;
+
+    await recordActivity(supabase, leagueId, plan.writes, deadCapPlan.writes);
     return summary;
   } catch (error) {
     summary.error = error instanceof Error ? error.message : String(error);

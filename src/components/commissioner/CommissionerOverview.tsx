@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { TurfPanel } from '@/components/ui/turf-panel';
+import { AutopilotActivityFeed } from './AutopilotActivityFeed';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -370,6 +371,12 @@ export const CommissionerOverview = ({ leagueId, leagueData }: CommissionerOverv
             </tbody>
           </table>
         </div>
+      </TurfPanel>
+
+      {/* What the scheduled job did while nobody was watching. Sits above the
+          commissioner audit log because it is the half nobody witnessed. */}
+      <TurfPanel kicker="AUTOPILOT / RECENT" title="Automated Changes">
+        <AutopilotActivityFeed leagueId={leagueId} />
       </TurfPanel>
 
       {/* Recent commissioner actions (audit trail) */}

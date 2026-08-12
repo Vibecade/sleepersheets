@@ -118,6 +118,39 @@ The ledger row is written **before** the visible penalty. If a run dies between
 the two, the league is under-charged and a commissioner adds it by hand; the
 other order would re-charge on every sweep until someone noticed.
 
+## What it records
+
+Every run that actually writes something leaves an entry in
+`league_activities`, surfaced as "Automated Changes" on the commissioner
+Overview tab. It answers the question nothing could answer before: what did
+this job do to my league's money while I wasn't looking.
+
+Only real writes are recorded. The job sweeps every enabled league every six
+hours, so recording runs that did nothing would bury the handful of entries
+that matter under thousands that don't.
+
+Two notes on the table, which was dead schema until now — defined, policied,
+and never read or written by a line of application code:
+
+- Its `activity_type` CHECK did not allow automation values. Reusing `'waiver'`
+  would have made an automated charge indistinguishable from a human one in the
+  very feed built to tell them apart, so the constraint was extended.
+- Its INSERT policy was `WITH CHECK (true)`, meaning any authenticated caller
+  could put entries in any league's feed. Harmless while nothing read the
+  table; not harmless once a commissioner believes what it says. The policy is
+  dropped — the job writes with the service-role key and needs no policy, so
+  the feed is now unforgeable through PostgREST. Verified: neither a stranger
+  nor the league's own owner can insert a row.
+
+Recording failures are swallowed deliberately. By that point the salaries and
+dead cap are committed, and throwing would mark the run errored and leave the
+transactions unprocessed — so the next sweep would try to write them again.
+Losing a feed entry is a much smaller problem than repeating a money write
+because the note about it failed.
+
+**This is a pull, not a push.** It tells you what happened once you look.
+Actual notification needs an outbound channel, which this app has none of.
+
 ## What it does
 
 For each eligible league:
