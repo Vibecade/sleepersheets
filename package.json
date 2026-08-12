@@ -20,7 +20,8 @@
     "check:edge": "deno check supabase/functions/**/index.ts",
     "check:bundle": "node scripts/check-bundle-size.mjs",
     "smoke:routes": "bash scripts/smoke-routes.sh",
-    "check:migrations": "bash scripts/check-migrations.sh"
+    "check:migrations": "bash scripts/check-migrations.sh",
+    "verify": "bash scripts/verify.sh"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.0",
